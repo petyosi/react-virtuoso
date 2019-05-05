@@ -31,6 +31,10 @@ class NilNode {
     return
   }
 
+  public findMax(): number {
+    return -Infinity
+  }
+
   public insert<T>(key: number, value: T): NonNilNode<T> {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     return new NonNilNode<T>({ key, value, level: 1 })
@@ -139,6 +143,23 @@ class NonNilNode<T> {
     }
   }
 
+  public findMax(key: number): number {
+    if (this.key === key) {
+      return key
+    }
+
+    if (this.key < key) {
+      const rightKey = this.right.findMax(key)
+      if (rightKey === -Infinity) {
+        return this.key
+      } else {
+        return rightKey
+      }
+    }
+
+    return this.left.findMax(key)
+  }
+
   public insert(key: number, value: T): NonNilNode<T> {
     if (key === this.key) {
       return this.clone({ key, value })
@@ -160,8 +181,11 @@ class NonNilNode<T> {
       result = result.concat(this.left.walkWithin(start, end))
     }
 
-    if (key <= end) {
+    if (key >= start && key <= end) {
       result.push({ key, value })
+    }
+
+    if (key <= end) {
       result = result.concat(this.right.walkWithin(start, end))
     }
 
@@ -342,6 +366,10 @@ export class AATree<T> {
     return this.root.find(key)
   }
 
+  public findMax(key: number): number {
+    return this.root.findMax(key)
+  }
+
   public insert(key: number, value: T): AATree<T> {
     return new AATree(this.root.insert(key, value))
   }
@@ -363,7 +391,8 @@ export class AATree<T> {
   }
 
   public walkWithin(start: number, end: number): NodeData<T>[] {
-    return this.root.walkWithin(start, end)
+    let adjustedStart = this.root.findMax(start)
+    return this.root.walkWithin(adjustedStart, end)
   }
 
   public ranges(): Range<T>[] {
@@ -371,7 +400,8 @@ export class AATree<T> {
   }
 
   public rangesWithin(start: number, end: number): Range<T>[] {
-    return this.root.rangesWithin(start, end)
+    let adjustedStart = this.root.findMax(start)
+    return this.root.rangesWithin(adjustedStart, end)
   }
 
   public isInvariant(): boolean {

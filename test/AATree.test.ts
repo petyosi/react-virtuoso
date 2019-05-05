@@ -82,4 +82,16 @@ describe('aa tree behavior', () => {
       { start: 20, end: Infinity, value: 20 },
     ])
   })
+
+  it('finds the largest number that does not exceed a given value', () => {
+    const tree = numbersToAATree([0, 1, 2, 3, 4, 7, 20])
+    expect(tree.findMax(3)).toEqual(3)
+    expect(tree.findMax(12)).toEqual(7)
+    expect(tree.findMax(100)).toEqual(20)
+  })
+
+  it('yields tuples for a given range (2nd example)', () => {
+    const tree = numbersToAATree([0, 1, 2, 3, 4])
+    expect(Array.from(tree.rangesWithin(3, 3))).toEqual([{ start: 3, end: Infinity, value: 3 }])
+  })
 })

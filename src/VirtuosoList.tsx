@@ -20,6 +20,7 @@ export const VirtuosoList: React.FC<ListObservables> = ({ list$, transform = '',
         let size = ref.offsetHeight
 
         if (size !== knownSize) {
+          console.log('setting', index, 'to', size, 'from', knownSize)
           itemHeights$.next({ index, size })
         }
       }
