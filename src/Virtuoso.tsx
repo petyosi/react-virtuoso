@@ -29,9 +29,13 @@ interface VirtuosoProps {
 }
 
 export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
+  public static defaultProps = {
+    topItems: 0,
+  }
+
   public constructor(props: VirtuosoProps) {
     super(props)
-    const { overscan, totalCount, topItems = 0 } = props
+    const { overscan, totalCount, topItems } = props
 
     this.state = VirtuosoStore(overscan, totalCount, topItems)
 
@@ -48,7 +52,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
   public render() {
     return (
       <VirtuosoContext.Provider value={this.state}>
-        <VirtuosoView item={this.props.item} footer={this.props.footer} />
+        <VirtuosoView item={this.props.item} footer={this.props.footer} topItemCount={this.props.topItems!} />
       </VirtuosoContext.Provider>
     )
   }

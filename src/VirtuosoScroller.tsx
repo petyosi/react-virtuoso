@@ -3,7 +3,7 @@ import { VirtuosoContext } from './VirtuosoContext'
 
 const scrollerStyle: React.CSSProperties = {
   height: '100%',
-  overflow: 'auto',
+  overflowY: 'auto',
   WebkitOverflowScrolling: 'touch',
   position: 'relative',
 }

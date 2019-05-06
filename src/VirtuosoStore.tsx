@@ -3,7 +3,8 @@ import { auditTime, distinctUntilChanged, map, scan, withLatestFrom } from 'rxjs
 import { Item, OffsetList } from './OffsetList'
 
 export interface ItemHeight {
-  index: number
+  start: number
+  end: number
   size: number
 }
 
@@ -44,16 +45,17 @@ const VirtuosoStore = (overscan: number, totalCount: number, topItems: number = 
   const listHeight$ = new BehaviorSubject(0)
   const scrollTop$ = new BehaviorSubject(0)
   const footerHeight$ = new BehaviorSubject(0)
-  const itemHeights$ = new Subject<ItemHeight>()
+  const itemHeights$ = new Subject<ItemHeight[]>()
   const totalCount$ = new BehaviorSubject(totalCount)
   const topItemCount$ = new BehaviorSubject(topItems)
   const offsetList$ = new BehaviorSubject(OffsetList.create())
 
-  itemHeights$.pipe(withLatestFrom(offsetList$)).subscribe(([{ size, index }, offsetList]) => {
-    offsetList$.next(offsetList.insert(index, index, size))
+  itemHeights$.pipe(withLatestFrom(offsetList$)).subscribe(([heights, offsetList]) => {
+    const newList = heights.reduce((list, { start, end, size }) => list.insert(start, end, size), offsetList)
+    if (newList !== offsetList) {
+      offsetList$.next(newList)
+    }
   })
-
-  // itemHeights$.pipe().subscribe(({ size, index }) => console.log({ size, index }))
 
   const totalListHeight$ = combineLatest(offsetList$, totalCount$).pipe(map(mapToTotal))
 
@@ -75,11 +77,11 @@ const VirtuosoStore = (overscan: number, totalCount: number, topItems: number = 
   )
 
   const list$: Observable<Item[]> = combineLatest(
-    viewportHeight$,
-    scrollTop$,
-    topListHeight$,
-    listHeight$,
-    footerHeight$,
+    viewportHeight$.pipe(distinctUntilChanged()),
+    scrollTop$.pipe(distinctUntilChanged()),
+    topListHeight$.pipe(distinctUntilChanged()),
+    listHeight$.pipe(distinctUntilChanged()),
+    footerHeight$.pipe(distinctUntilChanged()),
     topItemCount$,
     totalCount$
   ).pipe(
@@ -87,10 +89,6 @@ const VirtuosoStore = (overscan: number, totalCount: number, topItems: number = 
     scan(listScanner(overscan), []),
     distinctUntilChanged()
   )
-
-  // list$.subscribe(items => {
-  //   console.log('resulting items', items)
-  // })
 
   const biggestIndex$ = list$.pipe(
     map(items => (items.length ? items[items.length - 1].index : 0)),
@@ -101,8 +99,6 @@ const VirtuosoStore = (overscan: number, totalCount: number, topItems: number = 
   const listOffset$ = combineLatest(list$, scrollTop$, topListHeight$).pipe(
     map(([items, scrollTop, topListHeight]) => getListTop(items) - scrollTop - topListHeight)
   )
-
-  // topListHeight$.subscribe(val => console.log('top list height', val));
 
   return {
     // input

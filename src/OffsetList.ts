@@ -51,6 +51,15 @@ export class OffsetList {
     // we 'merge' them.
     const overlapingRanges = tree.rangesWithin(start - 1, end + 1)
 
+    // console.log(overlapingRanges, { start, end, size })
+    if (
+      overlapingRanges.some(range => {
+        return range.start === start && (range.end === end || range.end === Infinity) && range.value === size
+      })
+    ) {
+      return this
+    }
+
     let firstPassDone = false
     let shouldInsert = false
     for (const { start: rangeStart, end: rangeEnd, value: rangeValue } of overlapingRanges) {
