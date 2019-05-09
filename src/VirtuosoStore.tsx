@@ -40,7 +40,14 @@ const listScanner: ListScanner = overscan => (
   return items
 }
 
-const VirtuosoStore = (overscan: number, totalCount: number, topItems: number = 0) => {
+interface TVirtuosoConstructorParams {
+  overscan: number
+  totalCount: number
+  topItems?: number
+  itemHeight?: number
+}
+
+const VirtuosoStore = ({ overscan, totalCount, topItems = 0, itemHeight }: TVirtuosoConstructorParams) => {
   const viewportHeight$ = new BehaviorSubject(0)
   const listHeight$ = new BehaviorSubject(0)
   const scrollTop$ = new BehaviorSubject(0)
@@ -48,14 +55,22 @@ const VirtuosoStore = (overscan: number, totalCount: number, topItems: number = 
   const itemHeights$ = new Subject<ItemHeight[]>()
   const totalCount$ = new BehaviorSubject(totalCount)
   const topItemCount$ = new BehaviorSubject(topItems)
-  const offsetList$ = new BehaviorSubject(OffsetList.create())
+  let initialOffsetList = OffsetList.create()
 
-  itemHeights$.pipe(withLatestFrom(offsetList$)).subscribe(([heights, offsetList]) => {
-    const newList = heights.reduce((list, { start, end, size }) => list.insert(start, end, size), offsetList)
-    if (newList !== offsetList) {
-      offsetList$.next(newList)
-    }
-  })
+  if (itemHeight) {
+    initialOffsetList = initialOffsetList.insert(0, 0, itemHeight)
+  }
+
+  const offsetList$ = new BehaviorSubject(initialOffsetList)
+
+  if (!itemHeight) {
+    itemHeights$.pipe(withLatestFrom(offsetList$)).subscribe(([heights, offsetList]) => {
+      const newList = heights.reduce((list, { start, end, size }) => list.insert(start, end, size), offsetList)
+      if (newList !== offsetList) {
+        offsetList$.next(newList)
+      }
+    })
+  }
 
   const totalListHeight$ = combineLatest(offsetList$, totalCount$).pipe(map(mapToTotal))
 
@@ -90,7 +105,7 @@ const VirtuosoStore = (overscan: number, totalCount: number, topItems: number = 
     distinctUntilChanged()
   )
 
-  const biggestIndex$ = list$.pipe(
+  const endReached$ = list$.pipe(
     map(items => (items.length ? items[items.length - 1].index : 0)),
     scan((prev, current) => Math.max(prev, current)),
     distinctUntilChanged()
@@ -113,7 +128,7 @@ const VirtuosoStore = (overscan: number, totalCount: number, topItems: number = 
     listOffset$,
     totalHeight$,
     topList$,
-    biggestIndex$,
+    endReached$,
   }
 }
 
