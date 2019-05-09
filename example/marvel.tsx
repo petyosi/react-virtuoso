@@ -38,12 +38,12 @@ const App = () => {
 
   React.useEffect(loadMore, [])
   return (
-    <>
-      <div style={{ height: '100%', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ flexGrow: 1, overflow: 'hidden' }}>
         <Virtuoso
           totalCount={total}
           overscan={200}
-          maxIndex={index => {
+          endReached={index => {
             if (index < max.current - 1) {
               loadMore()
             }
@@ -68,9 +68,10 @@ const App = () => {
           }}
         />
       </div>
-
-      <p dangerouslySetInnerHTML={{ __html: copyright }} />
-    </>
+      <div>
+        <p dangerouslySetInnerHTML={{ __html: copyright }} />
+      </div>
+    </div>
   )
 }
 
