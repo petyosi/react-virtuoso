@@ -42,7 +42,7 @@ const App = () => {
                 </Avatar>
               </ListItemAvatar>
 
-              <ListItemText primary={`Item ${index}`} secondary={lipsum(index)} />
+              <ListItemText primary={`Item ${index}`} />
             </ListItem>
           )
         }}
