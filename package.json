@@ -11,7 +11,9 @@
   "scripts": {
     "start": "tsdx watch",
     "build": "tsdx build",
-    "test": "tsdx test --env=jsdom"
+    "test": "tsdx test --env=jsdom",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
   },
   "peerDependencies": {
     "react": ">=16"
@@ -22,8 +24,15 @@
     }
   },
   "devDependencies": {
+    "@babel/core": "^7.4.4",
     "@material-ui/core": "^4.0.0-beta.1",
     "@material-ui/icons": "^4.0.0-beta.0",
+    "@storybook/addon-actions": "^5.0.11",
+    "@storybook/addon-info": "^5.0.11",
+    "@storybook/addon-links": "^5.0.11",
+    "@storybook/addons": "^5.0.11",
+    "@storybook/react": "^5.0.11",
+    "@types/babel__core": "^7.1.1",
     "@types/bootstrap": "^4.3.0",
     "@types/eslint": "^4.16.6",
     "@types/eslint-plugin-prettier": "^2.2.0",
@@ -32,8 +41,14 @@
     "@types/prettier": "^1.16.3",
     "@types/react": "^16.8.16",
     "@types/react-dom": "^16.8.4",
+    "@types/storybook__addon-actions": "^3.4.2",
+    "@types/storybook__addon-info": "^4.1.1",
+    "@types/storybook__addon-links": "^3.3.4",
+    "@types/storybook__react": "^4.0.1",
     "@typescript-eslint/eslint-plugin": "^1.7.0",
+    "awesome-typescript-loader": "^5.2.1",
     "axios": "^0.18.0",
+    "babel-loader": "^8.0.5",
     "bootstrap": "^4.3.1",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.2.0",
@@ -46,6 +61,7 @@
     "prettier": "^1.17.0",
     "pretty-quick": "^1.10.0",
     "react": "^16.8.6",
+    "react-docgen-typescript-loader": "^3.1.0",
     "react-dom": "^16.8.6",
     "tsdx": "^0.5.6",
     "typescript": "^3.4.5"
