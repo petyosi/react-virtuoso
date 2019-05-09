@@ -7,6 +7,5 @@ node_modules
 dist
 .cache
 .size-snapshot.json
-src/*.d.ts
-stories/*.d.ts
+*.d.ts
 storybook-static
