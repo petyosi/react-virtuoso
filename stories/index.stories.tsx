@@ -12,20 +12,27 @@ import Box from '@material-ui/core/Box'
 import FolderIcon from '@material-ui/icons/Folder'
 
 const MaterialList = () => {
-  const [total, setTotal] = useState(30)
+  const [total, setTotal] = useState(300)
 
   return (
     <List
       component="div"
-      style={{ height: '500px', width: '50%', minWidth: '300px', margin: '0 auto', boxSizing: 'border-box' }}
+      style={{
+        height: '500px',
+        width: '50%',
+        minWidth: '200px',
+        maxWidth: '350px',
+        margin: '0 auto',
+        boxSizing: 'border-box',
+      }}
     >
       <Virtuoso
         totalCount={total}
-        overscan={1200}
+        overscan={0}
         item={(index: number) => {
           return (
             <div>
-              <ListItem>
+              <ListItem component="div">
                 <ListItemAvatar>
                   <Avatar>
                     <FolderIcon />
