@@ -11,13 +11,18 @@ const scrollerStyle: React.CSSProperties = {
 export const VirtuosoScroller: FC = ({ children }) => {
   const { scrollTop$ } = useContext(VirtuosoContext)!
 
-  const onScrollTop = useCallback(
-    (e: UIEvent<HTMLDivElement>) => scrollTop$.next((e.target as HTMLDivElement).scrollTop),
-    [scrollTop$]
-  )
+  const onScroll = useCallback((e: UIEvent) => {
+    scrollTop$.next((e.target as HTMLDivElement).scrollTop)
+  }, [])
+
+  const ref = useCallback(ref => {
+    if (ref) {
+      ref.addEventListener('scroll', onScroll, { passive: true })
+    }
+  }, [])
 
   return (
-    <div onScroll={onScrollTop} style={scrollerStyle}>
+    <div ref={ref} style={scrollerStyle}>
       {children}
     </div>
   )
