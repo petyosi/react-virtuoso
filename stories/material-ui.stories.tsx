@@ -59,4 +59,4 @@ const MaterialList = () => {
   )
 }
 
-storiesOf('React Virtuoso', module).add('Welcome', () => <MaterialList />)
+storiesOf('Integration', module).add('Material UI', () => <MaterialList />)
