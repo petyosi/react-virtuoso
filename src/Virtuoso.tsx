@@ -13,8 +13,9 @@ interface VirtuosoProps {
 
   /**
    * The amount in (pixels) to add in addition to the screen size
+   * @default 0
    */
-  overscan: number
+  overscan?: number
 
   /**
    * The amount of items to pin at the top of the scroll

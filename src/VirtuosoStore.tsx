@@ -41,13 +41,13 @@ const listScanner: ListScanner = overscan => (
 }
 
 interface TVirtuosoConstructorParams {
-  overscan: number
+  overscan?: number
   totalCount: number
   topItems?: number
   itemHeight?: number
 }
 
-const VirtuosoStore = ({ overscan, totalCount, topItems = 0, itemHeight }: TVirtuosoConstructorParams) => {
+const VirtuosoStore = ({ overscan = 0, totalCount, topItems = 0, itemHeight }: TVirtuosoConstructorParams) => {
   const viewportHeight$ = new BehaviorSubject(0)
   const listHeight$ = new BehaviorSubject(0)
   const scrollTop$ = new BehaviorSubject(0)
