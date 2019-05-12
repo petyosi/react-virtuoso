@@ -1,5 +1,5 @@
 import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs'
-import { auditTime, distinctUntilChanged, map, scan, withLatestFrom } from 'rxjs/operators'
+import { auditTime, distinctUntilChanged, map, scan, withLatestFrom, debounceTime, mapTo, skip } from 'rxjs/operators'
 import { Item, OffsetList } from './OffsetList'
 
 export interface ItemHeight {
@@ -55,6 +55,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount, topItems = 0, itemHeight }: T
   const itemHeights$ = new Subject<ItemHeight[]>()
   const totalCount$ = new BehaviorSubject(totalCount)
   const topItemCount$ = new BehaviorSubject(topItems)
+  const isScrolling$ = new BehaviorSubject(false)
   let initialOffsetList = OffsetList.create()
 
   if (itemHeight) {
@@ -115,6 +116,21 @@ const VirtuosoStore = ({ overscan = 0, totalCount, topItems = 0, itemHeight }: T
     map(([items, scrollTop, topListHeight]) => getListTop(items) - scrollTop - topListHeight)
   )
 
+  scrollTop$
+    .pipe(
+      mapTo(true),
+      skip(1)
+    )
+    .subscribe(isScrolling$)
+
+  scrollTop$
+    .pipe(
+      debounceTime(200),
+      mapTo(false),
+      skip(1)
+    )
+    .subscribe(isScrolling$)
+
   return {
     // input
     totalCount$,
@@ -129,6 +145,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount, topItems = 0, itemHeight }: T
     totalHeight$,
     topList$,
     endReached$,
+    isScrolling$,
   }
 }
 

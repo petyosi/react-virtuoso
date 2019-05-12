@@ -44,6 +44,8 @@ interface VirtuosoProps {
   itemHeight?: number
 
   endReached?: (index: number) => void
+
+  scrollingStateChange?: (isScrolling: boolean) => void
 }
 
 export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
@@ -58,6 +60,10 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
 
     if (props.endReached) {
       this.state.endReached$.subscribe(props.endReached)
+    }
+
+    if (props.scrollingStateChange) {
+      this.state.isScrolling$.subscribe(props.scrollingStateChange)
     }
   }
 

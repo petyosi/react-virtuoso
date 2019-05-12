@@ -7,6 +7,7 @@ interface TUser {
   bgColor: string
   fgColor: string
   longText: string
+  avatar: string
 }
 
 const generated: TUser[] = []
@@ -22,6 +23,7 @@ export const getUser = (index: number): TUser => {
       bgColor: faker.commerce.color(),
       fgColor: faker.commerce.color(),
       longText: faker.lorem.paragraphs(4),
+      avatar: faker.internet.avatar(),
     }
   }
   return generated[index]

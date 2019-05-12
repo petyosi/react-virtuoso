@@ -12,6 +12,11 @@ export const ExampleAvatar = styled.div`
   font-weight: bold;
   font-size: 1.2rem;
 `
+export const ExampleAvatarPlaceholder = styled.div`
+  width: 50px;
+  height: 50px;
+  flex: none;
+`
 export const ExampleListItem = styled.div<{
   even: boolean
 }>`

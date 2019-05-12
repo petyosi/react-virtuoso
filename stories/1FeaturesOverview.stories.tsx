@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Virtuoso } from '../src/Virtuoso'
 import { getUser } from './FakeData'
 import { ExampleListItem, ExampleAvatar, ExampleUserInfo } from './ExampleComponents'
@@ -109,9 +109,9 @@ const ResizableList = () => {
         <ExampleTitle>Automatic Resizing</ExampleTitle>
         <p>
           The Virtuoso Component will automatically handle changes of the items&apos; heights (due to content being
-          resized, images being loaded, etc).
+          resized, images being loaded, etc). You don&apos;t have to configure anything additional.
         </p>
-        <p>Resize your browser and scroll the list around - the items reposition correctly without overlap.</p>
+        <p>Resize your browser and scroll the list around &ndash; the items reposition correctly without overlap.</p>
       </ExampleInfo>
 
       <div style={{ height: '500px', width: '50%' }}>
@@ -136,4 +136,51 @@ const ResizableList = () => {
   )
 }
 
-group.add('Resizable List', () => <ResizableList />)
+group.add('Auto Resizing', () => <ResizableList />)
+
+// Scrolling State Change
+
+const HideAvatarsWhenScrolling = () => {
+  const [isScrolling, setIsScrolling] = useState(false)
+  return (
+    <>
+      <ExampleInfo>
+        <ExampleTitle>Handling scrolling</ExampleTitle>
+        <p>Loading and rendering images while scrolling ruins the scrolling performance.</p>
+        <p>
+          To deal with this, the Virtuoso Component emits <code>scrollingStateChange</code> when the user starts / stops
+          scrolling. The callback receives <code>true</code> when the user starts scrolling and <code>false</code>{' '}
+          shortly after the last scroll event.
+        </p>
+        <p>
+          Handling this event can be used to optimize performance by hiding/replacing certain elements in the items.
+        </p>
+        <p>In the example above, the image avatars are replaced with placeholders when the user starts scrolling.</p>
+      </ExampleInfo>
+
+      <div style={{ height: '500px', width: '400px' }}>
+        <Virtuoso
+          totalCount={100}
+          scrollingStateChange={scrolling => setIsScrolling(scrolling)}
+          item={(index: number) => {
+            const user = getUser(index)
+            const title = `${index + 1}. ${user.name}`
+            return (
+              <ExampleListItem even={index % 2 === 0}>
+                {isScrolling ? (
+                  <ExampleAvatar style={{ backgroundColor: '#ccc' }}>&nbsp;</ExampleAvatar>
+                ) : (
+                  <img src={user.avatar} style={{ width: '50px', height: '50px', flex: 'none', borderRadius: '50%' }} />
+                )}
+
+                <ExampleUserInfo title={title}>{user.description}</ExampleUserInfo>
+              </ExampleListItem>
+            )
+          }}
+        />
+      </div>
+    </>
+  )
+}
+
+group.add('Scroll Handling', () => <HideAvatarsWhenScrolling />)
