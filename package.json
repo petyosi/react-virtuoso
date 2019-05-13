@@ -1,6 +1,8 @@
 {
   "name": "react-virtuoso",
   "version": "0.1.0",
+  "homepage": "https://virtuoso.dev",
+  "license": "MIT",
   "main": "dist/index.js",
   "umd:main": "dist/react-virtuoso.umd.production.js",
   "module": "dist/react-virtuoso.es.production.js",
