@@ -1984,6 +1984,13 @@
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-1.0.1.tgz#0a851d3bd96498fa25c33ab7278ed3bd65f06c3e"
   integrity sha512-l42BggppR6zLmpfU6fq9HEa2oGPEI8yrSPL3GITjfRInppYFahObbIQOQK3UGxEnyQpltZLaPe75046NOZQikw==
 
+"@types/storybook-readme@^5.0.2":
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/@types/storybook-readme/-/storybook-readme-5.0.2.tgz#9623a3a93bc20cadbb263a8f30dafa2e00cc9bc3"
+  integrity sha512-Q1MegB0mlVg8igA4HL2HPAqlhNJIBPY7tynLedv2TLNSEH+W2PkoO6bu4v8+mFrrKNPGm+ciJjA1d5XZgs3oEg==
+  dependencies:
+    "@types/react" "*"
+
 "@types/storybook__react@^4.0.1":
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/@types/storybook__react/-/storybook__react-4.0.1.tgz#b6320c9d027b8ee7ef1445fef8b4cba196d48ace"
