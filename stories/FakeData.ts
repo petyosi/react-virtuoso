@@ -1,6 +1,6 @@
 import faker from 'faker'
 
-interface TUser {
+export interface TUser {
   name: string
   initials: string
   description: string

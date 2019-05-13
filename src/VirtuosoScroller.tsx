@@ -1,14 +1,14 @@
-import React, { FC, useContext, useCallback, UIEvent } from 'react'
+import React, { FC, useContext, useCallback, UIEvent, CSSProperties } from 'react'
 import { VirtuosoContext } from './VirtuosoContext'
 
 const scrollerStyle: React.CSSProperties = {
-  height: '100%',
+  height: '40rem',
   overflowY: 'auto',
   WebkitOverflowScrolling: 'touch',
   position: 'relative',
 }
 
-export const VirtuosoScroller: FC = ({ children }) => {
+export const VirtuosoScroller: FC<{ style: CSSProperties }> = ({ children, style }) => {
   const { scrollTop$ } = useContext(VirtuosoContext)!
 
   const onScroll = useCallback((e: UIEvent) => {
@@ -22,7 +22,7 @@ export const VirtuosoScroller: FC = ({ children }) => {
   }, [])
 
   return (
-    <div ref={ref} style={scrollerStyle}>
+    <div ref={ref} style={{ ...scrollerStyle, ...style }}>
       {children}
     </div>
   )

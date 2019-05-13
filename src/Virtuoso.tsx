@@ -1,4 +1,4 @@
-import React, { ReactElement, PureComponent } from 'react'
+import React, { ReactElement, PureComponent, CSSProperties } from 'react'
 import { VirtuosoStore } from './VirtuosoStore'
 import { VirtuosoContext } from './VirtuosoContext'
 import { VirtuosoView } from './VirtuosoView'
@@ -46,6 +46,8 @@ interface VirtuosoProps {
   endReached?: (index: number) => void
 
   scrollingStateChange?: (isScrolling: boolean) => void
+
+  style?: CSSProperties
 }
 
 export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
@@ -76,6 +78,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     return (
       <VirtuosoContext.Provider value={this.state}>
         <VirtuosoView
+          style={this.props.style || {}}
           item={this.props.item}
           footer={this.props.footer}
           topItemCount={this.props.topItems!}
