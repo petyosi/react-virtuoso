@@ -11,7 +11,8 @@
     "dist"
   ],
   "scripts": {
-    "deploy-storybook": "storybook-to-ghpages",
+    "buildstorybook": "build-storybook -o .out",
+    "deploy-storybook": "rm -fr .out && npm run buildstorybook && echo 'virtuoso.dev' > '.out/CNAME' && storybook-to-ghpages --existing-output-dir=.out",
     "start": "tsdx watch",
     "build": "tsdx build",
     "test": "tsdx test --env=jsdom",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.4.4",
+    "@storybook/addon-google-analytics": "^5.0.11",
     "@storybook/addon-storysource": "^5.0.11",
     "@storybook/addons": "^5.0.11",
     "@storybook/react": "^5.0.11",

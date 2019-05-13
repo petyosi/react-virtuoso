@@ -18,5 +18,4 @@ addParameters({
     panelPosition: 'right',
   },
 })
-
 configure(loadStories, module)

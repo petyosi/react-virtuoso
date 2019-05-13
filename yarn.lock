@@ -1390,6 +1390,17 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.7.0.tgz#9a06f4f137ee84d7df0460c1fdb1135ffa6c50fd"
   integrity sha512-ONhaKPIufzzrlNbqtWFFd+jlnemX6lJAgq9ZeiZtS7I1PIf/la7CW4m83rTXRnVnsMbW2k56pGYu7AUFJD9Pow==
 
+"@storybook/addon-google-analytics@^5.0.11":
+  version "5.0.11"
+  resolved "https://registry.yarnpkg.com/@storybook/addon-google-analytics/-/addon-google-analytics-5.0.11.tgz#991f3db68af665a234af9f8dbcc2d098b9e9dc0c"
+  integrity sha512-q/XK1mjgqJRyJ9XYyVdokxCPpLN0fyvI+m5t5KZEQvipbo4U1i0Ii9Mff0T10SmZkdzagOSszJROsqPCIWFY+g==
+  dependencies:
+    "@storybook/addons" "5.0.11"
+    "@storybook/core-events" "5.0.11"
+    core-js "^2.6.5"
+    global "^4.3.2"
+    react-ga "^2.5.3"
+
 "@storybook/addon-storysource@^5.0.11":
   version "5.0.11"
   resolved "https://registry.yarnpkg.com/@storybook/addon-storysource/-/addon-storysource-5.0.11.tgz#cd9f1c5df1a8dfa400655ad3098dcde1006183c3"
@@ -9896,6 +9907,11 @@ react-focus-lock@^1.17.7:
     focus-lock "^0.6.3"
     prop-types "^15.6.2"
     react-clientside-effect "^1.2.0"
+
+react-ga@^2.5.3:
+  version "2.5.7"
+  resolved "https://registry.yarnpkg.com/react-ga/-/react-ga-2.5.7.tgz#1c80a289004bf84f84c26d46f3a6a6513081bf2e"
+  integrity sha512-UmATFaZpEQDO96KFjB5FRLcT6hFcwaxOmAJZnjrSiFN/msTqylq9G+z5Z8TYzN/dbamDTiWf92m6MnXXJkAivQ==
 
 react-helmet-async@^0.2.0:
   version "0.2.0"
