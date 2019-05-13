@@ -41,7 +41,7 @@ const App = () => {
 ReactDOM.render(<App />, document.getElementById('root'))
 ```
 
-To see more live examples of the component, browse the [storybook](TODO).
+To see more live examples of the component, browse the [storybook](//virtuoso.dev).
 
 ## Add a Footer
 
@@ -57,7 +57,7 @@ The property can be used to host a "load more" button or an indicator that the u
 />
 ```
 
-Check the [footer](TODO), [load more](TODO) and [endless scrolling](TODO) examples for practical applications of the footer.
+Check the [footer](//virtuoso.dev/?path=/story/features-overview--footer), [load more](//virtuoso.dev/?path=/story/scenarios--press-to-load-more) and [endless scrolling](//virtuoso.dev/?path=/story/scenarios--endless-scrolling) examples for practical applications of the footer.
 
 ### Pinned Items
 
@@ -67,7 +67,7 @@ The component accepts an optional `topItems` property, that specifies how many o
 <Virtuoso style={{ height: '500px', width: '500px' }} topItems={2} totalCount={100000} item={Item} />
 ```
 
-Check the [pinned items](TODO) example for a live version of the above.
+Check the [fixed top items](//virtuoso.dev/?path=/story/features-overview--fixed-top-items) example for a live version of the above.
 
 ## Tweaking Performance
 
@@ -81,7 +81,7 @@ In a nutshell, increasing the overscan causes less frequent re-renders, but make
 
 Loading images and displaying complex components while scrolling can cause hiccups and frame skips.
 To fix that, you can hook to the `scrollingStateChange` callback and replace the complex content in the item render prop with a simplified one.
-Check the [scroll handling example](TODO) for a possible implementation.
+Check the [scroll handling example](//virtuoso.dev/?path=/story/features-overview--scroll-handling) for a possible implementation.
 
 Finally, as a last resort, you can speed up things by hard-coding the size of the items using the `itemHeight` property.
 This will cause the component to stop measuring and observing the item sizes. Be careful doing that;
