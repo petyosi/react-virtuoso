@@ -23,6 +23,11 @@ const HundredThousandItems = () => {
           The prop render callback accepts <code>index</code> parameter, which specifies the absolute index of the item
           being rendered; It is up to you to build and return the respective content for it.
         </p>
+
+        <p>
+          For a detailed overview and usage instructions, check the{' '}
+          <a href="https://github.com/petyosi/react-virtuoso">Github README</a>.
+        </p>
       </ExampleInfo>
 
       <Virtuoso
