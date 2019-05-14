@@ -11,7 +11,7 @@
     "dist"
   ],
   "scripts": {
-    "buildstorybook": "build-storybook -o .out",
+    "buildstorybook": "build-storybook -o .out -s ./.storybook/static",
     "deploy-storybook": "rm -fr .out && npm run buildstorybook && echo 'virtuoso.dev' > '.out/CNAME' && storybook-to-ghpages --existing-output-dir=.out",
     "start": "tsdx watch",
     "build": "tsdx build",
