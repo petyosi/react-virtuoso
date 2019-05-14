@@ -1,8 +1,10 @@
-# React Virtuoso
+<div style="text-align: center">
+<img src="https://user-images.githubusercontent.com/13347/57673110-85aab180-7623-11e9-97b4-27bbdcf8cf40.png" width="193" />
+</div>
 
 [![npm version](https://badge.fury.io/js/react-virtuoso.svg)](https://badge.fury.io/js/react-virtuoso)
 
-React Virtuoso is a simple, easy to use React component made to render huge data lists. Out of the box, Virtuoso:
+**React Virtuoso** is a simple, easy to use React component made to render huge data lists. Out of the box, Virtuoso:
 
 - Handles gracefully variable sized items; no manual measurements or hard-coding of item heights;
 - Automatically handles content resizing;

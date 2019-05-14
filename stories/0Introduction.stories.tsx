@@ -45,4 +45,9 @@ const HundredThousandItems = () => {
   )
 }
 
-group.add('100 000 items', () => <HundredThousandItems />)
+group.add('100 000 items', () => <HundredThousandItems />, {
+  title: 'Custom title',
+  description: ' Sample desc',
+  name: 'foo',
+  options: {},
+})
