@@ -1,0 +1,11 @@
+<script>
+  var observer = new MutationObserver(function(mutations) {
+    if (document.title.match(/Storybook$/)) {
+      document.title = 'React Virtuoso - demos'
+    }
+  }).observe(document.querySelector('title'), {
+    childList: true,
+    subtree: true,
+    characterData: true,
+  })
+</script>
