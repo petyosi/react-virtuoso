@@ -1,6 +1,4 @@
-<div style="text-align: center">
-<img src="https://user-images.githubusercontent.com/13347/57673110-85aab180-7623-11e9-97b4-27bbdcf8cf40.png" width="193" />
-</div>
+!()[https://user-images.githubusercontent.com/13347/57673110-85aab180-7623-11e9-97b4-27bbdcf8cf40.png]
 
 [![npm version](https://badge.fury.io/js/react-virtuoso.svg)](https://badge.fury.io/js/react-virtuoso)
 
@@ -36,11 +34,7 @@ import { Virtuoso } from 'react-virtuoso'
 
 const App = () => {
   return (
-    <Virtuoso 
-      style={{ width: '200px', height: '400px' }} 
-      totalCount={200} 
-      item={index => <div>Item {index}</div>} 
-    />
+    <Virtuoso style={{ width: '200px', height: '400px' }} totalCount={200} item={index => <div>Item {index}</div>} />
   )
 }
 
@@ -67,11 +61,7 @@ Check the [footer](//virtuoso.dev/?path=/story/features-overview--footer), [load
 The component accepts an optional `topItems` property, that specifies how many of the items to keep "pinned" at the top of the list.
 
 ```jsx
-<Virtuoso 
-  style={{ height: '500px', width: '500px' }} 
-  topItems={2} 
-  totalCount={100000} item={Item} 
-/>
+<Virtuoso style={{ height: '500px', width: '500px' }} topItems={2} totalCount={100000} item={Item} />
 ```
 
 Check the [fixed top items](//virtuoso.dev/?path=/story/features-overview--fixed-top-items) example for a live version of the above.
