@@ -29,16 +29,20 @@ class NilNode {
     return this
   }
 
-  public find(): void {
+  public find(): undefined {
     return
   }
 
-  public findWith(): void {
+  public findWith(): undefined {
     return
   }
 
   public findMax(): number {
     return -Infinity
+  }
+
+  public findMaxValue(): undefined {
+    return
   }
 
   public insert<T>(key: number, value: T): NonNilNode<T> {
@@ -145,7 +149,7 @@ class NonNilNode<T> {
     return false
   }
 
-  public find(key: number): T | void {
+  public find(key: number): T | undefined {
     if (key === this.key) {
       return this.value
     } else if (key < this.key) {
@@ -155,7 +159,7 @@ class NonNilNode<T> {
     }
   }
 
-  public findWith(callback: FindCallback<T>): [number, T] | void {
+  public findWith(callback: FindCallback<T>): [number, T] | undefined {
     const result = callback(this.value)
 
     switch (result) {
@@ -185,6 +189,23 @@ class NonNilNode<T> {
     }
 
     return this.left.findMax(key)
+  }
+
+  public findMaxValue(key: number): T {
+    if (this.key === key) {
+      return this.value
+    }
+
+    if (this.key < key) {
+      const rightValue = this.right.findMaxValue(key)
+      if (rightValue === undefined) {
+        return this.value
+      } else {
+        return rightValue
+      }
+    }
+
+    return this.left.findMaxValue(key)!
   }
 
   public insert(key: number, value: T): NonNilNode<T> {
@@ -389,12 +410,19 @@ export class AATree<T> {
     this.root = root
   }
 
-  public find(key: number): T | void {
+  public find(key: number): T | undefined {
     return this.root.find(key)
   }
 
   public findMax(key: number): number {
     return this.root.findMax(key)
+  }
+
+  public findMaxValue(key: number): T {
+    if (this.empty()) {
+      throw new Error('Searching for max value in an empty tree')
+    }
+    return this.root.findMaxValue(key)!
   }
 
   public findWith(callback: FindCallback<T>): [number, T] | void {

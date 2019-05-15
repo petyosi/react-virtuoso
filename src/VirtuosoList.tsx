@@ -20,9 +20,9 @@ type TbuildSizes = (items: HTMLElement[]) => TItemSize[]
 
 interface TItemRendererParams {
   items: Item[]
-  transform: string
   render: (index: number) => ReactElement
   itemAttributes?: (item: Item) => { [key: string]: any }
+  getStyle: (index: number) => CSSProperties
 }
 
 const buildSizes: TbuildSizes = items => {
@@ -39,15 +39,10 @@ const buildSizes: TbuildSizes = items => {
   return results
 }
 
-const itemRenderer = ({ items, itemAttributes, transform, render }: TItemRendererParams) => {
-  const style: CSSProperties = {
-    transform,
-    zIndex: transform !== '' ? 2 : undefined,
-    position: transform !== '' ? 'relative' : undefined,
-  }
+const itemRenderer = ({ items, itemAttributes, render, getStyle }: TItemRendererParams) => {
   return items.map(item => {
     return (
-      <div key={item.index} {...itemAttributes && itemAttributes(item)} style={style}>
+      <div key={item.index} {...itemAttributes && itemAttributes(item)} style={getStyle(item.index)}>
         {render(item.index)}
       </div>
     )
@@ -55,9 +50,26 @@ const itemRenderer = ({ items, itemAttributes, transform, render }: TItemRendere
 }
 
 export const VirtuosoList: React.FC<ListObservables> = React.memo(({ list$, transform = '', item: itemRenderProp }) => {
-  const { itemHeights$ } = useContext(VirtuosoContext)!
+  const { stickyItems$, itemHeights$ } = useContext(VirtuosoContext)!
   const items = useObservable<Item[]>(list$, [])
   const itemRefs = useRef<HTMLElement[]>([])
+
+  const stickyItems = useObservable<number[]>(stickyItems$, [])
+
+  const getStyle = useCallback(
+    (index): CSSProperties => {
+      const pinned = stickyItems.some(stickyItemIndex => stickyItemIndex === index)
+
+      const style: CSSProperties = {
+        transform,
+        zIndex: pinned ? 2 : undefined,
+        position: pinned ? 'relative' : undefined,
+      }
+
+      return style
+    },
+    [stickyItems, transform]
+  )
 
   useLayoutEffect(() => {
     let observer = new ResizeObserver((entries: ResizeObserverEntry[]) => {
@@ -93,13 +105,29 @@ export const VirtuosoList: React.FC<ListObservables> = React.memo(({ list$, tran
     }
   }
 
-  return <>{itemRenderer({ items, transform, render: itemRenderProp, itemAttributes })}</>
+  return <>{itemRenderer({ items, render: itemRenderProp, itemAttributes, getStyle })}</>
 })
 
-export const VirtuosoFixedList: React.FC<ListObservables> = React.memo(
-  ({ list$, transform = '', item: itemRenderProp }) => {
-    const items = useObservable<Item[]>(list$, [])
+export const VirtuosoFixedList: React.FC<ListObservables> = React.memo(({ list$, item: itemRenderProp, transform }) => {
+  const items = useObservable<Item[]>(list$, [])
+  const { stickyItems$ } = useContext(VirtuosoContext)!
 
-    return <>{itemRenderer({ items, transform, render: itemRenderProp })}</>
-  }
-)
+  const stickyItems = useObservable<number[]>(stickyItems$, [])
+
+  const getStyle = useCallback(
+    (index): CSSProperties => {
+      const pinned = stickyItems.some(stickyItemIndex => stickyItemIndex === index)
+
+      const style: CSSProperties = {
+        transform,
+        zIndex: pinned ? 2 : undefined,
+        position: pinned ? 'relative' : undefined,
+      }
+
+      return style
+    },
+    [stickyItems, transform]
+  )
+
+  return <>{itemRenderer({ items, render: itemRenderProp, getStyle })}</>
+})

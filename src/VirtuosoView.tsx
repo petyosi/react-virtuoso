@@ -28,9 +28,8 @@ export const VirtuosoView: React.FC<{
   style: CSSProperties
   footer: (() => ReactElement) | undefined
   item: (index: number) => ReactElement
-  topItemCount: number
   fixedItemHeight: boolean
-}> = ({ style, footer, item, topItemCount, fixedItemHeight }) => {
+}> = ({ style, footer, item, fixedItemHeight }) => {
   const { listHeight$, viewportHeight$, listOffset$, list$, topList$ } = useContext(VirtuosoContext)!
 
   const listOffset = useObservable(listOffset$, 0)
@@ -49,13 +48,17 @@ export const VirtuosoView: React.FC<{
       <div style={viewportStyle} ref={viewportCallbackRef}>
         <div style={{ transform }}>
           <div ref={listCallbackRef}>
-            {topItemCount > 0 && <VirtuosoList list$={topList$} transform={topTransform} item={item} />}
             {fixedItemHeight ? (
-              <VirtuosoFixedList list$={list$} item={item} />
+              <>
+                <VirtuosoFixedList list$={topList$} transform={topTransform} item={item} />
+                <VirtuosoFixedList list$={list$} item={item} />
+              </>
             ) : (
-              <VirtuosoList list$={list$} item={item} />
+              <>
+                <VirtuosoList list$={topList$} transform={topTransform} item={item} />
+                <VirtuosoList list$={list$} item={item} />
+              </>
             )}
-
             {footer && <VirtuosoFooter footer={footer} />}
           </div>
         </div>

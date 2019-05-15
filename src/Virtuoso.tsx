@@ -24,6 +24,11 @@ interface VirtuosoProps {
   topItems?: number
 
   /**
+   * The sticky items indices
+   */
+  stickyItemsIndices?: number[]
+
+  /**
    * Content to be displayed at the bottom of the list
    */
   footer?: () => ReactElement
@@ -51,18 +56,12 @@ interface VirtuosoProps {
 }
 
 export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
-  public static defaultProps = {
-    topItems: 0,
-  }
-
   public constructor(props: VirtuosoProps) {
     super(props)
 
     this.state = VirtuosoStore(props)
 
-    if (props.endReached) {
-      this.state.endReached$.subscribe(props.endReached)
-    }
+    Virtuoso.getDerivedStateFromProps(this.props, this.state)
 
     if (props.scrollingStateChange) {
       this.state.isScrolling$.subscribe(props.scrollingStateChange)
@@ -70,6 +69,18 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
   }
 
   public static getDerivedStateFromProps(props: VirtuosoProps, state: VirtuosoState) {
+    if (props.endReached) {
+      state.endReached$.subscribe(props.endReached)
+    }
+
+    if (props.topItems) {
+      state.topItemCount$.next(props.topItems)
+    }
+
+    if (props.stickyItemsIndices) {
+      state.stickyItems$.next(props.stickyItemsIndices)
+    }
+
     state.totalCount$.next(props.totalCount)
     return null
   }
@@ -81,7 +92,6 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
           style={this.props.style || {}}
           item={this.props.item}
           footer={this.props.footer}
-          topItemCount={this.props.topItems!}
           fixedItemHeight={this.props.itemHeight !== undefined}
         />
       </VirtuosoContext.Provider>

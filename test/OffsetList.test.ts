@@ -2,10 +2,13 @@
 import { OffsetList } from '../src/OffsetList'
 import { AATree } from '../src/AATree'
 
+function toArray<T>(tree: AATree<T>): [number, T][] {
+  return tree.walk().map(({ key, value }) => [key, value])
+}
 describe('Offset List', () => {
   describe('range tree behavior', () => {
     function toArray<T>(tree: AATree<T>): [number, T][] {
-      return Array.from(tree.walk()).map(({ key, value }) => [key, value])
+      return tree.walk().map(({ key, value }) => [key, value])
     }
 
     it('starts with a default value and length', () => {
@@ -195,7 +198,7 @@ describe('Offset List', () => {
         .insert(0, 0, 10)
         .insert(2, 4, 20)
 
-      const yielded = Array.from(offsetList.range(13, 79))
+      const yielded = offsetList.range(13, 79)
 
       expect(yielded).toEqual([
         { index: 1, size: 10, offset: 10 },
@@ -212,7 +215,7 @@ describe('Offset List', () => {
         .insert(0, 0, 10)
         .insert(2, 4, 20)
 
-      const yielded = Array.from(offsetList.indexRange(0, 6))
+      const yielded = offsetList.indexRange(0, 6)
 
       expect(yielded).toEqual([
         { index: 0, size: 10, offset: NaN },
@@ -239,5 +242,24 @@ describe('Offset List', () => {
     expect(offsetList.offsetOf(5)).toEqual(80)
     expect(offsetList.offsetOf(6)).toEqual(90)
     expect(offsetList.offsetOf(7)).toEqual(100)
+  })
+
+  it('calculates correct range', () => {
+    const offsetList = OffsetList.create().insert(0, 0, 10)
+
+    const range = offsetList.range(25, 100, 4, 2000)
+    expect(range[0].offset).toEqual(40)
+  })
+})
+
+describe('Index List', () => {
+  it('is generated from the offset list', () => {
+    const offsetList = OffsetList.create()
+      .insert(0, 0, 10)
+      .insert(2, 4, 20)
+
+    const indexList = offsetList.getOffsets([0, 10, 100, 200, 300])
+
+    expect(toArray(indexList.tree)).toEqual([[0, 0], [130, 10], [1030, 100], [2030, 200], [3030, 300]])
   })
 })

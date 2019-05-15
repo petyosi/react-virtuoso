@@ -1,5 +1,15 @@
 import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs'
-import { auditTime, distinctUntilChanged, map, scan, withLatestFrom, debounceTime, mapTo, skip } from 'rxjs/operators'
+import {
+  auditTime,
+  distinctUntilChanged,
+  map,
+  scan,
+  withLatestFrom,
+  debounceTime,
+  mapTo,
+  skip,
+  filter,
+} from 'rxjs/operators'
 import { Item, OffsetList } from './OffsetList'
 
 export interface ItemHeight {
@@ -24,8 +34,9 @@ const listScanner: ListScanner = overscan => (
 
   const listBottom = listTop - scrollTop + listHeight - footerHeight - topListHeight
   const maxIndex = Math.max(totalCount - 1, 0)
+  const topIndexOutOfRange = items.length > 0 && items[0].index < minIndex
 
-  if (listBottom < viewportHeight) {
+  if (listBottom < viewportHeight || topIndexOutOfRange) {
     const startOffset = Math.max(scrollTop + topListHeight, topListHeight)
     const endOffset = scrollTop + viewportHeight + overscan * 2 - 1
     return offsetList.range(startOffset, endOffset, minIndex, maxIndex)
@@ -47,15 +58,15 @@ interface TVirtuosoConstructorParams {
   itemHeight?: number
 }
 
-const VirtuosoStore = ({ overscan = 0, totalCount, topItems = 0, itemHeight }: TVirtuosoConstructorParams) => {
+const VirtuosoStore = ({ overscan = 0, totalCount, itemHeight }: TVirtuosoConstructorParams) => {
   const viewportHeight$ = new BehaviorSubject(0)
   const listHeight$ = new BehaviorSubject(0)
   const scrollTop$ = new BehaviorSubject(0)
   const footerHeight$ = new BehaviorSubject(0)
   const itemHeights$ = new Subject<ItemHeight[]>()
   const totalCount$ = new BehaviorSubject(totalCount)
-  const topItemCount$ = new BehaviorSubject(topItems)
-  const stickyItems$ = new BehaviorSubject([])
+  const topItemCount$ = new Subject<number>()
+  const stickyItems$ = new BehaviorSubject<number[]>([])
   const isScrolling$ = new BehaviorSubject(false)
   let initialOffsetList = OffsetList.create()
 
@@ -80,17 +91,57 @@ const VirtuosoStore = ({ overscan = 0, totalCount, topItems = 0, itemHeight }: T
     map(([totalListHeight, footerHeight]) => totalListHeight + footerHeight)
   )
 
-  const topList$ = combineLatest(offsetList$, topItemCount$, totalCount$).pipe(
-    map(([offsetList, topItemCount, totalCount]) => {
-      const endIndex = Math.max(0, Math.min(topItemCount - 1, totalCount))
-      return offsetList.indexRange(0, endIndex)
+  const stickyItemsIndexList$ = combineLatest(offsetList$, stickyItems$).pipe(
+    map(([offsetList, stickyItems]) => {
+      return offsetList.getOffsets(stickyItems)
     })
   )
+
+  const topList$ = new BehaviorSubject<Item[]>([])
+
+  combineLatest(offsetList$, topItemCount$, totalCount$)
+    .pipe(
+      filter(params => params[1] > 0),
+      map(([offsetList, topItemCount, totalCount]) => {
+        const endIndex = Math.max(0, Math.min(topItemCount - 1, totalCount))
+        return offsetList.indexRange(0, endIndex)
+      })
+    )
+    .subscribe(topList$)
+
+  combineLatest(offsetList$, stickyItemsIndexList$, scrollTop$)
+    .pipe(
+      filter(params => !params[1].empty() && !params[0].empty()),
+      withLatestFrom(topList$),
+      map(([[offsetList, stickyItemsIndexList, scrollTop], topList]) => {
+        const currentStickyItem = stickyItemsIndexList.findMaxValue(scrollTop)
+
+        if (topList.length === 1 && topList[0].index === currentStickyItem) {
+          return topList
+        }
+
+        const item = offsetList.itemAt(currentStickyItem)
+        return [item]
+      }),
+      distinctUntilChanged()
+    )
+    .subscribe(topList$)
 
   const topListHeight$ = topList$.pipe(
     map(items => items.reduce((total, item) => total + item.size, 0)),
     distinctUntilChanged(),
     auditTime(0)
+  )
+
+  const minListIndex$ = topList$.pipe(
+    map(topList => {
+      if (topList.length === 0) {
+        return 0
+      }
+
+      return topList[topList.length - 1].index + 1
+    }),
+    distinctUntilChanged()
   )
 
   const list$: Observable<Item[]> = combineLatest(
@@ -99,7 +150,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount, topItems = 0, itemHeight }: T
     topListHeight$.pipe(distinctUntilChanged()),
     listHeight$.pipe(distinctUntilChanged()),
     footerHeight$.pipe(distinctUntilChanged()),
-    topItemCount$,
+    minListIndex$,
     totalCount$
   ).pipe(
     withLatestFrom(offsetList$),
@@ -141,6 +192,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount, topItems = 0, itemHeight }: T
     scrollTop$,
     viewportHeight$,
     stickyItems$,
+    topItemCount$,
     // output
     list$,
     listOffset$,
