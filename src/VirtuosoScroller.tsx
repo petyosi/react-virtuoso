@@ -6,6 +6,7 @@ const scrollerStyle: React.CSSProperties = {
   overflowY: 'auto',
   WebkitOverflowScrolling: 'touch',
   position: 'relative',
+  outline: 'none',
 }
 
 export const VirtuosoScroller: FC<{ style: CSSProperties }> = ({ children, style }) => {
@@ -22,7 +23,7 @@ export const VirtuosoScroller: FC<{ style: CSSProperties }> = ({ children, style
   }, [])
 
   return (
-    <div ref={ref} style={{ ...scrollerStyle, ...style }}>
+    <div ref={ref} style={{ ...scrollerStyle, ...style }} tabIndex={0}>
       {children}
     </div>
   )
