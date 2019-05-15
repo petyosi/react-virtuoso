@@ -225,4 +225,19 @@ describe('Offset List', () => {
       ])
     })
   })
+
+  it('calculates the offset of a given index', () => {
+    const offsetList = OffsetList.create()
+      .insert(0, 0, 10)
+      .insert(2, 4, 20)
+
+    expect(offsetList.offsetOf(0)).toEqual(0)
+    expect(offsetList.offsetOf(1)).toEqual(10)
+    expect(offsetList.offsetOf(2)).toEqual(20)
+    expect(offsetList.offsetOf(3)).toEqual(40)
+    expect(offsetList.offsetOf(4)).toEqual(60)
+    expect(offsetList.offsetOf(5)).toEqual(80)
+    expect(offsetList.offsetOf(6)).toEqual(90)
+    expect(offsetList.offsetOf(7)).toEqual(100)
+  })
 })

@@ -89,6 +89,22 @@ export class OffsetList {
     return tree === this.rangeTree ? this : new OffsetList(tree)
   }
 
+  public offsetOf(index: number): number {
+    const find = (value: OffsetValue) => {
+      if (value.startIndex > index) return -1
+      if (value.endIndex < index) return 1
+      return 0
+    }
+
+    const offsetRange = this.offsetTree.findWith(find)
+    if (offsetRange) {
+      const [offset, { startIndex, size }] = offsetRange
+      return offset + (index - startIndex) * size
+    } else {
+      throw new Error('Requested offset outside of the known ones')
+    }
+  }
+
   public indexRange(startIndex: number, endIndex: number): Item[] {
     if (endIndex === 0) {
       return []
@@ -165,3 +181,10 @@ export class OffsetList {
     return total
   }
 }
+
+/*
+export class IndexList {
+  public indexTree: AATree<Item>
+
+}
+*/

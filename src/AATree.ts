@@ -9,6 +9,8 @@ interface Range<T> {
   value: T
 }
 
+type FindCallback<T> = (value: T) => 1 | 0 | -1
+
 export type NodeIterator<T> = IterableIterator<NodeData<T>>
 export type RangeIterator<T> = IterableIterator<Range<T>>
 
@@ -28,6 +30,10 @@ class NilNode {
   }
 
   public find(): void {
+    return
+  }
+
+  public findWith(): void {
     return
   }
 
@@ -87,6 +93,12 @@ interface NodeConstructorArgs<T> {
   right?: Node<T>
 }
 
+class UnreachableCaseError extends Error {
+  constructor(val: never) {
+    super(`Unreachable case: ${val}`)
+  }
+}
+
 class NonNilNode<T> {
   public key: number
   public value: T
@@ -140,6 +152,21 @@ class NonNilNode<T> {
       return this.left.find(key)
     } else {
       return this.right.find(key)
+    }
+  }
+
+  public findWith(callback: FindCallback<T>): [number, T] | void {
+    const result = callback(this.value)
+
+    switch (result) {
+      case -1:
+        return this.left.findWith(callback)
+      case 0:
+        return [this.key, this.value]
+      case 1:
+        return this.right.findWith(callback)
+      default:
+        throw new UnreachableCaseError(result)
     }
   }
 
@@ -368,6 +395,10 @@ export class AATree<T> {
 
   public findMax(key: number): number {
     return this.root.findMax(key)
+  }
+
+  public findWith(callback: FindCallback<T>): [number, T] | void {
+    return this.root.findWith(callback)
   }
 
   public insert(key: number, value: T): AATree<T> {

@@ -55,6 +55,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount, topItems = 0, itemHeight }: T
   const itemHeights$ = new Subject<ItemHeight[]>()
   const totalCount$ = new BehaviorSubject(totalCount)
   const topItemCount$ = new BehaviorSubject(topItems)
+  const stickyItems$ = new BehaviorSubject([])
   const isScrolling$ = new BehaviorSubject(false)
   let initialOffsetList = OffsetList.create()
 
@@ -139,6 +140,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount, topItems = 0, itemHeight }: T
     listHeight$,
     scrollTop$,
     viewportHeight$,
+    stickyItems$,
     // output
     list$,
     listOffset$,
