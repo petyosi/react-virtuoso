@@ -22,6 +22,27 @@ const Item = (index: number) => {
   )
 }
 
+// Sticky Items
+
+const StickyItems = () => {
+  return (
+    <>
+      <ExampleInfo>
+        <ExampleTitle />
+      </ExampleInfo>
+
+      <Virtuoso
+        style={{ height: '500px', width: '500px' }}
+        stickyItemsIndices={[0, 10, 20, 100, 200, 1000]}
+        totalCount={2000}
+        item={Item}
+      />
+    </>
+  )
+}
+
+group.add('Sticky Items', () => <StickyItems />)
+
 // Pinned Top Items
 
 const TopItems = () => {
