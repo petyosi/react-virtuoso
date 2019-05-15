@@ -14,7 +14,6 @@ addDecorator(addReadme)
 addParameters({
   options: {
     theme: virtuoso,
-    name: 'Virtuoso',
     enableShortcuts: false,
     panelPosition: 'right',
   },
