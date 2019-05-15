@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Virtuoso } from '../src/Virtuoso'
-import { getUser } from './FakeData'
-import { ExampleListItem, ExampleAvatar, ExampleUserInfo } from './ExampleComponents'
+import { getUser, generateGroupedUsers } from './FakeData'
+import { ExampleListItem, ExampleAvatar, ExampleUserInfo, ExampleGroup } from './ExampleComponents'
 import { storiesOf } from '@storybook/react'
 import { ExampleInfo, ExampleTitle } from './ExampleInfo'
 
@@ -25,6 +25,7 @@ const Item = (index: number) => {
 // Sticky Items
 
 const StickyItems = () => {
+  const { groupIndices, usersWithGroups } = generateGroupedUsers()
   return (
     <>
       <ExampleInfo>
@@ -33,9 +34,25 @@ const StickyItems = () => {
 
       <Virtuoso
         style={{ height: '500px', width: '500px' }}
-        stickyItemsIndices={[0, 10, 20, 100, 200, 1000]}
-        totalCount={2000}
-        item={Item}
+        stickyItemsIndices={groupIndices}
+        totalCount={usersWithGroups.length}
+        item={index => {
+          const record = usersWithGroups[index]
+          if (record.type === 'group') {
+            return <ExampleGroup>{record.letter}</ExampleGroup>
+          } else {
+            const user = record.user
+            const title = `${index + 1}. ${user.name}`
+            return (
+              <ExampleListItem even={index % 2 === 0}>
+                <ExampleAvatar style={{ color: user.fgColor, backgroundColor: user.bgColor }}>
+                  {user.initials}
+                </ExampleAvatar>
+                <ExampleUserInfo title={title}>{user.description}</ExampleUserInfo>
+              </ExampleListItem>
+            )
+          }
+        }}
       />
     </>
   )

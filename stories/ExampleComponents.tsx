@@ -29,6 +29,15 @@ export const ExampleListItem = styled.div<{
   color: #333;
 `
 
+export const ExampleGroup = styled.div`
+  background-color: rgba(200, 200, 200, 0.8);
+  color: #333;
+  font-family: sans-serif;
+  font-size: 12px;
+  padding: 1rem;
+  font-weight: bold;
+`
+
 export const ExampleUserInfo: FC<{ title: string }> = ({ title, children }) => {
   return (
     <div style={{ marginLeft: '1rem' }}>

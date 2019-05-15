@@ -10,6 +10,16 @@ export interface TUser {
   avatar: string
 }
 
+interface TGroupRecord {
+  type: 'group'
+  letter: string
+}
+
+interface TUserRecord {
+  type: 'user'
+  user: TUser
+}
+
 const generated: TUser[] = []
 
 export const getUser = (index: number): TUser => {
@@ -27,4 +37,49 @@ export const getUser = (index: number): TUser => {
     }
   }
   return generated[index]
+}
+
+export const generateGroupedUsers = () => {
+  const users: TUser[] = []
+  for (let i = 0, max = 200; i < max; i++) {
+    users.push(getUser(i))
+  }
+
+  users.sort((a, b) => {
+    if (a.name < b.name) {
+      return -1
+    }
+    if (a.name > b.name) {
+      return 1
+    }
+    return 0
+  })
+
+  const usersWithGroups: (TGroupRecord | TUserRecord)[] = []
+  const groupIndices: number[] = []
+
+  let currentFirstLetter = ''
+
+  let i = 0
+  for (var user of users) {
+    const firstLetter = user.name[0]
+
+    if (firstLetter !== currentFirstLetter) {
+      usersWithGroups.push({
+        type: 'group',
+        letter: firstLetter,
+      })
+      currentFirstLetter = firstLetter
+      groupIndices.push(i)
+      i++
+    }
+
+    usersWithGroups.push({ type: 'user', user: user })
+    i++
+  }
+
+  return {
+    usersWithGroups,
+    groupIndices,
+  }
 }
