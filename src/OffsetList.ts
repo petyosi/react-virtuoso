@@ -80,7 +80,7 @@ export class OffsetList {
 
       // next range
       if (rangeEnd > end && end >= rangeStart) {
-        if (rangeValue !== size) {
+        if (rangeValue !== size && !isNaN(rangeValue)) {
           tree = tree.insert(end + 1, rangeValue)
         }
       }
@@ -91,6 +91,14 @@ export class OffsetList {
     }
 
     return tree === this.rangeTree ? this : new OffsetList(tree)
+  }
+
+  public insertException(index: number, value: number): OffsetList {
+    if (this.empty()) {
+      return new OffsetList(this.rangeTree.insert(1, NaN).insert(index, value))
+    } else {
+      return this.insert(index, index, value)
+    }
   }
 
   public offsetOf(index: number): number {
@@ -151,6 +159,11 @@ export class OffsetList {
     }
 
     const ranges = this.offsetTree.rangesWithin(startOffset, endOffset)
+
+    if (ranges.length === 1 && isNaN(ranges[0].value.size)) {
+      return [{ index: 1, size: 0, offset: ranges[0].start }]
+    }
+
     const result: Item[] = []
 
     for (let {

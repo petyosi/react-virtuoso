@@ -70,6 +70,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
   const topItemCount$ = new Subject<number>()
   const isScrolling$ = new BehaviorSubject(false)
   let initialOffsetList = OffsetList.create()
+  const stickyItems$ = new BehaviorSubject<number[]>([])
 
   if (itemHeight) {
     initialOffsetList = initialOffsetList.insert(0, 0, itemHeight)
@@ -78,8 +79,14 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
   const offsetList$ = new BehaviorSubject(initialOffsetList)
 
   if (!itemHeight) {
-    itemHeights$.pipe(withLatestFrom(offsetList$)).subscribe(([heights, offsetList]) => {
-      const newList = heights.reduce((list, { start, end, size }) => list.insert(start, end, size), offsetList)
+    itemHeights$.pipe(withLatestFrom(offsetList$, stickyItems$)).subscribe(([heights, offsetList, stickyItems]) => {
+      const newList = heights.reduce((list, { start, end, size }) => {
+        if (start === end && stickyItems.indexOf(start) > -1) {
+          return list.insertException(start, size)
+        }
+
+        return list.insert(start, end, size)
+      }, offsetList)
       if (newList !== offsetList) {
         offsetList$.next(newList)
       }
@@ -87,8 +94,6 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
   }
 
   let transposer: GroupIndexTransposer | null = null
-
-  const stickyItems$ = new Subject<number[]>()
 
   groupCounts$.subscribe(counts => {
     transposer = new GroupIndexTransposer(counts)

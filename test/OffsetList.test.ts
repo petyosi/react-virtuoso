@@ -22,6 +22,19 @@ describe('Offset List', () => {
       expect(toArray(list.rangeTree)).toEqual([[0, 5]])
     })
 
+    it('supports exceptions', () => {
+      let list = OffsetList.create()
+      list = list.insertException(0, 5)
+      expect(toArray(list.rangeTree)).toEqual([[0, 5], [1, NaN]])
+    })
+
+    it('removes NaNs', () => {
+      let list = OffsetList.create()
+        .insertException(0, 5)
+        .insert(1, 3, 50)
+      expect(toArray(list.rangeTree)).toEqual([[0, 5], [1, 50]])
+    })
+
     describe('value insertion', () => {
       it('does not alter the list if the value is the same as the existing range', () => {
         const firstList = OffsetList.create().insert(0, 0, 5)
