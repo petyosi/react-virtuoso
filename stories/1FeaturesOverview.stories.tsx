@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { Virtuoso } from '../src/Virtuoso'
-import { getUser, generateGroupedUsers } from './FakeData'
+import { Virtuoso, GroupedVirtuoso } from '../src/index'
+import { getUser, generateGroupedUsers, TUser } from './FakeData'
 import { ExampleListItem, ExampleAvatar, ExampleUserInfo, ExampleGroup } from './ExampleComponents'
 import { storiesOf } from '@storybook/react'
 import { ExampleInfo, ExampleTitle } from './ExampleInfo'
@@ -11,8 +11,7 @@ const group = storiesOf('Features Overview', module)
 // the ExampleListItem, ExampleAvatar and ExampleUserInfo are simple wrappers around styled divs and spans -
 // you don't need those in your implementation
 
-const Item = (index: number) => {
-  const user = getUser(index)
+const UserItem: React.FC<{ user: TUser; index: number }> = ({ user, index }) => {
   const title = `${index + 1}. ${user.name}`
   return (
     <ExampleListItem even={index % 2 === 0}>
@@ -22,43 +21,34 @@ const Item = (index: number) => {
   )
 }
 
-// Sticky Items
+const GenerateItem = (index: number) => {
+  return <UserItem user={getUser(index)} index={index} />
+}
 
-const StickyItems = () => {
-  const { groupIndices, usersWithGroups } = generateGroupedUsers()
+const GroupedItems = () => {
+  const { users, groups, groupCounts } = generateGroupedUsers(500)
+
   return (
     <>
       <ExampleInfo>
         <ExampleTitle />
       </ExampleInfo>
 
-      <Virtuoso
+      <GroupedVirtuoso
         style={{ height: '500px', width: '500px' }}
-        stickyItemsIndices={groupIndices}
-        totalCount={usersWithGroups.length}
+        groupCounts={groupCounts}
+        group={index => {
+          return <ExampleGroup>{groups[index]}</ExampleGroup>
+        }}
         item={index => {
-          const record = usersWithGroups[index]
-          if (record.type === 'group') {
-            return <ExampleGroup>{record.letter}</ExampleGroup>
-          } else {
-            const user = record.user
-            const title = `${index + 1}. ${user.name}`
-            return (
-              <ExampleListItem even={index % 2 === 0}>
-                <ExampleAvatar style={{ color: user.fgColor, backgroundColor: user.bgColor }}>
-                  {user.initials}
-                </ExampleAvatar>
-                <ExampleUserInfo title={title}>{user.description}</ExampleUserInfo>
-              </ExampleListItem>
-            )
-          }
+          return <UserItem user={users[index]} index={index} />
         }}
       />
     </>
   )
 }
 
-group.add('Sticky Items', () => <StickyItems />)
+group.add('Grouped Items', () => <GroupedItems />)
 
 // Pinned Top Items
 
@@ -74,7 +64,7 @@ const TopItems = () => {
         <p>Scroll the list below - the first two items remain fixed and always visible.</p>
       </ExampleInfo>
 
-      <Virtuoso style={{ height: '500px', width: '500px' }} topItems={2} totalCount={100000} item={Item} />
+      <Virtuoso style={{ height: '500px', width: '500px' }} topItems={2} totalCount={100000} item={GenerateItem} />
     </>
   )
 }
@@ -100,7 +90,7 @@ const ListWithFooter = () => {
       <Virtuoso
         style={{ height: '300px', width: '500px' }}
         totalCount={100}
-        item={Item}
+        item={GenerateItem}
         footer={() => <div style={{ padding: '1rem', textAlign: 'center' }}>-- end reached --</div>}
       />
     </>

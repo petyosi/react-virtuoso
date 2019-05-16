@@ -120,13 +120,25 @@ describe('Virtuoso Store', () => {
     itemHeights$.next([{ start: 0, end: 0, size: 50 }])
   })
 
-  it('picks the sticky items', done => {
-    const { topList$, stickyItems$, itemHeights$, viewportHeight$, list$ } = VirtuosoStore({
+  it('calculates the total count from given groups count', () => {
+    const { groupCounts$, totalCount$ } = VirtuosoStore({
       overscan: 0,
-      totalCount: 100,
     })
 
-    stickyItems$.next([0, 10, 100])
+    groupCounts$.next([10, 10, 10, 10])
+    const subscription = totalCount$.subscribe(val => expect(val).toEqual(44))
+    subscription.unsubscribe()
+
+    groupCounts$.next([10, 10, 10, 10, 10, 10])
+    totalCount$.subscribe(val => expect(val).toEqual(66))
+  })
+
+  it('picks the sticky items', done => {
+    const { topList$, groupCounts$, itemHeights$, viewportHeight$, list$ } = VirtuosoStore({
+      overscan: 0,
+    })
+
+    groupCounts$.next([10, 90, 100])
     viewportHeight$.next(250)
     itemHeights$.next([{ start: 0, end: 0, size: 50 }])
 
@@ -143,19 +155,19 @@ describe('Virtuoso Store', () => {
   })
 
   it('selects the closest sticky item', done => {
-    const { topList$, stickyItems$, scrollTop$, itemHeights$, viewportHeight$ } = VirtuosoStore({
+    const { topList$, groupCounts$, scrollTop$, itemHeights$, viewportHeight$ } = VirtuosoStore({
       overscan: 0,
       totalCount: 100,
     })
 
-    stickyItems$.next([0, 10, 100])
+    groupCounts$.next([10, 90, 100])
     viewportHeight$.next(250)
     itemHeights$.next([{ start: 0, end: 0, size: 50 }])
     scrollTop$.next(2000) // should scroll past the first item, into the second
 
     topList$.subscribe(topItems => {
       expect(topItems).toHaveLength(1)
-      expect(topItems[0]).toEqual({ index: 10, size: 50, offset: NaN })
+      expect(topItems[0]).toEqual({ index: 11, size: 50, offset: NaN })
       done()
     })
   })

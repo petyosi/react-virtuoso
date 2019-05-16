@@ -1,102 +1,81 @@
-import React, { ReactElement, PureComponent, CSSProperties } from 'react'
-import { VirtuosoStore } from './VirtuosoStore'
+import React, { CSSProperties, PureComponent, ReactElement, FC } from 'react'
 import { VirtuosoContext } from './VirtuosoContext'
+import { VirtuosoStore } from './VirtuosoStore'
 import { VirtuosoView } from './VirtuosoView'
+import { Subscription } from 'rxjs'
 
 export type VirtuosoState = ReturnType<typeof VirtuosoStore>
 
-interface VirtuosoProps {
-  /**
-   * The total amount of items to project
-   */
+export interface VirtuosoProps {
   totalCount: number
-
-  /**
-   * The amount in (pixels) to add in addition to the screen size
-   * @default 0
-   */
   overscan?: number
-
-  /**
-   * The amount of items to pin at the top of the scroll
-   * @default 0
-   */
   topItems?: number
-
-  /**
-   * The sticky items indices
-   */
-  stickyItemsIndices?: number[]
-
-  /**
-   * Content to be displayed at the bottom of the list
-   */
   footer?: () => ReactElement
-
-  /**
-   * Item renderer prop - accepts the item index. To increase performance, use React.memo for the child contents.
-   */
   item: (index: number) => ReactElement
-
-  /**
-   * Optional, use for performance boost. Sets the height of the each item to a fixed amount,
-   * causing the list to skip the measurement operations.
-   * Use this only if you are certain that the items will stay the same size regardless of their content, the screen size, etc.
-   * Notice: If you don't get that right, the items won't overlap each other, but the list may not render fully
-   * or the total scroll size might be wrong, causing some items to be hidden.
-   * @default undefined
-   */
   itemHeight?: number
-
   endReached?: (index: number) => void
-
   scrollingStateChange?: (isScrolling: boolean) => void
-
   style?: CSSProperties
+}
+
+interface TVirtuosoPresentationProps {
+  contextValue: VirtuosoState
+  item: (index: number) => ReactElement
+  footer?: () => ReactElement
+  style?: CSSProperties
+  itemHeight?: number
+}
+
+export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
+  contextValue,
+  style,
+  item,
+  footer,
+  itemHeight,
+}) => {
+  return (
+    <VirtuosoContext.Provider value={contextValue}>
+      <VirtuosoView style={style || {}} item={item} footer={footer} fixedItemHeight={itemHeight !== undefined} />
+    </VirtuosoContext.Provider>
+  )
 }
 
 export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
   public constructor(props: VirtuosoProps) {
     super(props)
-
-    this.state = VirtuosoStore(props)
-
-    Virtuoso.getDerivedStateFromProps(this.props, this.state)
-
-    if (props.scrollingStateChange) {
-      this.state.isScrolling$.subscribe(props.scrollingStateChange)
-    }
+    this.state = Virtuoso.getDerivedStateFromProps(this.props, VirtuosoStore(props))
   }
 
   public static getDerivedStateFromProps(props: VirtuosoProps, state: VirtuosoState) {
+    state.subscriptions.unsubscribe()
+
+    const nextSubscriptions = new Subscription()
+
     if (props.endReached) {
-      state.endReached$.subscribe(props.endReached)
+      nextSubscriptions.add(state.endReached$.subscribe(props.endReached))
+    }
+
+    if (props.scrollingStateChange) {
+      nextSubscriptions.add(state.isScrolling$.subscribe(props.scrollingStateChange))
     }
 
     if (props.topItems) {
       state.topItemCount$.next(props.topItems)
     }
 
-    if (props.stickyItemsIndices) {
-      state.stickyItems$.next(props.stickyItemsIndices)
-    }
-
     state.totalCount$.next(props.totalCount)
-    return null
+    return { ...state, subscriptions: nextSubscriptions }
   }
 
   public render() {
     return (
-      <VirtuosoContext.Provider value={this.state}>
-        <VirtuosoView
-          style={this.props.style || {}}
-          item={this.props.item}
-          footer={this.props.footer}
-          fixedItemHeight={this.props.itemHeight !== undefined}
-        />
-      </VirtuosoContext.Provider>
+      <VirtuosoPresentation
+        contextValue={this.state}
+        style={this.props.style}
+        item={this.props.item}
+        footer={this.props.footer}
+        itemHeight={this.props.itemHeight}
+      />
     )
   }
 }
-
-export default Virtuoso

@@ -1,4 +1,5 @@
 import faker from 'faker'
+import { groupBy } from 'lodash'
 
 export interface TUser {
   name: string
@@ -8,16 +9,6 @@ export interface TUser {
   fgColor: string
   longText: string
   avatar: string
-}
-
-interface TGroupRecord {
-  type: 'group'
-  letter: string
-}
-
-interface TUserRecord {
-  type: 'user'
-  user: TUser
 }
 
 const generated: TUser[] = []
@@ -39,9 +30,9 @@ export const getUser = (index: number): TUser => {
   return generated[index]
 }
 
-export const generateGroupedUsers = () => {
+export const generateGroupedUsers = (max: number) => {
   const users: TUser[] = []
-  for (let i = 0, max = 200; i < max; i++) {
+  for (let i = 0; i < max; i++) {
     users.push(getUser(i))
   }
 
@@ -55,31 +46,9 @@ export const generateGroupedUsers = () => {
     return 0
   })
 
-  const usersWithGroups: (TGroupRecord | TUserRecord)[] = []
-  const groupIndices: number[] = []
+  const groupedUsers = groupBy(users, user => user.name[0])
+  const groupCounts = Object.values(groupedUsers).map(users => users.length)
+  const groups = Object.keys(groupedUsers)
 
-  let currentFirstLetter = ''
-
-  let i = 0
-  for (var user of users) {
-    const firstLetter = user.name[0]
-
-    if (firstLetter !== currentFirstLetter) {
-      usersWithGroups.push({
-        type: 'group',
-        letter: firstLetter,
-      })
-      currentFirstLetter = firstLetter
-      groupIndices.push(i)
-      i++
-    }
-
-    usersWithGroups.push({ type: 'user', user: user })
-    i++
-  }
-
-  return {
-    usersWithGroups,
-    groupIndices,
-  }
+  return { users, groupCounts, groups }
 }

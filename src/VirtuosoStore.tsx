@@ -1,4 +1,4 @@
-import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs'
+import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs'
 import {
   auditTime,
   distinctUntilChanged,
@@ -11,6 +11,7 @@ import {
   filter,
 } from 'rxjs/operators'
 import { Item, OffsetList } from './OffsetList'
+import { GroupIndexTransposer } from './GroupIndexTransposer'
 
 export interface ItemHeight {
   start: number
@@ -53,20 +54,20 @@ const listScanner: ListScanner = overscan => (
 
 interface TVirtuosoConstructorParams {
   overscan?: number
-  totalCount: number
+  totalCount?: number
   topItems?: number
   itemHeight?: number
 }
 
-const VirtuosoStore = ({ overscan = 0, totalCount, itemHeight }: TVirtuosoConstructorParams) => {
+const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoConstructorParams) => {
   const viewportHeight$ = new BehaviorSubject(0)
   const listHeight$ = new BehaviorSubject(0)
   const scrollTop$ = new BehaviorSubject(0)
   const footerHeight$ = new BehaviorSubject(0)
   const itemHeights$ = new Subject<ItemHeight[]>()
   const totalCount$ = new BehaviorSubject(totalCount)
+  const groupCounts$ = new Subject<number[]>()
   const topItemCount$ = new Subject<number>()
-  const stickyItems$ = new BehaviorSubject<number[]>([])
   const isScrolling$ = new BehaviorSubject(false)
   let initialOffsetList = OffsetList.create()
 
@@ -83,6 +84,20 @@ const VirtuosoStore = ({ overscan = 0, totalCount, itemHeight }: TVirtuosoConstr
         offsetList$.next(newList)
       }
     })
+  }
+
+  let transposer: GroupIndexTransposer | null = null
+
+  const stickyItems$ = new Subject<number[]>()
+
+  groupCounts$.subscribe(counts => {
+    transposer = new GroupIndexTransposer(counts)
+    totalCount$.next(transposer.totalCount())
+    stickyItems$.next(transposer.groupIndices())
+  })
+
+  const groupIndexTranspose = (index: number) => {
+    return transposer!.transpose(index)
   }
 
   const totalListHeight$ = combineLatest(offsetList$, totalCount$).pipe(map(mapToTotal))
@@ -183,6 +198,8 @@ const VirtuosoStore = ({ overscan = 0, totalCount, itemHeight }: TVirtuosoConstr
     )
     .subscribe(isScrolling$)
 
+  const subscriptions: Subscription = new Subscription()
+
   return {
     // input
     totalCount$,
@@ -191,8 +208,10 @@ const VirtuosoStore = ({ overscan = 0, totalCount, itemHeight }: TVirtuosoConstr
     listHeight$,
     scrollTop$,
     viewportHeight$,
-    stickyItems$,
     topItemCount$,
+    groupCounts$,
+    groupIndexTranspose,
+
     // output
     list$,
     listOffset$,
@@ -200,6 +219,8 @@ const VirtuosoStore = ({ overscan = 0, totalCount, itemHeight }: TVirtuosoConstr
     topList$,
     endReached$,
     isScrolling$,
+    subscriptions,
+    stickyItems$,
   }
 }
 
