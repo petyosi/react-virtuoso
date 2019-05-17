@@ -160,10 +160,6 @@ export class OffsetList {
 
     const ranges = this.offsetTree.rangesWithin(startOffset, endOffset)
 
-    if (ranges.length === 1 && isNaN(ranges[0].value.size)) {
-      return [{ index: 1, size: 0, offset: ranges[0].start }]
-    }
-
     const result: Item[] = []
 
     for (let {
@@ -181,6 +177,12 @@ export class OffsetList {
       if (startIndex < minIndex) {
         offset += (minIndex - startIndex) * size
         startIndex = minIndex
+      }
+
+      // we don't know the size of this range - terminate with a probe item
+      if (isNaN(size)) {
+        result.push({ index: startIndex, size: 0, offset })
+        return result
       }
 
       endIndex = Math.min(endIndex, maxIndex)
