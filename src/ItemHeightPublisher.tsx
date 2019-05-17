@@ -1,16 +1,16 @@
 import { CallbackRefParam } from './Utils'
 import { Item } from './OffsetList'
 import ResizeObserver from 'resize-observer-polyfill'
-import { Subject } from 'rxjs'
 import { ItemHeight } from 'VirtuosoStore'
+import { TInput } from 'rxio'
 
 export class ItemHeightPublisher {
-  private itemHeights$: Subject<ItemHeight[]>
+  private itemHeights: TInput<ItemHeight[]>
   private itemElements: HTMLElement[] = []
   public observer?: ResizeObserver
 
-  public constructor(itemHeights$: Subject<ItemHeight[]>) {
-    this.itemHeights$ = itemHeights$
+  public constructor(itemHeights: TInput<ItemHeight[]>) {
+    this.itemHeights = itemHeights
   }
 
   private publishSizes(items: HTMLElement[]) {
@@ -24,7 +24,7 @@ export class ItemHeightPublisher {
         results[results.length - 1].end++
       }
     }
-    this.itemHeights$.next(results)
+    this.itemHeights(results)
   }
 
   public init() {

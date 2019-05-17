@@ -30,7 +30,7 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
       nextSubscriptions.add(state.isScrolling$.subscribe(props.scrollingStateChange))
     }
 
-    state.groupCounts$.next(props.groupCounts)
+    state.groupCounts(props.groupCounts)
 
     return { ...state, subscriptions: nextSubscriptions }
   }

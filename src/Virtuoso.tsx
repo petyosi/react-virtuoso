@@ -62,10 +62,10 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     }
 
     if (props.topItems) {
-      state.topItemCount$.next(props.topItems)
+      state.topItemCount(props.topItems)
     }
 
-    state.totalCount$.next(props.totalCount)
+    state.totalCount(props.totalCount)
     return { ...state, subscriptions: nextSubscriptions }
   }
 

@@ -12,6 +12,7 @@ import {
 } from 'rxjs/operators'
 import { OffsetList } from './OffsetList'
 import { StubIndexTransposer, GroupIndexTransposer, ListItem } from './GroupIndexTransposer'
+import { makeInput } from './rxio'
 
 export interface ItemHeight {
   start: number
@@ -199,14 +200,14 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
 
   return {
     // input
-    totalCount$,
-    footerHeight$,
-    itemHeights$,
-    listHeight$,
-    scrollTop$,
-    viewportHeight$,
-    topItemCount$,
-    groupCounts$,
+    groupCounts: makeInput(groupCounts$),
+    itemHeights: makeInput(itemHeights$),
+    footerHeight: makeInput(footerHeight$),
+    listHeight: makeInput(listHeight$),
+    viewportHeight: makeInput(viewportHeight$),
+    scrollTop: makeInput(scrollTop$),
+    topItemCount: makeInput(topItemCount$),
+    totalCount: makeInput(totalCount$),
 
     // output
     list$,

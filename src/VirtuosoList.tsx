@@ -37,8 +37,8 @@ const itemRenderer = ({ items, itemAttributes, render, getStyle }: TItemRenderer
 }
 
 const VirtuosoVariableList: React.FC<TInnerListProps> = React.memo(({ items, render, getStyle }) => {
-  const { itemHeights$ } = useContext(VirtuosoContext)!
-  const heightPublisher = useRef(new ItemHeightPublisher(itemHeights$))
+  const { itemHeights } = useContext(VirtuosoContext)!
+  const heightPublisher = useRef(new ItemHeightPublisher(itemHeights))
 
   useLayoutEffect(() => {
     heightPublisher.current.init()

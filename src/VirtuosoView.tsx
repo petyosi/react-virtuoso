@@ -11,7 +11,7 @@ const VirtuosoFiller: FC<{}> = () => {
 }
 
 const VirtuosoFooter: FC<{ footer: () => ReactElement }> = ({ footer }) => {
-  const footerCallbackRef = useHeight(useContext(VirtuosoContext)!.footerHeight$)
+  const footerCallbackRef = useHeight(useContext(VirtuosoContext)!.footerHeight)
 
   return <footer ref={footerCallbackRef}>{footer()}</footer>
 }
@@ -30,11 +30,11 @@ export const VirtuosoView: React.FC<{
   item: TRender
   fixedItemHeight: boolean
 }> = ({ style, footer, item, fixedItemHeight }) => {
-  const { listHeight$, viewportHeight$, listOffset$, list$, topList$ } = useContext(VirtuosoContext)!
+  const { listHeight, viewportHeight, listOffset$, list$, topList$ } = useContext(VirtuosoContext)!
 
   const listOffset = useObservable(listOffset$, 0)
-  const listCallbackRef = useHeight(listHeight$)
-  const viewportCallbackRef = useHeight(viewportHeight$, ref => {
+  const listCallbackRef = useHeight(listHeight)
+  const viewportCallbackRef = useHeight(viewportHeight, ref => {
     if (ref!.style.position === '') {
       ref!.style.position = '-webkit-sticky'
     }
