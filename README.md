@@ -106,7 +106,7 @@ return (
 ```
 
 Check the 
-[grouped numbers](//virtuoso.dev/?path=/story/grouping--grouped-load-on-demand), 
+[grouped numbers](//virtuoso.dev/?path=/story/grouping--grouped-numbers), 
 [grouped by first letter](//virtuoso.dev/?path=/story/grouping--grouped-by-first-letter) and 
 [groups with load on demand](//virtuoso.dev/?path=/story/grouping--groups-with-load-on-demand) 
 examples for working examples. 
