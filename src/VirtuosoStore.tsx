@@ -151,11 +151,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
 
   const minListIndex$ = topList$.pipe(
     map(topList => {
-      if (topList.length === 0) {
-        return 0
-      }
-
-      return topList[topList.length - 1].index + 1
+      return topList.length && topList[topList.length - 1].index + 1
     }),
     distinctUntilChanged()
   )
