@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { Virtuoso, GroupedVirtuoso } from '../src/index'
-import { getUser, generateGroupedUsers, TUser } from './FakeData'
-import { ExampleListItem, ExampleAvatar, ExampleUserInfo, ExampleGroup } from './ExampleComponents'
+import { Virtuoso } from '../src/index'
+import { getUser, TUser } from './FakeData'
+import { ExampleListItem, ExampleAvatar, ExampleUserInfo } from './ExampleComponents'
 import { storiesOf } from '@storybook/react'
 import { ExampleInfo, ExampleTitle } from './ExampleInfo'
 
@@ -25,32 +25,7 @@ const GenerateItem = (index: number) => {
   return <UserItem user={getUser(index)} index={index} />
 }
 
-const GroupedItems = () => {
-  const { users, groups, groupCounts } = generateGroupedUsers(500)
-
-  return (
-    <>
-      <ExampleInfo>
-        <ExampleTitle />
-      </ExampleInfo>
-
-      <GroupedVirtuoso
-        style={{ height: '500px', width: '500px' }}
-        groupCounts={groupCounts}
-        group={index => {
-          return <ExampleGroup>{groups[index]}</ExampleGroup>
-        }}
-        item={index => {
-          return <UserItem user={users[index]} index={index} />
-        }}
-      />
-    </>
-  )
-}
-
-group.add('Grouped Items', () => <GroupedItems />)
-
-// Pinned Top Items
+// Fixed Top Items
 
 const TopItems = () => {
   return (
