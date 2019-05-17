@@ -171,6 +171,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
   ).pipe(
     withLatestFrom(offsetList$),
     scan(listScanner(overscan), []),
+    auditTime(0),
     distinctUntilChanged()
   )
 
