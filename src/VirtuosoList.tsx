@@ -4,33 +4,33 @@ import { VirtuosoState } from './Virtuoso'
 import { VirtuosoContext } from './VirtuosoContext'
 import { Item } from './OffsetList'
 import { ItemHeightPublisher } from './ItemHeightPublisher'
+import { ListItem } from './GroupIndexTransposer'
+
+export type TRender = (item: ListItem) => ReactElement
+type TItemAttributes = (item: Item) => { [key: string]: any }
+type TGetStyle = (index: number) => CSSProperties
 
 type TListProps = Pick<VirtuosoState, 'list$'> & {
-  transform?: string
-  render: (index: number) => ReactElement
   fixedItemHeight: boolean
+  render: TRender
+  transform?: string
 }
 
 interface TInnerListProps {
-  items: Item[]
+  getStyle: TGetStyle
+  itemAttributes?: TItemAttributes
+  items: ListItem[]
+  render: TRender
   transform?: string
-  render: (index: number) => ReactElement
-  itemAttributes?: (item: Item) => { [key: string]: any }
-  getStyle: (index: number) => CSSProperties
 }
 
-interface TItemRendererParams {
-  items: Item[]
-  render: (index: number) => ReactElement
-  itemAttributes?: (item: Item) => { [key: string]: any }
-  getStyle: (index: number) => CSSProperties
-}
+type TItemRendererParams = Pick<TInnerListProps, Exclude<keyof TInnerListProps, 'transform'>>
 
 const itemRenderer = ({ items, itemAttributes, render, getStyle }: TItemRendererParams) => {
   return items.map(item => {
     return (
       <div key={item.index} {...itemAttributes && itemAttributes(item)} style={getStyle(item.index)}>
-        {render(item.index)}
+        {render(item)}
       </div>
     )
   })
@@ -56,7 +56,7 @@ const VirtuosoStaticList: React.FC<TInnerListProps> = React.memo(({ items, rende
 
 export const VirtuosoList: React.FC<TListProps> = React.memo(({ list$, transform = '', render, fixedItemHeight }) => {
   const { stickyItems$ } = useContext(VirtuosoContext)!
-  const items = useObservable<Item[]>(list$, [])
+  const items = useObservable<ListItem[]>(list$, [])
   const stickyItems = useObservable<number[]>(stickyItems$, [])
 
   const getStyle = useCallback(

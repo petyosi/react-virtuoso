@@ -2,7 +2,7 @@ import React, { ReactElement, useContext, FC, CSSProperties } from 'react'
 import { VirtuosoContext } from './VirtuosoContext'
 import { useObservable, useHeight } from './Utils'
 import { VirtuosoScroller } from './VirtuosoScroller'
-import { VirtuosoList } from './VirtuosoList'
+import { VirtuosoList, TRender } from './VirtuosoList'
 
 const VirtuosoFiller: FC<{}> = () => {
   const totalHeight = useObservable(useContext(VirtuosoContext)!.totalHeight$, 0)
@@ -27,7 +27,7 @@ const viewportStyle: CSSProperties = {
 export const VirtuosoView: React.FC<{
   style: CSSProperties
   footer: (() => ReactElement) | undefined
-  item: (index: number) => ReactElement
+  item: TRender
   fixedItemHeight: boolean
 }> = ({ style, footer, item, fixedItemHeight }) => {
   const { listHeight$, viewportHeight$, listOffset$, list$, topList$ } = useContext(VirtuosoContext)!

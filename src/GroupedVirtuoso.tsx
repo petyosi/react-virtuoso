@@ -2,6 +2,7 @@ import { VirtuosoProps, VirtuosoState, VirtuosoPresentation } from './Virtuoso'
 import React, { ReactElement, PureComponent } from 'react'
 import { VirtuosoStore } from './VirtuosoStore'
 import { Subscription } from 'rxjs'
+import { ListItem } from 'GroupIndexTransposer'
 
 type GroupedVirtuosoProps = Pick<VirtuosoProps, Exclude<keyof VirtuosoProps, 'totalCount' | 'topItems' | 'item'>> & {
   groupCounts: number[]
@@ -34,12 +35,11 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
     return { ...state, subscriptions: nextSubscriptions }
   }
 
-  protected itemRender = (index: number): ReactElement => {
-    const item = this.state.groupIndexTranspose(index)
+  protected itemRender = (item: ListItem): ReactElement => {
     if (item.type == 'group') {
-      return this.props.group(item.index)
+      return this.props.group(item.groupIndex)
     } else {
-      return this.props.item(item.index, item.groupIndex)
+      return this.props.item(item.transposedIndex, item.groupIndex)
     }
   }
 

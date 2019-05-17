@@ -1,14 +1,32 @@
 import { AATree } from './AATree'
+import { Item } from './OffsetList'
 
-export interface TItem {
-  index: number
-  groupIndex: number
+export interface RecordItem extends Item {
   type: 'item'
+  transposedIndex: number
+  groupIndex: number
 }
 
-export interface TGroup {
-  index: number
+export interface GroupItem extends Item {
   type: 'group'
+  groupIndex: number
+}
+
+export type ListItem = RecordItem | GroupItem
+
+export class StubIndexTransposer {
+  public transpose(items: Item[]): RecordItem[] {
+    return items.map(item => {
+      return {
+        groupIndex: 0,
+        index: item.index,
+        offset: item.offset,
+        size: item.size,
+        transposedIndex: item.index,
+        type: 'item',
+      }
+    })
+  }
 }
 
 export class GroupIndexTransposer {
@@ -32,13 +50,29 @@ export class GroupIndexTransposer {
     return this.count
   }
 
-  public transpose(index: number): TGroup | TItem {
-    const groupMatch = this.tree.find(index)
-    if (groupMatch) {
-      return { type: 'group', index: groupMatch[0] }
-    }
-    const [groupIndex] = this.tree.findMaxValue(index)!
-    return { type: 'item', index: index - groupIndex - 1, groupIndex: groupIndex }
+  public transpose(items: Item[]): ListItem[] {
+    return items.map(item => {
+      const groupMatch = this.tree.find(item.index)
+      if (groupMatch) {
+        return {
+          groupIndex: groupMatch[0],
+          index: item.index,
+          offset: item.offset,
+          size: item.size,
+          type: 'group',
+        }
+      }
+
+      const [groupIndex] = this.tree.findMaxValue(item.index)!
+      return {
+        groupIndex: groupIndex,
+        index: item.index,
+        offset: item.offset,
+        size: item.size,
+        transposedIndex: item.index - groupIndex - 1,
+        type: 'item',
+      }
+    })
   }
 
   public groupIndices() {

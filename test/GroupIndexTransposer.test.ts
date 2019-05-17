@@ -14,11 +14,17 @@ describe('Group index transposer', () => {
 
   it('identifies an item as a group', () => {
     const transposer = new GroupIndexTransposer([10, 10, 10, 10, 10])
-    expect(transposer.transpose(0)).toEqual({ type: 'group', index: 0 })
+    expect(transposer.transpose([{ index: 0, offset: 0, size: NaN }])).toMatchObject([{ type: 'group', index: 0 }])
   })
 
   it('transposes the provided index', () => {
     const transposer = new GroupIndexTransposer([10, 10, 10, 10, 10])
-    expect(transposer.transpose(24)).toEqual({ type: 'item', index: 21, groupIndex: 2 })
+    expect(transposer.transpose([{ index: 24, offset: 100, size: 0 }])).toMatchObject([
+      {
+        type: 'item',
+        transposedIndex: 21,
+        groupIndex: 2,
+      },
+    ])
   })
 })

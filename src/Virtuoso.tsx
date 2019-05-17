@@ -3,6 +3,8 @@ import { VirtuosoContext } from './VirtuosoContext'
 import { VirtuosoStore } from './VirtuosoStore'
 import { VirtuosoView } from './VirtuosoView'
 import { Subscription } from 'rxjs'
+import { ListItem } from './GroupIndexTransposer'
+import { TRender } from './VirtuosoList'
 
 export type VirtuosoState = ReturnType<typeof VirtuosoStore>
 
@@ -20,7 +22,7 @@ export interface VirtuosoProps {
 
 interface TVirtuosoPresentationProps {
   contextValue: VirtuosoState
-  item: (index: number) => ReactElement
+  item: TRender
   footer?: () => ReactElement
   style?: CSSProperties
   itemHeight?: number
@@ -67,12 +69,16 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     return { ...state, subscriptions: nextSubscriptions }
   }
 
+  private itemRenderer = (item: ListItem) => {
+    return this.props.item(item.index)
+  }
+
   public render() {
     return (
       <VirtuosoPresentation
         contextValue={this.state}
         style={this.props.style}
-        item={this.props.item}
+        item={this.itemRenderer}
         footer={this.props.footer}
         itemHeight={this.props.itemHeight}
       />

@@ -141,10 +141,11 @@ describe('Virtuoso Store', () => {
     groupCounts$.next([10, 90, 100])
     viewportHeight$.next(250)
     itemHeights$.next([{ start: 0, end: 0, size: 50 }])
+    itemHeights$.next([{ start: 1, end: 1, size: 50 }])
 
     topList$.subscribe(topItems => {
       expect(topItems).toHaveLength(1)
-      expect(topItems[0]).toEqual({ index: 0, size: 50, offset: NaN })
+      expect(topItems[0]).toMatchObject({ index: 0, size: 50, offset: NaN })
     })
 
     list$.pipe().subscribe(items => {
@@ -163,11 +164,12 @@ describe('Virtuoso Store', () => {
     groupCounts$.next([10, 90, 100])
     viewportHeight$.next(250)
     itemHeights$.next([{ start: 0, end: 0, size: 50 }])
+    itemHeights$.next([{ start: 1, end: 1, size: 50 }])
     scrollTop$.next(2000) // should scroll past the first item, into the second
 
     topList$.subscribe(topItems => {
       expect(topItems).toHaveLength(1)
-      expect(topItems[0]).toEqual({ index: 11, size: 50, offset: NaN })
+      expect(topItems[0]).toMatchObject({ index: 11, size: 50, offset: NaN })
       done()
     })
   })
