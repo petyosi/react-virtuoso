@@ -1,8 +1,6 @@
 import { useRef, useState, useLayoutEffect } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
-import { Observable } from 'rxjs'
-import { distinctUntilChanged } from 'rxjs/operators'
-import { TInput } from './rxio'
+import { TInput, TOutput } from './rxio'
 
 type UseHeight = (input: TInput<number>, onMount?: (ref: CallbackRefParam) => void) => (ref: CallbackRefParam) => void
 
@@ -29,11 +27,11 @@ export const useHeight: UseHeight = (input, onMount) => {
   return callbackRef
 }
 
-export function useObservable<T>(observable$: Observable<T>, initialValue: T): T {
+export function useOutput<T>(output: TOutput<T>, initialValue: T): T {
   const [value, setValue] = useState(initialValue)
 
   useLayoutEffect(() => {
-    observable$.pipe(distinctUntilChanged()).subscribe(setValue)
+    output(setValue)
   }, [])
 
   return value

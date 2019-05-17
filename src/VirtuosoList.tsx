@@ -1,5 +1,5 @@
 import React, { useContext, useCallback, ReactElement, useRef, useLayoutEffect, CSSProperties } from 'react'
-import { useObservable } from './Utils'
+import { useOutput } from './Utils'
 import { VirtuosoState } from './Virtuoso'
 import { VirtuosoContext } from './VirtuosoContext'
 import { Item } from './OffsetList'
@@ -10,7 +10,7 @@ export type TRender = (item: ListItem) => ReactElement
 type TItemAttributes = (item: Item) => { [key: string]: any }
 type TGetStyle = (index: number) => CSSProperties
 
-type TListProps = Pick<VirtuosoState, 'list$'> & {
+type TListProps = Pick<VirtuosoState, 'list'> & {
   fixedItemHeight: boolean
   render: TRender
   transform?: string
@@ -54,10 +54,10 @@ const VirtuosoStaticList: React.FC<TInnerListProps> = React.memo(({ items, rende
   return <>{itemRenderer({ items, render, getStyle })}</>
 })
 
-export const VirtuosoList: React.FC<TListProps> = React.memo(({ list$, transform = '', render, fixedItemHeight }) => {
-  const { stickyItems$ } = useContext(VirtuosoContext)!
-  const items = useObservable<ListItem[]>(list$, [])
-  const stickyItems = useObservable<number[]>(stickyItems$, [])
+export const VirtuosoList: React.FC<TListProps> = React.memo(({ list, transform = '', render, fixedItemHeight }) => {
+  const { stickyItems: stickyItemsOutput } = useContext(VirtuosoContext)!
+  const items = useOutput<ListItem[]>(list, [])
+  const stickyItems = useOutput<number[]>(stickyItemsOutput, [])
 
   const getStyle = useCallback(
     (index): CSSProperties => {

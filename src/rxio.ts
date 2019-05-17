@@ -1,13 +1,16 @@
-import { Subject, Observable } from 'rxjs'
+import { Subject, Observable, Subscription } from 'rxjs'
 import { distinctUntilChanged } from 'rxjs/operators'
 
 type TCallback<T> = (val: T) => void
 
 export function makeOutput<T>(observable: Observable<T>) {
-  let theCallback: TCallback<T> | null = null
-  observable.pipe(distinctUntilChanged()).subscribe(val => theCallback && theCallback(val))
-  return (callback: TCallback<T>) => {
-    theCallback = callback
+  let subscription: Subscription | undefined
+
+  return (callback: TCallback<T> | undefined) => {
+    subscription && subscription.unsubscribe()
+    if (callback) {
+      subscription = observable.pipe(distinctUntilChanged()).subscribe(callback)
+    }
   }
 }
 

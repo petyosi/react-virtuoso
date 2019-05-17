@@ -1,4 +1,4 @@
-import { BehaviorSubject, combineLatest, Observable, Subject, Subscription } from 'rxjs'
+import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs'
 import {
   auditTime,
   distinctUntilChanged,
@@ -12,7 +12,7 @@ import {
 } from 'rxjs/operators'
 import { OffsetList } from './OffsetList'
 import { StubIndexTransposer, GroupIndexTransposer, ListItem } from './GroupIndexTransposer'
-import { makeInput } from './rxio'
+import { makeInput, makeOutput } from './rxio'
 
 export interface ItemHeight {
   start: number
@@ -20,20 +20,19 @@ export interface ItemHeight {
   size: number
 }
 
-const getListTop = (items: ListItem[]) => (items.length > 0 ? items[0].offset : 0)
-
-type MapToTotal = (input: [OffsetList, number]) => number
-
-const mapToTotal: MapToTotal = ([offsetList, totalCount]) => offsetList.total(totalCount - 1)
-
-type ListScanner = (overscan: number) => (items: ListItem[], viewState: [number[], OffsetList]) => ListItem[]
-
 interface TVirtuosoConstructorParams {
   overscan?: number
   totalCount?: number
   topItems?: number
   itemHeight?: number
 }
+
+type MapToTotal = (input: [OffsetList, number]) => number
+type ListScanner = (overscan: number) => (items: ListItem[], viewState: [number[], OffsetList]) => ListItem[]
+
+const getListTop = (items: ListItem[]) => (items.length > 0 ? items[0].offset : 0)
+
+const mapToTotal: MapToTotal = ([offsetList, totalCount]) => offsetList.total(totalCount - 1)
 
 const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoConstructorParams) => {
   const viewportHeight$ = new BehaviorSubject(0)
@@ -196,10 +195,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     )
     .subscribe(isScrolling$)
 
-  const subscriptions: Subscription = new Subscription()
-
   return {
-    // input
     groupCounts: makeInput(groupCounts$),
     itemHeights: makeInput(itemHeights$),
     footerHeight: makeInput(footerHeight$),
@@ -209,15 +205,13 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     topItemCount: makeInput(topItemCount$),
     totalCount: makeInput(totalCount$),
 
-    // output
-    list$,
-    listOffset$,
-    totalHeight$,
-    topList$,
-    endReached$,
-    isScrolling$,
-    subscriptions,
-    stickyItems$,
+    list: makeOutput(list$),
+    topList: makeOutput(topList$),
+    listOffset: makeOutput(listOffset$),
+    totalHeight: makeOutput(totalHeight$),
+    endReached: makeOutput(endReached$),
+    isScrolling: makeOutput(isScrolling$),
+    stickyItems: makeOutput(stickyItems$),
   }
 }
 

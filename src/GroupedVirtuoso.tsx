@@ -1,7 +1,6 @@
 import { VirtuosoProps, VirtuosoState, VirtuosoPresentation } from './Virtuoso'
 import React, { ReactElement, PureComponent } from 'react'
 import { VirtuosoStore } from './VirtuosoStore'
-import { Subscription } from 'rxjs'
 import { ListItem } from 'GroupIndexTransposer'
 
 type GroupedVirtuosoProps = Pick<VirtuosoProps, Exclude<keyof VirtuosoProps, 'totalCount' | 'topItems' | 'item'>> & {
@@ -13,26 +12,17 @@ type GroupedVirtuosoProps = Pick<VirtuosoProps, Exclude<keyof VirtuosoProps, 'to
 export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, VirtuosoState> {
   public constructor(props: GroupedVirtuosoProps) {
     super(props)
+    this.state = VirtuosoStore(props)
 
-    this.state = GroupedVirtuoso.getDerivedStateFromProps(this.props, VirtuosoStore(props))
+    GroupedVirtuoso.getDerivedStateFromProps(this.props, this.state)
   }
 
   public static getDerivedStateFromProps(props: GroupedVirtuosoProps, state: VirtuosoState) {
-    state.subscriptions.unsubscribe()
-
-    const nextSubscriptions = new Subscription()
-
-    if (props.endReached) {
-      nextSubscriptions.add(state.endReached$.subscribe(props.endReached))
-    }
-
-    if (props.scrollingStateChange) {
-      nextSubscriptions.add(state.isScrolling$.subscribe(props.scrollingStateChange))
-    }
-
+    state.endReached(props.endReached)
+    state.isScrolling(props.scrollingStateChange)
     state.groupCounts(props.groupCounts)
 
-    return { ...state, subscriptions: nextSubscriptions }
+    return null
   }
 
   protected itemRender = (item: ListItem): ReactElement => {

@@ -2,7 +2,6 @@ import React, { CSSProperties, PureComponent, ReactElement, FC } from 'react'
 import { VirtuosoContext } from './VirtuosoContext'
 import { VirtuosoStore } from './VirtuosoStore'
 import { VirtuosoView } from './VirtuosoView'
-import { Subscription } from 'rxjs'
 import { ListItem } from './GroupIndexTransposer'
 import { TRender } from './VirtuosoList'
 
@@ -45,28 +44,16 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
 export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
   public constructor(props: VirtuosoProps) {
     super(props)
-    this.state = Virtuoso.getDerivedStateFromProps(this.props, VirtuosoStore(props))
+    this.state = VirtuosoStore(props)
+    Virtuoso.getDerivedStateFromProps(this.props, this.state)
   }
 
   public static getDerivedStateFromProps(props: VirtuosoProps, state: VirtuosoState) {
-    state.subscriptions.unsubscribe()
-
-    const nextSubscriptions = new Subscription()
-
-    if (props.endReached) {
-      nextSubscriptions.add(state.endReached$.subscribe(props.endReached))
-    }
-
-    if (props.scrollingStateChange) {
-      nextSubscriptions.add(state.isScrolling$.subscribe(props.scrollingStateChange))
-    }
-
-    if (props.topItems) {
-      state.topItemCount(props.topItems)
-    }
-
+    state.isScrolling(props.scrollingStateChange)
+    state.endReached(props.endReached)
+    state.topItemCount(props.topItems || 0)
     state.totalCount(props.totalCount)
-    return { ...state, subscriptions: nextSubscriptions }
+    return null
   }
 
   private itemRenderer = (item: ListItem) => {
