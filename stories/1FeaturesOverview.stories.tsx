@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { Virtuoso } from '../src/Virtuoso'
-import { getUser } from './FakeData'
+import { Virtuoso } from '../src/index'
+import { getUser, TUser } from './FakeData'
 import { ExampleListItem, ExampleAvatar, ExampleUserInfo } from './ExampleComponents'
 import { storiesOf } from '@storybook/react'
 import { ExampleInfo, ExampleTitle } from './ExampleInfo'
@@ -11,8 +11,7 @@ const group = storiesOf('Features Overview', module)
 // the ExampleListItem, ExampleAvatar and ExampleUserInfo are simple wrappers around styled divs and spans -
 // you don't need those in your implementation
 
-const Item = (index: number) => {
-  const user = getUser(index)
+const UserItem: React.FC<{ user: TUser; index: number }> = ({ user, index }) => {
   const title = `${index + 1}. ${user.name}`
   return (
     <ExampleListItem even={index % 2 === 0}>
@@ -22,7 +21,11 @@ const Item = (index: number) => {
   )
 }
 
-// Pinned Top Items
+const GenerateItem = (index: number) => {
+  return <UserItem user={getUser(index)} index={index} />
+}
+
+// Fixed Top Items
 
 const TopItems = () => {
   return (
@@ -36,7 +39,7 @@ const TopItems = () => {
         <p>Scroll the list below - the first two items remain fixed and always visible.</p>
       </ExampleInfo>
 
-      <Virtuoso style={{ height: '500px', width: '500px' }} topItems={2} totalCount={100000} item={Item} />
+      <Virtuoso style={{ height: '500px', width: '500px' }} topItems={2} totalCount={100000} item={GenerateItem} />
     </>
   )
 }
@@ -62,7 +65,7 @@ const ListWithFooter = () => {
       <Virtuoso
         style={{ height: '300px', width: '500px' }}
         totalCount={100}
-        item={Item}
+        item={GenerateItem}
         footer={() => <div style={{ padding: '1rem', textAlign: 'center' }}>-- end reached --</div>}
       />
     </>

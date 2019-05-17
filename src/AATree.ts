@@ -9,6 +9,8 @@ interface Range<T> {
   value: T
 }
 
+type FindCallback<T> = (value: T) => 1 | 0 | -1
+
 export type NodeIterator<T> = IterableIterator<NodeData<T>>
 export type RangeIterator<T> = IterableIterator<Range<T>>
 
@@ -27,12 +29,20 @@ class NilNode {
     return this
   }
 
-  public find(): void {
+  public find(): undefined {
+    return
+  }
+
+  public findWith(): undefined {
     return
   }
 
   public findMax(): number {
     return -Infinity
+  }
+
+  public findMaxValue(): undefined {
+    return
   }
 
   public insert<T>(key: number, value: T): NonNilNode<T> {
@@ -87,6 +97,12 @@ interface NodeConstructorArgs<T> {
   right?: Node<T>
 }
 
+class UnreachableCaseError extends Error {
+  constructor(val: never) {
+    super(`Unreachable case: ${val}`)
+  }
+}
+
 class NonNilNode<T> {
   public key: number
   public value: T
@@ -133,13 +149,28 @@ class NonNilNode<T> {
     return false
   }
 
-  public find(key: number): T | void {
+  public find(key: number): T | undefined {
     if (key === this.key) {
       return this.value
     } else if (key < this.key) {
       return this.left.find(key)
     } else {
       return this.right.find(key)
+    }
+  }
+
+  public findWith(callback: FindCallback<T>): [number, T] | undefined {
+    const result = callback(this.value)
+
+    switch (result) {
+      case -1:
+        return this.left.findWith(callback)
+      case 0:
+        return [this.key, this.value]
+      case 1:
+        return this.right.findWith(callback)
+      default:
+        throw new UnreachableCaseError(result)
     }
   }
 
@@ -158,6 +189,23 @@ class NonNilNode<T> {
     }
 
     return this.left.findMax(key)
+  }
+
+  public findMaxValue(key: number): T {
+    if (this.key === key) {
+      return this.value
+    }
+
+    if (this.key < key) {
+      const rightValue = this.right.findMaxValue(key)
+      if (rightValue === undefined) {
+        return this.value
+      } else {
+        return rightValue
+      }
+    }
+
+    return this.left.findMaxValue(key)!
   }
 
   public insert(key: number, value: T): NonNilNode<T> {
@@ -362,12 +410,23 @@ export class AATree<T> {
     this.root = root
   }
 
-  public find(key: number): T | void {
+  public find(key: number): T | undefined {
     return this.root.find(key)
   }
 
   public findMax(key: number): number {
     return this.root.findMax(key)
+  }
+
+  public findMaxValue(key: number): T {
+    if (this.empty()) {
+      throw new Error('Searching for max value in an empty tree')
+    }
+    return this.root.findMaxValue(key)!
+  }
+
+  public findWith(callback: FindCallback<T>): [number, T] | void {
+    return this.root.findWith(callback)
   }
 
   public insert(key: number, value: T): AATree<T> {

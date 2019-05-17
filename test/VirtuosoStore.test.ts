@@ -107,10 +107,10 @@ describe('Virtuoso Store', () => {
   })
 
   it('skips the fixed items', done => {
-    const { itemHeights$, viewportHeight$, list$ } = VirtuosoStore({ overscan: 0, totalCount: 100, topItems: 3 })
+    const { topItemCount$, itemHeights$, viewportHeight$, list$ } = VirtuosoStore({ overscan: 0, totalCount: 100 })
 
+    topItemCount$.next(3)
     viewportHeight$.next(250)
-    // scrollTop$.next(120);
 
     list$.pipe().subscribe(items => {
       expect(items[0].index).toEqual(3)
@@ -118,5 +118,59 @@ describe('Virtuoso Store', () => {
       done()
     })
     itemHeights$.next([{ start: 0, end: 0, size: 50 }])
+  })
+
+  it('calculates the total count from given groups count', () => {
+    const { groupCounts$, totalCount$ } = VirtuosoStore({
+      overscan: 0,
+    })
+
+    groupCounts$.next([10, 10, 10, 10])
+    const subscription = totalCount$.subscribe(val => expect(val).toEqual(44))
+    subscription.unsubscribe()
+
+    groupCounts$.next([10, 10, 10, 10, 10, 10])
+    totalCount$.subscribe(val => expect(val).toEqual(66))
+  })
+
+  it('picks the sticky items', done => {
+    const { topList$, groupCounts$, itemHeights$, viewportHeight$, list$ } = VirtuosoStore({
+      overscan: 0,
+    })
+
+    groupCounts$.next([10, 90, 100])
+    viewportHeight$.next(250)
+    itemHeights$.next([{ start: 0, end: 0, size: 50 }])
+    itemHeights$.next([{ start: 1, end: 1, size: 50 }])
+
+    topList$.subscribe(topItems => {
+      expect(topItems).toHaveLength(1)
+      expect(topItems[0]).toMatchObject({ index: 0, size: 50, offset: NaN })
+    })
+
+    list$.pipe().subscribe(items => {
+      expect(items[0].index).toEqual(1)
+      expect(items).toHaveLength(4)
+      done()
+    })
+  })
+
+  it('selects the closest sticky item', done => {
+    const { topList$, groupCounts$, scrollTop$, itemHeights$, viewportHeight$ } = VirtuosoStore({
+      overscan: 0,
+      totalCount: 100,
+    })
+
+    groupCounts$.next([10, 90, 100])
+    viewportHeight$.next(250)
+    itemHeights$.next([{ start: 0, end: 0, size: 50 }])
+    itemHeights$.next([{ start: 1, end: 1, size: 50 }])
+    scrollTop$.next(2000) // should scroll past the first item, into the second
+
+    topList$.subscribe(topItems => {
+      expect(topItems).toHaveLength(1)
+      expect(topItems[0]).toMatchObject({ index: 11, size: 50, offset: NaN })
+      done()
+    })
   })
 })

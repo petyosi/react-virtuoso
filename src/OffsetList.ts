@@ -40,6 +40,10 @@ export class OffsetList {
     this.offsetTree = offsetTree
   }
 
+  empty() {
+    return this.rangeTree.empty()
+  }
+
   public insert(start: number, end: number, size: number): OffsetList {
     let tree = this.rangeTree
     if (tree.empty()) {
@@ -76,7 +80,7 @@ export class OffsetList {
 
       // next range
       if (rangeEnd > end && end >= rangeStart) {
-        if (rangeValue !== size) {
+        if (rangeValue !== size && !isNaN(rangeValue)) {
           tree = tree.insert(end + 1, rangeValue)
         }
       }
@@ -87,6 +91,38 @@ export class OffsetList {
     }
 
     return tree === this.rangeTree ? this : new OffsetList(tree)
+  }
+
+  public insertException(index: number, value: number): OffsetList {
+    if (this.empty()) {
+      return new OffsetList(this.rangeTree.insert(1, NaN).insert(index, value))
+    } else {
+      return this.insert(index, index, value)
+    }
+  }
+
+  public offsetOf(index: number): number {
+    if (this.offsetTree.empty()) {
+      return 0
+    }
+    const find = (value: OffsetValue) => {
+      if (value.startIndex > index) return -1
+      if (value.endIndex < index) return 1
+      return 0
+    }
+
+    const offsetRange = this.offsetTree.findWith(find)
+    if (offsetRange) {
+      const [offset, { startIndex, size }] = offsetRange
+      return offset + (index - startIndex) * size
+    } else {
+      throw new Error(`Requested offset outside of the known ones, index: ${index}`)
+    }
+  }
+
+  public itemAt(index: number): Item {
+    const size = this.rangeTree.findMaxValue(index)
+    return { index, size, offset: NaN }
   }
 
   public indexRange(startIndex: number, endIndex: number): Item[] {
@@ -123,6 +159,7 @@ export class OffsetList {
     }
 
     const ranges = this.offsetTree.rangesWithin(startOffset, endOffset)
+
     const result: Item[] = []
 
     for (let {
@@ -137,7 +174,17 @@ export class OffsetList {
         offset += (startIndex - rangeIndex) * size
       }
 
-      startIndex = Math.max(minIndex, startIndex)
+      if (startIndex < minIndex) {
+        offset += (minIndex - startIndex) * size
+        startIndex = minIndex
+      }
+
+      // we don't know the size of this range - terminate with a probe item
+      if (isNaN(size)) {
+        result.push({ index: startIndex, size: 0, offset })
+        return result
+      }
+
       endIndex = Math.min(endIndex, maxIndex)
 
       for (let i = startIndex; i <= endIndex; i++) {
@@ -163,5 +210,29 @@ export class OffsetList {
     }
 
     return total
+  }
+
+  public getOffsets(indices: number[]): IndexList {
+    let tree = AATree.empty<number>()
+    indices.forEach(index => {
+      const offset = this.offsetOf(index)
+      tree = tree.insert(offset, index)
+    })
+    return new IndexList(tree)
+  }
+}
+
+export class IndexList {
+  public tree: AATree<number>
+  public constructor(tree: AATree<number>) {
+    this.tree = tree
+  }
+
+  public findMaxValue(offset: number): number {
+    return this.tree.findMaxValue(offset)
+  }
+
+  public empty(): boolean {
+    return this.tree.empty()
   }
 }

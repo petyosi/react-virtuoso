@@ -32,6 +32,7 @@ const HundredThousandItems = () => {
 
       <Virtuoso
         totalCount={100000}
+        overscan={200}
         item={(index: number) => {
           const user = getUser(index)
           const title = `${index + 1}. ${user.name}`

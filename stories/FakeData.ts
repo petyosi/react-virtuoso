@@ -1,4 +1,5 @@
 import faker from 'faker'
+import { groupBy } from 'lodash'
 
 export interface TUser {
   name: string
@@ -27,4 +28,27 @@ export const getUser = (index: number): TUser => {
     }
   }
   return generated[index]
+}
+
+export const generateGroupedUsers = (max: number) => {
+  const users: TUser[] = []
+  for (let i = 0; i < max; i++) {
+    users.push(getUser(i))
+  }
+
+  users.sort((a, b) => {
+    if (a.name < b.name) {
+      return -1
+    }
+    if (a.name > b.name) {
+      return 1
+    }
+    return 0
+  })
+
+  const groupedUsers = groupBy(users, user => user.name[0])
+  const groupCounts = Object.values(groupedUsers).map(users => users.length)
+  const groups = Object.keys(groupedUsers)
+
+  return { users, groupCounts, groups }
 }
