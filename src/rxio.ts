@@ -1,4 +1,4 @@
-import { TObservable, distinctUntilChanged, TSubscription } from './tinyrx'
+import { TObservable, TSubscription } from './tinyrx'
 
 type TCallback<T> = (val: T) => void
 
@@ -8,7 +8,7 @@ export function makeOutput<T>(observable: TObservable<T>) {
   return (callback: TCallback<T> | undefined) => {
     unsubscribe && unsubscribe()
     if (callback) {
-      unsubscribe = observable.pipe(distinctUntilChanged()).subscribe(callback)
+      unsubscribe = observable.subscribe(callback)
     }
   }
 }

@@ -17,14 +17,10 @@ describe('rx output', () => {
     const out = makeOutput(sub)
 
     let i = 0
-    out(_ => {
-      i++
-    })
+    out(_ => i++)
     sub.next(1)
 
-    out(_ => {
-      i++
-    })
+    out(_ => i++) // this should remove the previous callback
     sub.next(2)
 
     expect(i).toEqual(3)

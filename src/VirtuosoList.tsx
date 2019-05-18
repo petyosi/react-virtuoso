@@ -36,7 +36,7 @@ const itemRenderer = ({ items, itemAttributes, render, getStyle }: TItemRenderer
   })
 }
 
-const VirtuosoVariableList: React.FC<TInnerListProps> = React.memo(({ items, render, getStyle }) => {
+const VirtuosoVariableList: React.FC<TInnerListProps> = ({ items, render, getStyle }) => {
   const { itemHeights } = useContext(VirtuosoContext)!
   const heightPublisher = useRef(new ItemHeightPublisher(itemHeights))
 
@@ -48,13 +48,13 @@ const VirtuosoVariableList: React.FC<TInnerListProps> = React.memo(({ items, ren
   }, [items])
 
   return <>{itemRenderer({ items, render, itemAttributes: heightPublisher.current.getItemAttributes(), getStyle })}</>
-})
+}
 
-const VirtuosoStaticList: React.FC<TInnerListProps> = React.memo(({ items, render, getStyle }) => {
+const VirtuosoStaticList: React.FC<TInnerListProps> = ({ items, render, getStyle }) => {
   return <>{itemRenderer({ items, render, getStyle })}</>
-})
+}
 
-export const VirtuosoList: React.FC<TListProps> = React.memo(({ list, transform = '', render, fixedItemHeight }) => {
+export const VirtuosoList: React.FC<TListProps> = ({ list, transform = '', render, fixedItemHeight }) => {
   const { stickyItems: stickyItemsOutput } = useContext(VirtuosoContext)!
   const items = useOutput<ListItem[]>(list, [])
   const stickyItems = useOutput<number[]>(stickyItemsOutput, [])
@@ -83,4 +83,4 @@ export const VirtuosoList: React.FC<TListProps> = React.memo(({ list, transform 
   ) : (
     <VirtuosoVariableList {...{ items, render, getStyle }} />
   )
-})
+}

@@ -2,7 +2,6 @@ import {
   mySubject,
   map,
   combineOperators,
-  distinctUntilChanged,
   scan,
   withLatestFrom,
   debounceTime,
@@ -100,7 +99,6 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
 
   groupCounts$.subscribe(counts => {
     transposer = new GroupIndexTransposer(counts)
-    console.log('Kur')
     totalCount$.next(transposer.totalCount())
     stickyItems$.next(transposer.groupIndices())
   })
@@ -137,7 +135,6 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
         filter(params => !params[1].empty() && !params[0].empty()),
         withLatestFrom(topList$.subscribe),
         map(([[offsetList, stickyItemsIndexList, scrollTop], topList]) => {
-          console.log({ scrollTop })
           const currentStickyItem = stickyItemsIndexList.findMaxValue(scrollTop)
 
           if (topList.length === 1 && topList[0].index === currentStickyItem) {
@@ -146,42 +143,33 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
 
           const item = offsetList.itemAt(currentStickyItem)
           return transposer.transpose([item])
-        }),
-        distinctUntilChanged()
+        })
       )
     )
     .subscribe(topList$.next)
 
-  const topListHeight$ = topList$.pipe(
-    combineOperators(map(items => items.reduce((total, item) => total + item.size, 0)), distinctUntilChanged())
-  )
+  const topListHeight$ = topList$.pipe(map(items => items.reduce((total, item) => total + item.size, 0)))
 
   const minListIndex$ = topList$.pipe(
-    combineOperators(
-      map(topList => {
-        return topList.length && topList[topList.length - 1].index + 1
-      }),
-      distinctUntilChanged()
-    )
+    map(topList => {
+      return topList.length && topList[topList.length - 1].index + 1
+    })
   )
 
   const list$ = combineLatest(
-    viewportHeight$.pipe(distinctUntilChanged()).subscribe,
-    scrollTop$.pipe(distinctUntilChanged()).subscribe,
-    topListHeight$.pipe(distinctUntilChanged()).subscribe,
-    listHeight$.pipe(distinctUntilChanged()).subscribe,
-    footerHeight$.pipe(distinctUntilChanged()).subscribe,
+    viewportHeight$.subscribe,
+    scrollTop$.subscribe,
+    topListHeight$.subscribe,
+    listHeight$.subscribe,
+    footerHeight$.subscribe,
     minListIndex$.subscribe,
     totalCount$.subscribe
-  ).pipe(
-    combineOperators(withLatestFrom(offsetList$.subscribe), scan(listScanner(overscan), []), distinctUntilChanged())
-  )
+  ).pipe(combineOperators(withLatestFrom(offsetList$.subscribe), scan(listScanner(overscan), [])))
 
   const endReached$ = list$.pipe(
     combineOperators(
       map(items => (items.length ? items[items.length - 1].index : 0)),
-      scan((prev, current) => Math.max(prev, current), 0),
-      distinctUntilChanged()
+      scan((prev, current) => Math.max(prev, current), 0)
     )
   )
 
@@ -189,11 +177,9 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     map(([items, scrollTop, topListHeight]) => getListTop(items) - scrollTop - topListHeight)
   )
 
-  listOffset$.subscribe(listOffset => console.log(listOffset))
+  scrollTop$.pipe(combineOperators(skip(1), mapTo(true))).subscribe(isScrolling$.next)
 
-  scrollTop$.pipe(combineOperators(mapTo(true), skip(1))).subscribe(isScrolling$.next)
-
-  scrollTop$.pipe(combineOperators(debounceTime(200), mapTo(false), skip(1))).subscribe(isScrolling$.next)
+  scrollTop$.pipe(combineOperators(skip(1), mapTo(false), debounceTime(200))).subscribe(isScrolling$.next)
 
   return {
     groupCounts: makeInput(groupCounts$),
