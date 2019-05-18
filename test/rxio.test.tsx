@@ -1,9 +1,9 @@
-import { Subject } from 'rxjs'
+import { mySubject } from '../src/tinyrx'
 import { makeOutput, makeInput } from '../src/rxio'
 
 describe('rx output', () => {
   it('outputs to the given callback', () => {
-    const sub = new Subject<number>()
+    const sub = mySubject()
     const out = makeOutput(sub)
 
     out(val => {
@@ -13,24 +13,27 @@ describe('rx output', () => {
   })
 
   it('overrides previous callbacks', () => {
-    const sub = new Subject<number>()
+    const sub = mySubject()
     const out = makeOutput(sub)
 
-    out(val => {
-      expect(val).toEqual(1)
+    let i = 0
+    out(_ => {
+      i++
     })
     sub.next(1)
 
-    out(val => {
-      expect(val).toEqual(2)
+    out(_ => {
+      i++
     })
     sub.next(2)
+
+    expect(i).toEqual(3)
   })
 })
 
 describe('rx input', () => {
   it('inputs in the given subject', () => {
-    const sub = new Subject<number>()
+    const sub = mySubject()
     sub.subscribe(val => expect(val).toEqual(1))
     const input = makeInput(sub)
     input(1)
