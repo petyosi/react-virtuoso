@@ -121,6 +121,16 @@ export function combineLatest<S1, S2, S3, S4, S5, S6, S7>(
   s6: TSubscribe<S6>,
   s7: TSubscribe<S7>
 ): TObservable<[S1, S2, S3, S4, S5, S6, S7]>
+export function combineLatest<S1, S2, S3, S4, S5, S6, S7, S8>(
+  s1: TSubscribe<S1>,
+  s2: TSubscribe<S2>,
+  s3: TSubscribe<S3>,
+  s4: TSubscribe<S4>,
+  s5: TSubscribe<S5>,
+  s6: TSubscribe<S6>,
+  s7: TSubscribe<S7>,
+  s8: TSubscribe<S8>
+): TObservable<[S1, S2, S3, S4, S5, S6, S7, S8]>
 export function combineLatest(...sources: TSubscribe<any>[]): TObservable<any[]> {
   const called = Array<boolean>(sources.length).fill(false)
   const values = Array<any>(sources.length)

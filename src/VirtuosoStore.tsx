@@ -17,7 +17,9 @@ interface TVirtuosoConstructorParams {
 }
 
 type MapToTotal = (input: [OffsetList, number]) => number
-type ListScanner = (overscan: number) => (items: ListItem[], viewState: [number[], OffsetList]) => ListItem[]
+type ListScanner = (
+  overscan: number
+) => (items: ListItem[], viewState: [number, number, number, number, number, number, number, OffsetList]) => ListItem[]
 
 const getListTop = (items: ListItem[]) => (items.length > 0 ? items[0].offset : 0)
 
@@ -45,14 +47,13 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
   if (!itemHeight) {
     itemHeights$
       .pipe(withLatestFrom(offsetList$.subscribe, stickyItems$.subscribe))
-      .subscribe(([heights, offsetList, stickyItems]) => {
-        const newList = heights.reduce((list, { start, end, size }) => {
-          if (start === end && stickyItems.indexOf(start) > -1) {
-            return list.insertException(start, size)
-          }
+      .subscribe(([heights, offsetList, _]) => {
+        let newList = offsetList
 
-          return list.insert(start, end, size)
-        }, offsetList)
+        for (let { start, end, size } of heights) {
+          newList = newList.insert(start, end, size)
+        }
+
         if (newList !== offsetList) {
           offsetList$.next(newList)
         }
@@ -63,7 +64,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
 
   const listScanner: ListScanner = overscan => (
     items,
-    [[viewportHeight, scrollTop, topListHeight, listHeight, footerHeight, minIndex, totalCount], offsetList]
+    [viewportHeight, scrollTop, topListHeight, listHeight, footerHeight, minIndex, totalCount, offsetList]
   ) => {
     const listTop = getListTop(items)
 
@@ -71,10 +72,13 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     const maxIndex = Math.max(totalCount - 1, 0)
     const topIndexOutOfRange = items.length > 0 && items[0].index < minIndex
 
+    // console.log({ listBottom, viewportHeight })
     if (listBottom < viewportHeight || topIndexOutOfRange) {
       const startOffset = Math.max(scrollTop + topListHeight, topListHeight)
       const endOffset = scrollTop + viewportHeight + overscan * 2 - 1
-      return transposer.transpose(offsetList.range(startOffset, endOffset, minIndex, maxIndex))
+      const result = transposer.transpose(offsetList.range(startOffset, endOffset, minIndex, maxIndex))
+      console.log('re rendering', result.length)
+      return result
     }
 
     if (listTop > scrollTop + topListHeight) {
@@ -148,11 +152,9 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     listHeight$.subscribe,
     footerHeight$.subscribe,
     minListIndex$.subscribe,
-    totalCount$.subscribe
-  ).pipe(
-    withLatestFrom(offsetList$.subscribe),
-    scan(listScanner(overscan), [])
-  )
+    totalCount$.subscribe,
+    offsetList$.subscribe
+  ).pipe(scan(listScanner(overscan), []))
 
   const endReached$ = list$.pipe(
     map(items => (items.length ? items[items.length - 1].index : 0)),

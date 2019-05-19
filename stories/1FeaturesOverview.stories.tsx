@@ -89,7 +89,7 @@ const ResizableList = () => {
       </ExampleInfo>
 
       <Virtuoso
-        style={{ width: '60%' }}
+        style={{ width: '100%' }}
         totalCount={100}
         item={(index: number) => {
           const user = getUser(index)

@@ -1,60 +1,17 @@
-import React, { useContext, useCallback, ReactElement, useRef, useLayoutEffect, CSSProperties } from 'react'
+import React, { useContext, useCallback, ReactElement, CSSProperties } from 'react'
 import { useOutput } from './Utils'
 import { VirtuosoState } from './Virtuoso'
 import { VirtuosoContext } from './VirtuosoContext'
-import { Item } from './OffsetList'
-import { ItemHeightPublisher } from './ItemHeightPublisher'
 import { ListItem } from './GroupIndexTransposer'
 
 export type TRender = (item: ListItem) => ReactElement
-type TItemAttributes = (item: Item) => { [key: string]: any }
-type TGetStyle = (index: number) => CSSProperties
 
 type TListProps = Pick<VirtuosoState, 'list'> & {
-  fixedItemHeight: boolean
   render: TRender
   transform?: string
 }
 
-interface TInnerListProps {
-  getStyle: TGetStyle
-  itemAttributes?: TItemAttributes
-  items: ListItem[]
-  render: TRender
-  transform?: string
-}
-
-type TItemRendererParams = Pick<TInnerListProps, Exclude<keyof TInnerListProps, 'transform'>>
-
-const itemRenderer = ({ items, itemAttributes, render, getStyle }: TItemRendererParams) => {
-  return items.map(item => {
-    return (
-      <div key={item.index} {...itemAttributes && itemAttributes(item)} style={getStyle(item.index)}>
-        {render(item)}
-      </div>
-    )
-  })
-}
-
-const VirtuosoVariableList: React.FC<TInnerListProps> = ({ items, render, getStyle }) => {
-  const { itemHeights } = useContext(VirtuosoContext)!
-  const heightPublisher = useRef(new ItemHeightPublisher(itemHeights))
-
-  useLayoutEffect(() => {
-    heightPublisher.current.init()
-    return () => {
-      heightPublisher.current.destroy()
-    }
-  }, [items])
-
-  return <>{itemRenderer({ items, render, itemAttributes: heightPublisher.current.getItemAttributes(), getStyle })}</>
-}
-
-const VirtuosoStaticList: React.FC<TInnerListProps> = ({ items, render, getStyle }) => {
-  return <>{itemRenderer({ items, render, getStyle })}</>
-}
-
-export const VirtuosoList: React.FC<TListProps> = ({ list, transform = '', render, fixedItemHeight }) => {
+export const VirtuosoList: React.FC<TListProps> = ({ list, transform = '', render }) => {
   const { stickyItems: stickyItemsOutput } = useContext(VirtuosoContext)!
   const items = useOutput<ListItem[]>(list, [])
   const stickyItems = useOutput<number[]>(stickyItemsOutput, [])
@@ -78,9 +35,15 @@ export const VirtuosoList: React.FC<TListProps> = ({ list, transform = '', rende
     return null
   }
 
-  return fixedItemHeight ? (
-    <VirtuosoStaticList {...{ items, render, getStyle }} />
-  ) : (
-    <VirtuosoVariableList {...{ items, render, getStyle }} />
+  return (
+    <>
+      {items.map(item => {
+        return (
+          <div key={item.index} data-index={item.index} data-known-size={item.size} style={getStyle(item.index)}>
+            {render(item)}
+          </div>
+        )
+      })}
+    </>
   )
 }
