@@ -134,7 +134,10 @@ const HideAvatarsWhenScrolling = () => {
       <Virtuoso
         style={{ height: '350px', width: '80%', maxWidth: '500px' }}
         totalCount={100}
-        scrollingStateChange={scrolling => setIsScrolling(scrolling)}
+        scrollingStateChange={scrolling => {
+          console.log({ scrolling })
+          setIsScrolling(scrolling)
+        }}
         item={(index: number) => {
           const user = getUser(index)
           const title = `${index + 1}. ${user.name}`

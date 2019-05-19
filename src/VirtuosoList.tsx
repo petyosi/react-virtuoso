@@ -1,5 +1,5 @@
 import React, { useContext, useCallback, ReactElement, useRef, useLayoutEffect, CSSProperties } from 'react'
-import { useObservable } from './Utils'
+import { useOutput } from './Utils'
 import { VirtuosoState } from './Virtuoso'
 import { VirtuosoContext } from './VirtuosoContext'
 import { Item } from './OffsetList'
@@ -10,7 +10,7 @@ export type TRender = (item: ListItem) => ReactElement
 type TItemAttributes = (item: Item) => { [key: string]: any }
 type TGetStyle = (index: number) => CSSProperties
 
-type TListProps = Pick<VirtuosoState, 'list$'> & {
+type TListProps = Pick<VirtuosoState, 'list'> & {
   fixedItemHeight: boolean
   render: TRender
   transform?: string
@@ -36,9 +36,9 @@ const itemRenderer = ({ items, itemAttributes, render, getStyle }: TItemRenderer
   })
 }
 
-const VirtuosoVariableList: React.FC<TInnerListProps> = React.memo(({ items, render, getStyle }) => {
-  const { itemHeights$ } = useContext(VirtuosoContext)!
-  const heightPublisher = useRef(new ItemHeightPublisher(itemHeights$))
+const VirtuosoVariableList: React.FC<TInnerListProps> = ({ items, render, getStyle }) => {
+  const { itemHeights } = useContext(VirtuosoContext)!
+  const heightPublisher = useRef(new ItemHeightPublisher(itemHeights))
 
   useLayoutEffect(() => {
     heightPublisher.current.init()
@@ -48,16 +48,16 @@ const VirtuosoVariableList: React.FC<TInnerListProps> = React.memo(({ items, ren
   }, [items])
 
   return <>{itemRenderer({ items, render, itemAttributes: heightPublisher.current.getItemAttributes(), getStyle })}</>
-})
+}
 
-const VirtuosoStaticList: React.FC<TInnerListProps> = React.memo(({ items, render, getStyle }) => {
+const VirtuosoStaticList: React.FC<TInnerListProps> = ({ items, render, getStyle }) => {
   return <>{itemRenderer({ items, render, getStyle })}</>
-})
+}
 
-export const VirtuosoList: React.FC<TListProps> = React.memo(({ list$, transform = '', render, fixedItemHeight }) => {
-  const { stickyItems$ } = useContext(VirtuosoContext)!
-  const items = useObservable<ListItem[]>(list$, [])
-  const stickyItems = useObservable<number[]>(stickyItems$, [])
+export const VirtuosoList: React.FC<TListProps> = ({ list, transform = '', render, fixedItemHeight }) => {
+  const { stickyItems: stickyItemsOutput } = useContext(VirtuosoContext)!
+  const items = useOutput<ListItem[]>(list, [])
+  const stickyItems = useOutput<number[]>(stickyItemsOutput, [])
 
   const getStyle = useCallback(
     (index): CSSProperties => {
@@ -83,4 +83,4 @@ export const VirtuosoList: React.FC<TListProps> = React.memo(({ list$, transform
   ) : (
     <VirtuosoVariableList {...{ items, render, getStyle }} />
   )
-})
+}

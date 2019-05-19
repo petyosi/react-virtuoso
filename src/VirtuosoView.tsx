@@ -1,17 +1,17 @@
 import React, { ReactElement, useContext, FC, CSSProperties } from 'react'
 import { VirtuosoContext } from './VirtuosoContext'
-import { useObservable, useHeight } from './Utils'
+import { useHeight, useOutput } from './Utils'
 import { VirtuosoScroller } from './VirtuosoScroller'
 import { VirtuosoList, TRender } from './VirtuosoList'
 
 const VirtuosoFiller: FC<{}> = () => {
-  const totalHeight = useObservable(useContext(VirtuosoContext)!.totalHeight$, 0)
+  const totalHeight = useOutput<number>(useContext(VirtuosoContext)!.totalHeight, 0)
 
   return <div style={{ height: `${totalHeight}px`, position: 'absolute', top: 0 }}>&nbsp;</div>
 }
 
 const VirtuosoFooter: FC<{ footer: () => ReactElement }> = ({ footer }) => {
-  const footerCallbackRef = useHeight(useContext(VirtuosoContext)!.footerHeight$)
+  const footerCallbackRef = useHeight(useContext(VirtuosoContext)!.footerHeight)
 
   return <footer ref={footerCallbackRef}>{footer()}</footer>
 }
@@ -30,26 +30,26 @@ export const VirtuosoView: React.FC<{
   item: TRender
   fixedItemHeight: boolean
 }> = ({ style, footer, item, fixedItemHeight }) => {
-  const { listHeight$, viewportHeight$, listOffset$, list$, topList$ } = useContext(VirtuosoContext)!
+  const { listHeight, viewportHeight, listOffset, list, topList } = useContext(VirtuosoContext)!
 
-  const listOffset = useObservable(listOffset$, 0)
-  const listCallbackRef = useHeight(listHeight$)
-  const viewportCallbackRef = useHeight(viewportHeight$, ref => {
+  const translate = useOutput<number>(listOffset, 0)
+  const listCallbackRef = useHeight(listHeight)
+  const viewportCallbackRef = useHeight(viewportHeight, ref => {
     if (ref!.style.position === '') {
       ref!.style.position = '-webkit-sticky'
     }
   })
 
-  const transform = `translateY(${listOffset}px)`
-  const topTransform = `translateY(${-listOffset}px)`
+  const transform = `translateY(${translate}px)`
+  const topTransform = `translateY(${-translate}px)`
 
   return (
     <VirtuosoScroller style={style}>
       <div style={viewportStyle} ref={viewportCallbackRef}>
         <div style={{ transform }}>
           <div ref={listCallbackRef}>
-            <VirtuosoList list$={topList$} transform={topTransform} render={item} fixedItemHeight={fixedItemHeight} />
-            <VirtuosoList list$={list$} render={item} fixedItemHeight={fixedItemHeight} />
+            <VirtuosoList list={topList} transform={topTransform} render={item} fixedItemHeight={fixedItemHeight} />
+            <VirtuosoList list={list} render={item} fixedItemHeight={fixedItemHeight} />
             {footer && <VirtuosoFooter footer={footer} />}
           </div>
         </div>
