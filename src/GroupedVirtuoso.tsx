@@ -13,8 +13,6 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
   public constructor(props: GroupedVirtuosoProps) {
     super(props)
     this.state = VirtuosoStore(props)
-
-    GroupedVirtuoso.getDerivedStateFromProps(this.props, this.state)
   }
 
   public static getDerivedStateFromProps(props: GroupedVirtuosoProps, state: VirtuosoState) {

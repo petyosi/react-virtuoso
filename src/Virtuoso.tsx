@@ -45,7 +45,6 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
   public constructor(props: VirtuosoProps) {
     super(props)
     this.state = VirtuosoStore(props)
-    Virtuoso.getDerivedStateFromProps(this.props, this.state)
   }
 
   public static getDerivedStateFromProps(props: VirtuosoProps, state: VirtuosoState) {

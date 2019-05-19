@@ -1,9 +1,9 @@
-import { mySubject } from '../src/tinyrx'
+import { subject } from '../src/tinyrx'
 import { makeOutput, makeInput } from '../src/rxio'
 
 describe('rx output', () => {
   it('outputs to the given callback', () => {
-    const sub = mySubject()
+    const sub = subject()
     const out = makeOutput(sub)
 
     out(val => {
@@ -13,7 +13,7 @@ describe('rx output', () => {
   })
 
   it('overrides previous callbacks', () => {
-    const sub = mySubject()
+    const sub = subject()
     const out = makeOutput(sub)
 
     let i = 0
@@ -23,13 +23,13 @@ describe('rx output', () => {
     out(_ => i++) // this should remove the previous callback
     sub.next(2)
 
-    expect(i).toEqual(3)
+    expect(i).toEqual(2)
   })
 })
 
 describe('rx input', () => {
   it('inputs in the given subject', () => {
-    const sub = mySubject()
+    const sub = subject()
     sub.subscribe(val => expect(val).toEqual(1))
     const input = makeInput(sub)
     input(1)

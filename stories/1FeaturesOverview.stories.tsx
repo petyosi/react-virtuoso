@@ -135,6 +135,7 @@ const HideAvatarsWhenScrolling = () => {
         style={{ height: '350px', width: '80%', maxWidth: '500px' }}
         totalCount={100}
         scrollingStateChange={scrolling => {
+          console.log({ scrolling })
           setIsScrolling(scrolling)
         }}
         item={(index: number) => {

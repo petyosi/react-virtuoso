@@ -1,14 +1,20 @@
-import { TObservable, TSubscription } from './tinyrx'
+import { TObservable, TSubscriber } from './tinyrx'
 
 type TCallback<T> = (val: T) => void
 
 export function makeOutput<T>(observable: TObservable<T>) {
-  let unsubscribe: TSubscription | undefined
+  let theCallback: TCallback<T> | undefined
+  let subscription: TSubscriber<T> = val => {
+    theCallback && theCallback(val)
+  }
+
+  let subscribed = false
 
   return (callback: TCallback<T> | undefined) => {
-    unsubscribe && unsubscribe()
-    if (callback) {
-      unsubscribe = observable.subscribe(callback)
+    theCallback = callback
+    if (!subscribed) {
+      observable.subscribe(subscription)
+      subscribed = true
     }
   }
 }

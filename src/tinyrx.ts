@@ -1,28 +1,77 @@
-type TSubscriber<T> = (val: T) => void
+export type TSubscriber<T> = (val: T) => void
 export type TSubscription = () => void
-type TSubscribe<T> = (subscriber: TSubscriber<T>) => TSubscription
-type TOperator<T, K> = (val: T, done: (result: K) => void) => void
+export type TSubscribe<T> = (subscriber: TSubscriber<T>) => TSubscription
+export type TOperator<T, K> = (val: T, done: (result: K) => void) => void
+
 export interface TObservable<T> {
   subscribe: TSubscribe<T>
-  pipe: <K extends {}>(operator: TOperator<T, K>) => TObservable<K>
+  pipe(...operators: []): TObservable<T>
+  pipe<R1>(...operators: [TOperator<T, R1>]): TObservable<R1>
+  pipe<R1, R2>(...operators: [TOperator<T, R1>, TOperator<R1, R2>]): TObservable<R2>
+  pipe<R1, R2, R3>(...operators: [TOperator<T, R1>, TOperator<R1, R2>, TOperator<R2, R3>]): TObservable<R3>
 }
 
-export function myObservable<T, K>(source: TSubscribe<T>, operator: TOperator<T, K>) {
+function combineOperators<A1>(): TOperator<A1, A1>
+function combineOperators<A1, R1>(o1: TOperator<A1, R1>): TOperator<A1, R1>
+function combineOperators<A1, R1, R2>(o1: TOperator<A1, R1>, o2: TOperator<R1, R2>): TOperator<A1, R2>
+function combineOperators<A1, R1, R2>(o1: TOperator<A1, R1>, o2: TOperator<R1, R2>): TOperator<A1, R2>
+function combineOperators<A1, R1, R2, R3>(
+  o1: TOperator<A1, R1>,
+  o2: TOperator<R1, R2>,
+  o3: TOperator<R2, R3>
+): TOperator<A1, R3>
+function combineOperators<A1, R1, R2, R3, R4>(
+  o1: TOperator<A1, R1>,
+  o2: TOperator<R1, R2>,
+  o3: TOperator<R2, R3>,
+  o4: TOperator<R3, R4>
+): TOperator<A1, R4>
+function combineOperators<T>(...operators: TOperator<any, any>[]): TOperator<T, any>
+function combineOperators<T, K>(...operators: TOperator<any, any>[]) {
+  if (operators.length === 0) {
+    return (value: T, subscriber: (value: T) => void) => subscriber(value)
+  }
+  if (operators.length === 1) {
+    return operators[0]
+  }
+
+  return (value: T, subscriber: (value: K) => void): void => {
+    let acc = (value: any) => subscriber(value)
+    operators
+      .slice()
+      .reverse()
+      .forEach(operator => {
+        const prevCallback = acc
+        acc = value => operator(value, prevCallback)
+      })
+    acc(value)
+  }
+}
+
+function buildPipe<T>(subscribe: TSubscribe<T>) {
+  function pipe(...operators: []): TObservable<T>
+  function pipe<R1>(...operators: [TOperator<T, R1>]): TObservable<R1>
+  function pipe<R1, R2>(...operators: [TOperator<T, R1>, TOperator<R1, R2>]): TObservable<R2>
+  function pipe<R1, R2, R3>(...operators: [TOperator<T, R1>, TOperator<R1, R2>, TOperator<R2, R3>]): TObservable<R3>
+  function pipe<K extends TOperator<any, any>[]>(...operators: K) {
+    const operator = combineOperators(...operators)
+    return observable(subscribe, operator)
+  }
+  return pipe
+}
+
+export function observable<T, K>(source: TSubscribe<T>, operator: TOperator<T, K>) {
   const subscribe = (subscriber: TSubscriber<K>) => {
     return source(val => operator(val, subscriber))
   }
 
-  const pipe = <P extends {}>(operator: TOperator<K, P>) => {
-    return myObservable<K, P>(subscribe, operator)
-  }
-
   return {
     subscribe,
-    pipe,
+    pipe: buildPipe(subscribe),
   }
 }
 
-export function mySubject<T>(initial?: T) {
+export function subject<T>(initial?: T) {
   let subscribers: TSubscriber<T>[] = []
   let val: T | undefined = initial
 
@@ -43,14 +92,10 @@ export function mySubject<T>(initial?: T) {
     }
   }
 
-  const pipe = <K extends {}>(operator: TOperator<T, K>) => {
-    return myObservable<T, K>(subscribe, operator)
-  }
-
   return {
     next,
     subscribe,
-    pipe,
+    pipe: buildPipe(subscribe),
     subscribers,
   }
 }
@@ -101,58 +146,12 @@ export function combineLatest(...sources: TSubscribe<any>[]): TObservable<any[]>
     }
   }
 
-  const pipe = <K extends {}>(operator: TOperator<any[], K>) => {
-    return myObservable<any[], K>(subscribe, operator)
-  }
-
-  return { subscribe, pipe }
-}
-
-export function combineOperators<A1, R1, R2>(o1: TOperator<A1, R1>, o2: TOperator<R1, R2>): TOperator<A1, R2>
-export function combineOperators<A1, R1, R2>(o1: TOperator<A1, R1>, o2: TOperator<R1, R2>): TOperator<A1, R2>
-export function combineOperators<A1, R1, R2, R3>(
-  o1: TOperator<A1, R1>,
-  o2: TOperator<R1, R2>,
-  o3: TOperator<R2, R3>
-): TOperator<A1, R3>
-export function combineOperators<A1, R1, R2, R3, R4>(
-  o1: TOperator<A1, R1>,
-  o2: TOperator<R1, R2>,
-  o3: TOperator<R2, R3>,
-  o4: TOperator<R3, R4>
-): TOperator<A1, R4>
-export function combineOperators<T, K>(...operators: TOperator<unknown, unknown>[]) {
-  return (value: T, subscriber: (value: K) => void): void => {
-    let acc = (value: any) => subscriber(value)
-    operators
-      .slice()
-      .reverse()
-      .forEach(operator => {
-        const prevCallback = acc
-        acc = value => operator(value, prevCallback)
-      })
-    acc(value)
-  }
+  return { subscribe, pipe: buildPipe(subscribe) }
 }
 
 export function map<T, K>(map: (val: T) => K): (val: T, subscriber: TSubscriber<K>) => void {
   return (val: T, subscriber: TSubscriber<K>) => {
     subscriber(map(val))
-  }
-}
-
-export function audit<T>() {
-  let val: T | undefined
-  let timeout: any
-
-  return (newVal: T, done: TSubscriber<T>) => {
-    val = newVal
-    if (!timeout) {
-      timeout = setTimeout(() => {
-        timeout = undefined
-        done(val!)
-      }, 0)
-    }
   }
 }
 
@@ -189,14 +188,6 @@ export function debounceTime<T>(time: number) {
     timeout = setTimeout(() => {
       done(val!)
     }, time)
-  }
-}
-
-export function distinctUntilChanged<T>() {
-  // let val: T | undefined
-
-  return (newVal: T, done: TSubscriber<T>) => {
-    done(newVal)
   }
 }
 

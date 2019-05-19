@@ -43,99 +43,80 @@ describe('Virtuoso Store', () => {
     })
   })
 
-  it('emits a single item when the size is unknown', done => {
+  it('emits a single item when the size is unknown', () => {
     const { viewportHeight, list } = VirtuosoStore({ overscan: 0, totalCount: 100 })
 
     list(items => {
-      expect(items).toHaveLength(1)
-      done()
+      expect(items).toHaveLength(0)
     })
 
+    list(items => {
+      expect(items).toHaveLength(1)
+    })
     viewportHeight(230)
   })
 
-  it('fills in the space with enough items', done => {
+  it('fills in the space with enough items', () => {
     const { itemHeights, viewportHeight, list } = VirtuosoStore({ overscan: 0, totalCount: 100 })
-
-    list(items => {
-      expect(items).toHaveLength(5)
-      done()
-    })
 
     viewportHeight(230)
     itemHeights([{ start: 0, end: 0, size: 50 }])
+
+    list(items => {
+      expect(items).toHaveLength(5)
+    })
   })
 
-  it('provides exact items for a given size', done => {
+  it('provides exact items for a given size', () => {
     const { itemHeights, viewportHeight, list } = VirtuosoStore({ overscan: 0, totalCount: 100 })
 
     viewportHeight(250)
 
+    itemHeights([{ start: 0, end: 0, size: 50 }])
+
     list(items => {
       expect(items).toHaveLength(5)
-      done()
     })
-
-    itemHeights([{ start: 0, end: 0, size: 50 }])
   })
 
-  it('moves to the correct window', done => {
+  it('moves to the correct window', () => {
     const { itemHeights, viewportHeight, list, scrollTop } = VirtuosoStore({ overscan: 0, totalCount: 100 })
 
     viewportHeight(250)
     scrollTop(120)
+    itemHeights([{ start: 0, end: 0, size: 50 }])
 
     list(items => {
       expect(items[0].index).toEqual(2)
       expect(items).toHaveLength(6)
-      done()
     })
-
-    itemHeights([{ start: 0, end: 0, size: 50 }])
   })
 
-  it('fills in the overscan', done => {
+  it('fills in the overscan', () => {
     const { itemHeights, viewportHeight, list, scrollTop } = VirtuosoStore({ overscan: 25, totalCount: 100 })
 
     viewportHeight(250)
     scrollTop(120)
+    itemHeights([{ start: 0, end: 0, size: 50 }])
 
     list(items => {
       expect(items[0].index).toEqual(2)
       expect(items).toHaveLength(7)
-      done()
     })
-    itemHeights([{ start: 0, end: 0, size: 50 }])
   })
 
-  it('skips the fixed items', done => {
+  it('skips the fixed items', () => {
     const { topItemCount, itemHeights, viewportHeight, list } = VirtuosoStore({ overscan: 0, totalCount: 100 })
 
     topItemCount(3)
     viewportHeight(250)
+    itemHeights([{ start: 0, end: 0, size: 50 }])
 
     list(items => {
       expect(items[0].index).toEqual(3)
       expect(items).toHaveLength(2)
-      done()
     })
-    itemHeights([{ start: 0, end: 0, size: 50 }])
   })
-
-  /*
-  it('calculates the total count from given groups count', () => {
-    const { groupCounts, totalHeight$ } = VirtuosoStore({
-      overscan: 0,
-    })
-
-    groupCounts([10, 10, 10, 10])
-    const subscription = totalCount$.subscribe(val => expect(val).toEqual(44))
-    subscription.unsubscribe()
-
-    groupCounts([10, 10, 10, 10, 10, 10])
-    totalHeight$.subscribe(val => expect(val).toEqual(66))
-  })
-  */
 
   it('picks the sticky items', done => {
     const { topList, groupCounts, itemHeights, viewportHeight, list } = VirtuosoStore({
