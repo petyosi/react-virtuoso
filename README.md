@@ -10,7 +10,7 @@
 - Can render footer at the end of the list;
 - Can pin the first `N` items to the top of the list.
 
-To see live examples, check the [storybook](//virtuoso.dev).
+To see live examples, check the [website](//virtuoso.dev).
 
 ## Get Started
 
@@ -48,16 +48,16 @@ The component accepts an optional `footer` [render property](https://reactjs.org
 
 ```jsx
 return (
-<Virtuoso
-  style={{ height: '300px', width: '500px' }}
-  totalCount={100}
-  item={index => <div>Item {index}</div>}
-  footer={() => <div>-- end reached --</div>}
-/>
+  <Virtuoso
+    style={{ height: '300px', width: '500px' }}
+    totalCount={100}
+    item={index => <div>Item {index}</div>}
+    footer={() => <div>-- end reached --</div>}
+  />
 )
 ```
 
-Check the [footer](//virtuoso.dev/?path=/story/features-overview--footer), [load more](//virtuoso.dev/?path=/story/scenarios--press-to-load-more) and [endless scrolling](//virtuoso.dev/?path=/story/scenarios--endless-scrolling) examples for practical applications of the footer.
+Check the [footer](//virtuoso.dev/footer), [load more](//virtuoso.dev/press-to-load-more) and [endless scrolling](//virtuoso.dev/endless-scrolling) examples for practical applications of the footer.
 
 ### Pinned Items
 
@@ -65,28 +65,28 @@ The component accepts an optional `topItems` property, that specifies how many o
 
 ```jsx
 return (
-<Virtuoso 
-  style={{ height: '500px', width: '500px' }} 
-  topItems={2} 
-  totalCount={100000} 
-  item={index => <div>Item {index}</div>}
-/>
-    )
+  <Virtuoso
+    style={{ height: '500px', width: '500px' }}
+    topItems={2}
+    totalCount={100000}
+    item={index => <div>Item {index}</div>}
+  />
+)
 ```
 
-Check the [fixed top items](//virtuoso.dev/?path=/story/features-overview--fixed-top-items) example for a live version of the above.
+Check the [fixed top items](//virtuoso.dev/top-items) example for a live version of the above.
 
 ### Grouping
 
-The package exports two components - `Virtuoso` and `GroupedVirtuoso`. 
+The package exports two components - `Virtuoso` and `GroupedVirtuoso`.
 
 The grouped component is similar to the flat one, with the following differences:
 
-* Instead of `totalCount`, the component accepts `groupedCounts: number[]`, which specifies the amount of items in each group. 
+- Instead of `totalCount`, the component accepts `groupedCounts: number[]`, which specifies the amount of items in each group.
   For example, passing `[20, 30]` will cause the component to render two groups with 20 and 30 items respectively;
-* In addition the `item` render prop, the component requires an additional `group` render prop, 
+- In addition the `item` render prop, the component requires an additional `group` render prop,
   which renders the group header. The property receives the zero-based group index as a parameter;
-* The `item` render prop gets called with an additional second parameter, `groupIndex: number`.
+- The `item` render prop gets called with an additional second parameter, `groupIndex: number`.
 
 ```jsx
 // generate 100 groups with 10 items each
@@ -99,17 +99,25 @@ return (
   <GroupedVirtuoso
     style={{ height: '500px', width: '500px' }}
     groupCounts={groupCounts}
-    group={ index => <div>Group {index * 10} - {index * 10 + 10}</div> }
-    item={ (index, groupIndex) => <div>Item {index} from group {groupIndex}</div> }
+    group={index => (
+      <div>
+        Group {index * 10} - {index * 10 + 10}
+      </div>
+    )}
+    item={(index, groupIndex) => (
+      <div>
+        Item {index} from group {groupIndex}
+      </div>
+    )}
   />
 )
 ```
 
-Check the 
-[grouped numbers](//virtuoso.dev/?path=/story/grouping--grouped-numbers), 
-[grouped by first letter](//virtuoso.dev/?path=/story/grouping--grouped-by-first-letter) and 
-[groups with load on demand](//virtuoso.dev/?path=/story/grouping--groups-with-load-on-demand) 
-examples for working examples. 
+Check the
+[grouped numbers](//virtuoso.dev/grouped-numbers),
+[grouped by first letter](//virtuoso.dev/grouped-by-first-letter) and
+[groups with load on demand](//virtuoso.dev/grouped-with-load-on-demand)
+examples for working examples.
 
 ## Tweaking Performance
 
@@ -150,7 +158,7 @@ Check the Tweaking Performance section.
 ### `endReached?: (index: number) => void`
 
 Gets called when the user scrolls to the end of the list.
-Receives the last item index as an argument. Can be used to implement [endless scrolling](//virtuoso.dev/?path=/story/scenarios--endless-scrolling).
+Receives the last item index as an argument. Can be used to implement [endless scrolling](//virtuoso.dev/endless-scrolling).
 
 ### `scrollingStateChange?: (isScrolling: boolean) => void`
 
