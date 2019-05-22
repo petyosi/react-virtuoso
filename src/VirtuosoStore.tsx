@@ -161,10 +161,15 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     offsetList$.subscribe
   ).pipe(scan(listScanner(overscan), []))
 
-  const endReached$ = list$.pipe(
-    map(items => (items.length ? items[items.length - 1].index : 0)),
-    scan((prev, current) => Math.max(prev, current), 0)
-  )
+  const endReached$ = subject(0)
+  let currentEndIndex = 0
+
+  list$.pipe(map(items => (items.length ? items[items.length - 1].index : 0))).subscribe((endIndex: number) => {
+    if (currentEndIndex < endIndex) {
+      currentEndIndex = endIndex
+      endReached$.next(endIndex)
+    }
+  })
 
   const listOffset$ = combineLatest(list$.subscribe, scrollTop$.subscribe, topListHeight$.subscribe).pipe(
     map(([items, scrollTop, topListHeight]) => getListTop(items) - scrollTop - topListHeight)
