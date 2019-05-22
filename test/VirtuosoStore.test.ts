@@ -67,6 +67,33 @@ describe('Virtuoso Store', () => {
     })
   })
 
+  it('removes items when total is reduced', () => {
+    const { totalCount, itemHeights, viewportHeight, list } = VirtuosoStore({ overscan: 0, totalCount: 100 })
+
+    viewportHeight(230)
+    itemHeights([{ start: 0, end: 0, size: 50 }])
+
+    let i = 0
+    list(items => {
+      switch (i++) {
+        case 0:
+          expect(items).toHaveLength(5)
+          break
+        case 1:
+          expect(items).toHaveLength(0)
+          break
+        case 2:
+          expect(items).toHaveLength(1)
+          break
+        default:
+          throw new Error('should not get that many updates')
+      }
+    })
+
+    totalCount(0)
+    totalCount(1)
+  })
+
   it('provides exact items for a given size', () => {
     const { itemHeights, viewportHeight, list } = VirtuosoStore({ overscan: 0, totalCount: 100 })
 

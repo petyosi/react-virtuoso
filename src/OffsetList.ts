@@ -150,10 +150,6 @@ export class OffsetList {
   }
 
   public range(startOffset: number, endOffset: number, minIndex: number = 0, maxIndex: number = Infinity): Item[] {
-    if (maxIndex === 0) {
-      return []
-    }
-
     if (this.offsetTree.empty()) {
       return [{ index: 0, size: 0, offset: 0 }]
     }

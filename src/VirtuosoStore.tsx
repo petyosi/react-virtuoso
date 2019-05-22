@@ -66,13 +66,20 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     items,
     [viewportHeight, scrollTop, topListHeight, listHeight, footerHeight, minIndex, totalCount, offsetList]
   ) => {
+    const itemLength = items.length
+
+    if (totalCount === 0) {
+      return itemLength === 0 ? items : []
+    }
+
     const listTop = getListTop(items)
 
     const listBottom = listTop - scrollTop + listHeight - footerHeight - topListHeight
     const maxIndex = Math.max(totalCount - 1, 0)
-    const topIndexOutOfRange = items.length > 0 && items[0].index < minIndex
+    const indexOutOfAllowedRange =
+      itemLength > 0 && (items[0].index < minIndex || items[itemLength - 1].index > maxIndex)
 
-    if (listBottom < viewportHeight || topIndexOutOfRange) {
+    if (listBottom < viewportHeight || indexOutOfAllowedRange) {
       const startOffset = Math.max(scrollTop + topListHeight, topListHeight)
       const endOffset = scrollTop + viewportHeight + overscan * 2 - 1
       const result = transposer.transpose(offsetList.range(startOffset, endOffset, minIndex, maxIndex))

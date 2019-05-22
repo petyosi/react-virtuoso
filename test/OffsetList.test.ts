@@ -263,6 +263,13 @@ describe('Offset List', () => {
     const range = offsetList.range(25, 100, 4, 2000)
     expect(range[0].offset).toEqual(40)
   })
+
+  it('calculates correct range (single item)', () => {
+    const offsetList = OffsetList.create().insert(0, 0, 10)
+
+    const range = offsetList.range(0, 300, 0, 0)
+    expect(range).toHaveLength(1)
+  })
 })
 
 describe('Index List', () => {
