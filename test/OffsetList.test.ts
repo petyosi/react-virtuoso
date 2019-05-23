@@ -22,17 +22,26 @@ describe('Offset List', () => {
       expect(toArray(list.rangeTree)).toEqual([[0, 5]])
     })
 
-    it('supports exceptions', () => {
+    it('supports spots', () => {
       let list = OffsetList.create()
-      list = list.insertException(0, 5)
-      expect(toArray(list.rangeTree)).toEqual([[0, 5], [1, NaN]])
+      list = list.insertSpots([0, 10, 30], 5)
+      expect(toArray(list.rangeTree)).toEqual([[0, 5], [1, NaN], [10, 5], [11, NaN], [30, 5], [31, NaN]])
+    })
+
+    it('infers correct offset after spot insertion', () => {
+      let list = OffsetList.create()
+      list = list.insertSpots([0, 10, 30], 5)
+      expect(toArray(list.offsetTree)).toEqual([
+        [0, { startIndex: 0, endIndex: 0, size: 5 }],
+        [5, { startIndex: 1, endIndex: Infinity, size: NaN }],
+      ])
     })
 
     it('removes NaNs', () => {
       let list = OffsetList.create()
-        .insertException(0, 5)
+        .insertSpots([0, 10], 5)
         .insert(1, 3, 50)
-      expect(toArray(list.rangeTree)).toEqual([[0, 5], [1, 50]])
+      expect(toArray(list.rangeTree)).toEqual([[0, 5], [1, 50], [10, 5], [11, 50]])
     })
 
     describe('value insertion', () => {

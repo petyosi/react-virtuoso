@@ -1,50 +1,30 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React from 'react'
 import * as ReactDOM from 'react-dom'
-import { Virtuoso } from '../src/'
+import { GroupedVirtuoso } from '../src/'
 
 const App = () => {
-  const [total, setTotal] = useState(0)
-  const items = useRef([])
-  const loading = useRef(false)
-
-  // the setTimeout below simulates a network request.
-  // In the real world, you can fetch data from a service.
-  // the setTotal call will trigger a refresh for the list,
-  // so make sure you call it last
-  const loadMore = useCallback(() => {
-    if (loading.current) {
-      return
-    }
-    loading.current = true
-
-    setTimeout(() => {
-      for (let index = total; index < total + total + 100; index++) {
-        items.current = [...items.current, { index }]
-      }
-      loading.current = false
-      setTotal(items.current.length)
-    }, 200)
-  }, [])
-
-  useEffect(() => {
-    loadMore()
-  }, [])
-
+  const groupCounts = []
+  for (let index = 0; index < 10; index++) {
+    groupCounts.push(10)
+  }
   return (
     <div>
-      <Virtuoso
-        totalCount={total}
-        overscan={100}
-        item={index => <div>Item {index}</div>}
-        style={{ height: '400px', width: '80%', maxWidth: '600px' }}
-        endReached={(idx: number) => {
-          if (idx > total - 20) {
-            console.log('loading more', idx)
-            loadMore()
-          }
+      <GroupedVirtuoso
+        style={{ height: '400px', width: '350px' }}
+        groupCounts={groupCounts}
+        group={index => {
+          return (
+            <div style={{ height: '20px' }}>
+              Group {index * 10} &ndash; {index * 10 + 10}
+            </div>
+          )
         }}
-        footer={() => {
-          return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>
+        item={(index, groupIndex) => {
+          return (
+            <div style={{ height: '40px' }}>
+              {index} (group {groupIndex})
+            </div>
+          )
         }}
       />
     </div>

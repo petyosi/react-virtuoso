@@ -15,6 +15,7 @@ export interface Item {
 export class OffsetList {
   public rangeTree: AATree<number>
   public offsetTree: AATree<OffsetValue>
+  private nanIndices: number[] = []
 
   public static create(): OffsetList {
     return new OffsetList(AATree.empty<number>())
@@ -26,7 +27,18 @@ export class OffsetList {
     let offsetTree = AATree.empty<OffsetValue>()
 
     let offset = 0
-    for (const { start: startIndex, end: endIndex, value: size } of rangeTree.ranges()) {
+    const ranges = rangeTree.ranges()
+
+    for (let { start: startIndex, value: size } of ranges) {
+      if (isNaN(size)) {
+        this.nanIndices.push(startIndex)
+      }
+    }
+
+    for (let { start: startIndex, end: endIndex, value: size } of ranges) {
+      if (isNaN(size)) {
+        endIndex = Infinity
+      }
       offsetTree = offsetTree.insert(offset, {
         startIndex,
         endIndex: endIndex,
@@ -34,6 +46,9 @@ export class OffsetList {
       })
       if (endIndex !== Infinity) {
         offset += (endIndex - startIndex + 1) * size
+      }
+      if (isNaN(size)) {
+        break
       }
     }
 
@@ -48,6 +63,14 @@ export class OffsetList {
     let tree = this.rangeTree
     if (tree.empty()) {
       return new OffsetList(tree.insert(0, size))
+    }
+
+    // tree is in non-complete state - we know the group sizes, but not the item sizes
+    if (this.nanIndices.length && this.nanIndices.indexOf(start) > -1) {
+      for (const nanIndex of this.nanIndices) {
+        tree = tree.insert(nanIndex, size)
+      }
+      return new OffsetList(tree)
     }
 
     // extend the range in both directions, so that we can get adjacent neighbours.
@@ -93,11 +116,16 @@ export class OffsetList {
     return tree === this.rangeTree ? this : new OffsetList(tree)
   }
 
-  public insertException(index: number, value: number): OffsetList {
+  public insertSpots(spotIndexes: number[], value: number): OffsetList {
     if (this.empty()) {
-      return new OffsetList(this.rangeTree.insert(1, NaN).insert(index, value))
+      let tree = this.rangeTree
+      for (const spot of spotIndexes) {
+        tree = tree.insert(spot, value).insert(spot + 1, NaN)
+      }
+
+      return new OffsetList(tree)
     } else {
-      return this.insert(index, index, value)
+      throw new Error('attempting to overwrite non-empty tree')
     }
   }
 
@@ -105,6 +133,7 @@ export class OffsetList {
     if (this.offsetTree.empty()) {
       return 0
     }
+
     const find = (value: OffsetValue) => {
       if (value.startIndex > index) return -1
       if (value.endIndex < index) return 1
@@ -202,7 +231,7 @@ export class OffsetList {
 
     for (let { start, end, value: size } of ranges) {
       end = Math.min(end, endIndex)
-      total += (end - start + 1) * size
+      total += (end - start + 1) * (isNaN(size) ? 0 : size)
     }
 
     return total

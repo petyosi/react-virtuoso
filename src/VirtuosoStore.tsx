@@ -47,11 +47,15 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
   if (!itemHeight) {
     itemHeights$
       .pipe(withLatestFrom(offsetList$.subscribe, stickyItems$.subscribe))
-      .subscribe(([heights, offsetList, _]) => {
+      .subscribe(([heights, offsetList, stickyItems]) => {
         let newList = offsetList
 
         for (let { start, end, size } of heights) {
-          newList = newList.insert(start, end, size)
+          if (newList.empty() && start == end && stickyItems.indexOf(start) > -1) {
+            newList = newList.insertSpots(stickyItems, size)
+          } else {
+            newList = newList.insert(start, end, size)
+          }
         }
 
         if (newList !== offsetList) {
@@ -160,6 +164,12 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     totalCount$.subscribe,
     offsetList$.subscribe
   ).pipe(scan(listScanner(overscan), []))
+
+  /*
+  list$.subscribe(list => {
+    console.log(list)
+  })
+   */
 
   const endReached$ = subject(0)
   let currentEndIndex = 0

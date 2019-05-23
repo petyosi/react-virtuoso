@@ -185,4 +185,19 @@ describe('Virtuoso Store', () => {
       done()
     })
   })
+
+  it('infers total height for a grouped list from the first group and the first item', done => {
+    const { totalHeight, groupCounts, itemHeights } = VirtuosoStore({
+      overscan: 0,
+    })
+
+    groupCounts([10, 90, 100])
+    itemHeights([{ start: 0, end: 0, size: 50 }])
+    itemHeights([{ start: 1, end: 1, size: 20 }])
+
+    totalHeight((total: number) => {
+      expect(total).toEqual(3 * 50 + (10 + 90 + 100) * 20)
+      done()
+    })
+  })
 })
