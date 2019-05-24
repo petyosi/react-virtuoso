@@ -7,6 +7,7 @@ type GroupedVirtuosoProps = Pick<VirtuosoProps, Exclude<keyof VirtuosoProps, 'to
   groupCounts: number[]
   group: (groupIndex: number) => ReactElement
   item: (index: number, groupIndex: number) => ReactElement
+  groupIndices?: (indices: number[]) => void
 }
 
 export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, VirtuosoState> {
@@ -19,7 +20,7 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
     state.endReached(props.endReached)
     state.isScrolling(props.scrollingStateChange)
     state.groupCounts(props.groupCounts)
-
+    state.groupIndices(props.groupIndices)
     return null
   }
 

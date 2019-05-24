@@ -242,6 +242,8 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     })
   )
 
+  const groupIndices$ = stickyItems$.pipe()
+
   return {
     groupCounts: makeInput(groupCounts$),
     itemHeights: makeInput(itemHeights$),
@@ -260,6 +262,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     endReached: makeOutput(endReached$),
     isScrolling: makeOutput(isScrolling$),
     stickyItems: makeOutput(stickyItems$),
+    groupIndices: makeOutput(groupIndices$),
     scrollTo: makeOutput(scrollTo$),
   }
 }
