@@ -9,12 +9,18 @@ const scrollerStyle: React.CSSProperties = {
   outline: 'none',
 }
 
-export const VirtuosoScroller: FC<{ style: CSSProperties }> = ({ children, style }) => {
-  const { scrollTop } = useContext(VirtuosoContext)!
+export type TScrollContainer = FC<{
+  style: CSSProperties
+  className?: string
+  reportScrollTop: (scrollTop: number) => void
+  scrollTo: (callback: (scrollTop: number) => void) => void
+}>
+
+const DefaultScrollContainer: TScrollContainer = ({ className, style, reportScrollTop, scrollTo, children }) => {
   const elRef = useRef<HTMLElement | null>(null)
 
   const onScroll: EventListener = useCallback((e: Event) => {
-    scrollTop((e.target as HTMLDivElement).scrollTop)
+    reportScrollTop((e.target as HTMLDivElement).scrollTop)
   }, [])
 
   const ref = useCallback((theRef: HTMLElement | null) => {
@@ -26,9 +32,34 @@ export const VirtuosoScroller: FC<{ style: CSSProperties }> = ({ children, style
     }
   }, [])
 
+  scrollTo(scrollTop => {
+    const goTo: ScrollToOptions = { top: scrollTop }
+    ;(elRef.current as HTMLElement).scrollTo(goTo)
+  })
+
   return (
-    <div ref={ref} style={{ ...scrollerStyle, ...style }} tabIndex={0}>
+    <div ref={ref} style={style} tabIndex={0} className={className}>
       {children}
     </div>
+  )
+}
+
+export const VirtuosoScroller: FC<{ className?: string; style: CSSProperties; ScrollContainer?: TScrollContainer }> = ({
+  children,
+  style,
+  className,
+  ScrollContainer = DefaultScrollContainer,
+}) => {
+  const { scrollTop, scrollTo } = useContext(VirtuosoContext)!
+
+  return (
+    <ScrollContainer
+      style={{ ...scrollerStyle, ...style }}
+      reportScrollTop={scrollTop}
+      scrollTo={scrollTo}
+      className={className}
+    >
+      {children}
+    </ScrollContainer>
   )
 }

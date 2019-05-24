@@ -1,7 +1,7 @@
 import React, { ReactElement, useContext, FC, CSSProperties, useCallback } from 'react'
 import { VirtuosoContext } from './VirtuosoContext'
 import { useHeight, useOutput } from './Utils'
-import { VirtuosoScroller } from './VirtuosoScroller'
+import { VirtuosoScroller, TScrollContainer } from './VirtuosoScroller'
 import { VirtuosoList, TRender } from './VirtuosoList'
 import { ItemHeight } from 'VirtuosoStore'
 
@@ -28,10 +28,11 @@ const viewportStyle: CSSProperties = {
 export const VirtuosoView: React.FC<{
   style: CSSProperties
   className?: string
-  footer: (() => ReactElement) | undefined
+  footer?: () => ReactElement
+  ScrollContainer?: TScrollContainer
   item: TRender
   fixedItemHeight: boolean
-}> = ({ style, className, footer, item, fixedItemHeight }) => {
+}> = ({ style, footer, item, fixedItemHeight, ScrollContainer, className }) => {
   const { itemHeights, listHeight, viewportHeight, listOffset, list, topList } = useContext(VirtuosoContext)!
 
   const translate = useOutput<number>(listOffset, 0)
@@ -78,7 +79,7 @@ export const VirtuosoView: React.FC<{
   const topTransform = `translateY(${-translate}px)`
 
   return (
-    <VirtuosoScroller style={style} className={className}>
+    <VirtuosoScroller style={style} ScrollContainer={ScrollContainer} className={className}>
       <div style={viewportStyle} ref={viewportCallbackRef}>
         <div style={{ transform }}>
           <div ref={listCallbackRef}>
@@ -93,3 +94,5 @@ export const VirtuosoView: React.FC<{
     </VirtuosoScroller>
   )
 }
+
+export { TScrollContainer }

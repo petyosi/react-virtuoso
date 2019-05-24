@@ -21,6 +21,12 @@ type ListScanner = (
   overscan: number
 ) => (items: ListItem[], viewState: [number, number, number, number, number, number, number, OffsetList]) => ListItem[]
 
+interface TScrollLocationWithAlign {
+  index: number
+  align: 'start' | 'center' | 'end'
+}
+export type TScrollLocation = number | TScrollLocationWithAlign
+
 const getListTop = (items: ListItem[]) => (items.length > 0 ? items[0].offset : 0)
 
 const mapToTotal: MapToTotal = ([offsetList, totalCount]) => offsetList.total(totalCount - 1)
@@ -37,6 +43,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
   const isScrolling$ = subject(false)
   let initialOffsetList = OffsetList.create()
   const stickyItems$ = subject<number[]>([])
+  const scrollToIndex$ = subject<TScrollLocation>(undefined, false)
 
   if (itemHeight) {
     initialOffsetList = initialOffsetList.insert(0, 0, itemHeight)
@@ -205,6 +212,36 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     )
     .subscribe(isScrolling$.next)
 
+  const scrollTo$ = scrollToIndex$.pipe(
+    withLatestFrom(
+      offsetList$.subscribe,
+      topListHeight$.subscribe,
+      stickyItems$.subscribe,
+      viewportHeight$.subscribe,
+      totalCount$.subscribe
+    ),
+    map(([location, offsetList, topListHeight, stickyItems, viewportHeight, totalCount]) => {
+      if (typeof location === 'number') {
+        location = { index: location, align: 'start' }
+      }
+      let { index, align = 'start' } = location
+
+      index = Math.max(0, index, Math.min(totalCount - 1, index))
+
+      let offset = offsetList.offsetOf(index)
+      if (align == 'end') {
+        offset = offset - viewportHeight + offsetList.itemAt(index).size
+      } else if (align === 'center') {
+        offset = Math.round(offset - viewportHeight / 2 + offsetList.itemAt(index).size / 2)
+      } else {
+        if (stickyItems.indexOf(index) === -1) {
+          offset -= topListHeight
+        }
+      }
+      return offset
+    })
+  )
+
   return {
     groupCounts: makeInput(groupCounts$),
     itemHeights: makeInput(itemHeights$),
@@ -214,6 +251,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     scrollTop: makeInput(scrollTop$),
     topItemCount: makeInput(topItemCount$),
     totalCount: makeInput(totalCount$),
+    scrollToIndex: makeInput(scrollToIndex$),
 
     list: makeOutput(list$),
     topList: makeOutput(topList$),
@@ -222,6 +260,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     endReached: makeOutput(endReached$),
     isScrolling: makeOutput(isScrolling$),
     stickyItems: makeOutput(stickyItems$),
+    scrollTo: makeOutput(scrollTo$),
   }
 }
 

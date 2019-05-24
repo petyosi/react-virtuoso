@@ -1,6 +1,6 @@
 import { VirtuosoProps, VirtuosoState, VirtuosoPresentation } from './Virtuoso'
 import React, { ReactElement, PureComponent } from 'react'
-import { VirtuosoStore } from './VirtuosoStore'
+import { VirtuosoStore, TScrollLocation } from './VirtuosoStore'
 import { ListItem } from 'GroupIndexTransposer'
 
 type GroupedVirtuosoProps = Pick<VirtuosoProps, Exclude<keyof VirtuosoProps, 'totalCount' | 'topItems' | 'item'>> & {
@@ -31,14 +31,20 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
     }
   }
 
+  public scrollToIndex(location: TScrollLocation) {
+    this.state.scrollToIndex(location)
+  }
+
   public render() {
     return (
       <VirtuosoPresentation
         contextValue={this.state}
         style={this.props.style}
+        className={this.props.className}
         item={this.itemRender}
         footer={this.props.footer}
         itemHeight={this.props.itemHeight}
+        ScrollContainer={this.props.ScrollContainer}
       />
     )
   }

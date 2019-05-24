@@ -71,12 +71,12 @@ export function observable<T, K>(source: TSubscribe<T>, operator: TOperator<T, K
   }
 }
 
-export function subject<T>(initial?: T) {
+export function subject<T>(initial?: T, distinct = true) {
   let subscribers: TSubscriber<T>[] = []
   let val: T | undefined = initial
 
   const next = (newVal: T) => {
-    if (newVal !== val) {
+    if (!distinct || newVal !== val) {
       val = newVal
       subscribers.forEach(subscriber => subscriber(newVal))
     }
@@ -213,6 +213,24 @@ export function withLatestFrom<T, R1, R2>(
   s1: TSubscribe<R1>,
   s2: TSubscribe<R2>
 ): (val: T, done: TSubscriber<[T, R1, R2]>) => void
+export function withLatestFrom<T, R1, R2, R3>(
+  s1: TSubscribe<R1>,
+  s2: TSubscribe<R2>,
+  s3: TSubscribe<R3>
+): (val: T, done: TSubscriber<[T, R1, R2, R3]>) => void
+export function withLatestFrom<T, R1, R2, R3, R4>(
+  s1: TSubscribe<R1>,
+  s2: TSubscribe<R2>,
+  s3: TSubscribe<R3>,
+  s4: TSubscribe<R4>
+): (val: T, done: TSubscriber<[T, R1, R2, R3, R4]>) => void
+export function withLatestFrom<T, R1, R2, R3, R4, R5>(
+  s1: TSubscribe<R1>,
+  s2: TSubscribe<R2>,
+  s3: TSubscribe<R3>,
+  s4: TSubscribe<R4>,
+  s5: TSubscribe<R5>
+): (val: T, done: TSubscriber<[T, R1, R2, R3, R4, R5]>) => void
 
 export function withLatestFrom<T>(...sources: TSubscribe<any>[]) {
   const called = Array<boolean>(sources.length).fill(false)

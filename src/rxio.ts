@@ -19,7 +19,7 @@ export function makeOutput<T>(observable: TObservable<T>) {
   }
 }
 
-export function makeInput<T>(subject: { next: (val: T) => void }) {
+export function makeInput<T>(subject: { next: (value: T) => void }) {
   return subject.next
 }
 

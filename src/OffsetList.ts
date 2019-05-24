@@ -29,26 +29,29 @@ export class OffsetList {
     let offset = 0
     const ranges = rangeTree.ranges()
 
-    for (let { start: startIndex, value: size } of ranges) {
-      if (isNaN(size)) {
-        this.nanIndices.push(startIndex)
-      }
-    }
+    let nanFound = false
 
     for (let { start: startIndex, end: endIndex, value: size } of ranges) {
       if (isNaN(size)) {
-        endIndex = Infinity
-      }
-      offsetTree = offsetTree.insert(offset, {
-        startIndex,
-        endIndex: endIndex,
-        size,
-      })
-      if (endIndex !== Infinity) {
+        this.nanIndices.push(startIndex)
+
+        if (!nanFound) {
+          offsetTree = offsetTree.insert(offset, {
+            startIndex,
+            endIndex: Infinity,
+            size,
+          })
+        }
+
+        nanFound = true
+      } else if (!nanFound) {
+        offsetTree = offsetTree.insert(offset, {
+          startIndex,
+          endIndex: endIndex,
+          size,
+        })
+
         offset += (endIndex - startIndex + 1) * size
-      }
-      if (isNaN(size)) {
-        break
       }
     }
 

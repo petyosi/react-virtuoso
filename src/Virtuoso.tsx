@@ -1,7 +1,7 @@
 import React, { CSSProperties, PureComponent, ReactElement, FC } from 'react'
 import { VirtuosoContext } from './VirtuosoContext'
-import { VirtuosoStore } from './VirtuosoStore'
-import { VirtuosoView } from './VirtuosoView'
+import { VirtuosoStore, TScrollLocation } from './VirtuosoStore'
+import { TScrollContainer, VirtuosoView } from './VirtuosoView'
 import { ListItem } from './GroupIndexTransposer'
 import { TRender } from './VirtuosoList'
 
@@ -18,6 +18,7 @@ export interface VirtuosoProps {
   scrollingStateChange?: (isScrolling: boolean) => void
   style?: CSSProperties
   className?: string
+  ScrollContainer?: TScrollContainer
 }
 
 interface TVirtuosoPresentationProps {
@@ -27,7 +28,10 @@ interface TVirtuosoPresentationProps {
   style?: CSSProperties
   className?: string
   itemHeight?: number
+  ScrollContainer?: TScrollContainer
 }
+
+export { TScrollContainer }
 
 export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
   contextValue,
@@ -36,6 +40,7 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
   item,
   footer,
   itemHeight,
+  ScrollContainer,
 }) => {
   return (
     <VirtuosoContext.Provider value={contextValue}>
@@ -45,6 +50,7 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
         item={item}
         footer={footer}
         fixedItemHeight={itemHeight !== undefined}
+        ScrollContainer={ScrollContainer}
       />
     </VirtuosoContext.Provider>
   )
@@ -64,8 +70,12 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     return null
   }
 
-  private itemRenderer = (item: ListItem) => {
+  private itemRender = (item: ListItem) => {
     return this.props.item(item.index)
+  }
+
+  public scrollToIndex(location: TScrollLocation) {
+    this.state.scrollToIndex(location)
   }
 
   public render() {
@@ -74,9 +84,10 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
         contextValue={this.state}
         style={this.props.style}
         className={this.props.className}
-        item={this.itemRenderer}
+        item={this.itemRender}
         footer={this.props.footer}
         itemHeight={this.props.itemHeight}
+        ScrollContainer={this.props.ScrollContainer}
       />
     )
   }

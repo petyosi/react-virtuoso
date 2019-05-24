@@ -200,4 +200,71 @@ describe('Virtuoso Store', () => {
       done()
     })
   })
+
+  it('translates the scrollToIndex to a given offset', done => {
+    const { itemHeights, scrollToIndex, scrollTo } = VirtuosoStore({ totalCount: 100 })
+    itemHeights([{ start: 0, end: 0, size: 50 }])
+
+    scrollTo(offset => {
+      expect(offset).toEqual(500)
+      done()
+    })
+
+    scrollToIndex(10)
+  })
+
+  it('scrolls to display the item at the bottom of the visible viewport', done => {
+    const { viewportHeight, itemHeights, scrollToIndex, scrollTo } = VirtuosoStore({ totalCount: 100 })
+    const itemSize = 50
+    itemHeights([{ start: 0, end: 0, size: itemSize }])
+    viewportHeight(820)
+
+    scrollTo(offset => {
+      expect(offset).toEqual(itemSize * 20 - 820 + itemSize)
+      done()
+    })
+
+    scrollToIndex({ index: 20, align: 'end' })
+  })
+
+  it('scrolls to display the item at the center of the visible viewport', done => {
+    const { viewportHeight, itemHeights, scrollToIndex, scrollTo } = VirtuosoStore({ totalCount: 100 })
+    const itemSize = 50
+    itemHeights([{ start: 0, end: 0, size: itemSize }])
+    viewportHeight(820)
+
+    scrollTo(offset => {
+      expect(offset).toEqual(itemSize * 20 - 820 / 2 + itemSize / 2)
+      done()
+    })
+
+    scrollToIndex({ index: 20, align: 'center' })
+  })
+
+  it('takes into account the top list height when scrolling to a given location', done => {
+    const { topItemCount, itemHeights, scrollToIndex, scrollTo } = VirtuosoStore({ totalCount: 100 })
+    itemHeights([{ start: 0, end: 0, size: 50 }])
+    topItemCount(3)
+
+    scrollTo(offset => {
+      expect(offset).toEqual(50 * 10 - 3 * 50)
+      done()
+    })
+
+    scrollToIndex(10)
+  })
+
+  it('scrolls to display the first item in the group', done => {
+    const { itemHeights, scrollToIndex, scrollTo, groupCounts } = VirtuosoStore({})
+    groupCounts([10, 10, 10])
+    itemHeights([{ start: 0, end: 0, size: 50 }])
+    itemHeights([{ start: 1, end: 1, size: 20 }])
+
+    scrollTo(offset => {
+      expect(offset).toEqual(50 * 2 + 20 * 20)
+      done()
+    })
+
+    scrollToIndex(22)
+  })
 })
