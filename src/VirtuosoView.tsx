@@ -27,10 +27,11 @@ const viewportStyle: CSSProperties = {
 
 export const VirtuosoView: React.FC<{
   style: CSSProperties
+  className?: string
   footer: (() => ReactElement) | undefined
   item: TRender
   fixedItemHeight: boolean
-}> = ({ style, footer, item, fixedItemHeight }) => {
+}> = ({ style, className, footer, item, fixedItemHeight }) => {
   const { itemHeights, listHeight, viewportHeight, listOffset, list, topList } = useContext(VirtuosoContext)!
 
   const translate = useOutput<number>(listOffset, 0)
@@ -77,7 +78,7 @@ export const VirtuosoView: React.FC<{
   const topTransform = `translateY(${-translate}px)`
 
   return (
-    <VirtuosoScroller style={style}>
+    <VirtuosoScroller style={style} className={className}>
       <div style={viewportStyle} ref={viewportCallbackRef}>
         <div style={{ transform }}>
           <div ref={listCallbackRef}>

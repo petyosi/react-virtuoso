@@ -17,6 +17,7 @@ export interface VirtuosoProps {
   endReached?: (index: number) => void
   scrollingStateChange?: (isScrolling: boolean) => void
   style?: CSSProperties
+  className?: string
 }
 
 interface TVirtuosoPresentationProps {
@@ -24,19 +25,27 @@ interface TVirtuosoPresentationProps {
   item: TRender
   footer?: () => ReactElement
   style?: CSSProperties
+  className?: string
   itemHeight?: number
 }
 
 export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
   contextValue,
   style,
+  className,
   item,
   footer,
   itemHeight,
 }) => {
   return (
     <VirtuosoContext.Provider value={contextValue}>
-      <VirtuosoView style={style || {}} item={item} footer={footer} fixedItemHeight={itemHeight !== undefined} />
+      <VirtuosoView
+        style={style || {}}
+        className={className}
+        item={item}
+        footer={footer}
+        fixedItemHeight={itemHeight !== undefined}
+      />
     </VirtuosoContext.Provider>
   )
 }
@@ -64,6 +73,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
       <VirtuosoPresentation
         contextValue={this.state}
         style={this.props.style}
+        className={this.props.className}
         item={this.itemRenderer}
         footer={this.props.footer}
         itemHeight={this.props.itemHeight}
