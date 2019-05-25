@@ -69,7 +69,7 @@ export class OffsetList {
     }
 
     // tree is in non-complete state - we know the group sizes, but not the item sizes
-    if (this.nanIndices.length && this.nanIndices.indexOf(start) > -1) {
+    if (this.nanIndices.length && this.nanIndices.indexOf(end) > -1) {
       for (const nanIndex of this.nanIndices) {
         tree = tree.insert(nanIndex, size)
       }
