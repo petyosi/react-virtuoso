@@ -18,7 +18,7 @@ export const VirtuosoList: React.FC<TListProps> = ({ list, transform = '', rende
 
   const getStyle = useCallback(
     (index): CSSProperties => {
-      const pinned = stickyItems.some(stickyItemIndex => stickyItemIndex === index)
+      const pinned = stickyItems.indexOf(index) > -1
 
       const style: CSSProperties = {
         transform,
