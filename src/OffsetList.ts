@@ -70,6 +70,10 @@ export class OffsetList {
 
     // tree is in non-complete state - we know the group sizes, but not the item sizes
     if (this.nanIndices.length && this.nanIndices.indexOf(end) > -1) {
+      const groupSize = tree.find(this.nanIndices[0] - 1)
+      if (groupSize === size) {
+        return new OffsetList(AATree.empty<number>().insert(0, size))
+      }
       for (const nanIndex of this.nanIndices) {
         tree = tree.insert(nanIndex, size)
       }
