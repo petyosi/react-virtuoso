@@ -40,7 +40,7 @@ describe('Offset List', () => {
     it('removes NaNs', () => {
       let list = OffsetList.create()
         .insertSpots([0, 10], 5)
-        .insert(1, 3, 50)
+        .insert(1, 1, 50)
       expect(toArray(list.rangeTree)).toEqual([[0, 5], [1, 50], [10, 5], [11, 50]])
     })
 

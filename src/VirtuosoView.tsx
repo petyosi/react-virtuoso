@@ -1,15 +1,26 @@
-import React, { ReactElement, useContext, FC, CSSProperties, useCallback } from 'react'
+import React, { ReactElement, useContext, FC, CSSProperties, useMemo } from 'react'
 import { VirtuosoContext } from './VirtuosoContext'
-import { useHeight, useOutput } from './Utils'
+import { useHeight, randomClassName } from './Utils'
 import { VirtuosoScroller, TScrollContainer } from './VirtuosoScroller'
 import { VirtuosoList, TRender } from './VirtuosoList'
 import { ItemHeight } from 'VirtuosoStore'
+import { VirtuosoStyle } from './Style'
 
-const VirtuosoFiller: FC<{}> = () => {
-  const totalHeight = useOutput<number>(useContext(VirtuosoContext)!.totalHeight, 0)
-
-  return <div style={{ height: `${totalHeight}px`, position: 'absolute', top: 0 }}>&nbsp;</div>
+export const DefaultListContainer: React.FC<{ className: string; listRef: (instance: HTMLElement | null) => void }> = ({
+  className,
+  children,
+  listRef,
+}) => {
+  return (
+    <div className={className} ref={listRef}>
+      {children}
+    </div>
+  )
 }
+
+export type TListContainer = typeof DefaultListContainer
+
+export { TScrollContainer }
 
 const VirtuosoFooter: FC<{ footer: () => ReactElement }> = ({ footer }) => {
   const footerCallbackRef = useHeight(useContext(VirtuosoContext)!.footerHeight)
@@ -17,12 +28,32 @@ const VirtuosoFooter: FC<{ footer: () => ReactElement }> = ({ footer }) => {
   return <footer ref={footerCallbackRef}>{footer()}</footer>
 }
 
-const viewportStyle: CSSProperties = {
-  top: 0,
-  position: 'sticky',
-  height: '100%',
-  overflow: 'hidden',
-  WebkitBackfaceVisibility: 'hidden',
+const getHeights = (children: HTMLCollection) => {
+  const results: ItemHeight[] = []
+  for (var i = 0, len = children.length; i < len; i++) {
+    let child = children.item(i) as HTMLElement
+
+    if (!child || child.dataset.index === undefined) {
+      continue
+    }
+
+    const index = parseInt(child.dataset.index!)
+    const knownSize = parseInt(child.dataset.knownSize!)
+    const size = child.offsetHeight
+
+    if (size === knownSize) {
+      continue
+    }
+
+    const lastResult = results[results.length - 1]
+    if (results.length === 0 || lastResult.size !== size || lastResult.end !== index - 1) {
+      results.push({ start: index, end: index, size })
+    } else {
+      results[results.length - 1].end++
+    }
+  }
+
+  return results
 }
 
 export const VirtuosoView: React.FC<{
@@ -30,69 +61,44 @@ export const VirtuosoView: React.FC<{
   className?: string
   footer?: () => ReactElement
   ScrollContainer?: TScrollContainer
+  ListContainer: TListContainer
   item: TRender
   fixedItemHeight: boolean
-}> = ({ style, footer, item, fixedItemHeight, ScrollContainer, className }) => {
-  const { itemHeights, listHeight, viewportHeight, listOffset, list, topList } = useContext(VirtuosoContext)!
+}> = ({ style, footer, item, fixedItemHeight, ScrollContainer, ListContainer, className }) => {
+  const { itemHeights, listHeight, viewportHeight, list, topList } = useContext(VirtuosoContext)!
 
-  const translate = useOutput<number>(listOffset, 0)
-
-  const reportHeights = useCallback((children: HTMLCollection) => {
-    const results: ItemHeight[] = []
-    for (var i = 0, len = children.length; i < len; i++) {
-      let child = children.item(i) as HTMLElement
-      if (!child || child.tagName !== 'DIV') {
-        continue
-      }
-
-      const index = parseInt(child.dataset.index!)
-      const size = child.offsetHeight
-      if (results.length === 0 || results[results.length - 1].size !== size) {
-        results.push({ start: index, end: index, size })
-      } else {
-        results[results.length - 1].end++
-      }
-    }
-
-    if (results.length > 0) {
-      itemHeights(results)
-    }
-  }, [])
+  const fillerClassName = useMemo(randomClassName, [])
+  const listClassName = useMemo(randomClassName, [])
+  const pinnedClassName = useMemo(randomClassName, [])
+  const viewportClassName = useMemo(randomClassName, [])
 
   const listCallbackRef = useHeight(
     listHeight,
     () => {},
     ref => {
       if (!fixedItemHeight) {
-        reportHeights(ref!.children)
+        const measuredItemHeights = getHeights(ref!.children)
+        if (measuredItemHeights.length > 0) {
+          itemHeights(measuredItemHeights)
+        }
       }
     }
   )
 
-  const viewportCallbackRef = useHeight(viewportHeight, ref => {
-    if (ref!.style.position === '') {
-      ref!.style.position = '-webkit-sticky'
-    }
-  })
-
-  const transform = `translateY(${translate}px)`
-  const topTransform = `translateY(${-translate}px)`
+  const viewportCallbackRef = useHeight(viewportHeight)
 
   return (
     <VirtuosoScroller style={style} ScrollContainer={ScrollContainer} className={className}>
-      <div style={viewportStyle} ref={viewportCallbackRef}>
-        <div style={{ transform }}>
-          <div ref={listCallbackRef}>
-            <VirtuosoList list={topList} transform={topTransform} render={item} />
-            <VirtuosoList list={list} render={item} />
-            {footer && <VirtuosoFooter footer={footer} />}
-          </div>
-        </div>
+      <div className={viewportClassName} ref={viewportCallbackRef}>
+        <ListContainer listRef={listCallbackRef} className={listClassName}>
+          <VirtuosoList list={topList} render={item} pinnedClassName={pinnedClassName} />
+          <VirtuosoList list={list} render={item} pinnedClassName={pinnedClassName} />
+          {footer && <VirtuosoFooter footer={footer} />}
+        </ListContainer>
       </div>
 
-      <VirtuosoFiller />
+      <div className={fillerClassName}>&nbsp;</div>
+      <VirtuosoStyle {...{ fillerClassName, listClassName, pinnedClassName, viewportClassName }} />
     </VirtuosoScroller>
   )
 }
-
-export { TScrollContainer }

@@ -1,13 +1,14 @@
-import { VirtuosoProps, VirtuosoState, VirtuosoPresentation } from './Virtuoso'
+import { VirtuosoProps, VirtuosoState, VirtuosoPresentation, TItemContainer } from './Virtuoso'
 import React, { ReactElement, PureComponent } from 'react'
 import { VirtuosoStore, TScrollLocation } from './VirtuosoStore'
-import { ListItem } from 'GroupIndexTransposer'
+import { TRender } from './VirtuosoList'
 
 type GroupedVirtuosoProps = Pick<VirtuosoProps, Exclude<keyof VirtuosoProps, 'totalCount' | 'topItems' | 'item'>> & {
   groupCounts: number[]
   group: (groupIndex: number) => ReactElement
   item: (index: number, groupIndex: number) => ReactElement
   groupIndices?: (indices: number[]) => void
+  GroupContainer?: TItemContainer
 }
 
 export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, VirtuosoState> {
@@ -24,11 +25,32 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
     return null
   }
 
-  protected itemRender = (item: ListItem): ReactElement => {
+  protected itemRender: TRender = (item, props) => {
+    const ItemContainer = this.props.ItemContainer
+    const GroupContainer = this.props.GroupContainer || ItemContainer
     if (item.type == 'group') {
-      return this.props.group(item.groupIndex)
+      const children = this.props.group(item.groupIndex)
+      if (GroupContainer) {
+        return (
+          <GroupContainer key={props.key} {...props}>
+            {children}
+          </GroupContainer>
+        )
+      } else {
+        return <div {...props}>{children}</div>
+      }
     } else {
-      return this.props.item(item.transposedIndex, item.groupIndex)
+      const children = this.props.item(item.transposedIndex, item.groupIndex)
+
+      if (ItemContainer) {
+        return (
+          <ItemContainer key={props.key} {...props}>
+            {children}
+          </ItemContainer>
+        )
+      } else {
+        return <div {...props}>{children}</div>
+      }
     }
   }
 
@@ -46,6 +68,7 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
         footer={this.props.footer}
         itemHeight={this.props.itemHeight}
         ScrollContainer={this.props.ScrollContainer}
+        ListContainer={this.props.ListContainer}
       />
     )
   }

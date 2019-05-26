@@ -1,11 +1,12 @@
 import React, { CSSProperties, PureComponent, ReactElement, FC } from 'react'
 import { VirtuosoContext } from './VirtuosoContext'
 import { VirtuosoStore, TScrollLocation } from './VirtuosoStore'
-import { TScrollContainer, VirtuosoView } from './VirtuosoView'
-import { ListItem } from './GroupIndexTransposer'
-import { TRender } from './VirtuosoList'
+import { TScrollContainer, VirtuosoView, TListContainer, DefaultListContainer } from './VirtuosoView'
+import { TRender, TRenderProps } from './VirtuosoList'
 
 export type VirtuosoState = ReturnType<typeof VirtuosoStore>
+
+export type TItemContainer = React.FC<TRenderProps>
 
 export interface VirtuosoProps {
   totalCount: number
@@ -19,6 +20,8 @@ export interface VirtuosoProps {
   style?: CSSProperties
   className?: string
   ScrollContainer?: TScrollContainer
+  ListContainer?: TListContainer
+  ItemContainer?: TItemContainer
 }
 
 interface TVirtuosoPresentationProps {
@@ -29,9 +32,10 @@ interface TVirtuosoPresentationProps {
   className?: string
   itemHeight?: number
   ScrollContainer?: TScrollContainer
+  ListContainer?: TListContainer
 }
 
-export { TScrollContainer }
+export { TScrollContainer, TListContainer }
 
 export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
   contextValue,
@@ -41,6 +45,7 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
   footer,
   itemHeight,
   ScrollContainer,
+  ListContainer,
 }) => {
   return (
     <VirtuosoContext.Provider value={contextValue}>
@@ -51,6 +56,7 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
         footer={footer}
         fixedItemHeight={itemHeight !== undefined}
         ScrollContainer={ScrollContainer}
+        ListContainer={ListContainer || DefaultListContainer}
       />
     </VirtuosoContext.Provider>
   )
@@ -70,8 +76,8 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     return null
   }
 
-  private itemRender = (item: ListItem) => {
-    return this.props.item(item.index)
+  private itemRender: TRender = (item, props) => {
+    return <div {...props}>{this.props.item(item.index)}</div>
   }
 
   public scrollToIndex(location: TScrollLocation) {
@@ -88,6 +94,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
         footer={this.props.footer}
         itemHeight={this.props.itemHeight}
         ScrollContainer={this.props.ScrollContainer}
+        ListContainer={this.props.ListContainer}
       />
     )
   }
