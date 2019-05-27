@@ -152,7 +152,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
       filter(params => !params[1].empty() && !params[0].empty()),
       withLatestFrom(topList$.subscribe),
       map(([[offsetList, stickyItemsIndexList, scrollTop], topList]) => {
-        const currentStickyItem = stickyItemsIndexList.findMaxValue(scrollTop)
+        const currentStickyItem = stickyItemsIndexList.findMaxValue(Math.max(scrollTop, 0))
 
         if (topList.length === 1 && topList[0].index === currentStickyItem) {
           return topList
