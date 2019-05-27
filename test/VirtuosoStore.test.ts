@@ -45,15 +45,11 @@ describe('Virtuoso Store', () => {
 
   it('emits a single item when the size is unknown', () => {
     const { viewportHeight, list } = VirtuosoStore({ overscan: 0, totalCount: 100 })
-
-    list(items => {
-      expect(items).toHaveLength(0)
-    })
+    viewportHeight(230)
 
     list(items => {
       expect(items).toHaveLength(1)
     })
-    viewportHeight(230)
   })
 
   it('fills in the space with enough items', () => {

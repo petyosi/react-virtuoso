@@ -1,7 +1,7 @@
 import React, { CSSProperties, PureComponent, ReactElement, FC } from 'react'
 import { VirtuosoContext } from './VirtuosoContext'
 import { VirtuosoStore, TScrollLocation } from './VirtuosoStore'
-import { TScrollContainer, VirtuosoView, TListContainer, DefaultListContainer } from './VirtuosoView'
+import { TScrollContainer, VirtuosoView, TListContainer, DefaultListContainer, TFooterContainer } from './VirtuosoView'
 import { TRender, TRenderProps } from './VirtuosoList'
 
 export type VirtuosoState = ReturnType<typeof VirtuosoStore>
@@ -20,6 +20,7 @@ export interface VirtuosoProps {
   style?: CSSProperties
   className?: string
   ScrollContainer?: TScrollContainer
+  FooterContainer?: TFooterContainer
   ListContainer?: TListContainer
   ItemContainer?: TItemContainer
 }
@@ -32,6 +33,7 @@ interface TVirtuosoPresentationProps {
   className?: string
   itemHeight?: number
   ScrollContainer?: TScrollContainer
+  FooterContainer?: TFooterContainer
   ListContainer?: TListContainer
 }
 
@@ -46,6 +48,7 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
   itemHeight,
   ScrollContainer,
   ListContainer,
+  FooterContainer,
 }) => {
   return (
     <VirtuosoContext.Provider value={contextValue}>
@@ -56,6 +59,7 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
         footer={footer}
         fixedItemHeight={itemHeight !== undefined}
         ScrollContainer={ScrollContainer}
+        FooterContainer={FooterContainer}
         ListContainer={ListContainer || DefaultListContainer}
       />
     </VirtuosoContext.Provider>
@@ -105,6 +109,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
         footer={this.props.footer}
         itemHeight={this.props.itemHeight}
         ScrollContainer={this.props.ScrollContainer}
+        FooterContainer={this.props.FooterContainer}
         ListContainer={this.props.ListContainer}
       />
     )

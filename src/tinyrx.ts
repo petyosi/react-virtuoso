@@ -121,38 +121,38 @@ export function coldSubject<T>() {
   }
 }
 
-export function combineLatest<S1, S2>(s1: TSubscribe<S1>, s2: TSubscribe<S2>): TObservable<[S1, S2]>
+export function combineLatest<S1, S2>(s1: TObservable<S1>, s2: TObservable<S2>): TObservable<[S1, S2]>
 export function combineLatest<S1, S2, S3>(
-  s1: TSubscribe<S1>,
-  s2: TSubscribe<S2>,
-  s3: TSubscribe<S3>
+  s1: TObservable<S1>,
+  s2: TObservable<S2>,
+  s3: TObservable<S3>
 ): TObservable<[S1, S2, S3]>
 export function combineLatest<S1, S2, S3, S4>(
-  s1: TSubscribe<S1>,
-  s2: TSubscribe<S2>,
-  s3: TSubscribe<S3>,
-  s4: TSubscribe<S4>
+  s1: TObservable<S1>,
+  s2: TObservable<S2>,
+  s3: TObservable<S3>,
+  s4: TObservable<S4>
 ): TObservable<[S1, S2, S3, S4]>
 export function combineLatest<S1, S2, S3, S4, S5, S6, S7>(
-  s1: TSubscribe<S1>,
-  s2: TSubscribe<S2>,
-  s3: TSubscribe<S3>,
-  s4: TSubscribe<S4>,
-  s5: TSubscribe<S5>,
-  s6: TSubscribe<S6>,
-  s7: TSubscribe<S7>
+  s1: TObservable<S1>,
+  s2: TObservable<S2>,
+  s3: TObservable<S3>,
+  s4: TObservable<S4>,
+  s5: TObservable<S5>,
+  s6: TObservable<S6>,
+  s7: TObservable<S7>
 ): TObservable<[S1, S2, S3, S4, S5, S6, S7]>
 export function combineLatest<S1, S2, S3, S4, S5, S6, S7, S8>(
-  s1: TSubscribe<S1>,
-  s2: TSubscribe<S2>,
-  s3: TSubscribe<S3>,
-  s4: TSubscribe<S4>,
-  s5: TSubscribe<S5>,
-  s6: TSubscribe<S6>,
-  s7: TSubscribe<S7>,
-  s8: TSubscribe<S8>
+  s1: TObservable<S1>,
+  s2: TObservable<S2>,
+  s3: TObservable<S3>,
+  s4: TObservable<S4>,
+  s5: TObservable<S5>,
+  s6: TObservable<S6>,
+  s7: TObservable<S7>,
+  s8: TObservable<S8>
 ): TObservable<[S1, S2, S3, S4, S5, S6, S7, S8]>
-export function combineLatest(...sources: TSubscribe<any>[]): TObservable<any[]> {
+export function combineLatest(...sources: TObservable<any>[]): TObservable<any[]> {
   const called = Array<boolean>(sources.length).fill(false)
   const values = Array<any>(sources.length)
   let subscribers: TSubscriber<any>[] = []
@@ -162,7 +162,7 @@ export function combineLatest(...sources: TSubscribe<any>[]): TObservable<any[]>
   }
 
   sources.forEach((source, index) => {
-    source(val => {
+    source.subscribe(val => {
       called[index] = true
       values[index] = val
       publish(subscribers)
@@ -229,35 +229,35 @@ export function scan<T, K>(scanner: (prevVal: T, current: K) => T, initialValue:
   }
 }
 
-export function withLatestFrom<T, R1>(s1: TSubscribe<R1>): (val: T, done: TSubscriber<[T, R1]>) => void
+export function withLatestFrom<T, R1>(s1: TObservable<R1>): (val: T, done: TSubscriber<[T, R1]>) => void
 export function withLatestFrom<T, R1, R2>(
-  s1: TSubscribe<R1>,
-  s2: TSubscribe<R2>
+  s1: TObservable<R1>,
+  s2: TObservable<R2>
 ): (val: T, done: TSubscriber<[T, R1, R2]>) => void
 export function withLatestFrom<T, R1, R2, R3>(
-  s1: TSubscribe<R1>,
-  s2: TSubscribe<R2>,
-  s3: TSubscribe<R3>
+  s1: TObservable<R1>,
+  s2: TObservable<R2>,
+  s3: TObservable<R3>
 ): (val: T, done: TSubscriber<[T, R1, R2, R3]>) => void
 export function withLatestFrom<T, R1, R2, R3, R4>(
-  s1: TSubscribe<R1>,
-  s2: TSubscribe<R2>,
-  s3: TSubscribe<R3>,
-  s4: TSubscribe<R4>
+  s1: TObservable<R1>,
+  s2: TObservable<R2>,
+  s3: TObservable<R3>,
+  s4: TObservable<R4>
 ): (val: T, done: TSubscriber<[T, R1, R2, R3, R4]>) => void
 export function withLatestFrom<T, R1, R2, R3, R4, R5>(
-  s1: TSubscribe<R1>,
-  s2: TSubscribe<R2>,
-  s3: TSubscribe<R3>,
-  s4: TSubscribe<R4>,
-  s5: TSubscribe<R5>
+  s1: TObservable<R1>,
+  s2: TObservable<R2>,
+  s3: TObservable<R3>,
+  s4: TObservable<R4>,
+  s5: TObservable<R5>
 ): (val: T, done: TSubscriber<[T, R1, R2, R3, R4, R5]>) => void
 
-export function withLatestFrom<T>(...sources: TSubscribe<any>[]) {
+export function withLatestFrom<T>(...sources: TObservable<any>[]) {
   const called = Array<boolean>(sources.length).fill(false)
   const values = Array<any>(sources.length)
   sources.forEach((source, index) => {
-    source(val => {
+    source.subscribe(val => {
       values[index] = val
       called[index] = true
     })

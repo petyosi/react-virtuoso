@@ -13,17 +13,17 @@ describe('rx output', () => {
   })
 
   it('overrides previous callbacks', () => {
-    const sub = subject()
+    const sub = subject<number>()
     const out = makeOutput(sub)
 
-    let i = 0
-    out(_ => i++)
+    let results: number[] = []
+    out(val => results.push(val))
     sub.next(1)
 
-    out(_ => i++) // this should remove the previous callback
+    out(val => results.push(val * 2)) // this should remove the previous callback
     sub.next(2)
 
-    expect(i).toEqual(2)
+    expect(results).toEqual([1, 2, 4])
   })
 })
 

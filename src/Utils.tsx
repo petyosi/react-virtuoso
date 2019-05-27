@@ -2,13 +2,14 @@ import { useRef, useState, useLayoutEffect } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
 import { TInput, TOutput } from './rxio'
 
+export type CallbackRefParam = HTMLElement | null
+export type CallbackRef = (ref: CallbackRefParam) => void
+
 type UseHeight = (
   input: TInput<number>,
   onMount?: (ref: CallbackRefParam) => void,
   onResize?: (ref: HTMLElement) => void
-) => (ref: CallbackRefParam) => void
-
-export type CallbackRefParam = HTMLElement | null
+) => CallbackRef
 
 export const useHeight: UseHeight = (input, onMount, onResize) => {
   const ref = useRef<CallbackRefParam>(null)

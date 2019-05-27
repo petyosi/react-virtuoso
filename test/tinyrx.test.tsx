@@ -57,7 +57,7 @@ describe('tinyrx', () => {
       const s1 = subject<number>()
       const s2 = subject<number>()
 
-      combineLatest(s1.subscribe, s2.subscribe).subscribe((values: any[]) => {
+      combineLatest(s1, s2).subscribe(values => {
         expect(values[0]).toEqual(1)
         expect(values[1]).toEqual(2)
       })
@@ -89,8 +89,8 @@ describe('tinyrx', () => {
       const s2 = subject<string>()
       const s3 = subject<string>()
 
-      combineLatest(s1.subscribe, s4.subscribe)
-        .pipe(withLatestFrom(s2.subscribe, s3.subscribe))
+      combineLatest(s1, s4)
+        .pipe(withLatestFrom(s2, s3))
         .subscribe(vals => {
           expect(vals).toEqual([[1, 2], 'a', 'b'])
           done()
