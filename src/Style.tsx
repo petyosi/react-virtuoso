@@ -20,19 +20,19 @@ export const VirtuosoStyle: FC<{
     const sheet = styleEl.sheet as any
 
     sheet.insertRule(`.${listClassName} {
-      transform: translateY(0)
+      transform: translateY(0);
     } `)
 
     sheet.insertRule(`.${pinnedClassName} {
       transform: translateY(0);
-      position: relative
-      z-index: 2
+      position: relative;
+      z-index: 2;
     }`)
 
     sheet.insertRule(`.${fillerClassName} {
       height: 0;
       position: absolute;
-      top: 0
+      top: 0;
     }`)
 
     sheet.insertRule(`.${viewportClassName} {
