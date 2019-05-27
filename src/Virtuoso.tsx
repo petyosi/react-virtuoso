@@ -77,7 +77,18 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
   }
 
   private itemRender: TRender = (item, props) => {
-    return <div {...props}>{this.props.item(item.index)}</div>
+    const ItemContainer = this.props.ItemContainer
+    const children = this.props.item(item.index)
+
+    if (ItemContainer) {
+      return (
+        <ItemContainer key={props.key} {...props}>
+          {children}
+        </ItemContainer>
+      )
+    } else {
+      return <div {...props}>{children}</div>
+    }
   }
 
   public scrollToIndex(location: TScrollLocation) {

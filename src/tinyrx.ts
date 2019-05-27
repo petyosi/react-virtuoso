@@ -100,6 +100,27 @@ export function subject<T>(initial?: T, distinct = true) {
   }
 }
 
+export function coldSubject<T>() {
+  let subscribers: TSubscriber<T>[] = []
+
+  const next = (newVal: T) => {
+    subscribers.forEach(subscriber => subscriber(newVal))
+  }
+
+  const subscribe = (subscriber: TSubscriber<T>) => {
+    subscribers.push(subscriber)
+    return () => {
+      subscribers = subscribers.filter(sub => sub !== subscriber)
+    }
+  }
+
+  return {
+    next,
+    subscribe,
+    pipe: buildPipe(subscribe),
+  }
+}
+
 export function combineLatest<S1, S2>(s1: TSubscribe<S1>, s2: TSubscribe<S2>): TObservable<[S1, S2]>
 export function combineLatest<S1, S2, S3>(
   s1: TSubscribe<S1>,

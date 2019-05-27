@@ -1,24 +1,22 @@
-import React, { useContext, ReactElement, HTMLAttributes } from 'react'
+import React, { useContext, ReactElement, useCallback } from 'react'
 import { useOutput } from './Utils'
-import { VirtuosoState } from './Virtuoso'
 import { VirtuosoContext } from './VirtuosoContext'
 import { ListItem } from './GroupIndexTransposer'
 
-export type TRenderProps = HTMLAttributes<HTMLElement> & {
+export interface TRenderProps {
   key: number
   'data-index': number
   'data-known-size': number
+  className?: string
 }
 export type TRender = (item: ListItem, props: TRenderProps) => ReactElement
 
-type TListProps = Pick<VirtuosoState, 'list'> & {
+interface TListProps {
   render: TRender
   pinnedClassName: string
 }
 
-const getProps = (item: ListItem, stickyItems: number[], pinnedClassName: string): TRenderProps => {
-  const pinned = stickyItems.indexOf(item.index) > -1
-
+const getProps = (pinned: boolean, item: ListItem, pinnedClassName: string): TRenderProps => {
   return {
     className: pinned ? pinnedClassName : undefined,
     key: item.index,
@@ -27,14 +25,21 @@ const getProps = (item: ListItem, stickyItems: number[], pinnedClassName: string
   }
 }
 
-export const VirtuosoList: React.FC<TListProps> = ({ list, render, pinnedClassName }) => {
-  const { stickyItems: stickyItemsOutput } = useContext(VirtuosoContext)!
+export const VirtuosoList: React.FC<TListProps> = ({ render, pinnedClassName }) => {
+  const { stickyItems: stickyItemsOutput, topList, list } = useContext(VirtuosoContext)!
   const items = useOutput<ListItem[]>(list, [])
+  const topItems = useOutput<ListItem[]>(topList, [])
   const stickyItems = useOutput<number[]>(stickyItemsOutput, [])
 
-  if (items.length === 0) {
-    return null
-  }
+  const renderCallback = useCallback((pinned: boolean, item) => render(item, getProps(pinned, item, pinnedClassName)), [
+    render,
+    stickyItems,
+  ])
 
-  return <>{items.map(item => render(item, getProps(item, stickyItems, pinnedClassName)))}</>
+  return (
+    <>
+      {topItems.map(renderCallback.bind(null, true))}
+      {items.map(renderCallback.bind(null, false))}
+    </>
+  )
 }

@@ -1,4 +1,15 @@
-import { subject, map, scan, withLatestFrom, debounceTime, mapTo, skip, filter, combineLatest } from '../src/tinyrx'
+import {
+  subject,
+  map,
+  scan,
+  withLatestFrom,
+  debounceTime,
+  mapTo,
+  skip,
+  filter,
+  combineLatest,
+  coldSubject,
+} from '../src/tinyrx'
 import { OffsetList } from './OffsetList'
 import { StubIndexTransposer, GroupIndexTransposer, ListItem } from './GroupIndexTransposer'
 import { makeInput, makeOutput } from './rxio'
@@ -172,20 +183,18 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     offsetList$.subscribe
   ).pipe(scan(listScanner(overscan), []))
 
-  /*
-  list$.subscribe(list => {
-    console.log(list)
-  })
-   */
-
-  const endReached$ = subject(0)
+  const endReached$ = coldSubject<number>()
   let currentEndIndex = 0
 
   list$
     .pipe(map(items => (items.length ? items[items.length - 1].index : 0)))
     .pipe(withLatestFrom(totalCount$.subscribe))
     .subscribe(([endIndex, totalCount]) => {
-      if (endIndex == totalCount - 1) {
+      if (totalCount === 0) {
+        return
+      }
+
+      if (endIndex === totalCount - 1) {
         if (currentEndIndex !== endIndex) {
           currentEndIndex = endIndex
           endReached$.next(endIndex)

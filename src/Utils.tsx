@@ -44,8 +44,11 @@ export function useOutput<T>(output: TOutput<T>, initialValue: T): T {
 
   useLayoutEffect(() => {
     output(setValue)
+    return () => {
+      console.log('cleanup')
+      output(undefined)
+    }
   }, [])
-
   return value
 }
 

@@ -65,7 +65,7 @@ export const VirtuosoView: React.FC<{
   item: TRender
   fixedItemHeight: boolean
 }> = ({ style, footer, item, fixedItemHeight, ScrollContainer, ListContainer, className }) => {
-  const { itemHeights, listHeight, viewportHeight, list, topList } = useContext(VirtuosoContext)!
+  const { itemHeights, listHeight, viewportHeight } = useContext(VirtuosoContext)!
 
   const fillerClassName = useMemo(randomClassName, [])
   const listClassName = useMemo(randomClassName, [])
@@ -91,8 +91,7 @@ export const VirtuosoView: React.FC<{
     <VirtuosoScroller style={style} ScrollContainer={ScrollContainer} className={className}>
       <div className={viewportClassName} ref={viewportCallbackRef}>
         <ListContainer listRef={listCallbackRef} className={listClassName}>
-          <VirtuosoList list={topList} render={item} pinnedClassName={pinnedClassName} />
-          <VirtuosoList list={list} render={item} pinnedClassName={pinnedClassName} />
+          <VirtuosoList render={item} pinnedClassName={pinnedClassName} />
           {footer && <VirtuosoFooter footer={footer} />}
         </ListContainer>
       </div>
