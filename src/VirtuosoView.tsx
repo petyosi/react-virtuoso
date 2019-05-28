@@ -1,24 +1,25 @@
-import React, { ReactElement, useContext, FC, CSSProperties, useMemo } from 'react'
+import React, { ReactElement, useContext, FC, CSSProperties } from 'react'
 import { VirtuosoContext } from './VirtuosoContext'
-import { useHeight, randomClassName, CallbackRef } from './Utils'
+import { useHeight, CallbackRef, useOutput } from './Utils'
 import { VirtuosoScroller, TScrollContainer } from './VirtuosoScroller'
 import { VirtuosoList, TRender } from './VirtuosoList'
 import { ItemHeight } from 'VirtuosoStore'
-import { VirtuosoStyle } from './Style'
 
 export const DefaultFooterContainer: React.FC<{ footerRef: CallbackRef }> = ({ children, footerRef }) => (
   <footer ref={footerRef}>{children}</footer>
 )
 
-export const DefaultListContainer: React.FC<{ className: string; listRef: CallbackRef }> = ({
-  className,
+export const DefaultListContainer: React.FC<{ listRef: CallbackRef; style: CSSProperties }> = ({
   children,
   listRef,
-}) => (
-  <div className={className} ref={listRef}>
-    {children}
-  </div>
-)
+  style,
+}) => {
+  return (
+    <div ref={listRef} style={style}>
+      {children}
+    </div>
+  )
+}
 
 export type TListContainer = typeof DefaultListContainer
 export type TFooterContainer = typeof DefaultFooterContainer
@@ -61,22 +62,14 @@ const getHeights = (children: HTMLCollection) => {
   return results
 }
 
-export const VirtuosoView: React.FC<{
-  style: CSSProperties
-  className?: string
-  footer?: () => ReactElement
-  ScrollContainer?: TScrollContainer
-  ListContainer: TListContainer
-  FooterContainer?: TFooterContainer
-  item: TRender
-  fixedItemHeight: boolean
-}> = ({ style, footer, item, fixedItemHeight, ScrollContainer, ListContainer, FooterContainer, className }) => {
-  const { itemHeights, listHeight, viewportHeight } = useContext(VirtuosoContext)!
-
-  const fillerClassName = useMemo(randomClassName, [])
-  const listClassName = useMemo(randomClassName, [])
-  const pinnedClassName = useMemo(randomClassName, [])
-  const viewportClassName = useMemo(randomClassName, [])
+const ListWrapper: React.FC<{ fixedItemHeight: boolean; ListContainer: TListContainer }> = ({
+  fixedItemHeight,
+  children,
+  ListContainer,
+}) => {
+  const { listHeight, itemHeights, listOffset } = useContext(VirtuosoContext)!
+  const translate = useOutput<number>(listOffset, 0)
+  const style = { transform: `translateY(${translate}px)` }
 
   const listCallbackRef = useHeight(
     listHeight,
@@ -91,19 +84,49 @@ export const VirtuosoView: React.FC<{
     }
   )
 
-  const viewportCallbackRef = useHeight(viewportHeight)
+  return (
+    <ListContainer listRef={listCallbackRef} style={style}>
+      {children}
+    </ListContainer>
+  )
+}
+
+const viewportStyle: CSSProperties = {
+  top: 0,
+  position: 'sticky',
+  height: '100%',
+  overflow: 'hidden',
+}
+
+export const VirtuosoView: React.FC<{
+  style: CSSProperties
+  className?: string
+  footer?: () => ReactElement
+  ScrollContainer?: TScrollContainer
+  ListContainer: TListContainer
+  FooterContainer?: TFooterContainer
+  item: TRender
+  fixedItemHeight: boolean
+}> = ({ style, footer, item, fixedItemHeight, ScrollContainer, ListContainer, FooterContainer, className }) => {
+  const { totalHeight, viewportHeight } = useContext(VirtuosoContext)!
+  const fillerHeight = useOutput<number>(totalHeight, 0)
+
+  const viewportCallbackRef = useHeight(viewportHeight, ref => {
+    if (ref!.style.position === '') {
+      ref!.style.position = '-webkit-sticky'
+    }
+  })
 
   return (
     <VirtuosoScroller style={style} ScrollContainer={ScrollContainer} className={className}>
-      <div className={viewportClassName} ref={viewportCallbackRef}>
-        <ListContainer listRef={listCallbackRef} className={listClassName}>
-          <VirtuosoList render={item} pinnedClassName={pinnedClassName} />
+      <div ref={viewportCallbackRef} style={viewportStyle}>
+        <ListWrapper fixedItemHeight={fixedItemHeight} ListContainer={ListContainer}>
+          <VirtuosoList render={item} />
           {footer && <VirtuosoFooter footer={footer} FooterContainer={FooterContainer} />}
-        </ListContainer>
+        </ListWrapper>
       </div>
 
-      <div className={fillerClassName}>&nbsp;</div>
-      <VirtuosoStyle {...{ fillerClassName, listClassName, pinnedClassName, viewportClassName }} />
+      <div style={{ height: `${fillerHeight}px`, position: 'absolute', top: 0 }}>&nbsp;</div>
     </VirtuosoScroller>
   )
 }
