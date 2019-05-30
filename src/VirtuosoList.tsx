@@ -1,4 +1,4 @@
-import React, { useContext, ReactElement, useCallback, CSSProperties } from 'react'
+import React, { useContext, ReactElement, CSSProperties, ReactNode } from 'react'
 import { useOutput } from './Utils'
 import { VirtuosoContext } from './VirtuosoContext'
 import { ListItem } from './GroupIndexTransposer'
@@ -15,31 +15,42 @@ interface TListProps {
   render: TRender
 }
 
-const getProps = (pinned: boolean, item: ListItem, translate: number): TRenderProps => {
-  return {
-    key: item.index,
-    'data-index': item.index,
-    'data-known-size': item.size,
-    style: pinned ? { transform: `translateY(${translate}px)`, position: 'relative', zIndex: 2 } : undefined,
-  }
-}
-
 export const VirtuosoList: React.FC<TListProps> = ({ render }) => {
-  const { stickyItems: stickyItemsOutput, topList, list, stickyItemsOffset } = useContext(VirtuosoContext)!
+  const { topList, list } = useContext(VirtuosoContext)!
   const items = useOutput<ListItem[]>(list, [])
   const topItems = useOutput<ListItem[]>(topList, [])
-  const stickyItems = useOutput<number[]>(stickyItemsOutput, [])
-  const translate = useOutput(stickyItemsOffset, 0)
+  // const stickyItems = useOutput<number[]>(stickyItemsOutput, [])
+  // const translate = useOutput(stickyItemsOffset, 0)
 
-  const renderCallback = useCallback(
-    (pinned: boolean, translate: number, item) => render(item, getProps(pinned, item, translate)),
-    [render, stickyItems]
-  )
+  let renderedItems: ReactNode[] = []
+  let topOffset = 0
+  const marginTop = topItems.reduce((acc, item) => {
+    return acc + item.size
+  }, 0)
 
-  return (
-    <>
-      {topItems.map(renderCallback.bind(null, true, translate))}
-      {items.map(renderCallback.bind(null, false, translate))}
-    </>
+  topItems.forEach((item, index) => {
+    const style: CSSProperties = { position: 'sticky', top: `${topOffset}px`, zIndex: 2 }
+    if (index === 0) {
+      style.marginTop = `${-marginTop}px`
+    }
+    const props = {
+      key: item.index,
+      'data-index': item.index,
+      'data-known-size': item.size,
+      style,
+    }
+    renderedItems.push(render(item, props))
+    topOffset += item.size
+  })
+
+  console.log(items, topItems)
+
+  renderedItems = renderedItems.concat(
+    items.map(item => {
+      return render(item, { key: item.index, 'data-index': item.index, 'data-known-size': item.size })
+    })
   )
+  console.log(renderedItems)
+
+  return <> {renderedItems} </>
 }

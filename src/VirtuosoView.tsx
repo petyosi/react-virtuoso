@@ -69,7 +69,7 @@ const ListWrapper: React.FC<{ fixedItemHeight: boolean; ListContainer: TListCont
 }) => {
   const { listHeight, itemHeights, listOffset } = useContext(VirtuosoContext)!
   const translate = useOutput<number>(listOffset, 0)
-  const style = { transform: `translateY(${translate}px)` }
+  const style = { marginTop: `${translate}px` }
 
   const listCallbackRef = useHeight(
     listHeight,
@@ -93,9 +93,10 @@ const ListWrapper: React.FC<{ fixedItemHeight: boolean; ListContainer: TListCont
 
 const viewportStyle: CSSProperties = {
   top: 0,
-  position: 'sticky',
+  position: 'absolute',
   height: '100%',
-  overflow: 'hidden',
+  width: '100%',
+  overflow: 'absolute',
 }
 
 export const VirtuosoView: React.FC<{
@@ -113,7 +114,7 @@ export const VirtuosoView: React.FC<{
 
   const viewportCallbackRef = useHeight(viewportHeight, ref => {
     if (ref!.style.position === '') {
-      ref!.style.position = '-webkit-sticky'
+      // ref!.style.position = '-webkit-sticky'
     }
   })
 

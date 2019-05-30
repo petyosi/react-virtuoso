@@ -200,9 +200,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
       }
     })
 
-  const listOffset$ = combineLatest(list$, scrollTop$, topListHeight$).pipe(
-    map(([items, scrollTop, topListHeight]) => getListTop(items) - scrollTop - topListHeight)
-  )
+  const listOffset$ = combineLatest(list$, scrollTop$, topListHeight$).pipe(map(([items]) => getListTop(items)))
 
   scrollTop$
     .pipe(
