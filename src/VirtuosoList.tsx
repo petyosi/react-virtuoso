@@ -1,4 +1,4 @@
-import React, { useContext, ReactElement, useCallback, CSSProperties } from 'react'
+import React, { useContext, ReactElement, CSSProperties, ReactNode } from 'react'
 import { useOutput } from './Utils'
 import { VirtuosoContext } from './VirtuosoContext'
 import { ListItem } from './GroupIndexTransposer'
@@ -13,33 +13,49 @@ export type TRender = (item: ListItem, props: TRenderProps) => ReactElement
 
 interface TListProps {
   render: TRender
+  stickyClassName: string
 }
 
-const getProps = (pinned: boolean, item: ListItem, translate: number): TRenderProps => {
-  return {
-    key: item.index,
-    'data-index': item.index,
-    'data-known-size': item.size,
-    style: pinned ? { transform: `translateY(${translate}px)`, position: 'relative', zIndex: 2 } : undefined,
-  }
-}
-
-export const VirtuosoList: React.FC<TListProps> = ({ render }) => {
-  const { stickyItems: stickyItemsOutput, topList, list, stickyItemsOffset } = useContext(VirtuosoContext)!
+export const VirtuosoList: React.FC<TListProps> = ({ render, stickyClassName }) => {
+  const { topList, list } = useContext(VirtuosoContext)!
   const items = useOutput<ListItem[]>(list, [])
   const topItems = useOutput<ListItem[]>(topList, [])
-  const stickyItems = useOutput<number[]>(stickyItemsOutput, [])
-  const translate = useOutput(stickyItemsOffset, 0)
 
-  const renderCallback = useCallback(
-    (pinned: boolean, translate: number, item) => render(item, getProps(pinned, item, translate)),
-    [render, stickyItems]
-  )
+  let renderedItems: ReactNode[] = []
+  let topOffset = 0
+  const renderedTopItemIndices: number[] = []
 
-  return (
-    <>
-      {topItems.map(renderCallback.bind(null, true, translate))}
-      {items.map(renderCallback.bind(null, false, translate))}
-    </>
-  )
+  const marginTop = topItems.reduce((acc, item) => {
+    return acc + item.size
+  }, 0)
+
+  topItems.forEach((item, index) => {
+    const itemIndex = item.index
+    renderedTopItemIndices.push(itemIndex)
+
+    const style: CSSProperties = {
+      top: `${topOffset}px`,
+      marginTop: index === 0 ? `${-marginTop}px` : undefined,
+    }
+
+    const props = {
+      key: itemIndex,
+      'data-index': itemIndex,
+      'data-known-size': item.size,
+      className: stickyClassName,
+      style,
+    }
+    renderedItems.push(render(item, props))
+    topOffset += item.size
+  })
+
+  items.forEach(item => {
+    if (renderedTopItemIndices.indexOf(item.index) > -1) {
+      return
+    }
+
+    renderedItems.push(render(item, { key: item.index, 'data-index': item.index, 'data-known-size': item.size }))
+  })
+
+  return <> {renderedItems} </>
 }

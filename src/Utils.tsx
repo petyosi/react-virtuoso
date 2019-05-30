@@ -51,14 +51,3 @@ export function useOutput<T>(output: TOutput<T>, initialValue: T): T {
   }, [])
   return value
 }
-
-const START_CHAR = 97
-const END_CHAR = 122
-
-const randomChar = () => String.fromCharCode(Math.round(Math.random() * (END_CHAR - START_CHAR) + START_CHAR))
-
-export const randomClassName = () =>
-  new Array(12)
-    .fill(0)
-    .map(randomChar)
-    .join('')

@@ -41,6 +41,7 @@ const App = () => {
         <GroupedVirtuoso
           ref={virtuoso}
           style={{ height: '400px', width: '350px' }}
+          overscan={300}
           groupCounts={groupCounts}
           ItemContainer={React.memo(ItemContainer)}
           ListContainer={React.memo(ListContainer)}
