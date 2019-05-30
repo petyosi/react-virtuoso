@@ -54,7 +54,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
   const isScrolling$ = subject(false)
   let initialOffsetList = OffsetList.create()
   const stickyItems$ = subject<number[]>([])
-  const scrollToIndex$ = subject<TScrollLocation>(undefined, false)
+  const scrollToIndex$ = coldSubject<TScrollLocation>()
 
   if (itemHeight) {
     initialOffsetList = initialOffsetList.insert(0, 0, itemHeight)
