@@ -4,8 +4,7 @@
   "homepage": "https://virtuoso.dev",
   "license": "MIT",
   "main": "dist/index.js",
-  "umd:main": "dist/react-virtuoso.umd.production.js",
-  "module": "dist/react-virtuoso.es.production.js",
+  "module": "dist/react-virtuoso.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist"
@@ -26,7 +25,6 @@
   "devDependencies": {
     "@babel/core": "^7.4.4",
     "@types/babel__core": "^7.1.1",
-    "@types/bootstrap": "^4.3.0",
     "@types/eslint": "^4.16.6",
     "@types/eslint-plugin-prettier": "^2.2.0",
     "@types/jest": "^24.0.12",
@@ -43,15 +41,16 @@
     "eslint-plugin-prettier": "^3.0.1",
     "eslint-plugin-react": "^7.13.0",
     "faker": "^4.1.0",
-    "husky": "^2.2.0",
+    "husky": "^2.5.0",
     "lodash": "^4.17.11",
     "parcel": "^1.12.3",
-    "prettier": "^1.17.0",
-    "pretty-quick": "^1.10.0",
+    "prettier": "^1.18.2",
+    "pretty-quick": "^1.11.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "tsdx": "^0.5.6",
-    "typescript": "^3.4.5"
+    "tsdx": "^0.7.2",
+    "tslib": "^1.10.0",
+    "typescript": "^3.5.2"
   },
   "dependencies": {
     "resize-observer-polyfill": "^1.5.1"

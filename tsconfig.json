@@ -7,7 +7,7 @@
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
-    "rootDirs": ["src", "stories"],
+    "rootDir": "./",
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
