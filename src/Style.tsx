@@ -13,7 +13,7 @@ export const VirtuosoStyle: FC<{
       position: sticky;
       position: -webkit-sticky;
       z-index: 2;
-    } `)
+    } `, 0)
 
     style.current = styleEl
 
