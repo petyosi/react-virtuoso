@@ -89,7 +89,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     const itemLength = items.length
 
     if (totalCount === 0) {
-      return itemLength === 0 ? items : []
+      return []
     }
 
     const listTop = getListTop(items)
