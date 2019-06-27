@@ -1,0 +1,35 @@
+.virtuoso-grid-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.virtuoso-grid-item {
+  width: 25%;
+  box-sizing: border-box;
+  flex: none;
+  height: 300px;
+  line-height: 300px;
+  padding: 1rem;
+  display: flex;
+  align-content: stretch;
+}
+
+@media (max-width: 1024px) {
+  .virtuoso-grid-item {
+    width: 50%;
+  }
+}
+
+@media (max-width: 768px) {
+  .virtuoso-grid-item {
+    width: 100%;
+    height: 100px;
+    line-height: 100px;
+  }
+}
+
+.virtuoso-grid-item span {
+  border: 1px solid black;
+  flex-grow: 1;
+  text-align: center;
+}
