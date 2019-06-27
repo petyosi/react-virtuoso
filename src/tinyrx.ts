@@ -225,10 +225,7 @@ export function debounceTime<T>(time: number) {
 export function scan<T, K>(scanner: (prevVal: T, current: K) => T, initialValue: T) {
   let prevVal: T = initialValue
   return (newVal: K, done: TSubscriber<T>) => {
-    const calcVal = scanner(prevVal, newVal)
-    if (calcVal !== prevVal) {
-      done((prevVal = calcVal))
-    }
+    done((prevVal = scanner(prevVal, newVal)))
   }
 }
 
