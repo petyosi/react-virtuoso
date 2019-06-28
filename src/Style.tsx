@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, FC } from 'react'
+import { useLayoutEffect, useRef, FC, CSSProperties } from 'react'
 
 export const VirtuosoStyle: FC<{
   stickyClassName: string
@@ -9,11 +9,14 @@ export const VirtuosoStyle: FC<{
     document.head.appendChild(styleEl)
     const sheet = styleEl.sheet as any
 
-    sheet.insertRule(`.${stickyClassName} {
+    sheet.insertRule(
+      `.${stickyClassName} {
       position: sticky;
       position: -webkit-sticky;
       z-index: 2;
-    } `, 0)
+    } `,
+      0
+    )
 
     style.current = styleEl
 
@@ -36,3 +39,11 @@ export const randomClassName = () =>
     .fill(0)
     .map(randomChar)
     .join('')
+
+export const viewportStyle: CSSProperties = {
+  top: 0,
+  position: 'absolute',
+  height: '100%',
+  width: '100%',
+  overflow: 'absolute',
+}

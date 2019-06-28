@@ -51,3 +51,34 @@ export function useOutput<T>(output: TOutput<T>, initialValue: T): T {
   }, [])
   return value
 }
+
+type UseSize = (callback: (params: { element: HTMLElement; width: number; height: number }) => void) => CallbackRef
+
+export const useSize: UseSize = callback => {
+  const ref = useRef<CallbackRefParam>(null)
+  const currentSize = useRef([0, 0])
+
+  const observer = new ResizeObserver(entries => {
+    const { width, height } = entries[0].contentRect
+    if (currentSize.current[0] !== width || currentSize.current[1] !== height) {
+      currentSize.current = [width, height]
+      callback({
+        element: entries[0].target as HTMLElement,
+        width,
+        height,
+      })
+    }
+  })
+
+  const callbackRef = (elRef: CallbackRefParam) => {
+    if (elRef) {
+      observer.observe(elRef)
+      ref.current = elRef
+    } else {
+      observer.unobserve(ref.current!)
+      ref.current = null
+    }
+  }
+
+  return callbackRef
+}

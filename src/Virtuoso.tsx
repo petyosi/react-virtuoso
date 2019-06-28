@@ -1,6 +1,7 @@
 import React, { CSSProperties, PureComponent, ReactElement, FC } from 'react'
 import { VirtuosoContext } from './VirtuosoContext'
-import { VirtuosoStore, TScrollLocation } from './VirtuosoStore'
+import { TScrollLocation } from './EngineCommons'
+import { VirtuosoStore } from './VirtuosoStore'
 import { TScrollContainer, VirtuosoView, TListContainer, DefaultListContainer, TFooterContainer } from './VirtuosoView'
 import { TRender, TRenderProps } from './VirtuosoList'
 
