@@ -1,6 +1,6 @@
 import { subject, map, combineLatest, withLatestFrom, coldSubject } from './tinyrx'
 import { makeInput, makeOutput } from './rxio'
-import { TScrollLocation } from './VirtuosoStore'
+import { TScrollLocation, buildIsScrolling } from './EngineCommons'
 
 type GridDimensions = [
   number, // container width,
@@ -97,6 +97,9 @@ export const VirtuosoGridEngine = () => {
       return offset
     })
   )
+
+  const isScrolling$ = buildIsScrolling(scrollTop$)
+
   return {
     gridDimensions: makeInput(gridDimensions$),
     totalCount: makeInput(totalCount$),
@@ -108,5 +111,6 @@ export const VirtuosoGridEngine = () => {
     totalHeight: makeOutput(totalHeight$),
     listOffset: makeOutput(listOffset$),
     scrollTo: makeOutput(scrollTo$),
+    isScrolling: makeOutput(isScrolling$),
   }
 }

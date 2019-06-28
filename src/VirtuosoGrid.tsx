@@ -15,10 +15,10 @@ export interface VirtuosoGridProps {
   ScrollContainer?: TScrollContainer
   listClassName?: string
   itemClassName?: string
+  scrollingStateChange?: (isScrolling: boolean) => void
 
   // TODO
   endReached?: (index: number) => void
-  scrollingStateChange?: (isScrolling: boolean) => void
   // ListContainer?: TListContainer
   // ItemContainer?: TItemContainer
 }
@@ -39,6 +39,7 @@ export class VirtuosoGrid extends React.PureComponent<VirtuosoGridProps, Virtuos
   public static getDerivedStateFromProps(props: VirtuosoGridProps, engine: VirtuosoGridState) {
     engine.overscan(props.overscan || 0)
     engine.totalCount(props.totalCount)
+    engine.isScrolling(props.scrollingStateChange)
     return null
   }
 

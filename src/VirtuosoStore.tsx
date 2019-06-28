@@ -1,18 +1,8 @@
-import {
-  subject,
-  map,
-  scan,
-  withLatestFrom,
-  debounceTime,
-  mapTo,
-  skip,
-  filter,
-  combineLatest,
-  coldSubject,
-} from '../src/tinyrx'
+import { subject, map, scan, withLatestFrom, filter, combineLatest, coldSubject } from '../src/tinyrx'
 import { OffsetList } from './OffsetList'
 import { StubIndexTransposer, GroupIndexTransposer, ListItem } from './GroupIndexTransposer'
 import { makeInput, makeOutput } from './rxio'
+import { TScrollLocation, buildIsScrolling } from './EngineCommons'
 
 export interface ItemHeight {
   start: number
@@ -32,12 +22,6 @@ type ListScanner = (
   overscan: number
 ) => (items: ListItem[], viewState: [number, number, number, number, number, number, number, OffsetList]) => ListItem[]
 
-interface TScrollLocationWithAlign {
-  index: number
-  align: 'start' | 'center' | 'end'
-}
-export type TScrollLocation = number | TScrollLocationWithAlign
-
 const getListTop = (items: ListItem[]) => (items.length > 0 ? items[0].offset : 0)
 
 const mapToTotal: MapToTotal = ([offsetList, totalCount]) => offsetList.total(totalCount - 1)
@@ -51,7 +35,6 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
   const totalCount$ = subject(totalCount)
   const groupCounts$ = subject<number[]>()
   const topItemCount$ = subject<number>()
-  const isScrolling$ = subject(false)
   let initialOffsetList = OffsetList.create()
   const stickyItems$ = subject<number[]>([])
   const scrollToIndex$ = coldSubject<TScrollLocation>()
@@ -202,21 +185,6 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
 
   const listOffset$ = combineLatest(list$, scrollTop$, topListHeight$).pipe(map(([items]) => getListTop(items)))
 
-  scrollTop$
-    .pipe(
-      skip(1),
-      mapTo(true)
-    )
-    .subscribe(isScrolling$.next)
-
-  scrollTop$
-    .pipe(
-      skip(1),
-      mapTo(false),
-      debounceTime(200)
-    )
-    .subscribe(isScrolling$.next)
-
   const scrollTo$ = scrollToIndex$.pipe(
     withLatestFrom(offsetList$, topListHeight$, stickyItems$, viewportHeight$, totalCount$),
     map(([location, offsetList, topListHeight, stickyItems, viewportHeight, totalCount]) => {
@@ -243,6 +211,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
 
   const groupIndices$ = stickyItems$.pipe()
   const stickyItemsOffset$ = listOffset$.pipe(map(offset => -offset))
+  const isScrolling$ = buildIsScrolling(scrollTop$)
 
   return {
     groupCounts: makeInput(groupCounts$),
