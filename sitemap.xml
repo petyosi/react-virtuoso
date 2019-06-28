@@ -5,8 +5,10 @@
 <url> <loc>https://virtuoso.dev/customize-structure/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://virtuoso.dev/endless-scrolling/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://virtuoso.dev/footer/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://virtuoso.dev/grid-responsive-columns/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://virtuoso.dev/grouped-by-first-letter/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://virtuoso.dev/grouped-numbers/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://virtuoso.dev/grouped-virtuoso-api-reference/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://virtuoso.dev/grouped-with-load-on-demand/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://virtuoso.dev/hello/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://virtuoso.dev/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
@@ -16,4 +18,6 @@
 <url> <loc>https://virtuoso.dev/scroll-to-group/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://virtuoso.dev/scroll-to-index/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 <url> <loc>https://virtuoso.dev/top-items/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://virtuoso.dev/virtuoso-api-reference/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
+<url> <loc>https://virtuoso.dev/virtuoso-grid-api-reference/</loc> <changefreq>daily</changefreq> <priority>0.7</priority> </url>
 </urlset>
