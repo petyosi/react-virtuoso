@@ -4,7 +4,7 @@ import { VirtuosoScroller, TScrollContainer } from './VirtuosoScroller'
 import { useOutput, useSize } from './Utils'
 import { viewportStyle } from './Style'
 import { VirtuosoFiller } from './VirtuosoFiller'
-import { TScrollLocation } from './VirtuosoStore'
+import { TScrollLocation } from './EngineCommons'
 
 export interface VirtuosoGridProps {
   totalCount: number
@@ -16,11 +16,7 @@ export interface VirtuosoGridProps {
   listClassName?: string
   itemClassName?: string
   scrollingStateChange?: (isScrolling: boolean) => void
-
-  // TODO
   endReached?: (index: number) => void
-  // ListContainer?: TListContainer
-  // ItemContainer?: TItemContainer
 }
 
 type VirtuosoGridState = ReturnType<typeof VirtuosoGridEngine>
@@ -40,6 +36,7 @@ export class VirtuosoGrid extends React.PureComponent<VirtuosoGridProps, Virtuos
     engine.overscan(props.overscan || 0)
     engine.totalCount(props.totalCount)
     engine.isScrolling(props.scrollingStateChange)
+    engine.endReached(props.endReached)
     return null
   }
 

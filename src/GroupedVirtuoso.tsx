@@ -1,6 +1,7 @@
 import { VirtuosoProps, VirtuosoState, VirtuosoPresentation, TItemContainer } from './Virtuoso'
+import { TScrollLocation } from './EngineCommons'
 import React, { ReactElement, PureComponent } from 'react'
-import { VirtuosoStore, TScrollLocation } from './VirtuosoStore'
+import { VirtuosoStore } from './VirtuosoStore'
 import { TRender } from './VirtuosoList'
 
 type GroupedVirtuosoProps = Pick<VirtuosoProps, Exclude<keyof VirtuosoProps, 'totalCount' | 'topItems' | 'item'>> & {

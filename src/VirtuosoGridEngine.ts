@@ -100,6 +100,22 @@ export const VirtuosoGridEngine = () => {
 
   const isScrolling$ = buildIsScrolling(scrollTop$)
 
+  const endReached$ = coldSubject<number>()
+  let currentEndIndex = 0
+
+  itemRange$.pipe(withLatestFrom(totalCount$)).subscribe(([[_, endIndex], totalCount]) => {
+    if (totalCount === 0) {
+      return
+    }
+
+    if (endIndex === totalCount - 1) {
+      if (currentEndIndex !== endIndex) {
+        currentEndIndex = endIndex
+        endReached$.next(endIndex)
+      }
+    }
+  })
+
   return {
     gridDimensions: makeInput(gridDimensions$),
     totalCount: makeInput(totalCount$),
@@ -112,5 +128,6 @@ export const VirtuosoGridEngine = () => {
     listOffset: makeOutput(listOffset$),
     scrollTo: makeOutput(scrollTo$),
     isScrolling: makeOutput(isScrolling$),
+    endReached: makeOutput(endReached$),
   }
 }
