@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, useRef } from 'react'
 import * as ReactDOM from 'react-dom'
 
 import { VirtuosoGrid } from '../src/VirtuosoGrid'
@@ -11,9 +11,18 @@ const Item: FC<{ index: number }> = React.memo(({ index }) => {
 Item.displayName = 'VirtuosoItem'
 
 const App = () => {
+  const ref = useRef<VirtuosoGrid>(null)
   return (
     <div>
-      <VirtuosoGrid totalCount={1000} item={index => <Item index={index} />} />
+      <button onClick={() => ref.current.scrollToIndex(300)}>Scroll to 300</button>
+
+      <VirtuosoGrid
+        ref={ref}
+        totalCount={100}
+        scrollingStateChange={scrolling => console.log({ scrolling })}
+        endReached={end => console.log({ end })}
+        item={index => <Item index={index} />}
+      />
     </div>
   )
 }
