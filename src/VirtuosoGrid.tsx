@@ -1,9 +1,10 @@
-import React, { CSSProperties, useState, ReactElement } from 'react'
+import React, { CSSProperties, ReactElement } from 'react'
 import { VirtuosoGridEngine } from './VirtuosoGridEngine'
 import { VirtuosoScroller, TScrollContainer } from './VirtuosoScroller'
 import { useOutput, useSize } from './Utils'
 import { viewportStyle } from './Style'
 import { VirtuosoFiller } from './VirtuosoFiller'
+import { TScrollLocation } from './VirtuosoStore'
 
 export interface VirtuosoGridProps {
   totalCount: number
@@ -22,22 +23,56 @@ export interface VirtuosoGridProps {
   // ItemContainer?: TItemContainer
 }
 
-export const VirtuosoGrid: React.FC<VirtuosoGridProps> = ({
+type VirtuosoGridState = ReturnType<typeof VirtuosoGridEngine>
+
+type VirtuosoGridFCProps = Omit<VirtuosoGridProps, 'overscan' | 'totalCount'> & { engine: VirtuosoGridState }
+
+type TItemBuilder = (
+  range: [number, number],
+  item: (index: number) => ReactElement,
+  itemClassName: string
+) => ReactElement[]
+
+export class VirtuosoGrid extends React.PureComponent<VirtuosoGridProps, VirtuosoGridState> {
+  public state = VirtuosoGridEngine()
+
+  public static getDerivedStateFromProps(props: VirtuosoGridProps, engine: VirtuosoGridState) {
+    engine.overscan(props.overscan || 0)
+    engine.totalCount(props.totalCount)
+    return null
+  }
+
+  public scrollToIndex(location: TScrollLocation) {
+    this.state.scrollToIndex(location)
+  }
+
+  public render() {
+    return <VirtuosoGridFC {...this.props} engine={this.state} />
+  }
+}
+
+const buildItems: TItemBuilder = ([startIndex, endIndex], item, itemClassName) => {
+  const items = []
+  for (let index = startIndex; index <= endIndex; index++) {
+    items.push(
+      <div key={index} className={itemClassName}>
+        {item(index)}
+      </div>
+    )
+  }
+
+  return items
+}
+
+const VirtuosoGridFC: React.FC<VirtuosoGridFCProps> = ({
   ScrollContainer,
   className,
   item,
   itemClassName = 'virtuoso-grid-item',
   listClassName = 'virtuoso-grid-list',
-  overscan = 0,
+  engine,
   style = { height: '40rem' },
-  totalCount,
 }) => {
-  const [engine] = useState(VirtuosoGridEngine)
-
-  // get these from the props
-  engine.overscan(overscan)
-  engine.totalCount(totalCount)
-
   const { itemRange, listOffset, totalHeight, gridDimensions, scrollTo, scrollTop } = engine
 
   const fillerHeight = useOutput<number>(totalHeight, 0)
@@ -50,15 +85,6 @@ export const VirtuosoGrid: React.FC<VirtuosoGridProps> = ({
     gridDimensions([width, height, firstItem.offsetWidth, firstItem.offsetHeight])
   })
 
-  const items = []
-  for (let index = itemIndexRange[0]; index <= itemIndexRange[1]; index++) {
-    items.push(
-      <div key={index} className={itemClassName}>
-        {item(index)}
-      </div>
-    )
-  }
-
   return (
     <VirtuosoScroller
       style={style}
@@ -69,7 +95,7 @@ export const VirtuosoGrid: React.FC<VirtuosoGridProps> = ({
     >
       <div ref={viewportCallbackRef} style={viewportStyle}>
         <div style={listStyle} className={listClassName}>
-          {items}
+          {buildItems(itemIndexRange, item, itemClassName)}
         </div>
       </div>
 
