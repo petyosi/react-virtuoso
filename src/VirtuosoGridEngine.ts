@@ -32,7 +32,7 @@ export const VirtuosoGridEngine = () => {
     .pipe(withLatestFrom(itemRange$))
     .subscribe(
       ([[[viewportWidth, viewportHeight, itemWidth, itemHeight], scrollTop, overscan, totalCount], itemRange]) => {
-        if (itemWidth === undefined || itemHeight === undefined) {
+        if (itemWidth === undefined || itemHeight === undefined || totalCount == 0) {
           return
         }
 
@@ -47,10 +47,12 @@ export const VirtuosoGridEngine = () => {
           const [topOverscan, bottomOverscan] = down ? [0, overscan] : [overscan, 0]
 
           let startIndex = itemsPerRow * floor((scrollTop - topOverscan) / itemHeight)
+
           let endIndex = itemsPerRow * ceil((scrollTop + viewportHeight + bottomOverscan) / itemHeight) - 1
 
-          startIndex = max(0, startIndex)
           endIndex = min(totalCount - 1, endIndex)
+          startIndex = min(endIndex, max(0, startIndex))
+
           itemRange$.next([startIndex, endIndex])
           listOffset$.next(toRowIndex(startIndex) * itemHeight)
         }
