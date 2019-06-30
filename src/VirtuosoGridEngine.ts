@@ -16,7 +16,7 @@ type GridItemRange = [
 
 const { ceil, floor, min, max } = Math
 
-const hackFloor = (val: number) => (ceil(val) - val < 0.01 ? ceil(val) : floor(val))
+const hackFloor = (val: number) => (ceil(val) - val < 0.03 ? ceil(val) : floor(val))
 
 export const VirtuosoGridEngine = () => {
   const gridDimensions$ = subject<GridDimensions>([0, 0, undefined, undefined])
