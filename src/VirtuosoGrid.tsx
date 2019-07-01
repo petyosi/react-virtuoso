@@ -6,6 +6,10 @@ import { viewportStyle } from './Style'
 import { VirtuosoFiller } from './VirtuosoFiller'
 import { TScrollLocation } from './EngineCommons'
 
+type TContainer =
+  | React.ComponentType<{ className: string; style?: CSSProperties; key?: number }>
+  | keyof JSX.IntrinsicElements
+
 export interface VirtuosoGridProps {
   totalCount: number
   overscan?: number
@@ -13,6 +17,8 @@ export interface VirtuosoGridProps {
   style?: CSSProperties
   className?: string
   ScrollContainer?: TScrollContainer
+  ListContainer?: TContainer
+  ItemContainer?: TContainer
   listClassName?: string
   itemClassName?: string
   scrollingStateChange?: (isScrolling: boolean) => void
@@ -26,7 +32,8 @@ type VirtuosoGridFCProps = Omit<VirtuosoGridProps, 'overscan' | 'totalCount'> & 
 type TItemBuilder = (
   range: [number, number],
   item: (index: number) => ReactElement,
-  itemClassName: string
+  itemClassName: string,
+  ItemContainer: TContainer
 ) => ReactElement[]
 
 export class VirtuosoGrid extends React.PureComponent<VirtuosoGridProps, VirtuosoGridState> {
@@ -49,13 +56,18 @@ export class VirtuosoGrid extends React.PureComponent<VirtuosoGridProps, Virtuos
   }
 }
 
-const buildItems: TItemBuilder = ([startIndex, endIndex], item, itemClassName) => {
+const buildItems: TItemBuilder = ([startIndex, endIndex], item, itemClassName, ItemContainer) => {
   const items = []
   for (let index = startIndex; index <= endIndex; index++) {
     items.push(
-      <div key={index} className={itemClassName}>
-        {item(index)}
-      </div>
+      React.createElement(
+        ItemContainer,
+        {
+          key: index,
+          className: itemClassName,
+        },
+        item(index)
+      )
     )
   }
 
@@ -64,6 +76,8 @@ const buildItems: TItemBuilder = ([startIndex, endIndex], item, itemClassName) =
 
 const VirtuosoGridFC: React.FC<VirtuosoGridFCProps> = ({
   ScrollContainer,
+  ItemContainer = 'div',
+  ListContainer = 'div',
   className,
   item,
   itemClassName = 'virtuoso-grid-item',
@@ -92,9 +106,14 @@ const VirtuosoGridFC: React.FC<VirtuosoGridFCProps> = ({
       scrollTop={scrollTop}
     >
       <div ref={viewportCallbackRef} style={viewportStyle}>
-        <div style={listStyle} className={listClassName}>
-          {buildItems(itemIndexRange, item, itemClassName)}
-        </div>
+        {React.createElement(
+          ListContainer,
+          {
+            style: listStyle,
+            className: listClassName,
+          },
+          buildItems(itemIndexRange, item, itemClassName, ItemContainer)
+        )}
       </div>
 
       <VirtuosoFiller height={fillerHeight} />
