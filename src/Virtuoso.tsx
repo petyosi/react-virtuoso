@@ -15,6 +15,7 @@ export interface VirtuosoProps {
   topItems?: number
   footer?: () => ReactElement
   item: (index: number) => ReactElement
+  computeItemKey: (index: number) => number
   itemHeight?: number
   endReached?: (index: number) => void
   scrollingStateChange?: (isScrolling: boolean) => void
@@ -81,19 +82,13 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     return null
   }
 
-  private itemRender: TRender = (item, props) => {
-    const ItemContainer = this.props.ItemContainer
-    const children = this.props.item(item.index)
-
-    if (ItemContainer) {
-      return (
-        <ItemContainer key={props.key} {...props}>
-          {children}
-        </ItemContainer>
-      )
-    } else {
-      return <div {...props}>{children}</div>
+  private itemRender: TRender = (item, { key, ...props }) => {
+    const { computeItemKey, item: itemRender, ItemContainer = 'div' } = this.props
+    if (computeItemKey) {
+      key = computeItemKey(item.index)
     }
+
+    return React.createElement(ItemContainer, { ...props, key }, itemRender(item.index))
   }
 
   public scrollToIndex(location: TScrollLocation) {
