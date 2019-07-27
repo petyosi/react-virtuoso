@@ -63,6 +63,16 @@ describe('Virtuoso Store', () => {
     })
   })
 
+  it('fills in the space with enough items given initial item count', () => {
+    const { initialItemCount, list } = VirtuosoStore({ overscan: 0, totalCount: 100 })
+
+    initialItemCount(5)
+
+    list(items => {
+      expect(items).toHaveLength(5)
+    })
+  })
+
   it('removes items when total is reduced', () => {
     const { totalCount, itemHeights, viewportHeight, list } = VirtuosoStore({ overscan: 0, totalCount: 100 })
 

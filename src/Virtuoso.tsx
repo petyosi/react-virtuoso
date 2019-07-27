@@ -20,6 +20,7 @@ export interface VirtuosoProps {
   scrollingStateChange?: (isScrolling: boolean) => void
   style?: CSSProperties
   className?: string
+  initialItemCount?: number
   ScrollContainer?: TScrollContainer
   FooterContainer?: TFooterContainer
   ListContainer?: TListContainer
@@ -78,6 +79,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     state.endReached(props.endReached)
     state.topItemCount(props.topItems || 0)
     state.totalCount(props.totalCount)
+    props.initialItemCount && state.initialItemCount(props.initialItemCount)
     return null
   }
 

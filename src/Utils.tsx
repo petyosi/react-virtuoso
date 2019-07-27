@@ -40,14 +40,22 @@ export const useHeight: UseHeight = (input, onMount, onResize) => {
   return callbackRef
 }
 
+function callbackToValue<T>(output: (callback: (val: T) => void) => void, defaultValue: T) {
+  return () => {
+    let result = defaultValue
+    output(val => {
+      result = val
+    })
+    return result
+  }
+}
+
 export function useOutput<T>(output: TOutput<T>, initialValue: T): T {
-  const [value, setValue] = useState(initialValue)
+  const [value, setValue] = useState(callbackToValue<T>(output, initialValue))
 
   useLayoutEffect(() => {
     output(setValue)
-    return () => {
-      output(undefined)
-    }
+    return () => output(undefined)
   }, [])
   return value
 }
