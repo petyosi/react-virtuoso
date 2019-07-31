@@ -36,7 +36,9 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
   const groupCounts$ = subject<number[]>()
   const topItemCount$ = subject<number>()
   let initialOffsetList = OffsetList.create()
+  let pendingRenderAfterInitial = false
   const stickyItems$ = subject<number[]>([])
+  const initialItemCount$ = subject<number>()
   const scrollToIndex$ = coldSubject<TScrollLocation>()
 
   if (itemHeight) {
@@ -47,7 +49,11 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
 
   if (!itemHeight) {
     itemHeights$.pipe(withLatestFrom(offsetList$, stickyItems$)).subscribe(([heights, offsetList, stickyItems]) => {
-      let newList = offsetList
+      let newList = pendingRenderAfterInitial ? OffsetList.create() : offsetList
+      if (pendingRenderAfterInitial) {
+        newList = OffsetList.create()
+        pendingRenderAfterInitial = false
+      }
 
       for (let { start, end, size } of heights) {
         if (newList.empty() && start == end && stickyItems.indexOf(start) > -1) {
@@ -209,6 +215,14 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     })
   )
 
+  const unsubscribeInitial = initialItemCount$.subscribe(count => {
+    const dummyItemHeight = 30
+    itemHeights$.next([{ start: 0, end: 0, size: dummyItemHeight }])
+    viewportHeight$.next(dummyItemHeight * count)
+    pendingRenderAfterInitial = true
+    unsubscribeInitial()
+  })
+
   const groupIndices$ = stickyItems$.pipe()
   const stickyItemsOffset$ = listOffset$.pipe(map(offset => -offset))
   const isScrolling$ = buildIsScrolling(scrollTop$)
@@ -223,6 +237,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     topItemCount: makeInput(topItemCount$),
     totalCount: makeInput(totalCount$),
     scrollToIndex: makeInput(scrollToIndex$),
+    initialItemCount: makeInput(initialItemCount$),
 
     list: makeOutput(list$),
     topList: makeOutput(topList$),
