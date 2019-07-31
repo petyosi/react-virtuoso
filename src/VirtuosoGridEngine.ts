@@ -32,7 +32,13 @@ export const VirtuosoGridEngine = () => {
     .pipe(withLatestFrom(itemRange$))
     .subscribe(
       ([[[viewportWidth, viewportHeight, itemWidth, itemHeight], scrollTop, overscan, totalCount], itemRange]) => {
-        if (itemWidth === undefined || itemHeight === undefined || totalCount == 0) {
+        if (itemWidth === undefined || itemHeight === undefined) {
+          return
+        }
+
+        if (totalCount == 0) {
+          itemRange$.next([0, -1])
+          listOffset$.next(0)
           return
         }
 
@@ -60,8 +66,11 @@ export const VirtuosoGridEngine = () => {
         const listTop = itemHeight * toRowIndex(startIndex)
         const listBottom = itemHeight * toRowIndex(endIndex) + itemHeight
 
-        // user is scrolling up - list top is below the top edge of the viewport
-        if (listTop > scrollTop) {
+        // totalCount has decreased, we have to re-render
+        if (totalCount < endIndex - 1) {
+          updateRange(true)
+          // user is scrolling up - list top is below the top edge of the viewport
+        } else if (listTop > scrollTop) {
           updateRange(false)
           // user is scrolling down - list bottom is above the bottom edge of the viewport
         } else if (listBottom < scrollTop + viewportHeight) {

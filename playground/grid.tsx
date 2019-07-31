@@ -23,7 +23,6 @@ const App = () => {
     if (loading.current || total >= 300) {
       return
     }
-    console.log(total)
 
     loading.current = true
 
@@ -40,14 +39,21 @@ const App = () => {
     loadMore()
   }, [])
 
+  console.log(total)
+
   return (
-    <VirtuosoGrid
-      style={{ width: '100%', height: '500px' }}
-      overscan={200}
-      totalCount={total}
-      item={GenerateItem}
-      endReached={() => loadMore()}
-    />
+    <div>
+      <button onClick={() => setTotal(0)}>Set to Zero</button>
+      <button onClick={() => setTotal(2)}>Set to 2</button>
+      <button onClick={() => setTotal(1000)}>Restore</button>
+      <VirtuosoGrid
+        style={{ width: '100%', height: '500px' }}
+        overscan={200}
+        totalCount={total}
+        item={GenerateItem}
+        endReached={() => loadMore()}
+      />
+    </div>
   )
 }
 
