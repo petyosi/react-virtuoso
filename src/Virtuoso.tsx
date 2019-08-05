@@ -15,7 +15,7 @@ export interface VirtuosoProps {
   topItems?: number
   footer?: () => ReactElement
   item: (index: number) => ReactElement
-  computeItemKey: (index: number) => number
+  computeItemKey?: (index: number) => number
   itemHeight?: number
   endReached?: (index: number) => void
   scrollingStateChange?: (isScrolling: boolean) => void
