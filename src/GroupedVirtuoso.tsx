@@ -23,6 +23,7 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
     state.isScrolling(props.scrollingStateChange)
     state.groupCounts(props.groupCounts)
     state.groupIndices(props.groupIndices)
+    state.itemsRendered(props.itemsRendered)
     return null
   }
 
@@ -57,6 +58,10 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
 
   public scrollToIndex(location: TScrollLocation) {
     this.state.scrollToIndex(location)
+  }
+
+  public componentWillUnmount() {
+    this.state.itemsRendered(undefined)
   }
 
   public render() {

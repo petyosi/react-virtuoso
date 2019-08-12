@@ -1,9 +1,11 @@
-import React, { CSSProperties, PureComponent, ReactElement, FC } from 'react'
-import { VirtuosoContext } from './VirtuosoContext'
+import React, { CSSProperties, FC, PureComponent, ReactElement } from 'react'
+import { TSubscriber } from 'tinyrx'
 import { TScrollLocation } from './EngineCommons'
-import { VirtuosoStore } from './VirtuosoStore'
-import { TScrollContainer, VirtuosoView, TListContainer, DefaultListContainer, TFooterContainer } from './VirtuosoView'
+import { ListItem } from './GroupIndexTransposer'
+import { VirtuosoContext } from './VirtuosoContext'
 import { TRender, TRenderProps } from './VirtuosoList'
+import { VirtuosoStore } from './VirtuosoStore'
+import { DefaultListContainer, TFooterContainer, TListContainer, TScrollContainer, VirtuosoView } from './VirtuosoView'
 
 export type VirtuosoState = ReturnType<typeof VirtuosoStore>
 
@@ -19,6 +21,7 @@ export interface VirtuosoProps {
   itemHeight?: number
   endReached?: (index: number) => void
   scrollingStateChange?: (isScrolling: boolean) => void
+  itemsRendered?: TSubscriber<ListItem[]>
   style?: CSSProperties
   className?: string
   initialItemCount?: number
@@ -81,6 +84,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     state.topItemCount(props.topItems || 0)
     state.totalCount(props.totalCount)
     props.initialItemCount && state.initialItemCount(props.initialItemCount)
+    state.itemsRendered(props.itemsRendered)
     return null
   }
 
@@ -95,6 +99,10 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
 
   public scrollToIndex(location: TScrollLocation) {
     this.state.scrollToIndex(location)
+  }
+
+  public componentWillUnmount() {
+    this.state.itemsRendered(undefined)
   }
 
   public render() {
