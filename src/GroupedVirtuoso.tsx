@@ -68,6 +68,7 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
         item={this.itemRender}
         footer={this.props.footer}
         itemHeight={this.props.itemHeight}
+        itemsInView={this.props.itemsInView}
         ScrollContainer={this.props.ScrollContainer}
         FooterContainer={this.props.FooterContainer}
         ListContainer={this.props.ListContainer}

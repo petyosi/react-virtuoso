@@ -26,7 +26,7 @@ const getListTop = (items: ListItem[]) => (items.length > 0 ? items[0].offset : 
 
 const mapToTotal: MapToTotal = ([offsetList, totalCount]) => offsetList.total(totalCount - 1)
 
-const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoConstructorParams) => {
+const VirtuosoStore = ({ totalCount = 0, itemHeight }: TVirtuosoConstructorParams) => {
   const viewportHeight$ = subject(0)
   const listHeight$ = subject(0)
   const scrollTop$ = subject(0)
@@ -159,7 +159,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     })
   )
 
-  const list$ = combineLatest(
+  const baseList$ = combineLatest(
     viewportHeight$,
     scrollTop$,
     topListHeight$,
@@ -168,7 +168,10 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     minListIndex$,
     totalCount$,
     offsetList$
-  ).pipe(scan(listScanner(overscan), []))
+  )
+
+  const inView$ = baseList$.pipe(scan(listScanner(0), []))
+  const list$ = baseList$.pipe(scan(listScanner(0), []))
 
   const endReached$ = coldSubject<number>()
   let currentEndIndex = 0
@@ -228,6 +231,8 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
   const isScrolling$ = buildIsScrolling(scrollTop$)
 
   return {
+    inView$,
+
     groupCounts: makeInput(groupCounts$),
     itemHeights: makeInput(itemHeights$),
     footerHeight: makeInput(footerHeight$),

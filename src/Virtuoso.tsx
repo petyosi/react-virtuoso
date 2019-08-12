@@ -1,9 +1,11 @@
-import React, { CSSProperties, PureComponent, ReactElement, FC } from 'react'
+import React, { CSSProperties, PureComponent, ReactElement, FC, useEffect } from 'react'
 import { VirtuosoContext } from './VirtuosoContext'
 import { TScrollLocation } from './EngineCommons'
 import { VirtuosoStore } from './VirtuosoStore'
 import { TScrollContainer, VirtuosoView, TListContainer, DefaultListContainer, TFooterContainer } from './VirtuosoView'
 import { TRender, TRenderProps } from './VirtuosoList'
+import { TSubscription, TSubscriber } from 'tinyrx'
+import { ListItem } from './GroupIndexTransposer'
 
 export type VirtuosoState = ReturnType<typeof VirtuosoStore>
 
@@ -19,6 +21,7 @@ export interface VirtuosoProps {
   itemHeight?: number
   endReached?: (index: number) => void
   scrollingStateChange?: (isScrolling: boolean) => void
+  itemsInView?: TSubscriber<ListItem[]>
   style?: CSSProperties
   className?: string
   initialItemCount?: number
@@ -35,6 +38,7 @@ interface TVirtuosoPresentationProps {
   style?: CSSProperties
   className?: string
   itemHeight?: number
+  itemsInView?: TSubscriber<ListItem[]>
   ScrollContainer?: TScrollContainer
   FooterContainer?: TFooterContainer
   ListContainer?: TListContainer
@@ -49,10 +53,22 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
   item,
   footer,
   itemHeight,
+  itemsInView,
   ScrollContainer,
   ListContainer,
   FooterContainer,
 }) => {
+  useEffect(() => {
+    let dispose: TSubscription
+    if (itemsInView) {
+      dispose = contextValue.inView$.subscribe(itemsInView)
+    }
+    return () => {
+      if (dispose) {
+        dispose()
+      }
+    }
+  }, [itemsInView])
   return (
     <VirtuosoContext.Provider value={contextValue}>
       <VirtuosoView
@@ -70,6 +86,8 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
 }
 
 export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
+  unsubscribeitemsInView?: TSubscription
+
   public constructor(props: VirtuosoProps) {
     super(props)
     this.state = VirtuosoStore(props)
@@ -100,6 +118,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
   public render() {
     return (
       <VirtuosoPresentation
+        itemsInView={this.props.itemsInView}
         contextValue={this.state}
         style={this.props.style}
         className={this.props.className}
