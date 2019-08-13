@@ -59,6 +59,18 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
     this.state.scrollToIndex(location)
   }
 
+  componentDidMount() {
+    if (this.props.itemsRendered) {
+      this.state.itemsRendered(this.props.itemsRendered)
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.props.itemsRendered) {
+      this.state.itemsRendered(undefined)
+    }
+  }
+
   public render() {
     return (
       <VirtuosoPresentation
@@ -68,7 +80,6 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
         item={this.itemRender}
         footer={this.props.footer}
         itemHeight={this.props.itemHeight}
-        itemsInView={this.props.itemsInView}
         ScrollContainer={this.props.ScrollContainer}
         FooterContainer={this.props.FooterContainer}
         ListContainer={this.props.ListContainer}

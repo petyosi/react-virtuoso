@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react'
 import * as ReactDOM from 'react-dom'
 import { GroupedVirtuoso, TItemContainer, TListContainer } from '../src/'
+import { ListItem } from '../src/GroupIndexTransposer'
 
 const ItemContainer: TItemContainer = ({ children, ...props }) => {
   return <li {...props}>{children}</li>
@@ -21,6 +22,7 @@ const ListContainer: TListContainer = ({ children, listRef, style }) => (
 )
 
 const App = () => {
+  const [itemsRendered, setItemsRendered] = useState<ListItem[]>([])
   const [groupCounts, setGroupCounts] = useState<number[]>([10, 10, 10])
   const virtuoso = useRef(null)
 
@@ -43,8 +45,9 @@ const App = () => {
           style={{ height: '400px', width: '350px' }}
           overscan={300}
           groupCounts={groupCounts}
-          itemsInView={items => {
+          itemsRendered={items => {
             console.log(items)
+            setItemsRendered(items)
           }}
           ItemContainer={React.memo(ItemContainer)}
           ListContainer={React.memo(ListContainer)}
@@ -67,6 +70,7 @@ const App = () => {
             )
           }}
         />
+        {/* <div>Indices Rendered: {itemsRendered.map(item => item.index).join(', ')}</div> */}
       </div>
     </div>
   )

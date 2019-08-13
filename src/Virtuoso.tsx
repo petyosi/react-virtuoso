@@ -21,7 +21,7 @@ export interface VirtuosoProps {
   itemHeight?: number
   endReached?: (index: number) => void
   scrollingStateChange?: (isScrolling: boolean) => void
-  itemsInView?: TSubscriber<ListItem[]>
+  itemsRendered?: TSubscriber<ListItem[]>
   style?: CSSProperties
   className?: string
   initialItemCount?: number
@@ -38,7 +38,6 @@ interface TVirtuosoPresentationProps {
   style?: CSSProperties
   className?: string
   itemHeight?: number
-  itemsInView?: TSubscriber<ListItem[]>
   ScrollContainer?: TScrollContainer
   FooterContainer?: TFooterContainer
   ListContainer?: TListContainer
@@ -53,22 +52,10 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
   item,
   footer,
   itemHeight,
-  itemsInView,
   ScrollContainer,
   ListContainer,
   FooterContainer,
 }) => {
-  useEffect(() => {
-    let dispose: TSubscription
-    if (itemsInView) {
-      dispose = contextValue.inView$.subscribe(itemsInView)
-    }
-    return () => {
-      if (dispose) {
-        dispose()
-      }
-    }
-  }, [itemsInView])
   return (
     <VirtuosoContext.Provider value={contextValue}>
       <VirtuosoView
@@ -86,8 +73,6 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
 }
 
 export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
-  unsubscribeitemsInView?: TSubscription
-
   public constructor(props: VirtuosoProps) {
     super(props)
     this.state = VirtuosoStore(props)
@@ -115,10 +100,21 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     this.state.scrollToIndex(location)
   }
 
+  componentDidMount() {
+    if (this.props.itemsRendered) {
+      this.state.itemsRendered(this.props.itemsRendered)
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.props.itemsRendered) {
+      this.state.itemsRendered(undefined)
+    }
+  }
+
   public render() {
     return (
       <VirtuosoPresentation
-        itemsInView={this.props.itemsInView}
         contextValue={this.state}
         style={this.props.style}
         className={this.props.className}
