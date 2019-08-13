@@ -42,7 +42,7 @@ const App = () => {
         <GroupedVirtuoso
           ref={virtuoso}
           style={{ height: '400px', width: '350px' }}
-          overscan={0}
+          overscan={300}
           groupCounts={groupCounts}
           itemsRendered={items => {
             console.log({ itemsRendered: items })
