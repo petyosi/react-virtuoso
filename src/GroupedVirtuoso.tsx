@@ -19,10 +19,12 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
   }
 
   public static getDerivedStateFromProps(props: GroupedVirtuosoProps, state: VirtuosoState) {
+    console.log({ props, state })
     state.endReached(props.endReached)
     state.isScrolling(props.scrollingStateChange)
     state.groupCounts(props.groupCounts)
     state.groupIndices(props.groupIndices)
+    props.itemsRendered && state.itemsRendered(props.itemsRendered)
     return null
   }
 
@@ -59,16 +61,8 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
     this.state.scrollToIndex(location)
   }
 
-  componentDidMount() {
-    if (this.props.itemsRendered) {
-      this.state.itemsRendered(this.props.itemsRendered)
-    }
-  }
-
   componentWillUnmount() {
-    if (this.props.itemsRendered) {
-      this.state.itemsRendered(undefined)
-    }
+    this.state.itemsRendered(undefined)
   }
 
   public render() {

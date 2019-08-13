@@ -22,7 +22,6 @@ const ListContainer: TListContainer = ({ children, listRef, style }) => (
 )
 
 const App = () => {
-  const [itemsRendered, setItemsRendered] = useState<ListItem[]>([])
   const [groupCounts, setGroupCounts] = useState<number[]>([10, 10, 10])
   const virtuoso = useRef(null)
 
@@ -43,11 +42,10 @@ const App = () => {
         <GroupedVirtuoso
           ref={virtuoso}
           style={{ height: '400px', width: '350px' }}
-          overscan={300}
+          overscan={0}
           groupCounts={groupCounts}
           itemsRendered={items => {
-            console.log(items)
-            setItemsRendered(items)
+            console.log({ itemsRendered: items })
           }}
           ItemContainer={React.memo(ItemContainer)}
           ListContainer={React.memo(ListContainer)}
@@ -70,10 +68,19 @@ const App = () => {
             )
           }}
         />
-        {/* <div>Indices Rendered: {itemsRendered.map(item => item.index).join(', ')}</div> */}
       </div>
     </div>
   )
 }
 
-ReactDOM.render(<App />, document.getElementById('root'))
+function AppWrapper() {
+  const [renderApp, setRenderApp] = useState(true)
+  useEffect(() => {
+    setTimeout(() => {
+      setRenderApp(false)
+    }, 5000)
+  }, [])
+  return renderApp ? <App /> : <div />
+}
+
+ReactDOM.render(<AppWrapper />, document.getElementById('root'))

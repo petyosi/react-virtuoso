@@ -84,6 +84,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     state.topItemCount(props.topItems || 0)
     state.totalCount(props.totalCount)
     props.initialItemCount && state.initialItemCount(props.initialItemCount)
+    props.itemsRendered && state.itemsRendered(props.itemsRendered)
     return null
   }
 
@@ -100,16 +101,8 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     this.state.scrollToIndex(location)
   }
 
-  componentDidMount() {
-    if (this.props.itemsRendered) {
-      this.state.itemsRendered(this.props.itemsRendered)
-    }
-  }
-
   componentWillUnmount() {
-    if (this.props.itemsRendered) {
-      this.state.itemsRendered(undefined)
-    }
+    this.state.itemsRendered(undefined)
   }
 
   public render() {
