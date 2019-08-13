@@ -19,7 +19,6 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
   }
 
   public static getDerivedStateFromProps(props: GroupedVirtuosoProps, state: VirtuosoState) {
-    console.log({ props, state })
     state.endReached(props.endReached)
     state.isScrolling(props.scrollingStateChange)
     state.groupCounts(props.groupCounts)
