@@ -73,14 +73,4 @@ const App = () => {
   )
 }
 
-function AppWrapper() {
-  const [renderApp, setRenderApp] = useState(true)
-  useEffect(() => {
-    setTimeout(() => {
-      setRenderApp(false)
-    }, 5000)
-  }, [])
-  return renderApp ? <App /> : <div />
-}
-
-ReactDOM.render(<AppWrapper />, document.getElementById('root'))
+ReactDOM.render(<App />, document.getElementById('root'))
