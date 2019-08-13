@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react'
 import * as ReactDOM from 'react-dom'
 import { GroupedVirtuoso, TItemContainer, TListContainer } from '../src/'
-import { ListItem } from '../src/GroupIndexTransposer'
 
 const ItemContainer: TItemContainer = ({ children, ...props }) => {
   return <li {...props}>{children}</li>
