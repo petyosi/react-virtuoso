@@ -84,7 +84,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     state.topItemCount(props.topItems || 0)
     state.totalCount(props.totalCount)
     props.initialItemCount && state.initialItemCount(props.initialItemCount)
-    props.itemsRendered && state.itemsRendered(props.itemsRendered)
+    state.itemsRendered(props.itemsRendered)
     return null
   }
 
