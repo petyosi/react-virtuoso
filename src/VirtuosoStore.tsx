@@ -240,6 +240,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     initialItemCount: makeInput(initialItemCount$),
 
     list: makeOutput(list$),
+    itemsRendered: makeOutput(list$),
     topList: makeOutput(topList$),
     listOffset: makeOutput(listOffset$),
     totalHeight: makeOutput(totalHeight$),
