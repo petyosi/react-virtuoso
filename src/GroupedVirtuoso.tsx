@@ -23,7 +23,7 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
     state.isScrolling(props.scrollingStateChange)
     state.groupCounts(props.groupCounts)
     state.groupIndices(props.groupIndices)
-    props.itemsRendered && state.itemsRendered(props.itemsRendered)
+    state.itemsRendered(props.itemsRendered)
     return null
   }
 
