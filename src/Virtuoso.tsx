@@ -6,6 +6,7 @@ import { VirtuosoContext } from './VirtuosoContext'
 import { TRender, TRenderProps } from './VirtuosoList'
 import { VirtuosoStore } from './VirtuosoStore'
 import { DefaultListContainer, TFooterContainer, TListContainer, TScrollContainer, VirtuosoView } from './VirtuosoView'
+import { TInput } from 'rxio'
 
 export type VirtuosoState = ReturnType<typeof VirtuosoStore>
 
@@ -23,6 +24,7 @@ export interface VirtuosoProps {
   scrollingStateChange?: (isScrolling: boolean) => void
   itemsRendered?: TSubscriber<ListItem[]>
   heightObserver?: TSubscriber<number>
+  heightObserverTest: TInput<number>
   style?: CSSProperties
   className?: string
   initialItemCount?: number
@@ -39,6 +41,7 @@ interface TVirtuosoPresentationProps {
   style?: CSSProperties
   className?: string
   itemHeight?: number
+  heightObserverTest: TInput<number>
   ScrollContainer?: TScrollContainer
   FooterContainer?: TFooterContainer
   ListContainer?: TListContainer
@@ -55,6 +58,7 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
   itemHeight,
   ScrollContainer,
   ListContainer,
+  heightObserverTest,
   FooterContainer,
 }) => {
   return (
@@ -67,6 +71,7 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
         fixedItemHeight={itemHeight !== undefined}
         ScrollContainer={ScrollContainer}
         FooterContainer={FooterContainer}
+        heightObserverTest={heightObserverTest}
         ListContainer={ListContainer || DefaultListContainer}
       />
     </VirtuosoContext.Provider>
@@ -117,6 +122,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
         item={this.itemRender}
         footer={this.props.footer}
         itemHeight={this.props.itemHeight}
+        heightObserverTest={this.props.heightObserverTest}
         ScrollContainer={this.props.ScrollContainer}
         FooterContainer={this.props.FooterContainer}
         ListContainer={this.props.ListContainer}

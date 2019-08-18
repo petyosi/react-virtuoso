@@ -6,6 +6,7 @@ import { VirtuosoList, TRender } from './VirtuosoList'
 import { ItemHeight } from 'VirtuosoStore'
 import { VirtuosoStyle, randomClassName, viewportStyle } from './Style'
 import { VirtuosoFiller } from './VirtuosoFiller'
+import { TInput } from 'rxio'
 
 export const DefaultFooterContainer: React.FC<{ footerRef: CallbackRef }> = ({ children, footerRef }) => (
   <footer ref={footerRef}>{children}</footer>
@@ -102,10 +103,22 @@ export const VirtuosoView: React.FC<{
   FooterContainer?: TFooterContainer
   item: TRender
   fixedItemHeight: boolean
-}> = ({ style, footer, item, fixedItemHeight, ScrollContainer, ListContainer, FooterContainer, className }) => {
+  heightObserverTest: TInput<number>
+}> = ({
+  style,
+  footer,
+  item,
+  fixedItemHeight,
+  ScrollContainer,
+  ListContainer,
+  FooterContainer,
+  className,
+  heightObserverTest,
+}) => {
   const { scrollTo, scrollTop, totalHeight, viewportHeight } = useContext(VirtuosoContext)!
   const fillerHeight = useOutput<number>(totalHeight, 0)
   const stickyClassName = useMemo(randomClassName, [])
+  const fillerRef = useHeight(heightObserverTest)
 
   const viewportCallbackRef = useHeight(viewportHeight)
 
@@ -124,7 +137,7 @@ export const VirtuosoView: React.FC<{
         </ListWrapper>
       </div>
 
-      <VirtuosoFiller height={fillerHeight} />
+      <VirtuosoFiller fillerRef={fillerRef} height={fillerHeight} />
       <VirtuosoStyle {...{ stickyClassName }} />
     </VirtuosoScroller>
   )
