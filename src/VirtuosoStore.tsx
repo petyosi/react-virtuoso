@@ -244,6 +244,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     topList: makeOutput(topList$),
     listOffset: makeOutput(listOffset$),
     totalHeight: makeOutput(totalHeight$),
+    heightObserver: makeOutput(totalHeight$),
     endReached: makeOutput(endReached$),
     isScrolling: makeOutput(isScrolling$),
     stickyItems: makeOutput(stickyItems$),

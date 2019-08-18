@@ -46,6 +46,9 @@ const App = () => {
           itemsRendered={items => {
             console.log({ itemsRendered: items })
           }}
+          heightObserver={height => {
+            console.log('List height:' + height)
+          }}
           ItemContainer={React.memo(ItemContainer)}
           ListContainer={React.memo(ListContainer)}
           GroupContainer={React.memo(GroupContainer)}
