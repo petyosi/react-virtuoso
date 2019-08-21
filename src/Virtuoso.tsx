@@ -22,7 +22,7 @@ export interface VirtuosoProps {
   endReached?: (index: number) => void
   scrollingStateChange?: (isScrolling: boolean) => void
   itemsRendered?: TSubscriber<ListItem[]>
-  heightObserver?: TSubscriber<number>
+  totalListHeightChanged?: TSubscriber<number>
   style?: CSSProperties
   className?: string
   initialItemCount?: number
@@ -86,7 +86,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     state.totalCount(props.totalCount)
     props.initialItemCount && state.initialItemCount(props.initialItemCount)
     state.itemsRendered(props.itemsRendered)
-    state.heightObserver(props.heightObserver)
+    state.totalListHeightChanged(props.totalListHeightChanged)
     return null
   }
 
@@ -105,7 +105,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
 
   public componentWillUnmount() {
     this.state.itemsRendered(undefined)
-    this.state.heightObserver(undefined)
+    this.state.totalListHeightChanged(undefined)
   }
 
   public render() {

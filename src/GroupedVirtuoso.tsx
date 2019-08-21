@@ -24,7 +24,7 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
     state.groupCounts(props.groupCounts)
     state.groupIndices(props.groupIndices)
     state.itemsRendered(props.itemsRendered)
-    state.heightObserver(props.heightObserver)
+    state.totalListHeightChanged(props.totalListHeightChanged)
     return null
   }
 
@@ -63,7 +63,7 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
 
   public componentWillUnmount() {
     this.state.itemsRendered(undefined)
-    this.state.heightObserver(undefined)
+    this.state.totalListHeightChanged(undefined)
   }
 
   public render() {
