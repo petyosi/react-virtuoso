@@ -1,5 +1,5 @@
 import React, { CSSProperties, FC, PureComponent, ReactElement } from 'react'
-import { TSubscriber } from 'tinyrx'
+import { TSubscriber } from './tinyrx'
 import { TScrollLocation } from './EngineCommons'
 import { ListItem } from './GroupIndexTransposer'
 import { VirtuosoContext } from './VirtuosoContext'
