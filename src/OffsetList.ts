@@ -164,10 +164,6 @@ export class OffsetList {
   }
 
   public indexRange(startIndex: number, endIndex: number): Item[] {
-    if (endIndex === 0) {
-      return []
-    }
-
     if (this.rangeTree.empty()) {
       return [{ index: 0, size: 0, offset: NaN }]
     }
