@@ -48,7 +48,7 @@ ReactDOM.render(<App />, document.getElementById('root'))
 
 The `GroupedVirtuoso` component is similar to the "flat" `Virtuoso`, with the following differences:
 
-- Instead of `totalCount`, the component accepts `groupedCounts: number[]`, which specifies the amount of items in each group.
+- Instead of `totalCount`, the component accepts `groupCounts: number[]`, which specifies the amount of items in each group.
   For example, passing `[20, 30]` will render two groups with 20 and 30 items each;
 - In addition the `item` render prop, the component requires an additional `group` render prop,
   which renders the **group header**. The `group` callback receives the zero-based group index as a parameter;
