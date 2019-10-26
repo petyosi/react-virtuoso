@@ -19,6 +19,8 @@ module.exports = {
     'react/prop-types': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
+    'prefer-const': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
     // "@typescript-eslint/explicit-function-return-type": ["error", { "allowTypedFunctionExpressions": true }],
   },
   settings: {},

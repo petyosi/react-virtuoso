@@ -17,7 +17,7 @@ describe('aa tree behavior', () => {
   }
 
   it('initially generates empty generator', () => {
-    let tree: AATree<number> = AATree.empty()
+    const tree: AATree<number> = AATree.empty()
     expect(Array.from(tree.keys())).toEqual([])
 
     expect(tree.find(0)).toBeUndefined()

@@ -102,7 +102,7 @@ describe('Grid Virtuoso Engine', () => {
     let call = 0
     const itemRangeCallback = (range: [number, number]) => {
       call++
-      if (call == 3) {
+      if (call === 3) {
         expect(range).toEqual([0, 11])
       }
     }

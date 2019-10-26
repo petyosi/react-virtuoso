@@ -134,7 +134,7 @@ describe('tinyrx', () => {
     it('filter uses predicate to filter', () => {
       const s1 = subject<number>()
 
-      s1.pipe(filter(val => val % 2 == 0)).subscribe(val => expect(val).toEqual(2))
+      s1.pipe(filter(val => val % 2 === 0)).subscribe(val => expect(val).toEqual(2))
       s1.next(1)
       s1.next(2)
     })

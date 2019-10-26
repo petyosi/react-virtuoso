@@ -36,7 +36,7 @@ export const VirtuosoGridEngine = () => {
           return
         }
 
-        if (totalCount == 0) {
+        if (totalCount === 0) {
           itemRange$.next([0, -1])
           listOffset$.next(0)
           return
@@ -100,7 +100,7 @@ export const VirtuosoGridEngine = () => {
 
       let offset = floor(index / itemsPerRow) * itemHeight
 
-      if (align == 'end') {
+      if (align === 'end') {
         offset = offset - viewportHeight + itemHeight
       } else if (align === 'center') {
         offset = Math.round(offset - viewportHeight / 2 + itemHeight / 2)

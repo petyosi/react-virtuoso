@@ -7,7 +7,7 @@ describe('Virtuoso Store', () => {
     let i = 0
 
     totalHeight(val => {
-      if (i == 0) {
+      if (i === 0) {
         expect(val).toBe(0)
       } else {
         expect(val).toBe(5000)
@@ -248,9 +248,10 @@ describe('Virtuoso Store', () => {
   })
 
   it('takes into account the top list height when scrolling to a given location', done => {
-    const { topItemCount, itemHeights, scrollToIndex, scrollTo } = VirtuosoStore({ totalCount: 100 })
+    const { topItemCount, itemHeights, scrollToIndex, scrollTo, viewportHeight } = VirtuosoStore({ totalCount: 100 })
     itemHeights([{ start: 0, end: 0, size: 50 }])
     topItemCount(3)
+    viewportHeight(2000)
 
     scrollTo(offset => {
       expect(offset).toEqual(50 * 10 - 3 * 50)

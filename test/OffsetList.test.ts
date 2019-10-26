@@ -12,7 +12,7 @@ describe('Offset List', () => {
     }
 
     it('starts with a default value and length', () => {
-      let list = OffsetList.create()
+      const list = OffsetList.create()
       expect(toArray(list.rangeTree)).toEqual([])
     })
 
@@ -38,7 +38,7 @@ describe('Offset List', () => {
     })
 
     it('removes NaNs', () => {
-      let list = OffsetList.create()
+      const list = OffsetList.create()
         .insertSpots([0, 10], 5)
         .insert(1, 1, 50)
       expect(toArray(list.rangeTree)).toEqual([[0, 5], [1, 50], [10, 5], [11, 50]])
@@ -48,7 +48,7 @@ describe('Offset List', () => {
       it('does not alter the list if the value is the same as the existing range', () => {
         const firstList = OffsetList.create().insert(0, 0, 5)
 
-        let list = firstList.insert(2, 3, 5)
+        const list = firstList.insert(2, 3, 5)
 
         expect(toArray(list.rangeTree)).toEqual([[0, 5]])
         expect(list).toBe(firstList)
@@ -58,7 +58,7 @@ describe('Offset List', () => {
         const firstList = OffsetList.create()
           .insert(0, 0, 5)
           .insert(0, 0, 3)
-        let list = firstList.insert(0, 0, 3)
+        const list = firstList.insert(0, 0, 3)
         expect(list).toBe(firstList)
       })
 
@@ -161,7 +161,7 @@ describe('Offset List', () => {
       })
 
       it('handles subsequent insertions correctly (bug #2)', () => {
-        let list = OffsetList.create()
+        const list = OffsetList.create()
           .insert(0, 0, 206)
           .insert(0, 0, 230)
           .insert(1, 1, 158)
@@ -186,7 +186,7 @@ describe('Offset List', () => {
   describe('offset tree behavior', () => {
     function toArray(offsetList: OffsetList) {
       const result = []
-      for (let {
+      for (const {
         key: offset,
         value: { size, startIndex, endIndex },
       } of offsetList.offsetTree.walk()) {

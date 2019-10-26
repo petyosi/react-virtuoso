@@ -49,14 +49,14 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
 
   if (!itemHeight) {
     itemHeights$.pipe(withLatestFrom(offsetList$, stickyItems$)).subscribe(([heights, offsetList, stickyItems]) => {
-      let newList = pendingRenderAfterInitial ? OffsetList.create() : offsetList
+      let newList = offsetList
       if (pendingRenderAfterInitial) {
         newList = OffsetList.create()
         pendingRenderAfterInitial = false
       }
 
-      for (let { start, end, size } of heights) {
-        if (newList.empty() && start == end && stickyItems.indexOf(start) > -1) {
+      for (const { start, end, size } of heights) {
+        if (newList.empty() && start === end && stickyItems.indexOf(start) > -1) {
           newList = newList.insertSpots(stickyItems, size)
         } else {
           newList = newList.insert(start, end, size)
@@ -124,9 +124,9 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
 
   const topList$ = subject<ListItem[]>([])
 
-  combineLatest(offsetList$, topItemCount$, totalCount$)
+  combineLatest(offsetList$, topItemCount$, totalCount$, viewportHeight$)
     .pipe(
-      filter(params => params[1] > 0),
+      filter(params => params[1] > 0 && params[3] > 0),
       map(([offsetList, topItemCount, totalCount]) => {
         const endIndex = Math.max(0, Math.min(topItemCount - 1, totalCount))
         return transposer.transpose(offsetList.indexRange(0, endIndex))
@@ -202,7 +202,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
       index = Math.max(0, index, Math.min(totalCount - 1, index))
 
       let offset = offsetList.offsetOf(index)
-      if (align == 'end') {
+      if (align === 'end') {
         offset = offset - viewportHeight + offsetList.itemAt(index).size
       } else if (align === 'center') {
         offset = Math.round(offset - viewportHeight / 2 + offsetList.itemAt(index).size / 2)

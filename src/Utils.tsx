@@ -59,7 +59,7 @@ export function useOutput<T>(output: TOutput<T>, initialValue: T): T {
   useLayoutEffect(() => {
     output(setValue)
     return () => output(undefined)
-  }, [])
+  }, [output])
   return value
 }
 

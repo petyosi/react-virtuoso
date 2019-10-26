@@ -31,7 +31,7 @@ export class OffsetList {
 
     let nanFound = false
 
-    for (let { start: startIndex, end: endIndex, value: size } of ranges) {
+    for (const { start: startIndex, end: endIndex, value: size } of ranges) {
       if (isNaN(size)) {
         this.nanIndices.push(startIndex)
 
@@ -183,7 +183,7 @@ export class OffsetList {
     return result
   }
 
-  public range(startOffset: number, endOffset: number, minIndex: number = 0, maxIndex: number = Infinity): Item[] {
+  public range(startOffset: number, endOffset: number, minIndex = 0, maxIndex = Infinity): Item[] {
     if (this.offsetTree.empty()) {
       return [{ index: 0, size: 0, offset: 0 }]
     }

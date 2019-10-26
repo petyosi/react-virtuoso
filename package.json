@@ -13,43 +13,29 @@
     "start": "tsdx watch",
     "build": "tsdx build",
     "test": "tsdx test --env=jsdom",
-    "prepublishOnly": "tsdx build"
+    "prepublishOnly": "tsdx build",
+    "lint": "tsdx lint"
   },
   "peerDependencies": {
     "react": ">=16"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "pretty-quick --staged"
+      "pre-commit": "tsdx lint"
     }
   },
   "devDependencies": {
-    "@babel/core": "^7.4.4",
-    "@types/babel__core": "^7.1.1",
-    "@types/eslint": "^4.16.6",
-    "@types/eslint-plugin-prettier": "^2.2.0",
-    "@types/jest": "^24.0.12",
-    "@types/lodash": "^4.14.123",
-    "@types/prettier": "^1.16.3",
-    "@types/react": "^16.8.16",
-    "@types/react-dom": "^16.8.4",
-    "@typescript-eslint/eslint-plugin": "^1.7.0",
-    "awesome-typescript-loader": "^5.2.1",
-    "babel-loader": "^8.0.5",
-    "eslint": "^5.16.0",
-    "eslint-config-prettier": "^4.2.0",
-    "eslint-plugin-prettier": "^3.0.1",
-    "eslint-plugin-react": "^7.13.0",
-    "husky": "^2.5.0",
-    "lodash": "^4.17.13",
+    "@types/jest": "^24.0.20",
+    "@types/lodash": "^4.14.144",
+    "@types/react": "^16.9.11",
+    "@types/react-dom": "^16.9.3",
+    "husky": "^3.0.9",
     "parcel": "^1.12.3",
-    "prettier": "^1.18.2",
-    "pretty-quick": "^1.11.1",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "tsdx": "^0.7.2",
+    "react": "^16.11.0",
+    "react-dom": "^16.11.0",
+    "tsdx": "^0.10.5",
     "tslib": "^1.10.0",
-    "typescript": "^3.5.2"
+    "typescript": "^3.6.4"
   },
   "dependencies": {
     "resize-observer-polyfill": "^1.5.1"

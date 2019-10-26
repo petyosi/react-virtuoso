@@ -16,7 +16,7 @@ describe('rx output', () => {
     const sub = subject<number>()
     const out = makeOutput(sub)
 
-    let results: number[] = []
+    const results: number[] = []
     out(val => results.push(val))
     sub.next(1)
 

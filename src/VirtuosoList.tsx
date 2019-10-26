@@ -21,7 +21,7 @@ export const VirtuosoList: React.FC<TListProps> = ({ render, stickyClassName }) 
   const items = useOutput<ListItem[]>(list, [])
   const topItems = useOutput<ListItem[]>(topList, [])
 
-  let renderedItems: ReactNode[] = []
+  const renderedItems: ReactNode[] = []
   let topOffset = 0
   const renderedTopItemIndices: number[] = []
 

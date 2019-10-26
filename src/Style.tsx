@@ -5,7 +5,7 @@ export const VirtuosoStyle: FC<{
 }> = ({ stickyClassName }) => {
   const style = useRef<HTMLStyleElement | null>(null)
   useLayoutEffect(() => {
-    let styleEl = document.createElement('style')
+    const styleEl = document.createElement('style')
     document.head.appendChild(styleEl)
     const sheet = styleEl.sheet as any
 
@@ -24,7 +24,7 @@ export const VirtuosoStyle: FC<{
       document.head.removeChild(style.current!)
       style.current = null
     }
-  }, [])
+  }, [stickyClassName])
 
   return null
 }

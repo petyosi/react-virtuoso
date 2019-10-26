@@ -38,7 +38,7 @@ export class GroupIndexTransposer {
     let tree = AATree.empty<[number, number]>()
     let groupIndex = 0
     let total = 0
-    for (let groupCount of counts) {
+    for (const groupCount of counts) {
       tree = tree.insert(total, [groupIndex, total])
       groupIndex++
       total += groupCount + 1

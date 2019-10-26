@@ -14,7 +14,7 @@ type FindCallback<T> = (value: T) => 1 | 0 | -1
 export type NodeIterator<T> = IterableIterator<NodeData<T>>
 export type RangeIterator<T> = IterableIterator<Range<T>>
 
-class NilNode {
+class NilNode<T> {
   public level = 0
 
   public rebalance(): this {
@@ -45,16 +45,16 @@ class NilNode {
     return
   }
 
-  public insert<T>(key: number, value: T): NonNilNode<T> {
+  public insert(key: number, value: T): NonNilNode<T> {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     return new NonNilNode<T>({ key, value, level: 1 })
   }
 
-  public walkWithin<T>(): NodeData<T>[] {
+  public walkWithin(): NodeData<T>[] {
     return []
   }
 
-  public walk<T>(): NodeData<T>[] {
+  public walk(): NodeData<T>[] {
     return []
   }
 
@@ -66,7 +66,7 @@ class NilNode {
     return []
   }
 
-  public empty(): this is NilNode {
+  public empty(): this is NilNode<T> {
     return true
   }
 
@@ -87,7 +87,7 @@ const NIL_NODE = new NilNode()
 
 Object.freeze(NIL_NODE)
 
-type Node<T> = NonNilNode<T> | NilNode
+type Node<T> = NonNilNode<T> | NilNode<T>
 
 interface NodeConstructorArgs<T> {
   key: number
@@ -110,7 +110,13 @@ class NonNilNode<T> {
   public left: Node<T>
   public right: Node<T>
 
-  public constructor({ key, value, level, left = NIL_NODE, right = NIL_NODE }: NodeConstructorArgs<T>) {
+  public constructor({
+    key,
+    value,
+    level,
+    left = NIL_NODE as NilNode<T>,
+    right = NIL_NODE as NilNode<T>,
+  }: NodeConstructorArgs<T>) {
     this.key = key
     this.value = value
     this.level = level
@@ -145,7 +151,7 @@ class NonNilNode<T> {
     }
   }
 
-  public empty(): this is NilNode {
+  public empty(): this is NilNode<T> {
     return false
   }
 
@@ -241,7 +247,7 @@ class NonNilNode<T> {
   }
 
   public walk(): NodeData<T>[] {
-    return [...this.left.walk<T>(), { key: this.key, value: this.value }, ...this.right.walk<T>()]
+    return [...this.left.walk(), { key: this.key, value: this.value }, ...this.right.walk()]
   }
 
   public last(): [number, T] {
@@ -362,8 +368,8 @@ class NonNilNode<T> {
     const result = []
 
     for (let i = 1; i <= nodes.length; i++) {
-      let nextNode = nodes[i]
-      let end = nextNode ? nextNode.key - 1 : Infinity
+      const nextNode = nodes[i]
+      const end = nextNode ? nextNode.key - 1 : Infinity
       result.push({ start, end, value })
 
       if (nextNode) {
@@ -376,7 +382,7 @@ class NonNilNode<T> {
 
   private split(): NonNilNode<T> {
     const { right, level } = this
-    if (!right.empty() && !right.right.empty() && right.level == level && right.right.level == level) {
+    if (!right.empty() && !right.right.empty() && right.level === level && right.right.level === level) {
       return right.clone({
         left: this.clone({ right: right.left }),
         level: level + 1,
@@ -403,7 +409,7 @@ export class AATree<T> {
   private root: Node<T>
 
   public static empty<T>(): AATree<T> {
-    return new AATree<T>(NIL_NODE)
+    return new AATree<T>(NIL_NODE as NilNode<T>)
   }
 
   private constructor(root: Node<T>) {
@@ -450,7 +456,7 @@ export class AATree<T> {
   }
 
   public walkWithin(start: number, end: number): NodeData<T>[] {
-    let adjustedStart = this.root.findMax(start)
+    const adjustedStart = this.root.findMax(start)
     return this.root.walkWithin(adjustedStart, end)
   }
 
@@ -459,7 +465,7 @@ export class AATree<T> {
   }
 
   public rangesWithin(start: number, end: number): Range<T>[] {
-    let adjustedStart = this.root.findMax(start)
+    const adjustedStart = this.root.findMax(start)
     return this.root.rangesWithin(adjustedStart, end)
   }
 

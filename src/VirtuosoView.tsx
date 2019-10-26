@@ -38,8 +38,8 @@ const VirtuosoFooter: FC<{ footer: () => ReactElement; FooterContainer?: TFooter
 
 const getHeights = (children: HTMLCollection) => {
   const results: ItemHeight[] = []
-  for (var i = 0, len = children.length; i < len; i++) {
-    let child = children.item(i) as HTMLElement
+  for (let i = 0, len = children.length; i < len; i++) {
+    const child = children.item(i) as HTMLElement
 
     if (!child || child.dataset.index === undefined) {
       continue

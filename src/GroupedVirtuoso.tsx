@@ -31,7 +31,7 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
   protected itemRender: TRender = (item, props) => {
     const ItemContainer = this.props.ItemContainer
     const GroupContainer = this.props.GroupContainer || ItemContainer
-    if (item.type == 'group') {
+    if (item.type === 'group') {
       const children = this.props.group(item.groupIndex)
       if (GroupContainer) {
         return (

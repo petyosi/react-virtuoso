@@ -18,18 +18,24 @@ export type TScrollContainer = FC<{
 const DefaultScrollContainer: TScrollContainer = ({ className, style, reportScrollTop, scrollTo, children }) => {
   const elRef = useRef<HTMLElement | null>(null)
 
-  const onScroll: EventListener = useCallback((e: Event) => {
-    reportScrollTop((e.target as HTMLDivElement).scrollTop)
-  }, [])
+  const onScroll: EventListener = useCallback(
+    (e: Event) => {
+      reportScrollTop((e.target as HTMLDivElement).scrollTop)
+    },
+    [reportScrollTop]
+  )
 
-  const ref = useCallback((theRef: HTMLElement | null) => {
-    if (theRef) {
-      theRef.addEventListener('scroll', onScroll, { passive: true })
-      elRef.current = theRef
-    } else {
-      elRef.current!.removeEventListener('scroll', onScroll)
-    }
-  }, [])
+  const ref = useCallback(
+    (theRef: HTMLElement | null) => {
+      if (theRef) {
+        theRef.addEventListener('scroll', onScroll, { passive: true })
+        elRef.current = theRef
+      } else {
+        elRef.current!.removeEventListener('scroll', onScroll)
+      }
+    },
+    [onScroll]
+  )
 
   scrollTo(scrollTop => {
     const goTo: ScrollToOptions = { top: scrollTop }
