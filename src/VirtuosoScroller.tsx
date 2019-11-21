@@ -1,4 +1,4 @@
-import React, { FC, CSSProperties, useCallback, useRef } from 'react'
+import React, { FC, CSSProperties, useCallback, useRef, ReactElement } from 'react'
 
 const scrollerStyle: React.CSSProperties = {
   height: '40rem',
@@ -13,6 +13,7 @@ export type TScrollContainer = FC<{
   className?: string
   reportScrollTop: (scrollTop: number) => void
   scrollTo: (callback: (scrollTop: number) => void) => void
+  children: ReactElement
 }>
 
 const DefaultScrollContainer: TScrollContainer = ({ className, style, reportScrollTop, scrollTo, children }) => {
