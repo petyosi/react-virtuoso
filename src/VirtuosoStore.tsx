@@ -95,7 +95,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
       return result
     }
 
-    if (listTop > scrollTop + topListHeight) {
+    if (listTop > scrollTop) {
       const startOffset = Math.max(scrollTop + topListHeight - overscan * 2, topListHeight)
       const endOffset = scrollTop + viewportHeight - 1
       return transposer.transpose(offsetList.range(startOffset, endOffset, minIndex, maxIndex))

@@ -1,34 +1,33 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React from 'react'
 import * as ReactDOM from 'react-dom'
-import { Virtuoso, GroupedVirtuoso, TItemContainer, TListContainer } from '../src/'
-
-const ItemContainer: TItemContainer = ({ children, ...props }) => {
-  return <li {...props}>{children}</li>
-}
-
-const GroupContainer: TItemContainer = ({ children, ...props }) => {
-  return (
-    <li {...props}>
-      <strong>{children}</strong>
-    </li>
-  )
-}
-
-const ListContainer: TListContainer = ({ children, listRef, style }) => (
-  <ul ref={listRef} style={style}>
-    {children}
-  </ul>
-)
+import { GroupedVirtuoso } from '../src/'
 
 const App = () => {
+  const groupCounts = []
+  for (let index = 0; index < 1000; index++) {
+    groupCounts.push(1)
+  }
+
   return (
-    <div style={{ display: 'block' }}>
-      <Virtuoso
-        totalCount={100000}
-        overscan={200}
-        topItems={1}
-        item={i => `Item ${i}`}
+    <div style={{ paddingTop: '300px' }}>
+      <GroupedVirtuoso
         style={{ height: '400px', width: '350px' }}
+        groupCounts={groupCounts}
+        group={index => {
+          return (
+            <div style={{ height: 100 }}>
+              Group {index * 10} &ndash; {index * 10 + 10}
+            </div>
+          )
+        }}
+        overscan={200}
+        item={(index, groupIndex) => {
+          return (
+            <div>
+              {index} (group {groupIndex})
+            </div>
+          )
+        }}
       />
     </div>
   )
