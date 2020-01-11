@@ -13,17 +13,13 @@ type UseHeight = (
 
 export const useHeight: UseHeight = (input, onMount, onResize) => {
   const ref = useRef<CallbackRefParam>(null)
-  const currentHeight = useRef(0)
   const animationFrameID = useRef<number>(0)
   const observer = new ResizeObserver(entries => {
     const newHeight = entries[0].contentRect.height
-    if (currentHeight.current !== newHeight) {
-      currentHeight.current = newHeight
-      if (onResize) {
-        animationFrameID.current = window.requestAnimationFrame(() => onResize(entries[0].target as HTMLElement))
-      }
-      input(newHeight)
+    if (onResize) {
+      animationFrameID.current = window.requestAnimationFrame(() => onResize(entries[0].target as HTMLElement))
     }
+    input(newHeight)
   })
 
   const callbackRef = (elRef: CallbackRefParam) => {
