@@ -25,7 +25,14 @@ describe('Offset List', () => {
     it('supports spots', () => {
       let list = OffsetList.create()
       list = list.insertSpots([0, 10, 30], 5)
-      expect(toArray(list.rangeTree)).toEqual([[0, 5], [1, NaN], [10, 5], [11, NaN], [30, 5], [31, NaN]])
+      expect(toArray(list.rangeTree)).toEqual([
+        [0, 5],
+        [1, NaN],
+        [10, 5],
+        [11, NaN],
+        [30, 5],
+        [31, NaN],
+      ])
     })
 
     it('infers correct offset after spot insertion', () => {
@@ -41,7 +48,12 @@ describe('Offset List', () => {
       const list = OffsetList.create()
         .insertSpots([0, 10], 5)
         .insert(1, 1, 50)
-      expect(toArray(list.rangeTree)).toEqual([[0, 5], [1, 50], [10, 5], [11, 50]])
+      expect(toArray(list.rangeTree)).toEqual([
+        [0, 5],
+        [1, 50],
+        [10, 5],
+        [11, 50],
+      ])
     })
 
     describe('value insertion', () => {
@@ -66,7 +78,10 @@ describe('Offset List', () => {
         let list = OffsetList.create().insert(0, 0, 5)
         list = list.insert(0, 0, 10)
 
-        expect(toArray(list.rangeTree)).toEqual([[0, 10], [1, 5]])
+        expect(toArray(list.rangeTree)).toEqual([
+          [0, 10],
+          [1, 5],
+        ])
       })
 
       it('merges with the previous range if values are the same', () => {
@@ -74,7 +89,10 @@ describe('Offset List', () => {
         list = list.insert(0, 0, 10)
         list = list.insert(1, 2, 10)
 
-        expect(toArray(list.rangeTree)).toEqual([[0, 10], [3, 5]])
+        expect(toArray(list.rangeTree)).toEqual([
+          [0, 10],
+          [3, 5],
+        ])
       })
 
       it('merges with the next range if values are the same', () => {
@@ -82,14 +100,21 @@ describe('Offset List', () => {
         list = list.insert(1, 2, 10)
         list = list.insert(0, 0, 10)
 
-        expect(toArray(list.rangeTree)).toEqual([[0, 10], [3, 5]])
+        expect(toArray(list.rangeTree)).toEqual([
+          [0, 10],
+          [3, 5],
+        ])
       })
 
       it('splits an existing range', () => {
         let list = OffsetList.create().insert(0, 0, 5)
         list = list.insert(2, 3, 10)
 
-        expect(toArray(list.rangeTree)).toEqual([[0, 5], [2, 10], [4, 5]])
+        expect(toArray(list.rangeTree)).toEqual([
+          [0, 5],
+          [2, 10],
+          [4, 5],
+        ])
       })
 
       it('overrides an existing range', () => {
@@ -97,7 +122,11 @@ describe('Offset List', () => {
         list = list.insert(2, 3, 10)
         list = list.insert(1, 3, 20)
 
-        expect(toArray(list.rangeTree)).toEqual([[0, 5], [1, 20], [4, 5]])
+        expect(toArray(list.rangeTree)).toEqual([
+          [0, 5],
+          [1, 20],
+          [4, 5],
+        ])
       })
 
       it('overrides multiple intervals', () => {
@@ -106,7 +135,11 @@ describe('Offset List', () => {
         list = list.insert(6, 7, 20)
         list = list.insert(3, 8, 3)
 
-        expect(toArray(list.rangeTree)).toEqual([[0, 5], [3, 3], [9, 5]])
+        expect(toArray(list.rangeTree)).toEqual([
+          [0, 5],
+          [3, 3],
+          [9, 5],
+        ])
       })
 
       it('joins split ranges', () => {
@@ -289,6 +322,12 @@ describe('Index List', () => {
 
     const indexList = offsetList.getOffsets([0, 10, 100, 200, 300])
 
-    expect(toArray(indexList.tree)).toEqual([[0, 0], [130, 10], [1030, 100], [2030, 200], [3030, 300]])
+    expect(toArray(indexList.tree)).toEqual([
+      [0, 0],
+      [130, 10],
+      [1030, 100],
+      [2030, 200],
+      [3030, 300],
+    ])
   })
 })
