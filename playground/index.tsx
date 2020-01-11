@@ -1,6 +1,6 @@
 import React from 'react'
 import * as ReactDOM from 'react-dom'
-import { GroupedVirtuoso } from '../src/'
+import { Virtuoso } from '../src/'
 
 const App = () => {
   const groupCounts = []
@@ -9,7 +9,21 @@ const App = () => {
   }
 
   return (
-    <div style={{ paddingTop: '300px' }}>
+    <div>
+      <Virtuoso
+        style={{ width: '100%', height: '400px' }}
+        totalCount={600}
+        item={index => {
+          return <div style={{ height: index < 100 ? 200 : 20 }}>test {index}</div>
+        }}
+      />
+    </div>
+  )
+}
+
+ReactDOM.render(<App />, document.getElementById('root'))
+
+/*
       <GroupedVirtuoso
         style={{ height: '400px', width: '350px' }}
         groupCounts={groupCounts}
@@ -29,8 +43,4 @@ const App = () => {
           )
         }}
       />
-    </div>
-  )
-}
-
-ReactDOM.render(<App />, document.getElementById('root'))
+   */
