@@ -1,6 +1,6 @@
 {
   "name": "react-virtuoso",
-  "version": "0.12.5",
+  "version": "0.12.6",
   "homepage": "https://virtuoso.dev",
   "license": "MIT",
   "main": "dist/index.js",
@@ -38,7 +38,7 @@
     "typescript": "^3.7.4"
   },
   "dependencies": {
-    "tslib": "^1.10.0",
-    "resize-observer-polyfill": "^1.5.1"
+    "resize-observer-polyfill": "^1.5.1",
+    "tslib": "^1.10.0"
   }
 }
