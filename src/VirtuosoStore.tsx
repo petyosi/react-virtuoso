@@ -40,6 +40,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
   const stickyItems$ = subject<number[]>([])
   const initialItemCount$ = subject<number>()
   const scrollToIndex$ = coldSubject<TScrollLocation>()
+  const scrollToIndexRequestPending$ = subject(false)
 
   if (itemHeight) {
     initialOffsetList = initialOffsetList.insert(0, 0, itemHeight)
@@ -49,6 +50,12 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
 
   if (!itemHeight) {
     itemHeights$.pipe(withLatestFrom(offsetList$, stickyItems$)).subscribe(([heights, offsetList, stickyItems]) => {
+      // no changes in the known heights - this means that scrollToIndex worked as expected
+      // we 'resolve' the pending state
+      if (heights.length === 0) {
+        scrollToIndexRequestPending$.next(false)
+      }
+
       let newList = offsetList
       if (pendingRenderAfterInitial) {
         newList = OffsetList.create()
@@ -88,13 +95,10 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     const indexOutOfAllowedRange =
       itemLength > 0 && (items[0].index < minIndex || items[itemLength - 1].index > maxIndex)
 
-    // console.log({ listTop, listBottom, scrollTop, listHeight, viewportHeight })
     if (listBottom < viewportHeight || indexOutOfAllowedRange) {
       const startOffset = Math.max(scrollTop, 0)
       const endOffset = scrollTop + viewportHeight + overscan * 2 - 1
-      // console.log({ startOffset, endOffset })
       const result = transposer.transpose(offsetList.range(startOffset, endOffset, minIndex, maxIndex))
-      // console.log({ result })
       return result
     }
 
@@ -217,6 +221,18 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
       return offset
     })
   )
+
+  scrollTo$.subscribe(() => scrollToIndexRequestPending$.next(true))
+
+  // if the list has received new heights, chances are that our scrollTo has failed,
+  // so we will retry by re-requesting the same index
+  offsetList$
+    .pipe(withLatestFrom(scrollToIndexRequestPending$, scrollToIndex$))
+    .subscribe(([_, scrollToIndexRequestPending, scrollToIndex]) => {
+      if (scrollToIndexRequestPending) {
+        scrollToIndex$.next(scrollToIndex)
+      }
+    })
 
   const unsubscribeInitial = initialItemCount$.subscribe(count => {
     const dummyItemHeight = 30

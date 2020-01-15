@@ -79,9 +79,7 @@ const ListWrapper: React.FC<{ fixedItemHeight: boolean; ListContainer: TListCont
     ref => {
       if (!fixedItemHeight) {
         const measuredItemHeights = getHeights(ref!.children)
-        if (measuredItemHeights.length > 0) {
-          itemHeights(measuredItemHeights)
-        }
+        itemHeights(measuredItemHeights)
       }
     }
   )
