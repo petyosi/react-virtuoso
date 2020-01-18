@@ -38,8 +38,7 @@ const DefaultScrollContainer: TScrollContainer = ({ className, style, reportScro
   )
 
   scrollTo(scrollTop => {
-    const goTo: ScrollToOptions = { top: scrollTop }
-    ;(elRef.current as HTMLElement).scrollTo(goTo)
+    elRef.current!.scrollTo({ top: scrollTop })
   })
 
   return (

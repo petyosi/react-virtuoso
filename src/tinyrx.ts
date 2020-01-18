@@ -271,6 +271,15 @@ export function withLatestFrom<T, R1, R2, R3, R4, R5, R6>(
   s5: TObservable<R5>,
   s6: TObservable<R6>
 ): (val: T, done: TSubscriber<[T, R1, R2, R3, R4, R5, R6]>) => void
+export function withLatestFrom<T, R1, R2, R3, R4, R5, R6, R7>(
+  s1: TObservable<R1>,
+  s2: TObservable<R2>,
+  s3: TObservable<R3>,
+  s4: TObservable<R4>,
+  s5: TObservable<R5>,
+  s6: TObservable<R6>,
+  s7: TObservable<R7>
+): (val: T, done: TSubscriber<[T, R1, R2, R3, R4, R5, R6, R7]>) => void
 
 export function withLatestFrom<T>(...sources: TObservable<any>[]) {
   const called = Array<boolean>(sources.length).fill(false)

@@ -18,6 +18,8 @@ export class OffsetList {
   private nanIndices: number[]
   private initialTopMostItemIndex = 0
   private rangeSize = 0
+  private maxRangeSize = Infinity
+  private rangeSizeExceededCallback: () => void = () => {}
 
   public static create(): OffsetList {
     return new OffsetList(AATree.empty<number>())
@@ -82,9 +84,9 @@ export class OffsetList {
       return this.fromTree(tree.insert(0, size))
     }
 
-    if (this.rangeSize > 100) {
-      console.log('resetting size structure')
-      // return this.fromTree(AATree.empty<number>().insert(0, size))
+    if (this.rangeSize > this.maxRangeSize) {
+      this.rangeSizeExceededCallback()
+      return this.fromTree(AATree.empty<number>().insert(0, this.getDefaultSize()))
     }
 
     // tree is in non-complete state - we know the group sizes, but not the item sizes
@@ -280,6 +282,11 @@ export class OffsetList {
 
   public adjustForPrependedItems(count: number) {
     return this.fromTree(this.rangeTree.shift(count))
+  }
+
+  public configureMaxRangeSize(maxRangeSize: number, maxRangeSizeExceededCallback: () => void) {
+    this.maxRangeSize = maxRangeSize
+    this.rangeSizeExceededCallback = maxRangeSizeExceededCallback
   }
 }
 

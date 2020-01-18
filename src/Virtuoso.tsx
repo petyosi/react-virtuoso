@@ -34,6 +34,7 @@ export interface VirtuosoProps {
   FooterContainer?: TFooterContainer
   ListContainer?: TListContainer
   ItemContainer?: TItemContainer
+  maxHeightCacheSize?: number
 }
 
 interface TVirtuosoPresentationProps {
@@ -94,6 +95,7 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     state.totalListHeightChanged(props.totalListHeightChanged)
     props.initialTopMostItemIndex && state.initialTopMostItemIndex(props.initialTopMostItemIndex)
     state.followOutput(!!props.followOutput)
+    state.maxRangeSize(props.maxHeightCacheSize || Infinity)
     return null
   }
 

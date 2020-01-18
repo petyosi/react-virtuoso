@@ -57,6 +57,7 @@ const App = () => {
         followOutput={true}
         initialTopMostItemIndex={initialTopMostItemIndex}
         atBottomStateChange={atBottom => void atBottom}
+        maxHeightCacheSize={500}
         prependItemCount={prependCount}
         item={index => {
           return (
