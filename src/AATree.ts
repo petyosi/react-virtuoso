@@ -25,6 +25,10 @@ class NilNode<T> {
     return this
   }
 
+  public shift(): this {
+    return this
+  }
+
   public remove(): this {
     return this
   }
@@ -122,6 +126,14 @@ class NonNilNode<T> {
     this.level = level
     this.left = left
     this.right = right
+  }
+
+  public shift(amount: number): Node<T> {
+    return this.clone({
+      key: this.key + amount,
+      left: this.left.shift(amount),
+      right: this.right.shift(amount),
+    })
   }
 
   public remove(key: number): Node<T> {
@@ -441,6 +453,14 @@ export class AATree<T> {
 
   public remove(key: number): AATree<T> {
     return new AATree(this.root.remove(key))
+  }
+
+  public shift(amount: number) {
+    if (this.empty()) {
+      return this
+    }
+    const defaultValue = this.root.findMaxValue(Infinity)
+    return new AATree(this.root.shift(amount).insert(0, defaultValue!))
   }
 
   public empty() {

@@ -20,7 +20,10 @@ interface TVirtuosoConstructorParams {
 type MapToTotal = (input: [OffsetList, number]) => number
 type ListScanner = (
   overscan: number
-) => (items: ListItem[], viewState: [number, number, number, number, number, number, number, OffsetList]) => ListItem[]
+) => (
+  items: ListItem[],
+  viewState: [number, number, number, number, number, number, number, OffsetList, boolean]
+) => ListItem[]
 
 const getListTop = (items: ListItem[]) => (items.length > 0 ? items[0].offset : 0)
 
@@ -40,7 +43,15 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
   const stickyItems$ = subject<number[]>([])
   const initialItemCount$ = subject<number>()
   const scrollToIndex$ = coldSubject<TScrollLocation>()
+  const adjustForPrependedItems$ = coldSubject<number>()
   const scrollToIndexRequestPending$ = subject(false)
+  const initialTopMostItemIndex$ = subject(0)
+  const scrolledToTopMostItem$ = subject(true)
+  const followOutput$ = subject(false)
+  const scrolledToBottom$ = subject(false)
+  const scrollTo$ = coldSubject<number>()
+  const scheduledScrollToIndex$ = subject<number | null>(null)
+  const scheduledScrollTo$ = subject<number | null>(null)
 
   if (itemHeight) {
     initialOffsetList = initialOffsetList.insert(0, 0, itemHeight)
@@ -48,39 +59,77 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
 
   const offsetList$ = subject(initialOffsetList)
 
+  initialTopMostItemIndex$.pipe(withLatestFrom(offsetList$)).subscribe(([topMostItemIndex, list]) => {
+    if (list.empty()) {
+      if (topMostItemIndex !== 0) {
+        scrolledToTopMostItem$.next(false)
+        offsetList$.next(list.setInitialIndex(topMostItemIndex))
+      }
+    } else {
+      scrollToIndex$.next(topMostItemIndex)
+    }
+  })
+
   if (!itemHeight) {
-    itemHeights$.pipe(withLatestFrom(offsetList$, stickyItems$)).subscribe(([heights, offsetList, stickyItems]) => {
-      // no changes in the known heights - this means that scrollToIndex worked as expected
-      // we 'resolve' the pending state
-      if (heights.length === 0) {
-        scrollToIndexRequestPending$.next(false)
-      }
+    itemHeights$
+      .pipe(
+        withLatestFrom(offsetList$, stickyItems$, scrolledToTopMostItem$, scheduledScrollToIndex$, scheduledScrollTo$)
+      )
+      .subscribe(
+        ([heights, offsetList, stickyItems, scrolledToTopMostItem, scheduledScrollToIndex, scheduledScrollTo]) => {
+          if (scheduledScrollToIndex !== null) {
+            scrollToIndex$.next(scheduledScrollToIndex)
+            scheduledScrollToIndex$.next(null)
+          }
 
-      let newList = offsetList
-      if (pendingRenderAfterInitial) {
-        newList = OffsetList.create()
-        pendingRenderAfterInitial = false
-      }
+          if (scheduledScrollTo !== null) {
+            scrollTo$.next(scheduledScrollTo)
+            scheduledScrollTo$.next(null)
+          }
 
-      for (const { start, end, size } of heights) {
-        if (newList.empty() && start === end && stickyItems.indexOf(start) > -1) {
-          newList = newList.insertSpots(stickyItems, size)
-        } else {
-          newList = newList.insert(start, end, size)
+          // no changes in the known heights - this means that scrollToIndex worked as expected
+          // we 'resolve' the pending state
+          // console.log(heights)
+          if (heights.length === 0 && scrolledToTopMostItem) {
+            scrollToIndexRequestPending$.next(false)
+          }
+
+          let newList = offsetList
+          if (pendingRenderAfterInitial) {
+            newList = OffsetList.create()
+            pendingRenderAfterInitial = false
+          }
+
+          for (const { start, end, size } of heights) {
+            if (newList.empty() && start === end && stickyItems.indexOf(start) > -1) {
+              newList = newList.insertSpots(stickyItems, size)
+            } else {
+              newList = newList.insert(start, end, size)
+            }
+          }
+
+          if (newList !== offsetList) {
+            offsetList$.next(newList)
+          }
         }
-      }
-
-      if (newList !== offsetList) {
-        offsetList$.next(newList)
-      }
-    })
+      )
   }
 
   let transposer: GroupIndexTransposer | StubIndexTransposer = new StubIndexTransposer()
 
   const listScanner: ListScanner = overscan => (
     items,
-    [viewportHeight, scrollTop, topListHeight, listHeight, footerHeight, minIndex, totalCount, offsetList]
+    [
+      viewportHeight,
+      scrollTop,
+      topListHeight,
+      listHeight,
+      footerHeight,
+      minIndex,
+      totalCount,
+      offsetList,
+      scrolledToTopMostItem,
+    ]
   ) => {
     const itemLength = items.length
 
@@ -98,14 +147,20 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     if (listBottom < viewportHeight || indexOutOfAllowedRange) {
       const startOffset = Math.max(scrollTop, 0)
       const endOffset = scrollTop + viewportHeight + overscan * 2 - 1
-      const result = transposer.transpose(offsetList.range(startOffset, endOffset, minIndex, maxIndex))
-      return result
+      items = transposer.transpose(offsetList.range(startOffset, endOffset, minIndex, maxIndex))
     }
 
     if (listTop > scrollTop) {
       const startOffset = Math.max(scrollTop - overscan * 2, 0)
       const endOffset = scrollTop + viewportHeight - 1
-      return transposer.transpose(offsetList.range(startOffset, endOffset, minIndex, maxIndex))
+      items = transposer.transpose(offsetList.range(startOffset, endOffset, minIndex, maxIndex))
+    }
+
+    // this is a hack - we should let the probe item render,
+    // but skip the real list until the viewport has scrolled
+    // to the expected location
+    if (items.length > 1 && !scrolledToTopMostItem) {
+      return []
     }
 
     return items
@@ -116,6 +171,14 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     totalCount$.next(transposer.totalCount())
     stickyItems$.next(transposer.groupIndices())
   })
+
+  combineLatest(followOutput$, totalCount$)
+    .pipe(withLatestFrom(scrolledToBottom$))
+    .subscribe(([[followOutput, totalCount], scrolledToBottom]) => {
+      if (followOutput && scrolledToBottom) {
+        scheduledScrollToIndex$.next(totalCount - 1)
+      }
+    })
 
   const totalListHeight$ = combineLatest(offsetList$, totalCount$).pipe(map(mapToTotal))
 
@@ -174,7 +237,8 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     footerHeight$,
     minListIndex$,
     totalCount$,
-    offsetList$
+    offsetList$,
+    scrolledToTopMostItem$
   ).pipe(scan(listScanner(overscan), []))
 
   const endReached$ = coldSubject<number>()
@@ -198,34 +262,51 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
 
   const listOffset$ = combineLatest(list$, scrollTop$, topListHeight$).pipe(map(([items]) => getListTop(items)))
 
-  const scrollTo$ = scrollToIndex$.pipe(
-    withLatestFrom(offsetList$, topListHeight$, stickyItems$, viewportHeight$, totalCount$),
-    map(([location, offsetList, topListHeight, stickyItems, viewportHeight, totalCount]) => {
-      if (typeof location === 'number') {
-        location = { index: location, align: 'start' }
-      }
-      let { index, align = 'start' } = location
-
-      index = Math.max(0, index, Math.min(totalCount - 1, index))
-
-      let offset = offsetList.offsetOf(index)
-      if (align === 'end') {
-        offset = offset - viewportHeight + offsetList.itemAt(index).size
-      } else if (align === 'center') {
-        offset = Math.round(offset - viewportHeight / 2 + offsetList.itemAt(index).size / 2)
-      } else {
-        if (stickyItems.indexOf(index) === -1) {
-          offset -= topListHeight
+  scrollToIndex$
+    .pipe(
+      withLatestFrom(offsetList$, topListHeight$, stickyItems$, viewportHeight$, totalCount$, totalHeight$),
+      map(([location, offsetList, topListHeight, stickyItems, viewportHeight, totalCount, totalHeight]) => {
+        if (typeof location === 'number') {
+          location = { index: location, align: 'start' }
         }
+        let { index, align = 'start' } = location
+
+        index = Math.max(0, index, Math.min(totalCount - 1, index))
+
+        let offset = offsetList.offsetOf(index)
+        if (align === 'end') {
+          offset = offset - viewportHeight + offsetList.itemAt(index).size
+        } else if (align === 'center') {
+          offset = Math.round(offset - viewportHeight / 2 + offsetList.itemAt(index).size / 2)
+        } else {
+          if (stickyItems.indexOf(index) === -1) {
+            offset -= topListHeight
+          }
+        }
+        scrollToIndexRequestPending$.next(true)
+        return Math.min(offset, totalHeight - viewportHeight)
+      })
+    )
+    .subscribe(scrollTo$.next)
+
+  scrollTop$
+    .pipe(withLatestFrom(scrollTo$, scrolledToTopMostItem$))
+    .subscribe(([scrollTop, scrollTo, scrolledToTopMostItem]) => {
+      if (scrollTop === scrollTo && !scrolledToTopMostItem) {
+        scrolledToTopMostItem$.next(true)
       }
-      return offset
     })
-  )
 
-  scrollTo$.subscribe(() => scrollToIndexRequestPending$.next(true))
+  offsetList$
+    .pipe(withLatestFrom(scrolledToTopMostItem$, initialTopMostItemIndex$))
+    .subscribe(([list, scrolledTo, initialTopMostItemIndex]) => {
+      if (!scrolledTo && !list.empty()) {
+        scrollToIndex$.next(initialTopMostItemIndex)
+      }
+    })
 
-  // if the list has received new heights, chances are that our scrollTo has failed,
-  // so we will retry by re-requesting the same index
+  // if the list has received new heights, the scrollTo call calculations were wrong;
+  // we will retry by re-requesting the same index
   offsetList$
     .pipe(withLatestFrom(scrollToIndexRequestPending$, scrollToIndex$))
     .subscribe(([_, scrollToIndexRequestPending, scrollToIndex]) => {
@@ -246,6 +327,24 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
   const stickyItemsOffset$ = listOffset$.pipe(map(offset => -offset))
   const isScrolling$ = buildIsScrolling(scrollTop$)
 
+  combineLatest(scrollTop$, viewportHeight$, totalHeight$)
+    .pipe(
+      map(([scrollTop, viewportHeight, totalHeight]) => {
+        if (viewportHeight === 0) return false
+        return scrollTop === totalHeight - viewportHeight
+      })
+    )
+    .subscribe(scrolledToBottom$.next)
+
+  adjustForPrependedItems$.pipe(withLatestFrom(offsetList$, scrollTop$)).subscribe(([count, list, scrollTop]) => {
+    if (list.empty()) {
+      return
+    }
+
+    offsetList$.next(list.adjustForPrependedItems(count))
+    scheduledScrollTo$.next(count * list.getDefaultSize() + scrollTop)
+  })
+
   return {
     groupCounts: makeInput(groupCounts$),
     itemHeights: makeInput(itemHeights$),
@@ -257,6 +356,9 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     totalCount: makeInput(totalCount$),
     scrollToIndex: makeInput(scrollToIndex$),
     initialItemCount: makeInput(initialItemCount$),
+    initialTopMostItemIndex: makeInput(initialTopMostItemIndex$),
+    followOutput: makeInput(followOutput$),
+    adjustForPrependedItems: makeInput(adjustForPrependedItems$),
 
     list: makeOutput(list$),
     itemsRendered: makeOutput(list$),
@@ -264,6 +366,7 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     listOffset: makeOutput(listOffset$),
     totalHeight: makeOutput(totalHeight$),
     endReached: makeOutput(endReached$),
+    atBottomStateChange: makeOutput(scrolledToBottom$),
     totalListHeightChanged: makeOutput(totalHeight$),
     isScrolling: makeOutput(isScrolling$),
     stickyItems: makeOutput(stickyItems$),

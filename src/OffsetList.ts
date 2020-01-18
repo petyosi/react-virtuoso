@@ -15,43 +15,53 @@ export interface Item {
 export class OffsetList {
   public rangeTree: AATree<number>
   public offsetTree: AATree<OffsetValue>
-  private nanIndices: number[] = []
+  private nanIndices: number[]
+  private initialTopMostItemIndex = 0
+  private rangeSize = 0
 
   public static create(): OffsetList {
     return new OffsetList(AATree.empty<number>())
   }
 
-  private constructor(rangeTree: AATree<number>) {
+  private constructor(
+    rangeTree: AATree<number>,
+    offsetTree = AATree.empty<OffsetValue>(),
+    nanIndices: number[] = [],
+    initialTopMostItemIndex = 0
+  ) {
     this.rangeTree = rangeTree
+    this.nanIndices = nanIndices
+    this.initialTopMostItemIndex = initialTopMostItemIndex
 
-    let offsetTree = AATree.empty<OffsetValue>()
+    if (offsetTree.empty()) {
+      let offset = 0
+      const ranges = rangeTree.ranges()
 
-    let offset = 0
-    const ranges = rangeTree.ranges()
+      let nanFound = false
 
-    let nanFound = false
+      for (const { start: startIndex, end: endIndex, value: size } of ranges) {
+        this.rangeSize++
+        if (isNaN(size)) {
+          this.nanIndices.push(startIndex)
 
-    for (const { start: startIndex, end: endIndex, value: size } of ranges) {
-      if (isNaN(size)) {
-        this.nanIndices.push(startIndex)
+          if (!nanFound) {
+            offsetTree = offsetTree.insert(offset, {
+              startIndex,
+              endIndex: Infinity,
+              size,
+            })
+          }
 
-        if (!nanFound) {
+          nanFound = true
+        } else if (!nanFound) {
           offsetTree = offsetTree.insert(offset, {
             startIndex,
-            endIndex: Infinity,
+            endIndex: endIndex,
             size,
           })
+
+          offset += (endIndex - startIndex + 1) * size
         }
-
-        nanFound = true
-      } else if (!nanFound) {
-        offsetTree = offsetTree.insert(offset, {
-          startIndex,
-          endIndex: endIndex,
-          size,
-        })
-
-        offset += (endIndex - startIndex + 1) * size
       }
     }
 
@@ -62,10 +72,19 @@ export class OffsetList {
     return this.rangeTree.empty()
   }
 
+  private fromTree(tree: AATree<number>) {
+    return new OffsetList(tree, undefined, undefined, this.initialTopMostItemIndex)
+  }
+
   public insert(start: number, end: number, size: number): OffsetList {
     let tree = this.rangeTree
     if (tree.empty()) {
-      return new OffsetList(tree.insert(0, size))
+      return this.fromTree(tree.insert(0, size))
+    }
+
+    if (this.rangeSize > 100) {
+      console.log('resetting size structure')
+      // return this.fromTree(AATree.empty<number>().insert(0, size))
     }
 
     // tree is in non-complete state - we know the group sizes, but not the item sizes
@@ -73,13 +92,13 @@ export class OffsetList {
       const groupSize = tree.find(this.nanIndices[0] - 1)
 
       if (groupSize === size) {
-        return new OffsetList(AATree.empty<number>().insert(0, size))
+        return this.fromTree(AATree.empty<number>().insert(0, size))
       }
       for (const nanIndex of this.nanIndices) {
         tree = tree.insert(nanIndex, size)
       }
 
-      return new OffsetList(tree)
+      return this.fromTree(tree)
     }
 
     // extend the range in both directions, so that we can get adjacent neighbours.
@@ -122,7 +141,7 @@ export class OffsetList {
       tree = tree.insert(start, size)
     }
 
-    return tree === this.rangeTree ? this : new OffsetList(tree)
+    return tree === this.rangeTree ? this : this.fromTree(tree)
   }
 
   public insertSpots(spotIndexes: number[], value: number): OffsetList {
@@ -165,7 +184,7 @@ export class OffsetList {
 
   public indexRange(startIndex: number, endIndex: number): Item[] {
     if (this.rangeTree.empty()) {
-      return [{ index: 0, size: 0, offset: NaN }]
+      return [{ index: this.initialTopMostItemIndex, size: 0, offset: NaN }]
     }
 
     const ranges = this.rangeTree.rangesWithin(startIndex, endIndex)
@@ -185,7 +204,7 @@ export class OffsetList {
 
   public range(startOffset: number, endOffset: number, minIndex = 0, maxIndex = Infinity): Item[] {
     if (this.offsetTree.empty()) {
-      return [{ index: 0, size: 0, offset: 0 }]
+      return [{ index: this.initialTopMostItemIndex, size: 0, offset: 0 }]
     }
 
     const ranges = this.offsetTree.rangesWithin(startOffset, endOffset)
@@ -249,6 +268,18 @@ export class OffsetList {
       tree = tree.insert(offset, index)
     })
     return new IndexList(tree)
+  }
+
+  public setInitialIndex(topMostItemIndex: number): OffsetList {
+    return new OffsetList(this.rangeTree, this.offsetTree, this.nanIndices, topMostItemIndex)
+  }
+
+  public getDefaultSize(): number {
+    return this.rangeTree.findMaxValue(Infinity)
+  }
+
+  public adjustForPrependedItems(count: number) {
+    return this.fromTree(this.rangeTree.shift(count))
   }
 }
 

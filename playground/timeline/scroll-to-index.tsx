@@ -1,22 +1,18 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../../src/'
 
 const App = () => {
   const ref = useRef<Virtuoso>(null)
-
-  useEffect(() => {
-    setTimeout(() => {
-      console.log('foo')
-      ref.current.scrollToIndex({ index: 29, align: 'end' })
-    }, 200)
-  }, [])
+  const [initialTopMostItemIndex, setInitialTopMostItemIndex] = useState(10)
+  const [totalCount, setTotalCount] = useState(600)
+  const [prependCount, setPrependCount] = useState(0)
 
   return (
     <div>
       <button
         onClick={() => {
-          ref.current.scrollToIndex(40)
+          setInitialTopMostItemIndex(40)
         }}
       >
         Scroll to 40
@@ -24,20 +20,49 @@ const App = () => {
 
       <button
         onClick={() => {
-          ref.current.scrollToIndex(10)
+          setInitialTopMostItemIndex(10)
         }}
       >
         Scroll to 10
       </button>
+      <button
+        onClick={() => {
+          setInitialTopMostItemIndex(59)
+        }}
+      >
+        Scroll to 59
+      </button>
+      <button
+        onClick={() => {
+          setTotalCount(totalCount + 10)
+        }}
+      >
+        Append 3 more items
+      </button>
+
+      <button
+        onClick={() => {
+          setTotalCount(totalCount + 10)
+          ref.current.adjustForPrependedItems(10)
+          setPrependCount(prependCount + 10)
+        }}
+      >
+        Prepend 10 items
+      </button>
+
       <Virtuoso
         ref={ref}
         style={{ height: '400px', width: '350px' }}
-        totalCount={60}
+        totalCount={totalCount}
+        followOutput={true}
+        initialTopMostItemIndex={initialTopMostItemIndex}
+        atBottomStateChange={atBottom => void atBottom}
+        prependItemCount={prependCount}
         item={index => {
           return (
             <div
               style={{
-                height: [15, 25, 26, 27, 28, 45, 56, 51].includes(index) ? '60px' : '40px',
+                height: index % 2 ? '60px' : '40px',
                 paddingTop: '10px',
                 borderBottom: '1px solid #ccc',
                 boxSizing: 'border-box',

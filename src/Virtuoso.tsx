@@ -18,14 +18,18 @@ export interface VirtuosoProps {
   footer?: () => ReactElement
   item: (index: number) => ReactElement
   computeItemKey?: (index: number) => number
+  prependItemCount?: number
   itemHeight?: number
   endReached?: (index: number) => void
   scrollingStateChange?: (isScrolling: boolean) => void
+  atBottomStateChange?: (atBottom: boolean) => void
   itemsRendered?: TSubscriber<ListItem[]>
   totalListHeightChanged?: TSubscriber<number>
   style?: CSSProperties
   className?: string
   initialItemCount?: number
+  initialTopMostItemIndex?: number
+  followOutput?: boolean
   ScrollContainer?: TScrollContainer
   FooterContainer?: TFooterContainer
   ListContainer?: TListContainer
@@ -81,12 +85,15 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
 
   public static getDerivedStateFromProps(props: VirtuosoProps, state: VirtuosoState) {
     state.isScrolling(props.scrollingStateChange)
+    state.atBottomStateChange(props.atBottomStateChange)
     state.endReached(props.endReached)
     state.topItemCount(props.topItems || 0)
     state.totalCount(props.totalCount)
     props.initialItemCount && state.initialItemCount(props.initialItemCount)
     state.itemsRendered(props.itemsRendered)
     state.totalListHeightChanged(props.totalListHeightChanged)
+    props.initialTopMostItemIndex && state.initialTopMostItemIndex(props.initialTopMostItemIndex)
+    state.followOutput(!!props.followOutput)
     return null
   }
 
@@ -101,6 +108,10 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
 
   public scrollToIndex(location: TScrollLocation) {
     this.state.scrollToIndex(location)
+  }
+
+  public adjustForPrependedItems(count: number) {
+    this.state.adjustForPrependedItems(count)
   }
 
   public componentWillUnmount() {
