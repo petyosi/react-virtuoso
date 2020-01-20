@@ -217,6 +217,16 @@ export function filter<T>(predicate: (val: T) => boolean) {
   }
 }
 
+export function duc<T>(comparator = (current: T, next: T) => current !== next) {
+  let current: T
+  return (next: T, done: TSubscriber<T>) => {
+    if (comparator(current, next)) {
+      current = next
+      done(next)
+    }
+  }
+}
+
 export function debounceTime<T>(time: number) {
   let val: T | undefined
   let timeout: any

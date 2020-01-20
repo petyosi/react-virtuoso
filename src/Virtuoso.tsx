@@ -20,10 +20,12 @@ export interface VirtuosoProps {
   computeItemKey?: (index: number) => number
   prependItemCount?: number
   itemHeight?: number
+  defaultItemHeight?: number
   endReached?: (index: number) => void
-  scrollingStateChange?: (isScrolling: boolean) => void
-  atBottomStateChange?: (atBottom: boolean) => void
+  scrollingStateChange?: TSubscriber<boolean>
+  atBottomStateChange?: TSubscriber<boolean>
   itemsRendered?: TSubscriber<ListItem[]>
+  rangeChanged?: TSubscriber<{ startIndex: number; endIndex: number }>
   totalListHeightChanged?: TSubscriber<number>
   style?: CSSProperties
   className?: string
@@ -93,9 +95,9 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     props.initialItemCount && state.initialItemCount(props.initialItemCount)
     state.itemsRendered(props.itemsRendered)
     state.totalListHeightChanged(props.totalListHeightChanged)
-    props.initialTopMostItemIndex && state.initialTopMostItemIndex(props.initialTopMostItemIndex)
     state.followOutput(!!props.followOutput)
     state.maxRangeSize(props.maxHeightCacheSize || Infinity)
+    state.rangeChanged(props.rangeChanged)
     return null
   }
 
