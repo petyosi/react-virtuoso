@@ -79,3 +79,5 @@ export class GroupIndexTransposer {
     return this.tree.keys()
   }
 }
+
+export type Transposer = StubIndexTransposer | GroupIndexTransposer

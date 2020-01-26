@@ -11,6 +11,10 @@ export interface TObservable<T> {
   pipe<R1, R2, R3>(...operators: [TOperator<T, R1>, TOperator<R1, R2>, TOperator<R2, R3>]): TObservable<R3>
 }
 
+export interface TSubject<T> extends TObservable<T> {
+  next(val: T): void
+}
+
 function combineOperators<A1>(): TOperator<A1, A1>
 function combineOperators<A1, R1>(o1: TOperator<A1, R1>): TOperator<A1, R1>
 function combineOperators<A1, R1, R2>(o1: TOperator<A1, R1>, o2: TOperator<R1, R2>): TOperator<A1, R2>
@@ -163,6 +167,18 @@ export function combineLatest<S1, S2, S3, S4, S5, S6, S7, S8, S9>(
   s8: TObservable<S8>,
   s9: TObservable<S9>
 ): TObservable<[S1, S2, S3, S4, S5, S6, S7, S8, S9]>
+export function combineLatest<S1, S2, S3, S4, S5, S6, S7, S8, S9, S10>(
+  s1: TObservable<S1>,
+  s2: TObservable<S2>,
+  s3: TObservable<S3>,
+  s4: TObservable<S4>,
+  s5: TObservable<S5>,
+  s6: TObservable<S6>,
+  s7: TObservable<S7>,
+  s8: TObservable<S8>,
+  s9: TObservable<S9>,
+  s10: TObservable<S10>
+): TObservable<[S1, S2, S3, S4, S5, S6, S7, S8, S9, S10]>
 export function combineLatest(...sources: TObservable<any>[]): TObservable<any[]> {
   const called = Array<boolean>(sources.length).fill(false)
   const values = Array<any>(sources.length)

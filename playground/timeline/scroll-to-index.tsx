@@ -99,8 +99,7 @@ export const LogViewer = () => {
         atBottomStateChange={tailRecords}
         followOutput={true}
         maxHeightCacheSize={500}
-        rangeChanged={({ startIndex, endIndex }) => {
-          console.log({ startIndex, endIndex })
+        rangeChanged={({ startIndex }) => {
           if (startIndex < 30) {
             prependRecords()
           }
