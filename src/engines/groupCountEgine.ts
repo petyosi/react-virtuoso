@@ -12,9 +12,9 @@ export function groupCountEngine({ transposer$, stickyItems$, totalCount$ }: Gro
 
   groupCounts$.subscribe(counts => {
     const transposer = new GroupIndexTransposer(counts)
+    transposer$.next(transposer)
     totalCount$.next(transposer.totalCount())
     stickyItems$.next(transposer.groupIndices())
-    transposer$.next(transposer)
   })
 
   return {
