@@ -9,10 +9,14 @@ export interface TObservable<T> {
   pipe<R1>(...operators: [TOperator<T, R1>]): TObservable<R1>
   pipe<R1, R2>(...operators: [TOperator<T, R1>, TOperator<R1, R2>]): TObservable<R2>
   pipe<R1, R2, R3>(...operators: [TOperator<T, R1>, TOperator<R1, R2>, TOperator<R2, R3>]): TObservable<R3>
+  pipe<R1, R2, R3, R4>(
+    ...operators: [TOperator<T, R1>, TOperator<R1, R2>, TOperator<R2, R3>, TOperator<R3, R4>]
+  ): TObservable<R4>
 }
 
 export interface TSubject<T> extends TObservable<T> {
   next(val: T): void
+  subscribers: TSubscriber<T>[]
 }
 
 function combineOperators<A1>(): TOperator<A1, A1>
@@ -57,6 +61,9 @@ function buildPipe<T>(subscribe: TSubscribe<T>) {
   function pipe<R1>(...operators: [TOperator<T, R1>]): TObservable<R1>
   function pipe<R1, R2>(...operators: [TOperator<T, R1>, TOperator<R1, R2>]): TObservable<R2>
   function pipe<R1, R2, R3>(...operators: [TOperator<T, R1>, TOperator<R1, R2>, TOperator<R2, R3>]): TObservable<R3>
+  function pipe<R1, R2, R3, R4>(
+    ...operators: [TOperator<T, R1>, TOperator<R1, R2>, TOperator<R2, R3>, TOperator<R3, R4>]
+  ): TObservable<R4>
   function pipe<K extends TOperator<any, any>[]>(...operators: K) {
     const operator = combineOperators(...operators)
     return observable(subscribe, operator)
@@ -75,7 +82,7 @@ export function observable<T, K>(source: TSubscribe<T>, operator: TOperator<T, K
   }
 }
 
-export function subject<T>(initial?: T, distinct = true) {
+export function subject<T>(initial?: T, distinct = true): TSubject<T> {
   let subscribers: TSubscriber<T>[] = []
   let val: T | undefined = initial
 
@@ -104,7 +111,7 @@ export function subject<T>(initial?: T, distinct = true) {
   }
 }
 
-export function coldSubject<T>() {
+export function coldSubject<T>(): TSubject<T> {
   let subscribers: TSubscriber<T>[] = []
 
   const next = (newVal: T) => {
@@ -122,6 +129,7 @@ export function coldSubject<T>() {
     next,
     subscribe,
     pipe: buildPipe(subscribe),
+    subscribers,
   }
 }
 
@@ -254,6 +262,24 @@ export function debounceTime<T>(time: number) {
     }
 
     timeout = setTimeout(() => {
+      done(val!)
+    }, time)
+  }
+}
+
+export function throttleTime<T>(time: number) {
+  let val: T | undefined
+  let timeout: any
+
+  return (newVal: T, done: TSubscriber<T>) => {
+    val = newVal
+
+    if (timeout) {
+      return
+    }
+
+    timeout = setTimeout(() => {
+      timeout = undefined
       done(val!)
     }, time)
   }

@@ -12,6 +12,7 @@ import { topItemCountEngine } from './engines/topItemCountEngine'
 import { topListEngine } from './engines/topListEngine'
 import { ListItem, StubIndexTransposer, Transposer } from './GroupIndexTransposer'
 import { makeInput, makeOutput } from './rxio'
+import { scrollSeekEngine } from './engines/scrollSeekEngine'
 
 export interface ItemHeight {
   start: number
@@ -105,6 +106,14 @@ const VirtuosoStore = ({
     duc((current, next) => !current || current.startIndex !== next.startIndex || current.endIndex !== next.endIndex)
   )
 
+  const { isSeeking$, scrollVelocity$, scrollSeekConfiguration$ } = scrollSeekEngine({
+    scrollTop$,
+    isScrolling$,
+    rangeChanged$,
+  })
+
+  isSeeking$.subscribe(isSeeking => console.log({ isSeeking }))
+
   return {
     groupCounts: makeInput(groupCounts$),
     itemHeights: makeInput(itemHeights$),
@@ -119,8 +128,11 @@ const VirtuosoStore = ({
     followOutput: makeInput(followOutput$),
     adjustForPrependedItems: makeInput(adjustForPrependedItems$),
     maxRangeSize: makeInput(maxRangeSize$),
+    scrollSeekConfiguration: makeInput(scrollSeekConfiguration$),
 
     list: makeOutput(list$),
+    isSeeking: makeOutput(isSeeking$),
+    scrollVelocity: makeOutput(scrollVelocity$),
     itemsRendered: makeOutput(list$),
     topList: makeOutput(topList$),
     listOffset: makeOutput(listOffset$),
