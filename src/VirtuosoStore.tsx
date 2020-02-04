@@ -1,4 +1,4 @@
-import { duc, filter, map, subject } from '../src/tinyrx'
+import { duc, filter, map, subject, coldSubject, withLatestFrom } from '../src/tinyrx'
 import { buildIsScrolling } from './EngineCommons'
 import { adjustForPrependedItemsEngine } from './engines/adjustForPrependedItemsEngine'
 import { followOutputEngine } from './engines/followOutputEngine'
@@ -12,7 +12,7 @@ import { topItemCountEngine } from './engines/topItemCountEngine'
 import { topListEngine } from './engines/topListEngine'
 import { ListItem, StubIndexTransposer, Transposer } from './GroupIndexTransposer'
 import { makeInput, makeOutput } from './rxio'
-import { scrollSeekEngine } from './engines/scrollSeekEngine'
+import { scrollSeekEngine, ListRange } from './engines/scrollSeekEngine'
 
 export interface ItemHeight {
   start: number
@@ -90,7 +90,11 @@ const VirtuosoStore = ({
     transposer$,
   })
 
-  const { adjustForPrependedItems$ } = adjustForPrependedItemsEngine({ offsetList$, scrollTop$, scrollTo$ })
+  const { adjustForPrependedItems$, adjustmentInProgress$ } = adjustForPrependedItemsEngine({
+    offsetList$,
+    scrollTop$,
+    scrollTo$,
+  })
 
   const { maxRangeSize$ } = maxRangeSizeEngine({ scrollTo$, offsetList$, scrollTop$, list$ })
 
@@ -100,11 +104,16 @@ const VirtuosoStore = ({
 
   const stickyItemsOffset$ = listOffset$.pipe(map(offset => -offset))
 
-  const rangeChanged$ = list$.pipe(
-    filter<ListItem[]>(list => list.length !== 0),
-    map(({ 0: { index: startIndex }, length, [length - 1]: { index: endIndex } }) => ({ startIndex, endIndex })),
-    duc((current, next) => !current || current.startIndex !== next.startIndex || current.endIndex !== next.endIndex)
-  )
+  const rangeChanged$ = coldSubject<ListRange>()
+
+  list$
+    .pipe(
+      withLatestFrom(adjustmentInProgress$),
+      filter<[ListItem[], boolean]>(([list, inProgress]) => list.length !== 0 && !inProgress),
+      map(([{ 0: { index: startIndex }, length, [length - 1]: { index: endIndex } }]) => ({ startIndex, endIndex })),
+      duc((current, next) => !current || current.startIndex !== next.startIndex || current.endIndex !== next.endIndex)
+    )
+    .subscribe(rangeChanged$.next)
 
   const { isSeeking$, scrollVelocity$, scrollSeekConfiguration$ } = scrollSeekEngine({
     scrollTop$,
@@ -112,7 +121,8 @@ const VirtuosoStore = ({
     rangeChanged$,
   })
 
-  isSeeking$.subscribe(isSeeking => console.log({ isSeeking }))
+  // scrollTop$.subscribe(scrollTop => console.log({ scrollTop }))
+  // rangeChanged$.subscribe(rchanged => console.log({ rchanged }))
 
   return {
     groupCounts: makeInput(groupCounts$),

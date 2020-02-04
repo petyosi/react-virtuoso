@@ -90,7 +90,6 @@ export function scrollToIndexEngine({
     .pipe(withLatestFrom(scrollToIndexRequestPending$, scrollToIndex$))
     .subscribe(([_, scrollToIndexRequestPending, scrollToIndex]) => {
       if (scrollToIndexRequestPending) {
-        console.log('retrying')
         scrollToIndex$.next(scrollToIndex)
       }
     })

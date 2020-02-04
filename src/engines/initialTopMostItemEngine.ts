@@ -23,7 +23,10 @@ export function initialTopMostItemIndexEngine({
     .pipe(withLatestFrom(scrollTo$, scrolledToTopMostItem$))
     .subscribe(([scrollTop, scrollTo, scrolledToTopMostItem]) => {
       if (scrollTop === scrollTo.top && !scrolledToTopMostItem) {
-        scrolledToTopMostItem$.next(true)
+        // skip a tick, so that the list$ can grab the scrollTop$ update
+        setTimeout(() => {
+          scrolledToTopMostItem$.next(true)
+        })
       }
     })
 

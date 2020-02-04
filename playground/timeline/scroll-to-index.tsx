@@ -28,7 +28,7 @@ export const LogViewer = () => {
   const topRecordIndex = useRef(100)
   const tailInterval = useRef(null)
   const initialRecordSize = 200
-  const prependRecordCount = 100
+  const prependRecordCount = 250
   const tailRecordCount = 5
   const [showScrollToBottom, setShowScrollToBottom] = useState(true)
 
@@ -52,8 +52,8 @@ export const LogViewer = () => {
   )
 
   const prependRecords = useCallback(() => {
-    console.log('prepending')
     topRecordIndex.current -= prependRecordCount
+    console.log(topRecordIndex.current)
     setLogLines([...generateLogLines(topRecordIndex.current, prependRecordCount), ...logLines])
     ref.current.adjustForPrependedItems(prependRecordCount)
   }, [logLines, topRecordIndex, ref])

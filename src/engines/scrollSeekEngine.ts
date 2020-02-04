@@ -35,8 +35,6 @@ export function scrollSeekEngine({ isScrolling$, scrollTop$, rangeChanged$: rang
   const scrollVelocity$ = subject(0)
   const isSeeking$ = subject(false)
   const scrollSeekConfiguration$ = subject<ScrollSeekConfiguration | undefined>(undefined)
-  const theRange$ = subject({ startIndex: 0, endIndex: 0 })
-  range$.subscribe(theRange$.next)
 
   isScrolling$
     .pipe(
@@ -55,7 +53,7 @@ export function scrollSeekEngine({ isScrolling$, scrollTop$, rangeChanged$: rang
 
   scrollVelocity$
     .pipe(
-      withLatestFrom(scrollSeekConfiguration$, isSeeking$, theRange$),
+      withLatestFrom(scrollSeekConfiguration$, isSeeking$, range$),
       filter(([_, config]) => !!config),
       map(([speed, config, isSeeking, range]: any) => {
         const { exit, enter } = config!
@@ -74,7 +72,7 @@ export function scrollSeekEngine({ isScrolling$, scrollTop$, rangeChanged$: rang
     )
     .subscribe(isSeeking$.next)
 
-  combineLatest(isSeeking$, scrollVelocity$, theRange$)
+  combineLatest(isSeeking$, scrollVelocity$, range$)
     .pipe(withLatestFrom(scrollSeekConfiguration$))
     .subscribe(([[isSeeking, velocity, range], config]) => isSeeking && config!.change(velocity, range))
 

@@ -1,4 +1,4 @@
-import { TObservable, withLatestFrom, coldSubject, TSubject } from '../tinyrx'
+import { TObservable, withLatestFrom, coldSubject, TSubject, subject } from '../tinyrx'
 import { OffsetList } from '../OffsetList'
 
 interface AdjustForPrependedItemsParams {
@@ -10,17 +10,22 @@ interface AdjustForPrependedItemsParams {
 export function adjustForPrependedItemsEngine({ offsetList$, scrollTop$, scrollTo$ }: AdjustForPrependedItemsParams) {
   const adjustForPrependedItems$ = coldSubject<number>()
 
-  adjustForPrependedItems$.pipe(withLatestFrom(offsetList$, scrollTop$)).subscribe(([count, offsetList, scrollTop]) => {
-    if (offsetList.empty()) {
-      return
-    }
+  const adjustmentInProgress$ = subject(false)
+  adjustForPrependedItems$
+    .pipe(withLatestFrom(offsetList$, scrollTop$, adjustmentInProgress$))
+    .subscribe(([count, offsetList, scrollTop, inProgress]) => {
+      if (inProgress || offsetList.empty()) {
+        return
+      }
 
-    offsetList$.next(offsetList.adjustForPrependedItems(count))
+      adjustmentInProgress$.next(true)
+      offsetList$.next(offsetList.adjustForPrependedItems(count))
 
-    setTimeout(() => {
-      scrollTo$.next({ top: count * offsetList.getDefaultSize() + scrollTop })
+      setTimeout(() => {
+        scrollTo$.next({ top: count * offsetList.getDefaultSize() + scrollTop })
+        adjustmentInProgress$.next(false)
+      })
     })
-  })
 
-  return { adjustForPrependedItems$ }
+  return { adjustForPrependedItems$, adjustmentInProgress$ }
 }

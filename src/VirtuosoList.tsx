@@ -8,7 +8,6 @@ export interface TRenderProps {
   'data-index': number
   'data-known-size': number
   renderPlaceholder: boolean
-  scrollVelocity: number
   style?: CSSProperties
 }
 export type TRender = (item: ListItem, props: TRenderProps) => ReactElement
@@ -19,11 +18,10 @@ interface TListProps {
 }
 
 export const VirtuosoList: React.FC<TListProps> = ({ render, stickyClassName }) => {
-  const { scrollVelocity, isSeeking, topList, list } = useContext(VirtuosoContext)!
+  const { isSeeking, topList, list } = useContext(VirtuosoContext)!
   const items = useOutput<ListItem[]>(list, [])
   const topItems = useOutput<ListItem[]>(topList, [])
   const renderPlaceholder = useOutput(isSeeking, false)
-  const velocity = useOutput(scrollVelocity, 0)
 
   const renderedItems: ReactNode[] = []
   let topOffset = 0
@@ -48,7 +46,6 @@ export const VirtuosoList: React.FC<TListProps> = ({ render, stickyClassName }) 
       'data-known-size': item.size,
       className: stickyClassName,
       renderPlaceholder,
-      scrollVelocity: velocity,
       style,
     }
     renderedItems.push(render(item, props))
@@ -66,7 +63,6 @@ export const VirtuosoList: React.FC<TListProps> = ({ render, stickyClassName }) 
         'data-index': item.index,
         'data-known-size': item.size,
         renderPlaceholder,
-        scrollVelocity: velocity,
       })
     )
   })
