@@ -1,5 +1,5 @@
 import { OffsetList } from '../OffsetList'
-import { combineLatest, map, subject, TSubject, withLatestFrom } from '../tinyrx'
+import { combineLatest, map, subject, TSubject, withLatestFrom, coldSubject } from '../tinyrx'
 import { ItemHeight } from '../VirtuosoStore'
 import { initialItemCountEngine } from './initialItemCountEngine'
 import { Transposer, ListItem } from '../GroupIndexTransposer'
@@ -30,6 +30,7 @@ export function offsetListEngine({
   const totalCount$ = subject(totalCount)
   const itemHeights$ = subject<ItemHeight[]>()
   const { pendingRenderAfterInitial$, initialItemCount$ } = initialItemCountEngine({ itemHeights$, viewportHeight$ })
+  const heightsChanged$ = coldSubject<[boolean, OffsetList]>()
 
   let initialOffsetList = OffsetList.create()
 
@@ -73,6 +74,9 @@ export function offsetListEngine({
 
         if (newList !== offsetList) {
           offsetList$.next(newList)
+          heightsChanged$.next([true, newList])
+        } else {
+          heightsChanged$.next([false, newList])
         }
       })
   }
@@ -85,5 +89,6 @@ export function offsetListEngine({
     initialItemCount$,
     itemHeights$,
     stickyItems$,
+    heightsChanged$,
   }
 }

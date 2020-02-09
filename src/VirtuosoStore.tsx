@@ -1,4 +1,4 @@
-import { duc, filter, map, subject, coldSubject, withLatestFrom } from '../src/tinyrx'
+import { duc, filter, map, subject, coldSubject, withLatestFrom, scan } from '../src/tinyrx'
 import { buildIsScrolling } from './EngineCommons'
 import { adjustForPrependedItemsEngine } from './engines/adjustForPrependedItemsEngine'
 import { followOutputEngine } from './engines/followOutputEngine'
@@ -50,6 +50,7 @@ const VirtuosoStore = ({
     totalCount$,
     footerHeight$,
     totalHeight$,
+    heightsChanged$,
   } = offsetListEngine({
     totalCount,
     itemHeight,
@@ -114,6 +115,33 @@ const VirtuosoStore = ({
       duc((current, next) => !current || current.startIndex !== next.startIndex || current.endIndex !== next.endIndex)
     )
     .subscribe(rangeChanged$.next)
+
+  const listDir$ = list$.pipe(
+    duc(),
+    filter(list => list.length > 0),
+    scan(
+      ([prev], current) => {
+        return [current, prev.length && prev[0].index > current[0].index ? 'up' : 'down'] as [ListItem[], 'up' | 'down']
+      },
+      [[], 'down'] as [ListItem[], 'up' | 'down' | 'same']
+    ),
+    map(([_, dir]) => dir)
+  )
+
+  heightsChanged$
+    .pipe(
+      withLatestFrom(listDir$, list$, scrollTop$),
+      filter(([[changed], dir]) => {
+        return changed && dir === 'up'
+      })
+    )
+    .subscribe(([[_, offsetList], __, list, scrollTop]) => {
+      const expectedOffset = list[list.length - 1].offset
+      const actualOffset = offsetList.offsetOf(list[list.length - 1].index)
+      const difference = actualOffset - expectedOffset
+      console.log('fixing scroll up')
+      scrollTo$.next({ top: scrollTop + difference })
+    })
 
   const { isSeeking$, scrollVelocity$, scrollSeekConfiguration$ } = scrollSeekEngine({
     scrollTop$,
