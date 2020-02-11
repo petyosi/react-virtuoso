@@ -1,8 +1,18 @@
-import { subject, map, scan, withLatestFrom, filter, combineLatest, coldSubject } from '../src/tinyrx'
-import { OffsetList } from './OffsetList'
-import { StubIndexTransposer, GroupIndexTransposer, ListItem } from './GroupIndexTransposer'
+import { duc, filter, map, subject, coldSubject, withLatestFrom, scan } from '../src/tinyrx'
+import { buildIsScrolling } from './EngineCommons'
+import { adjustForPrependedItemsEngine } from './engines/adjustForPrependedItemsEngine'
+import { followOutputEngine } from './engines/followOutputEngine'
+import { groupCountEngine } from './engines/groupCountEgine'
+import { listEngine } from './engines/listEngine'
+import { maxRangeSizeEngine } from './engines/maxRangeSizeEngine'
+import { offsetListEngine } from './engines/offsetListEngine'
+import { scrolledToBottomEngine } from './engines/scrolledToBottomEngine'
+import { scrollToIndexEngine } from './engines/scrollToIndexEngine'
+import { topItemCountEngine } from './engines/topItemCountEngine'
+import { topListEngine } from './engines/topListEngine'
+import { ListItem, StubIndexTransposer, Transposer } from './GroupIndexTransposer'
 import { makeInput, makeOutput } from './rxio'
-import { TScrollLocation, buildIsScrolling } from './EngineCommons'
+import { scrollSeekEngine, ListRange } from './engines/scrollSeekEngine'
 
 export interface ItemHeight {
   start: number
@@ -15,220 +25,131 @@ interface TVirtuosoConstructorParams {
   totalCount?: number
   topItems?: number
   itemHeight?: number
+  defaultItemHeight?: number
+  initialTopMostItemIndex?: number
 }
 
-type MapToTotal = (input: [OffsetList, number]) => number
-type ListScanner = (
-  overscan: number
-) => (items: ListItem[], viewState: [number, number, number, number, number, number, number, OffsetList]) => ListItem[]
-
-const getListTop = (items: ListItem[]) => (items.length > 0 ? items[0].offset : 0)
-
-const mapToTotal: MapToTotal = ([offsetList, totalCount]) => offsetList.total(totalCount - 1)
-
-const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoConstructorParams) => {
+const VirtuosoStore = ({
+  overscan = 0,
+  totalCount = 0,
+  itemHeight,
+  initialTopMostItemIndex,
+  defaultItemHeight,
+}: TVirtuosoConstructorParams) => {
+  const transposer$ = subject<Transposer>(new StubIndexTransposer())
   const viewportHeight$ = subject(0)
-  const listHeight$ = subject(0)
   const scrollTop$ = subject(0)
-  const footerHeight$ = subject(0)
-  const itemHeights$ = subject<ItemHeight[]>()
-  const totalCount$ = subject(totalCount)
-  const groupCounts$ = subject<number[]>()
-  const topItemCount$ = subject<number>()
-  let initialOffsetList = OffsetList.create()
-  let pendingRenderAfterInitial = false
-  const stickyItems$ = subject<number[]>([])
-  const initialItemCount$ = subject<number>()
-  const scrollToIndex$ = coldSubject<TScrollLocation>()
+  const isScrolling$ = buildIsScrolling(scrollTop$)
 
-  if (itemHeight) {
-    initialOffsetList = initialOffsetList.insert(0, 0, itemHeight)
-  }
-
-  const offsetList$ = subject(initialOffsetList)
-
-  if (!itemHeight) {
-    itemHeights$.pipe(withLatestFrom(offsetList$, stickyItems$)).subscribe(([heights, offsetList, stickyItems]) => {
-      let newList = offsetList
-      if (pendingRenderAfterInitial) {
-        newList = OffsetList.create()
-        pendingRenderAfterInitial = false
-      }
-
-      for (const { start, end, size } of heights) {
-        if (newList.empty() && start === end && stickyItems.indexOf(start) > -1) {
-          newList = newList.insertSpots(stickyItems, size)
-        } else {
-          newList = newList.insert(start, end, size)
-        }
-      }
-
-      if (newList !== offsetList) {
-        offsetList$.next(newList)
-      }
-    })
-  }
-
-  let transposer: GroupIndexTransposer | StubIndexTransposer = new StubIndexTransposer()
-
-  const listScanner: ListScanner = overscan => (
-    items,
-    [viewportHeight, scrollTop, topListHeight, listHeight, footerHeight, minIndex, totalCount, offsetList]
-  ) => {
-    const itemLength = items.length
-
-    if (totalCount === 0) {
-      return []
-    }
-
-    const listTop = getListTop(items)
-
-    const listBottom = listTop - scrollTop + listHeight - footerHeight - topListHeight
-    const maxIndex = Math.max(totalCount - 1, 0)
-    const indexOutOfAllowedRange =
-      itemLength > 0 && (items[0].index < minIndex || items[itemLength - 1].index > maxIndex)
-
-    // console.log({ listTop, listBottom, scrollTop, listHeight, viewportHeight })
-    if (listBottom < viewportHeight || indexOutOfAllowedRange) {
-      const startOffset = Math.max(scrollTop, 0)
-      const endOffset = scrollTop + viewportHeight + overscan * 2 - 1
-      // console.log({ startOffset, endOffset })
-      const result = transposer.transpose(offsetList.range(startOffset, endOffset, minIndex, maxIndex))
-      // console.log({ result })
-      return result
-    }
-
-    if (listTop > scrollTop) {
-      const startOffset = Math.max(scrollTop - overscan * 2, 0)
-      const endOffset = scrollTop + viewportHeight - 1
-      return transposer.transpose(offsetList.range(startOffset, endOffset, minIndex, maxIndex))
-    }
-
-    return items
-  }
-
-  groupCounts$.subscribe(counts => {
-    transposer = new GroupIndexTransposer(counts)
-    totalCount$.next(transposer.totalCount())
-    stickyItems$.next(transposer.groupIndices())
+  const { topList$, minListIndex$, topListHeight$ } = topListEngine()
+  const {
+    stickyItems$,
+    initialItemCount$,
+    itemHeights$,
+    offsetList$,
+    totalCount$,
+    footerHeight$,
+    totalHeight$,
+    heightsChanged$,
+  } = offsetListEngine({
+    totalCount,
+    itemHeight,
+    defaultItemHeight,
+    initialTopMostItemIndex,
+    viewportHeight$,
+    scrollTop$,
+    transposer$,
+    topList$,
   })
 
-  const totalListHeight$ = combineLatest(offsetList$, totalCount$).pipe(map(mapToTotal))
+  const { groupCounts$, groupIndices$ } = groupCountEngine({ totalCount$, transposer$, stickyItems$ })
 
-  const totalHeight$ = combineLatest(totalListHeight$, footerHeight$).pipe(
-    map(([totalListHeight, footerHeight]) => totalListHeight + footerHeight)
-  )
+  const { scrolledToBottom$ } = scrolledToBottomEngine({ totalHeight$, viewportHeight$, scrollTop$ })
 
-  const stickyItemsIndexList$ = combineLatest(offsetList$, stickyItems$).pipe(
-    map(([offsetList, stickyItems]) => {
-      return offsetList.getOffsets(stickyItems)
-    })
-  )
+  const { scrolledToTopMostItem$, scrollToIndex$, scrollTo$ } = scrollToIndexEngine({
+    initialTopMostItemIndex,
+    scrollTop$,
+    offsetList$,
+    viewportHeight$,
+    totalHeight$,
+    stickyItems$,
+    totalCount$,
+    topListHeight$,
+    itemHeights$,
+  })
 
-  const topList$ = subject<ListItem[]>([])
-
-  combineLatest(offsetList$, topItemCount$, totalCount$, viewportHeight$)
-    .pipe(
-      filter(params => params[1] > 0 && params[3] > 0),
-      map(([offsetList, topItemCount, totalCount]) => {
-        const endIndex = Math.max(0, Math.min(topItemCount - 1, totalCount))
-        return transposer.transpose(offsetList.indexRange(0, endIndex))
-      })
-    )
-    .subscribe(topList$.next)
-
-  combineLatest(offsetList$, stickyItemsIndexList$, scrollTop$)
-    .pipe(
-      filter(params => !params[1].empty() && !params[0].empty()),
-      withLatestFrom(topList$),
-      map(([[offsetList, stickyItemsIndexList, scrollTop], topList]) => {
-        const currentStickyItem = stickyItemsIndexList.findMaxValue(Math.max(scrollTop, 0))
-
-        if (topList.length === 1 && topList[0].index === currentStickyItem) {
-          return topList
-        }
-
-        const item = offsetList.itemAt(currentStickyItem)
-        return transposer.transpose([item])
-      })
-    )
-    .subscribe(topList$.next)
-
-  const topListHeight$ = topList$.pipe(map(items => items.reduce((total, item) => total + item.size, 0)))
-
-  const minListIndex$ = topList$.pipe(
-    map(topList => {
-      return topList.length && topList[topList.length - 1].index + 1
-    })
-  )
-
-  const list$ = combineLatest(
+  const { listHeight$, list$, listOffset$, endReached$ } = listEngine({
+    overscan,
     viewportHeight$,
     scrollTop$,
     topListHeight$,
-    listHeight$,
     footerHeight$,
     minListIndex$,
     totalCount$,
-    offsetList$
-  ).pipe(scan(listScanner(overscan), []))
-
-  const endReached$ = coldSubject<number>()
-  let currentEndIndex = 0
-
-  list$
-    .pipe(map(items => (items.length ? items[items.length - 1].index : 0)))
-    .pipe(withLatestFrom(totalCount$))
-    .subscribe(([endIndex, totalCount]) => {
-      if (totalCount === 0) {
-        return
-      }
-
-      if (endIndex === totalCount - 1) {
-        if (currentEndIndex !== endIndex) {
-          currentEndIndex = endIndex
-          endReached$.next(endIndex)
-        }
-      }
-    })
-
-  const listOffset$ = combineLatest(list$, scrollTop$, topListHeight$).pipe(map(([items]) => getListTop(items)))
-
-  const scrollTo$ = scrollToIndex$.pipe(
-    withLatestFrom(offsetList$, topListHeight$, stickyItems$, viewportHeight$, totalCount$),
-    map(([location, offsetList, topListHeight, stickyItems, viewportHeight, totalCount]) => {
-      if (typeof location === 'number') {
-        location = { index: location, align: 'start' }
-      }
-      let { index, align = 'start' } = location
-
-      index = Math.max(0, index, Math.min(totalCount - 1, index))
-
-      let offset = offsetList.offsetOf(index)
-      if (align === 'end') {
-        offset = offset - viewportHeight + offsetList.itemAt(index).size
-      } else if (align === 'center') {
-        offset = Math.round(offset - viewportHeight / 2 + offsetList.itemAt(index).size / 2)
-      } else {
-        if (stickyItems.indexOf(index) === -1) {
-          offset -= topListHeight
-        }
-      }
-      return offset
-    })
-  )
-
-  const unsubscribeInitial = initialItemCount$.subscribe(count => {
-    const dummyItemHeight = 30
-    itemHeights$.next([{ start: 0, end: 0, size: dummyItemHeight }])
-    viewportHeight$.next(dummyItemHeight * count)
-    pendingRenderAfterInitial = true
-    unsubscribeInitial()
+    offsetList$,
+    scrolledToTopMostItem$,
+    transposer$,
   })
 
-  const groupIndices$ = stickyItems$.pipe()
+  const { adjustForPrependedItems$, adjustmentInProgress$ } = adjustForPrependedItemsEngine({
+    offsetList$,
+    scrollTop$,
+    scrollTo$,
+  })
+
+  const { maxRangeSize$ } = maxRangeSizeEngine({ scrollTo$, offsetList$, scrollTop$, list$ })
+
+  const { topItemCount$ } = topItemCountEngine({ offsetList$, totalCount$, transposer$, viewportHeight$, topList$ })
+
+  const { followOutput$ } = followOutputEngine({ totalCount$, scrollToIndex$, scrolledToBottom$ })
+
   const stickyItemsOffset$ = listOffset$.pipe(map(offset => -offset))
-  const isScrolling$ = buildIsScrolling(scrollTop$)
+
+  const rangeChanged$ = coldSubject<ListRange>()
+
+  list$
+    .pipe(
+      withLatestFrom(adjustmentInProgress$),
+      filter<[ListItem[], boolean]>(([list, inProgress]) => list.length !== 0 && !inProgress),
+      map(([{ 0: { index: startIndex }, length, [length - 1]: { index: endIndex } }]) => ({ startIndex, endIndex })),
+      duc((current, next) => !current || current.startIndex !== next.startIndex || current.endIndex !== next.endIndex)
+    )
+    .subscribe(rangeChanged$.next)
+
+  const listDir$ = list$.pipe(
+    duc(),
+    filter(list => list.length > 0),
+    scan(
+      ([prev], current) => {
+        return [current, prev.length && prev[0].index > current[0].index ? 'up' : 'down'] as [ListItem[], 'up' | 'down']
+      },
+      [[], 'down'] as [ListItem[], 'up' | 'down' | 'same']
+    ),
+    map(([_, dir]) => dir)
+  )
+
+  heightsChanged$
+    .pipe(
+      withLatestFrom(listDir$, list$, scrollTop$),
+      filter(([[changed], dir]) => {
+        return changed && dir === 'up'
+      })
+    )
+    .subscribe(([[_, offsetList], __, list, scrollTop]) => {
+      const expectedOffset = list[list.length - 1].offset
+      const actualOffset = offsetList.offsetOf(list[list.length - 1].index)
+      const difference = actualOffset - expectedOffset
+      scrollTo$.next({ top: scrollTop + difference })
+    })
+
+  const { isSeeking$, scrollVelocity$, scrollSeekConfiguration$ } = scrollSeekEngine({
+    scrollTop$,
+    isScrolling$,
+    rangeChanged$,
+  })
+
+  // scrollTop$.subscribe(scrollTop => console.log({ scrollTop }))
+  // rangeChanged$.subscribe(rchanged => console.log({ rchanged }))
 
   return {
     groupCounts: makeInput(groupCounts$),
@@ -241,14 +162,22 @@ const VirtuosoStore = ({ overscan = 0, totalCount = 0, itemHeight }: TVirtuosoCo
     totalCount: makeInput(totalCount$),
     scrollToIndex: makeInput(scrollToIndex$),
     initialItemCount: makeInput(initialItemCount$),
+    followOutput: makeInput(followOutput$),
+    adjustForPrependedItems: makeInput(adjustForPrependedItems$),
+    maxRangeSize: makeInput(maxRangeSize$),
+    scrollSeekConfiguration: makeInput(scrollSeekConfiguration$),
 
     list: makeOutput(list$),
+    isSeeking: makeOutput(isSeeking$),
+    scrollVelocity: makeOutput(scrollVelocity$),
     itemsRendered: makeOutput(list$),
     topList: makeOutput(topList$),
     listOffset: makeOutput(listOffset$),
     totalHeight: makeOutput(totalHeight$),
     endReached: makeOutput(endReached$),
+    atBottomStateChange: makeOutput(scrolledToBottom$),
     totalListHeightChanged: makeOutput(totalHeight$),
+    rangeChanged: makeOutput(rangeChanged$),
     isScrolling: makeOutput(isScrolling$),
     stickyItems: makeOutput(stickyItems$),
     groupIndices: makeOutput(groupIndices$),

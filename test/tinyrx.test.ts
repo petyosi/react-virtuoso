@@ -1,4 +1,15 @@
-import { subject, map, scan, withLatestFrom, debounceTime, mapTo, skip, filter, combineLatest } from '../src/tinyrx'
+import {
+  subject,
+  map,
+  scan,
+  withLatestFrom,
+  debounceTime,
+  mapTo,
+  skip,
+  filter,
+  combineLatest,
+  coldSubject,
+} from '../src/tinyrx'
 
 describe('tinyrx', () => {
   describe('subject', () => {
@@ -138,5 +149,25 @@ describe('tinyrx', () => {
       s1.next(1)
       s1.next(2)
     })
+  })
+
+  it('supports multisubscribers for pipes', () => {
+    const s1 = coldSubject<number>()
+    const s3 = subject(1)
+
+    const s2 = s1.pipe(
+      withLatestFrom(s3),
+      filter(([val]) => val % 2 === 1),
+      map(() => true)
+    )
+
+    let calls = 0
+
+    s2.subscribe(() => calls++)
+    s2.subscribe(() => calls++)
+
+    s1.next(1)
+
+    expect(calls).toEqual(2)
   })
 })

@@ -312,6 +312,11 @@ describe('Offset List', () => {
     const range = offsetList.range(0, 300, 0, 0)
     expect(range).toHaveLength(1)
   })
+
+  it('returns probe item with the correct index set', () => {
+    let list = OffsetList.create().setInitialIndex(12)
+    expect(list.range(0, 10)).toEqual([{ index: 12, offset: 0, size: 0 }])
+  })
 })
 
 describe('Index List', () => {

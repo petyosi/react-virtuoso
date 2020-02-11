@@ -1,8 +1,9 @@
-import { subject, skip, mapTo, debounceTime, TObservable } from './tinyrx'
+import { debounceTime, mapTo, skip, subject, TObservable } from './tinyrx'
 
 interface TScrollLocationWithAlign {
   index: number
   align: 'start' | 'center' | 'end'
+  behavior?: 'smooth' | 'auto'
 }
 
 export type TScrollLocation = number | TScrollLocationWithAlign

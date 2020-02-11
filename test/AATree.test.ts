@@ -71,6 +71,17 @@ describe('aa tree behavior', () => {
     expect(Array.from(emptyAATree.keys())).toEqual([])
   })
 
+  it('shifts the tree with the provided amount, using the last value as the default one', () => {
+    const tree = numbersToAATree([0, 4, 10])
+    const shifted = tree.shift(8)
+    expect(shifted.walk()).toEqual([
+      { key: 0, value: 10 },
+      { key: 8, value: 0 },
+      { key: 12, value: 4 },
+      { key: 18, value: 10 },
+    ])
+  })
+
   it('yields tuples for a given range', () => {
     const tree = numbersToAATree([0, 4, 10, 15, 20])
 

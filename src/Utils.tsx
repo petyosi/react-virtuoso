@@ -15,7 +15,7 @@ export const useHeight: UseHeight = (input, onMount, onResize) => {
   const ref = useRef<CallbackRefParam>(null)
   const animationFrameID = useRef<number>(0)
   const observer = new ResizeObserver(entries => {
-    const newHeight = entries[0].contentRect.height
+    const newHeight = Math.round(entries[0].contentRect.height)
     if (onResize) {
       animationFrameID.current = window.requestAnimationFrame(() => onResize(entries[0].target as HTMLElement))
     }
@@ -71,8 +71,8 @@ export const useSize: UseSize = callback => {
       currentSize.current = [width, height]
       callback({
         element: entries[0].target as HTMLElement,
-        width,
-        height,
+        width: Math.round(width),
+        height: Math.round(height),
       })
     }
   })

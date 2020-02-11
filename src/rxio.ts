@@ -1,8 +1,16 @@
 import { TObservable, TSubscription } from './tinyrx'
 
+export interface TOutput<T> {
+  (callback: TCallback<T> | undefined): void
+}
+
+export interface TInput<T> {
+  (val: T): void
+}
+
 type TCallback<T> = (val: T) => void
 
-export function makeOutput<T>(observable: TObservable<T>) {
+export function makeOutput<T>(observable: TObservable<T>): TOutput<T> {
   let unsubscribe: TSubscription | undefined
 
   return (callback: TCallback<T> | undefined) => {
@@ -15,9 +23,6 @@ export function makeOutput<T>(observable: TObservable<T>) {
   }
 }
 
-export function makeInput<T>(subject: { next: (value: T) => void }) {
+export function makeInput<T>(subject: { next: (value: T) => void }): TInput<T> {
   return subject.next
 }
-
-export type TOutput<T> = (callback: TCallback<T> | undefined) => void
-export type TInput<T> = TCallback<T>

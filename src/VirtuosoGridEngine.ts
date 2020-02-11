@@ -85,7 +85,7 @@ export const VirtuosoGridEngine = () => {
     withLatestFrom(gridDimensions$, totalCount$),
     map(([location, [viewportWidth, viewportHeight, itemWidth, itemHeight], totalCount]) => {
       if (itemWidth === undefined || itemHeight === undefined) {
-        return 0
+        return { top: 0, behavior: 'auto' } as ScrollOptions
       }
 
       if (typeof location === 'number') {
@@ -105,7 +105,8 @@ export const VirtuosoGridEngine = () => {
       } else if (align === 'center') {
         offset = Math.round(offset - viewportHeight / 2 + itemHeight / 2)
       }
-      return offset
+
+      return { top: offset, behavior: 'auto' } as ScrollToOptions
     })
   )
 

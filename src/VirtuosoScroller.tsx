@@ -12,15 +12,29 @@ export type TScrollContainer = FC<{
   style: CSSProperties
   className?: string
   reportScrollTop: (scrollTop: number) => void
-  scrollTo: (callback: (scrollTop: number) => void) => void
+  scrollTo: (callback: (scrollTop: ScrollToOptions) => void) => void
 }>
 
 const DefaultScrollContainer: TScrollContainer = ({ className, style, reportScrollTop, scrollTo, children }) => {
   const elRef = useRef<HTMLElement | null>(null)
+  const smoothScrollTarget = useRef<number | null>(null)
+  const currentScrollTop = useRef<number | null>()
 
   const onScroll: EventListener = useCallback(
     (e: Event) => {
-      reportScrollTop((e.target as HTMLDivElement).scrollTop)
+      const scrollTop = (e.target as HTMLDivElement).scrollTop
+      currentScrollTop.current = scrollTop
+      if (smoothScrollTarget.current !== null) {
+        if (smoothScrollTarget.current === scrollTop) {
+          // console.log('reporting smooth scrolling')
+          smoothScrollTarget.current = null
+          reportScrollTop(scrollTop)
+        } else {
+          // console.log('skip reporting')
+        }
+      } else {
+        reportScrollTop(scrollTop)
+      }
     },
     [reportScrollTop]
   )
@@ -37,9 +51,13 @@ const DefaultScrollContainer: TScrollContainer = ({ className, style, reportScro
     [onScroll]
   )
 
-  scrollTo(scrollTop => {
-    const goTo: ScrollToOptions = { top: scrollTop }
-    ;(elRef.current as HTMLElement).scrollTo(goTo)
+  scrollTo(location => {
+    if (currentScrollTop.current !== location.top) {
+      if (location.behavior === 'smooth') {
+        smoothScrollTarget.current = location.top!
+      }
+      elRef.current!.scrollTo(location)
+    }
   })
 
   return (
@@ -54,7 +72,7 @@ export const VirtuosoScroller: FC<{
   style: CSSProperties
   ScrollContainer?: TScrollContainer
   scrollTop: (scrollTop: number) => void
-  scrollTo: (callback: (scrollTop: number) => void) => void
+  scrollTo: (callback: (scrollTop: ScrollToOptions) => void) => void
 }> = ({ children, style, className, ScrollContainer = DefaultScrollContainer, scrollTop, scrollTo }) => {
   return (
     <ScrollContainer

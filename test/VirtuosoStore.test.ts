@@ -211,12 +211,28 @@ describe('Virtuoso Store', () => {
     const { itemHeights, scrollToIndex, scrollTo } = VirtuosoStore({ totalCount: 100 })
     itemHeights([{ start: 0, end: 0, size: 50 }])
 
-    scrollTo(offset => {
-      expect(offset).toEqual(500)
+    scrollTo(location => {
+      expect(location.top).toEqual(500)
       done()
     })
 
     scrollToIndex(10)
+  })
+
+  it('retries the scroll if new heights are reported', done => {
+    const { scrollTop, itemHeights, scrollToIndex, scrollTo } = VirtuosoStore({ totalCount: 100 })
+    itemHeights([{ start: 0, end: 0, size: 50 }])
+
+    scrollToIndex(10)
+
+    scrollTop(500)
+
+    scrollTo(location => {
+      expect(location.top).toEqual(510)
+      done()
+    })
+
+    itemHeights([{ start: 8, end: 8, size: 60 }])
   })
 
   it('scrolls to display the item at the bottom of the visible viewport', done => {
@@ -225,8 +241,8 @@ describe('Virtuoso Store', () => {
     itemHeights([{ start: 0, end: 0, size: itemSize }])
     viewportHeight(820)
 
-    scrollTo(offset => {
-      expect(offset).toEqual(itemSize * 20 - 820 + itemSize)
+    scrollTo(location => {
+      expect(location.top).toEqual(itemSize * 20 - 820 + itemSize)
       done()
     })
 
@@ -239,8 +255,8 @@ describe('Virtuoso Store', () => {
     itemHeights([{ start: 0, end: 0, size: itemSize }])
     viewportHeight(820)
 
-    scrollTo(offset => {
-      expect(offset).toEqual(itemSize * 20 - 820 / 2 + itemSize / 2)
+    scrollTo(location => {
+      expect(location.top).toEqual(itemSize * 20 - 820 / 2 + itemSize / 2)
       done()
     })
 
@@ -253,8 +269,8 @@ describe('Virtuoso Store', () => {
     topItemCount(3)
     viewportHeight(2000)
 
-    scrollTo(offset => {
-      expect(offset).toEqual(50 * 10 - 3 * 50)
+    scrollTo(location => {
+      expect(location.top).toEqual(50 * 10 - 3 * 50)
       done()
     })
 
@@ -267,11 +283,43 @@ describe('Virtuoso Store', () => {
     itemHeights([{ start: 0, end: 0, size: 50 }])
     itemHeights([{ start: 1, end: 1, size: 20 }])
 
-    scrollTo(offset => {
-      expect(offset).toEqual(50 * 2 + 20 * 20)
+    scrollTo(location => {
+      expect(location.top).toEqual(50 * 2 + 20 * 20)
       done()
     })
 
     scrollToIndex(22)
+  })
+
+  it('resets the offset list if it gets too large', done => {
+    const { scrollTo, scrollTop, maxRangeSize, list, viewportHeight, itemHeights } = VirtuosoStore({ totalCount: 100 })
+    viewportHeight(30)
+    maxRangeSize(6)
+
+    list(_list => {
+      // console.log(list)
+    })
+
+    itemHeights([
+      { size: 5, start: 0, end: 0 },
+      { size: 6, start: 1, end: 1 },
+      { size: 5, start: 2, end: 2 },
+      { size: 6, start: 3, end: 3 },
+    ])
+
+    scrollTop(120)
+
+    itemHeights([{ size: 5, start: 4, end: 4 }])
+    itemHeights([{ size: 6, start: 5, end: 5 }])
+
+    scrollTo(scrollToLocation => {
+      expect(scrollToLocation.top).toEqual(117)
+      done()
+    })
+
+    // this line will exceed the range size of the list.
+    // the new list will default to size of 5, and accept size 7.
+    // The three 6 records from above will be lost, so we need to readjust with 3.
+    itemHeights([{ size: 7, start: 6, end: 6 }])
   })
 })
