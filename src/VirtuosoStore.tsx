@@ -139,7 +139,6 @@ const VirtuosoStore = ({
       const expectedOffset = list[list.length - 1].offset
       const actualOffset = offsetList.offsetOf(list[list.length - 1].index)
       const difference = actualOffset - expectedOffset
-      console.log('fixing scroll up')
       scrollTo$.next({ top: scrollTop + difference })
     })
 
