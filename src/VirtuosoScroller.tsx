@@ -56,7 +56,7 @@ const DefaultScrollContainer: TScrollContainer = ({ className, style, reportScro
       if (location.behavior === 'smooth') {
         smoothScrollTarget.current = location.top!
       }
-      elRef.current!.scrollTo(location)
+      elRef.current && elRef.current!.scrollTo(location)
     }
   })
 
