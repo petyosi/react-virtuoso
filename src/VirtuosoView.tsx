@@ -104,6 +104,9 @@ export const VirtuosoView: React.FC<{
   const { scrollTo, scrollTop, totalHeight, viewportHeight } = useContext(VirtuosoContext)!
   const fillerHeight = useOutput<number>(totalHeight, 0)
   const stickyClassName = useMemo(randomClassName, [])
+  const reportScrollTop = (st: number) => {
+    scrollTop(Math.max(st, 0))
+  }
 
   const viewportCallbackRef = useHeight(viewportHeight)
 
@@ -113,7 +116,7 @@ export const VirtuosoView: React.FC<{
       ScrollContainer={ScrollContainer}
       className={className}
       scrollTo={scrollTo}
-      scrollTop={scrollTop}
+      scrollTop={reportScrollTop}
     >
       <div ref={viewportCallbackRef} style={viewportStyle}>
         <ListWrapper fixedItemHeight={fixedItemHeight} ListContainer={ListContainer}>
