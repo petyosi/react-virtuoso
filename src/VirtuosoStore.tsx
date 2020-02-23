@@ -38,7 +38,7 @@ const VirtuosoStore = ({
 }: TVirtuosoConstructorParams) => {
   const transposer$ = subject<Transposer>(new StubIndexTransposer())
   const viewportHeight$ = subject(0)
-  const scrollTop$ = subject(0)
+  const scrollTop$ = subject(0, false)
   const isScrolling$ = buildIsScrolling(scrollTop$)
 
   const { topList$, minListIndex$, topListHeight$ } = topListEngine()
@@ -82,6 +82,7 @@ const VirtuosoStore = ({
     overscan,
     viewportHeight$,
     scrollTop$,
+    totalHeight$,
     topListHeight$,
     footerHeight$,
     minListIndex$,
@@ -147,9 +148,6 @@ const VirtuosoStore = ({
     isScrolling$,
     rangeChanged$,
   })
-
-  // scrollTop$.subscribe(scrollTop => console.log({ scrollTop }))
-  // rangeChanged$.subscribe(rchanged => console.log({ rchanged }))
 
   return {
     groupCounts: makeInput(groupCounts$),

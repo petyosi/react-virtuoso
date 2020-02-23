@@ -15,6 +15,7 @@ interface ListEngineParams {
   offsetList$: TObservable<OffsetList>
   scrolledToTopMostItem$: TObservable<boolean>
   transposer$: TObservable<Transposer>
+  totalHeight$: TObservable<number>
 }
 
 export function listEngine({
@@ -28,6 +29,7 @@ export function listEngine({
   offsetList$,
   scrolledToTopMostItem$,
   transposer$,
+  totalHeight$,
 }: ListEngineParams) {
   const listHeight$ = subject(0)
   const endReached$ = coldSubject<number>()
@@ -42,7 +44,8 @@ export function listEngine({
     totalCount$,
     offsetList$,
     scrolledToTopMostItem$,
-    transposer$
+    transposer$,
+    totalHeight$
   ).pipe(
     scan(
       (
@@ -58,6 +61,7 @@ export function listEngine({
           offsetList,
           scrolledToTopMostItem,
           transposer,
+          totalHeight,
         ]
       ) => {
         const itemLength = items.length
@@ -66,22 +70,23 @@ export function listEngine({
           return []
         }
 
+        const constrainedScrollTop = Math.max(0, Math.min(scrollTop, totalHeight - viewportHeight))
+
         const listTop = getListTop(items)
 
-        const listBottom = listTop - scrollTop + listHeight - footerHeight - topListHeight
+        const listBottom = listTop - constrainedScrollTop + listHeight - footerHeight - topListHeight
         const maxIndex = Math.max(totalCount - 1, 0)
         const indexOutOfAllowedRange =
           itemLength > 0 && (items[0].index < minIndex || items[itemLength - 1].index > maxIndex)
 
         if (listBottom < viewportHeight || indexOutOfAllowedRange) {
-          const startOffset = Math.max(scrollTop, 0)
-          const endOffset = scrollTop + viewportHeight + overscan * 2 - 1
-          items = transposer.transpose(offsetList.range(startOffset, endOffset, minIndex, maxIndex))
+          const endOffset = constrainedScrollTop + viewportHeight + overscan * 2 - 1
+          items = transposer.transpose(offsetList.range(constrainedScrollTop, endOffset, minIndex, maxIndex))
         }
 
-        if (listTop > scrollTop) {
-          const startOffset = Math.max(scrollTop - overscan * 2, 0)
-          const endOffset = scrollTop + viewportHeight - 1
+        if (listTop > constrainedScrollTop) {
+          const startOffset = Math.max(constrainedScrollTop - overscan * 2, 0)
+          const endOffset = constrainedScrollTop + viewportHeight - 1
           items = transposer.transpose(offsetList.range(startOffset, endOffset, minIndex, maxIndex))
         }
 

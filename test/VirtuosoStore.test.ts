@@ -74,10 +74,11 @@ describe('Virtuoso Store', () => {
   })
 
   it('removes items when total is reduced', () => {
-    const { totalCount, itemHeights, viewportHeight, list } = VirtuosoStore({ overscan: 0, totalCount: 100 })
+    const { scrollTop, totalCount, itemHeights, viewportHeight, list } = VirtuosoStore({ overscan: 0, totalCount: 100 })
 
     viewportHeight(230)
     itemHeights([{ start: 0, end: 0, size: 50 }])
+    scrollTop(0)
 
     let i = 0
     list(items => {
@@ -86,9 +87,18 @@ describe('Virtuoso Store', () => {
           expect(items).toHaveLength(5)
           break
         case 1:
-          expect(items).toHaveLength(0)
+          expect(items).toHaveLength(5)
           break
         case 2:
+          expect(items).toHaveLength(0)
+          break
+        case 3:
+          expect(items).toHaveLength(0)
+          break
+        case 4:
+          expect(items).toHaveLength(1)
+          break
+        case 5:
           expect(items).toHaveLength(1)
           break
         default:
@@ -120,8 +130,8 @@ describe('Virtuoso Store', () => {
     itemHeights([{ start: 0, end: 0, size: 50 }])
 
     list(items => {
-      expect(items[0].index).toEqual(2)
       expect(items).toHaveLength(6)
+      expect(items[0].index).toEqual(2)
     })
   })
 
