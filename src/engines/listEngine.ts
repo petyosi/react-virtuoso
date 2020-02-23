@@ -1,4 +1,4 @@
-import { scan, combineLatest, TObservable, map, subject, withLatestFrom, coldSubject } from '../tinyrx'
+import { scan, combineLatest, TObservable, map, subject, withLatestFrom, coldSubject, duc } from '../tinyrx'
 import { OffsetList } from '../OffsetList'
 import { ListItem, Transposer } from '../GroupIndexTransposer'
 
@@ -33,10 +33,19 @@ export function listEngine({
 }: ListEngineParams) {
   const listHeight$ = subject(0)
   const endReached$ = coldSubject<number>()
+  const list$ = subject<ListItem[]>([])
 
-  const list$ = combineLatest(
+  const constrainedScrollTop$ = subject(0)
+
+  combineLatest(scrollTop$, totalHeight$, viewportHeight$)
+    .pipe(
+      map(([scrollTop, totalHeight, viewportHeight]) => Math.max(0, Math.min(scrollTop, totalHeight - viewportHeight)))
+    )
+    .subscribe(constrainedScrollTop$.next)
+
+  combineLatest(
     viewportHeight$,
-    scrollTop$,
+    constrainedScrollTop$,
     topListHeight$,
     listHeight$,
     footerHeight$,
@@ -44,64 +53,63 @@ export function listEngine({
     totalCount$,
     offsetList$,
     scrolledToTopMostItem$,
-    transposer$,
-    totalHeight$
-  ).pipe(
-    scan(
-      (
-        items,
-        [
-          viewportHeight,
-          scrollTop,
-          topListHeight,
-          listHeight,
-          footerHeight,
-          minIndex,
-          totalCount,
-          offsetList,
-          scrolledToTopMostItem,
-          transposer,
-          totalHeight,
-        ]
-      ) => {
-        const itemLength = items.length
-
-        if (totalCount === 0) {
-          return []
-        }
-
-        const constrainedScrollTop = Math.max(0, Math.min(scrollTop, totalHeight - viewportHeight))
-
-        const listTop = getListTop(items)
-
-        const listBottom = listTop - constrainedScrollTop + listHeight - footerHeight - topListHeight
-        const maxIndex = Math.max(totalCount - 1, 0)
-        const indexOutOfAllowedRange =
-          itemLength > 0 && (items[0].index < minIndex || items[itemLength - 1].index > maxIndex)
-
-        if (listBottom < viewportHeight || indexOutOfAllowedRange) {
-          const endOffset = constrainedScrollTop + viewportHeight + overscan * 2 - 1
-          items = transposer.transpose(offsetList.range(constrainedScrollTop, endOffset, minIndex, maxIndex))
-        }
-
-        if (listTop > constrainedScrollTop) {
-          const startOffset = Math.max(constrainedScrollTop - overscan * 2, 0)
-          const endOffset = constrainedScrollTop + viewportHeight - 1
-          items = transposer.transpose(offsetList.range(startOffset, endOffset, minIndex, maxIndex))
-        }
-
-        // this is a hack - we should let the probe item render,
-        // but skip the real list until the viewport has scrolled
-        // to the expected location
-        if (items.length > 1 && !scrolledToTopMostItem) {
-          return []
-        }
-
-        return items
-      },
-      [] as ListItem[]
-    )
+    transposer$
   )
+    .pipe(
+      scan(
+        (
+          items,
+          [
+            viewportHeight,
+            scrollTop,
+            topListHeight,
+            listHeight,
+            footerHeight,
+            minIndex,
+            totalCount,
+            offsetList,
+            scrolledToTopMostItem,
+            transposer,
+          ]
+        ) => {
+          const itemLength = items.length
+
+          if (totalCount === 0) {
+            return []
+          }
+
+          const listTop = getListTop(items)
+
+          const listBottom = listTop - scrollTop + listHeight - footerHeight - topListHeight
+          const maxIndex = Math.max(totalCount - 1, 0)
+          const indexOutOfAllowedRange =
+            itemLength > 0 && (items[0].index < minIndex || items[itemLength - 1].index > maxIndex)
+
+          if (listBottom < viewportHeight || indexOutOfAllowedRange) {
+            const endOffset = scrollTop + viewportHeight + overscan * 2 - 1
+            items = transposer.transpose(offsetList.range(scrollTop, endOffset, minIndex, maxIndex))
+          }
+
+          if (listTop > scrollTop) {
+            const startOffset = Math.max(scrollTop - overscan * 2, 0)
+            const endOffset = scrollTop + viewportHeight - 1
+            items = transposer.transpose(offsetList.range(startOffset, endOffset, minIndex, maxIndex))
+          }
+
+          // this is a hack - we should let the probe item render,
+          // but skip the real list until the viewport has scrolled
+          // to the expected location
+          if (items.length > 1 && !scrolledToTopMostItem) {
+            return []
+          }
+
+          return items
+        },
+        [] as ListItem[]
+      ),
+      duc()
+    )
+    .subscribe(list$.next)
 
   const listOffset$ = combineLatest(list$, scrollTop$, topListHeight$).pipe(map(([items]) => getListTop(items)))
 

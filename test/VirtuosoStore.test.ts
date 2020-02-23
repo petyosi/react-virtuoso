@@ -87,18 +87,9 @@ describe('Virtuoso Store', () => {
           expect(items).toHaveLength(5)
           break
         case 1:
-          expect(items).toHaveLength(5)
+          expect(items).toHaveLength(0)
           break
         case 2:
-          expect(items).toHaveLength(0)
-          break
-        case 3:
-          expect(items).toHaveLength(0)
-          break
-        case 4:
-          expect(items).toHaveLength(1)
-          break
-        case 5:
           expect(items).toHaveLength(1)
           break
         default:
