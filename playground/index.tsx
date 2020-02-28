@@ -14,6 +14,7 @@ const App = () => {
       <Virtuoso
         style={{ width: '300px', height: '400px' }}
         totalCount={200}
+        initialTopMostItemIndex={150}
         scrollingStateChange={isScrolling => console.log({ isScrolling })}
         item={index => <div style={{ height: 40 }}>Item {index}</div>}
       />

@@ -132,8 +132,8 @@ const VirtuosoStore = ({
   heightsChanged$
     .pipe(
       withLatestFrom(listDir$, list$, scrollTop$),
-      filter(([[changed], dir]) => {
-        return changed && dir === 'up'
+      filter(([[changed], dir, list]) => {
+        return changed && dir === 'up' && list.length > 0
       })
     )
     .subscribe(([[_, offsetList], __, list, scrollTop]) => {

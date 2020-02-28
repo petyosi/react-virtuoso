@@ -19,12 +19,14 @@ export class GroupedVirtuoso extends PureComponent<GroupedVirtuosoProps, Virtuos
   }
 
   public static getDerivedStateFromProps(props: GroupedVirtuosoProps, state: VirtuosoState) {
-    state.endReached(props.endReached)
-    state.isScrolling(props.scrollingStateChange)
-    state.groupCounts(props.groupCounts)
-    state.groupIndices(props.groupIndices)
-    state.itemsRendered(props.itemsRendered)
-    state.totalListHeightChanged(props.totalListHeightChanged)
+    setTimeout(() => {
+      state.endReached(props.endReached)
+      state.isScrolling(props.scrollingStateChange)
+      state.groupCounts(props.groupCounts)
+      state.groupIndices(props.groupIndices)
+      state.itemsRendered(props.itemsRendered)
+      state.totalListHeightChanged(props.totalListHeightChanged)
+    })
     return null
   }
 
