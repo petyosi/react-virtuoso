@@ -122,7 +122,7 @@ const VirtuosoStore = ({
     filter(list => list.length > 0),
     scan(
       ([prev], current) => {
-        return [current, prev.length && prev[0].index > current[0].index ? 'up' : 'down'] as [ListItem[], 'up' | 'down']
+        return [current, prev.length && current[0].index > prev[0].index ? 'down' : 'up'] as [ListItem[], 'up' | 'down']
       },
       [[], 'down'] as [ListItem[], 'up' | 'down' | 'same']
     ),
