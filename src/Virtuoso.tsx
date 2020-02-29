@@ -1,4 +1,14 @@
-import React, { ComponentType, CSSProperties, FC, PureComponent, ReactElement } from 'react'
+import React, {
+  ComponentType,
+  CSSProperties,
+  FC,
+  forwardRef,
+  ReactElement,
+  useCallback,
+  useImperativeHandle,
+  useLayoutEffect,
+  useState,
+} from 'react'
 import { TScrollLocation } from './EngineCommons'
 import { ListRange, ScrollSeekToggle } from './engines/scrollSeekEngine'
 import { ListItem } from './GroupIndexTransposer'
@@ -48,7 +58,7 @@ export interface VirtuosoProps {
   }
 }
 
-interface TVirtuosoPresentationProps {
+export interface TVirtuosoPresentationProps {
   contextValue: VirtuosoState
   item: TRender
   footer?: () => ReactElement
@@ -89,13 +99,28 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
   )
 }
 
-export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
-  public constructor(props: VirtuosoProps) {
-    super(props)
-    this.state = VirtuosoStore(props)
-  }
+export interface VirtuosoMethods {
+  scrollToIndex(location: TScrollLocation): void
+  adjustForPrependedItems(count: number): void
+}
 
-  public static getDerivedStateFromProps(props: VirtuosoProps, state: VirtuosoState) {
+export const Virtuoso = forwardRef<VirtuosoMethods, VirtuosoProps>((props, ref) => {
+  const [state] = useState(VirtuosoStore(props))
+  useImperativeHandle(
+    ref,
+    () => ({
+      scrollToIndex: (location: TScrollLocation) => {
+        state.scrollToIndex(location)
+      },
+
+      adjustForPrependedItems: (count: number) => {
+        state.adjustForPrependedItems(count)
+      },
+    }),
+    [state]
+  )
+
+  useLayoutEffect(() => {
     state.isScrolling(props.scrollingStateChange)
     state.atBottomStateChange(props.atBottomStateChange)
     state.endReached(props.endReached)
@@ -108,51 +133,61 @@ export class Virtuoso extends PureComponent<VirtuosoProps, VirtuosoState> {
     state.maxRangeSize(props.maxHeightCacheSize || Infinity)
     state.rangeChanged(props.rangeChanged)
     state.scrollSeekConfiguration(props.scrollSeek)
-    return null
-  }
-
-  private itemRender: TRender = (item, { key, renderPlaceholder, ...props }) => {
-    const { scrollSeek, computeItemKey, item: itemRender, ItemContainer = 'div' } = this.props
-    if (computeItemKey) {
-      key = computeItemKey(item.index)
+    return () => {
+      state.itemsRendered(undefined)
+      state.totalListHeightChanged(undefined)
     }
+  }, [
+    state,
+    props.scrollingStateChange,
+    props.atBottomStateChange,
+    props.endReached,
+    props.topItems,
+    props.totalCount,
+    props.initialItemCount,
+    props.itemsRendered,
+    props.totalListHeightChanged,
+    props.followOutput,
+    props.maxHeightCacheSize,
+    props.rangeChanged,
+    props.scrollSeek,
+  ])
 
-    let children: ReactElement
-    if (scrollSeek && renderPlaceholder) {
-      children = React.createElement(scrollSeek.placeholder, { height: props['data-known-size'], index: item.index })
-    } else {
-      children = itemRender(item.index)
-    }
+  const itemRender: TRender = useCallback(
+    (item, { key, renderPlaceholder, ...itemProps }) => {
+      const { scrollSeek, computeItemKey, item: itemRender, ItemContainer = 'div' } = props
+      if (computeItemKey) {
+        key = computeItemKey(item.index)
+      }
 
-    return React.createElement(ItemContainer, { ...props, key }, children)
-  }
+      let children: ReactElement
+      if (scrollSeek && renderPlaceholder) {
+        children = React.createElement(scrollSeek.placeholder, {
+          height: itemProps['data-known-size'],
+          index: item.index,
+        })
+      } else {
+        children = itemRender(item.index)
+      }
 
-  public scrollToIndex(location: TScrollLocation) {
-    this.state.scrollToIndex(location)
-  }
+      return React.createElement(ItemContainer, { ...itemProps, key }, children)
+    },
+    [props]
+  )
 
-  public adjustForPrependedItems(count: number) {
-    this.state.adjustForPrependedItems(count)
-  }
+  return (
+    <VirtuosoPresentation
+      contextValue={state}
+      style={props.style}
+      className={props.className}
+      item={itemRender}
+      footer={props.footer}
+      itemHeight={props.itemHeight}
+      ScrollContainer={props.ScrollContainer}
+      FooterContainer={props.FooterContainer}
+      ListContainer={props.ListContainer}
+    />
+  )
+})
 
-  public componentWillUnmount() {
-    this.state.itemsRendered(undefined)
-    this.state.totalListHeightChanged(undefined)
-  }
-
-  public render() {
-    return (
-      <VirtuosoPresentation
-        contextValue={this.state}
-        style={this.props.style}
-        className={this.props.className}
-        item={this.itemRender}
-        footer={this.props.footer}
-        itemHeight={this.props.itemHeight}
-        ScrollContainer={this.props.ScrollContainer}
-        FooterContainer={this.props.FooterContainer}
-        ListContainer={this.props.ListContainer}
-      />
-    )
-  }
-}
+Virtuoso.displayName = 'Virtuoso'

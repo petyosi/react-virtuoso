@@ -117,14 +117,16 @@ const VirtuosoStore = ({
     )
     .subscribe(rangeChanged$.next)
 
+  type ListDirState = [ListItem[], 'up' | 'down' | 'same']
   const listDir$ = list$.pipe(
     duc(),
     filter(list => list.length > 0),
     scan(
       ([prev], current) => {
-        return [current, prev.length && current[0].index > prev[0].index ? 'down' : 'up'] as [ListItem[], 'up' | 'down']
+        const dir = !prev.length ? 'down' : current[0].index > prev[0].index ? 'down' : 'up'
+        return [current, dir] as ListDirState
       },
-      [[], 'down'] as [ListItem[], 'up' | 'down' | 'same']
+      [[], 'down'] as ListDirState
     ),
     map(([_, dir]) => dir)
   )
