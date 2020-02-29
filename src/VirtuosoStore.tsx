@@ -75,7 +75,7 @@ const VirtuosoStore = ({
     stickyItems$,
     totalCount$,
     topListHeight$,
-    itemHeights$,
+    heightsChanged$,
   })
 
   const { listHeight$, list$, listOffset$, endReached$ } = listEngine({
@@ -123,7 +123,20 @@ const VirtuosoStore = ({
     filter(list => list.length > 0),
     scan(
       ([prev], current) => {
-        const dir = !prev.length ? 'down' : current[0].index > prev[0].index ? 'down' : 'up'
+        let dir = 'same'
+        if (prev.length) {
+          const prevFirst = prev[0].index
+          const prevLast = prev[prev.length - 1].index
+          const curFirst = current[0].index
+          const curLast = current[current.length - 1].index
+
+          if (curFirst < prevFirst) {
+            dir = 'up'
+          } else if (curLast > prevLast) {
+            dir = 'down'
+          }
+        }
+
         return [current, dir] as ListDirState
       },
       [[], 'down'] as ListDirState

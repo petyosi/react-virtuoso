@@ -1,11 +1,10 @@
 import { TScrollLocation } from '../EngineCommons'
 import { OffsetList } from '../OffsetList'
-import { coldSubject, subject, TObservable, TSubject, withLatestFrom, map } from '../tinyrx'
-import { ItemHeight } from '../VirtuosoStore'
+import { coldSubject, map, subject, TObservable, TSubject, withLatestFrom } from '../tinyrx'
 import { initialTopMostItemIndexEngine } from './initialTopMostItemEngine'
 
 export interface ScrollToIndexParams {
-  itemHeights$: TSubject<ItemHeight[]>
+  heightsChanged$: TSubject<[boolean, OffsetList]>
   offsetList$: TSubject<OffsetList>
   topListHeight$: TObservable<number>
   stickyItems$: TObservable<number[]>
@@ -24,7 +23,7 @@ export function scrollToIndexEngine({
   totalCount$,
   totalHeight$,
   initialTopMostItemIndex,
-  itemHeights$,
+  heightsChanged$,
   scrollTop$,
 }: ScrollToIndexParams) {
   const scrollToIndex$ = coldSubject<TScrollLocation>()
@@ -40,9 +39,10 @@ export function scrollToIndexEngine({
     initialTopMostItemIndex,
   })
 
-  itemHeights$.pipe(withLatestFrom(scrolledToTopMostItem$)).subscribe(([heights, scrolledToTopMostItem]) => {
-    if (heights.length === 0 && scrolledToTopMostItem) {
+  heightsChanged$.pipe(withLatestFrom(scrolledToTopMostItem$)).subscribe(([[changed], scrolledToTopMostItem]) => {
+    if (!changed && scrolledToTopMostItem) {
       scrollToIndexRequestPending$.next(false)
+      scrollTopReportedAfterScrollToIndex$.next(true)
     }
   })
 
