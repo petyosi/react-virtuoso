@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useLayoutEffect } from 'react'
+import { useRef, useState, useEffect, useLayoutEffect, CSSProperties } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
 import { TInput, TOutput } from './rxio'
 
@@ -88,4 +88,23 @@ export const useSize: UseSize = callback => {
   }
 
   return callbackRef
+}
+
+export const useSticky = (): CSSProperties => {
+  const [stickyValue, setStickyValue] = useState<'sticky' | '-webkit-sticky'>('-webkit-sticky')
+
+  // Test if position '-webkit-sticky' value is supported. If not, 'sticky' is used.
+  useLayoutEffect(() => {
+    const node = document.createElement('div')
+
+    try {
+      node.style.position = stickyValue
+    } catch (err) {}
+
+    if (node.style.position !== stickyValue) {
+      setStickyValue('sticky')
+    }
+  }, [stickyValue])
+
+  return { position: stickyValue }
 }
