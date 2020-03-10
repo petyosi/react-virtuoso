@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, useLayoutEffect, CSSProperties } from 'react'
+import { memoize } from 'lodash'
 import ResizeObserver from 'resize-observer-polyfill'
 import { TInput, TOutput } from './rxio'
 
@@ -90,18 +91,24 @@ export const useSize: UseSize = callback => {
   return callbackRef
 }
 
+const isValidStickyValue = memoize((value: string) => {
+  const node = document.createElement('div')
+
+  try {
+    node.style.position = value
+  } catch (err) {}
+
+  return node.style.position === value
+})
+
 export const useSticky = (): CSSProperties => {
   const [stickyValue, setStickyValue] = useState<'sticky' | '-webkit-sticky'>('-webkit-sticky')
+  const previousStickyValue = useRef(stickyValue)
 
   // Test if position '-webkit-sticky' value is supported. If not, 'sticky' is used.
   useLayoutEffect(() => {
-    const node = document.createElement('div')
-
-    try {
-      node.style.position = stickyValue
-    } catch (err) {}
-
-    if (node.style.position !== stickyValue) {
+    // Avoids calling twice the test function if the initial value was already tested
+    if (previousStickyValue.current === stickyValue && !isValidStickyValue(stickyValue)) {
       setStickyValue('sticky')
     }
   }, [stickyValue])
