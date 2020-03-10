@@ -27,6 +27,7 @@ interface TVirtuosoConstructorParams {
   itemHeight?: number
   defaultItemHeight?: number
   initialTopMostItemIndex?: number
+  inverted?: boolean
 }
 
 const VirtuosoStore = ({
@@ -35,6 +36,7 @@ const VirtuosoStore = ({
   itemHeight,
   initialTopMostItemIndex,
   defaultItemHeight,
+  inverted = false,
 }: TVirtuosoConstructorParams) => {
   const transposer$ = subject<Transposer>(new StubIndexTransposer())
   const viewportHeight$ = subject(0)
@@ -90,6 +92,7 @@ const VirtuosoStore = ({
     offsetList$,
     scrolledToTopMostItem$,
     transposer$,
+    inverted,
   })
 
   const { adjustForPrependedItems$, adjustmentInProgress$ } = adjustForPrependedItemsEngine({

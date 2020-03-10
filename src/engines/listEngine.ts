@@ -1,4 +1,14 @@
-import { scan, combineLatest, TObservable, map, subject, withLatestFrom, coldSubject, duc } from '../tinyrx'
+import {
+  scan,
+  combineLatest,
+  TObservable,
+  map,
+  subject,
+  withLatestFrom,
+  coldSubject,
+  duc,
+  debounceTime,
+} from '../tinyrx'
 import { OffsetList } from '../OffsetList'
 import { ListItem, Transposer } from '../GroupIndexTransposer'
 
@@ -16,6 +26,7 @@ interface ListEngineParams {
   scrolledToTopMostItem$: TObservable<boolean>
   transposer$: TObservable<Transposer>
   totalHeight$: TObservable<number>
+  inverted: boolean
 }
 
 export function listEngine({
@@ -30,6 +41,7 @@ export function listEngine({
   scrolledToTopMostItem$,
   transposer$,
   totalHeight$,
+  inverted,
 }: ListEngineParams) {
   const listHeight$ = subject(0)
   const endReached$ = coldSubject<number>()
@@ -114,16 +126,31 @@ export function listEngine({
   const listOffset$ = combineLatest(list$, scrollTop$, topListHeight$).pipe(map(([items]) => getListTop(items)))
 
   let currentEndIndex = 0
+  let currentInvertedIndex = Number.POSITIVE_INFINITY
 
   list$
-    .pipe(map(items => (items.length ? items[items.length - 1].index : 0)))
-    .pipe(withLatestFrom(totalCount$))
-    .subscribe(([endIndex, totalCount]) => {
-      if (totalCount === 0) {
-        return
-      }
+    .pipe(
+      map(items => {
+        if (!items.length) {
+          return undefined
+        }
 
-      if (endIndex === totalCount - 1) {
+        return inverted ? items[0].index : items[items.length - 1].index
+      }),
+      withLatestFrom(totalCount$),
+      debounceTime(250)
+    )
+    .subscribe(([endIndex, totalCount]) => {
+      if (totalCount === 0 || endIndex == null) {
+        return
+      } else if (inverted) {
+        if (currentInvertedIndex !== endIndex && endIndex <= 1) {
+          currentInvertedIndex = endIndex
+          endReached$.next(endIndex)
+        } else if (endIndex > 1) {
+          currentInvertedIndex = Number.POSITIVE_INFINITY
+        }
+      } else if (endIndex === totalCount - 1) {
         if (currentEndIndex !== endIndex) {
           currentEndIndex = endIndex
           endReached$.next(endIndex)

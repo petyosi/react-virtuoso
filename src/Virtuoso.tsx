@@ -56,6 +56,7 @@ export interface VirtuosoProps {
     exit: ScrollSeekToggle
     placeholder: TSeekPlaceholder
   }
+  inverted?: boolean
 }
 
 export interface TVirtuosoPresentationProps {
