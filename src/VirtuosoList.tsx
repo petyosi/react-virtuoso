@@ -1,5 +1,5 @@
 import React, { useContext, ReactElement, CSSProperties, ReactNode } from 'react'
-import { useOutput, useSticky } from './Utils'
+import { useOutput, positionStickyCssValue } from './Utils'
 import { VirtuosoContext } from './VirtuosoContext'
 import { ListItem } from './GroupIndexTransposer'
 
@@ -21,7 +21,6 @@ export const VirtuosoList: React.FC<TListProps> = ({ render }) => {
   const items = useOutput<ListItem[]>(list, [])
   const topItems = useOutput<ListItem[]>(topList, [])
   const renderPlaceholder = useOutput(isSeeking, false)
-  const stickyProperty = useSticky()
 
   const renderedItems: ReactNode[] = []
   let topOffset = 0
@@ -39,7 +38,7 @@ export const VirtuosoList: React.FC<TListProps> = ({ render }) => {
       top: `${topOffset}px`,
       marginTop: index === 0 ? `${-marginTop}px` : undefined,
       zIndex: 2,
-      position: stickyProperty.position,
+      position: positionStickyCssValue(),
     }
 
     const props = {
