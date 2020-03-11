@@ -1,7 +1,7 @@
-import { generateGroupedUsers } from '../../site/src/examples/FakeData'
 import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react'
 import * as ReactDOM from 'react-dom'
 import { GroupedVirtuoso } from '../src'
+import { generateGroupedUsers } from './fakeData'
 
 // Slices the total groups to the groups
 // which contain the items so far
@@ -45,6 +45,9 @@ const App = () => {
     <GroupedVirtuoso
       style={{ height: '350px', width: '400px' }}
       groupCounts={currentGroupCounts}
+      rangeChanged={({ startIndex, endIndex }) => {
+        console.log('rangeChanged', startIndex, endIndex)
+      }}
       group={(index: number) => <div>Group {groups[index]}</div>}
       item={(index: number) => <div>User {index}</div>}
       footer={() => {
