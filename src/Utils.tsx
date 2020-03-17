@@ -17,7 +17,12 @@ export const useHeight: UseHeight = (input, onMount, onResize) => {
   const observer = new ResizeObserver(entries => {
     const newHeight = Math.round(entries[0].contentRect.height)
     if (onResize) {
-      animationFrameID.current = window.requestAnimationFrame(() => onResize(entries[0].target as HTMLElement))
+      animationFrameID.current = window.requestAnimationFrame(() => {
+        const element = entries[0].target as HTMLElement
+        if (document.body.contains(element)) {
+          onResize(element)
+        }
+      })
     }
     input(newHeight)
   })
