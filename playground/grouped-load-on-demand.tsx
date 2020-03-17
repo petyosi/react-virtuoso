@@ -48,6 +48,9 @@ const App = () => {
       rangeChanged={({ startIndex, endIndex }) => {
         console.log('rangeChanged', startIndex, endIndex)
       }}
+      atBottomStateChange={atBottom => {
+        console.log('at bottom', atBottom)
+      }}
       group={(index: number) => <div>Group {groups[index]}</div>}
       item={(index: number) => <div>User {index}</div>}
       footer={() => {
