@@ -31,6 +31,7 @@ export const GroupedVirtuoso = forwardRef<GroupedVirtuosoMethods, GroupedVirtuos
   useLayoutEffect(() => {
     state.endReached(props.endReached)
     state.rangeChanged(props.rangeChanged)
+    state.atBottomStateChange(props.atBottomStateChange)
     state.isScrolling(props.scrollingStateChange)
     state.groupCounts(props.groupCounts)
     state.groupIndices(props.groupIndices)
@@ -44,6 +45,7 @@ export const GroupedVirtuoso = forwardRef<GroupedVirtuosoMethods, GroupedVirtuos
     state,
     props.endReached,
     props.rangeChanged,
+    props.atBottomStateChange,
     props.scrollingStateChange,
     props.groupCounts,
     props.groupIndices,
