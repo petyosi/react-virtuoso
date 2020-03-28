@@ -72,32 +72,25 @@ export interface TVirtuosoPresentationProps {
 
 export { TScrollContainer, TListContainer }
 
-export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = ({
-  contextValue,
-  style,
-  className,
-  item,
-  footer,
-  itemHeight,
-  ScrollContainer,
-  ListContainer,
-  FooterContainer,
-}) => {
-  return (
-    <VirtuosoContext.Provider value={contextValue}>
-      <VirtuosoView
-        style={style || {}}
-        className={className}
-        item={item}
-        footer={footer}
-        fixedItemHeight={itemHeight !== undefined}
-        ScrollContainer={ScrollContainer}
-        FooterContainer={FooterContainer}
-        ListContainer={ListContainer || DefaultListContainer}
-      />
-    </VirtuosoContext.Provider>
-  )
-}
+const DEFAULT_STYLE = {}
+export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = React.memo(
+  ({ contextValue, style, className, item, footer, itemHeight, ScrollContainer, ListContainer, FooterContainer }) => {
+    return (
+      <VirtuosoContext.Provider value={contextValue}>
+        <VirtuosoView
+          style={style || DEFAULT_STYLE}
+          className={className}
+          item={item}
+          footer={footer}
+          fixedItemHeight={itemHeight !== undefined}
+          ScrollContainer={ScrollContainer}
+          FooterContainer={FooterContainer}
+          ListContainer={ListContainer || DefaultListContainer}
+        />
+      </VirtuosoContext.Provider>
+    )
+  }
+)
 
 export interface VirtuosoMethods {
   scrollToIndex(location: TScrollLocation): void
@@ -153,9 +146,10 @@ export const Virtuoso = forwardRef<VirtuosoMethods, VirtuosoProps>((props, ref) 
     props.scrollSeek,
   ])
 
+  const { scrollSeek, computeItemKey, item: theItem, ItemContainer = 'div' } = props
+
   const itemRender: TRender = useCallback(
     (item, { key, renderPlaceholder, ...itemProps }) => {
-      const { scrollSeek, computeItemKey, item: itemRender, ItemContainer = 'div' } = props
       if (computeItemKey) {
         key = computeItemKey(item.index)
       }
@@ -167,12 +161,12 @@ export const Virtuoso = forwardRef<VirtuosoMethods, VirtuosoProps>((props, ref) 
           index: item.index,
         })
       } else {
-        children = itemRender(item.index)
+        children = theItem(item.index)
       }
 
       return React.createElement(ItemContainer, { ...itemProps, key }, children)
     },
-    [props]
+    [theItem, scrollSeek, computeItemKey, ItemContainer]
   )
 
   return (

@@ -16,7 +16,7 @@ interface TListProps {
   render: TRender
 }
 
-export const VirtuosoList: React.FC<TListProps> = ({ render }) => {
+export const VirtuosoList: React.FC<TListProps> = React.memo(({ render }) => {
   const { isSeeking, topList, list } = useContext(VirtuosoContext)!
   const items = useOutput<ListItem[]>(list, [])
   const topItems = useOutput<ListItem[]>(topList, [])
@@ -68,4 +68,4 @@ export const VirtuosoList: React.FC<TListProps> = ({ render }) => {
   })
 
   return <> {renderedItems} </>
-}
+})
