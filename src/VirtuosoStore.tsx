@@ -1,4 +1,4 @@
-import { duc, filter, map, subject, coldSubject, withLatestFrom, scan } from '../src/tinyrx'
+import { coldSubject, duc, filter, map, subject, withLatestFrom } from '../src/tinyrx'
 import { buildIsScrolling } from './EngineCommons'
 import { adjustForPrependedItemsEngine } from './engines/adjustForPrependedItemsEngine'
 import { followOutputEngine } from './engines/followOutputEngine'
@@ -7,12 +7,12 @@ import { listEngine } from './engines/listEngine'
 import { maxRangeSizeEngine } from './engines/maxRangeSizeEngine'
 import { offsetListEngine } from './engines/offsetListEngine'
 import { scrolledToBottomEngine } from './engines/scrolledToBottomEngine'
+import { ListRange, scrollSeekEngine } from './engines/scrollSeekEngine'
 import { scrollToIndexEngine } from './engines/scrollToIndexEngine'
 import { topItemCountEngine } from './engines/topItemCountEngine'
 import { topListEngine } from './engines/topListEngine'
 import { ListItem, StubIndexTransposer, Transposer } from './GroupIndexTransposer'
 import { makeInput, makeOutput } from './rxio'
-import { scrollSeekEngine, ListRange } from './engines/scrollSeekEngine'
 
 export interface ItemHeight {
   start: number
@@ -116,47 +116,6 @@ const VirtuosoStore = ({
       duc((current, next) => !current || current.startIndex !== next.startIndex || current.endIndex !== next.endIndex)
     )
     .subscribe(rangeChanged$.next)
-
-  type ListDirState = [ListItem[], 'up' | 'down' | 'same']
-  const listDir$ = list$.pipe(
-    duc(),
-    filter(list => list.length > 0),
-    scan(
-      ([prev], current) => {
-        let dir = 'same'
-        if (prev.length) {
-          const prevFirst = prev[0].index
-          const prevLast = prev[prev.length - 1].index
-          const curFirst = current[0].index
-          const curLast = current[current.length - 1].index
-
-          if (curFirst < prevFirst) {
-            dir = 'up'
-          } else if (curLast > prevLast) {
-            dir = 'down'
-          }
-        }
-
-        return [current, dir] as ListDirState
-      },
-      [[], 'down'] as ListDirState
-    ),
-    map(([_, dir]) => dir)
-  )
-
-  heightsChanged$
-    .pipe(
-      withLatestFrom(listDir$, list$, scrollTop$),
-      filter(([[changed], dir, list]) => {
-        return changed && dir === 'up' && list.length > 0
-      })
-    )
-    .subscribe(([[_, offsetList], __, list, scrollTop]) => {
-      const expectedOffset = list[list.length - 1].offset
-      const actualOffset = offsetList.offsetOf(list[list.length - 1].index)
-      const difference = actualOffset - expectedOffset
-      scrollTo$.next({ top: scrollTop + difference })
-    })
 
   const { isSeeking$, scrollVelocity$, scrollSeekConfiguration$ } = scrollSeekEngine({
     scrollTop$,
