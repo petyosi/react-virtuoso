@@ -1,4 +1,4 @@
-import { coldSubject, duc, filter, map, subject, withLatestFrom } from '../src/tinyrx'
+import { coldSubject, duc, filter, map, subject, withLatestFrom, combineLatest } from '../src/tinyrx'
 import { buildIsScrolling } from './EngineCommons'
 import { adjustForPrependedItemsEngine } from './engines/adjustForPrependedItemsEngine'
 import { followOutputEngine } from './engines/followOutputEngine'
@@ -123,13 +123,33 @@ const VirtuosoStore = ({
     rangeChanged$,
   })
 
+  const MAX_OFFSET_HEIGHT = 15000000
+  const domTotalHeight$ = totalHeight$.pipe(map(value => Math.min(value, MAX_OFFSET_HEIGHT)))
+
+  const scrollTopMultiplier$ = combineLatest(totalHeight$, domTotalHeight$, viewportHeight$).pipe(
+    map(
+      ([totalHeight, domTotalHeight, viewportHeight]) =>
+        (totalHeight - viewportHeight) / (domTotalHeight - viewportHeight)
+    )
+  )
+
+  const domScrollTop$ = subject(0, false)
+
+  const domListOffset$ = combineLatest(listOffset$, scrollTopMultiplier$).pipe(
+    map(([offset, multiplier]) => offset / multiplier)
+  )
+
+  combineLatest(domScrollTop$, scrollTopMultiplier$)
+    .pipe(map(([domScrollTop, multiplier]) => domScrollTop * multiplier))
+    .subscribe(scrollTop$.next)
+
   return {
     groupCounts: makeInput(groupCounts$),
     itemHeights: makeInput(itemHeights$),
     footerHeight: makeInput(footerHeight$),
     listHeight: makeInput(listHeight$),
     viewportHeight: makeInput(viewportHeight$),
-    scrollTop: makeInput(scrollTop$),
+    scrollTop: makeInput(domScrollTop$),
     topItemCount: makeInput(topItemCount$),
     totalCount: makeInput(totalCount$),
     scrollToIndex: makeInput(scrollToIndex$),
@@ -144,8 +164,8 @@ const VirtuosoStore = ({
     scrollVelocity: makeOutput(scrollVelocity$),
     itemsRendered: makeOutput(list$),
     topList: makeOutput(topList$),
-    listOffset: makeOutput(listOffset$),
-    totalHeight: makeOutput(totalHeight$),
+    listOffset: makeOutput(domListOffset$),
+    totalHeight: makeOutput(domTotalHeight$),
     endReached: makeOutput(endReached$),
     atBottomStateChange: makeOutput(scrolledToBottom$),
     totalListHeightChanged: makeOutput(totalHeight$),

@@ -194,11 +194,13 @@ describe('Virtuoso Store', () => {
   })
 
   it('infers total height for a grouped list from the first group and the first item', done => {
-    const { totalHeight, groupCounts, itemHeights } = VirtuosoStore({
+    const { scrollTop, viewportHeight, totalHeight, groupCounts, itemHeights } = VirtuosoStore({
       overscan: 0,
     })
 
     groupCounts([10, 90, 100])
+    scrollTop(0)
+    viewportHeight(200)
     itemHeights([{ start: 0, end: 0, size: 50 }])
     itemHeights([{ start: 1, end: 1, size: 20 }])
 
@@ -239,6 +241,7 @@ describe('Virtuoso Store', () => {
   it('scrolls to display the item at the bottom of the visible viewport', done => {
     const { viewportHeight, itemHeights, scrollToIndex, scrollTo } = VirtuosoStore({ totalCount: 100 })
     const itemSize = 50
+
     itemHeights([{ start: 0, end: 0, size: itemSize }])
     viewportHeight(820)
 
@@ -279,8 +282,11 @@ describe('Virtuoso Store', () => {
   })
 
   it('scrolls to display the first item in the group', done => {
-    const { itemHeights, scrollToIndex, scrollTo, groupCounts } = VirtuosoStore({})
+    const { scrollTop, viewportHeight, itemHeights, scrollToIndex, scrollTo, groupCounts } = VirtuosoStore({})
     groupCounts([10, 10, 10])
+
+    scrollTop(0)
+    viewportHeight(200)
     itemHeights([{ start: 0, end: 0, size: 50 }])
     itemHeights([{ start: 1, end: 1, size: 20 }])
 
