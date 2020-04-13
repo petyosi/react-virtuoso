@@ -30,7 +30,7 @@ export interface VirtuosoProps {
   topItems?: number
   footer?: () => ReactElement
   item: (index: number) => ReactElement
-  computeItemKey?: (index: number) => number
+  computeItemKey?: (index: number) => React.Key
   prependItemCount?: number
   itemHeight?: number
   defaultItemHeight?: number
