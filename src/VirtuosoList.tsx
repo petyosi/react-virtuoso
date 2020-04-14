@@ -4,7 +4,7 @@ import { VirtuosoContext } from './VirtuosoContext'
 import { ListItem } from './GroupIndexTransposer'
 
 export interface TRenderProps {
-  key: number
+  key: React.Key
   'data-index': number
   'data-known-size': number
   renderPlaceholder: boolean
