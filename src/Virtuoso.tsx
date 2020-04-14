@@ -41,6 +41,7 @@ export interface VirtuosoProps {
   rangeChanged?: TSubscriber<ListRange>
   totalListHeightChanged?: TSubscriber<number>
   style?: CSSProperties
+  dataKey?: string
   className?: string
   initialItemCount?: number
   initialTopMostItemIndex?: number
@@ -146,7 +147,7 @@ export const Virtuoso = forwardRef<VirtuosoMethods, VirtuosoProps>((props, ref) 
     props.scrollSeek,
   ])
 
-  const { scrollSeek, computeItemKey, item: theItem, ItemContainer = 'div' } = props
+  const { scrollSeek, computeItemKey, dataKey, item: theItem, ItemContainer = 'div' } = props
 
   const itemRender: TRender = useCallback(
     (item, { key, renderPlaceholder, ...itemProps }) => {
@@ -166,7 +167,7 @@ export const Virtuoso = forwardRef<VirtuosoMethods, VirtuosoProps>((props, ref) 
 
       return React.createElement(ItemContainer, { ...itemProps, key }, children)
     },
-    [theItem, scrollSeek, computeItemKey, ItemContainer]
+    [theItem, scrollSeek, computeItemKey, ItemContainer, dataKey]
   )
 
   return (
