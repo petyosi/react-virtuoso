@@ -21,7 +21,7 @@ export function scrolledToBottomEngine({ totalHeight$, viewportHeight$, scrollTo
     .subscribe(value => {
       clearTimeout(notAtBottom)
       if (!value) {
-        setTimeout(() => scrolledToBottom$.next(false))
+        notAtBottom = setTimeout(() => scrolledToBottom$.next(false))
       } else {
         scrolledToBottom$.next(true)
       }
