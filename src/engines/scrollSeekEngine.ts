@@ -10,6 +10,7 @@ import {
   duc,
   combineLatest,
 } from '../tinyrx'
+import { ComponentType } from 'react'
 
 export interface ListRange {
   startIndex: number
@@ -20,11 +21,15 @@ export interface ScrollSeekToggle {
   (velocity: number, range: ListRange): boolean
 }
 
+export type TSeekPlaceholder = ComponentType<{ height: number; index: number }>
+
 export interface ScrollSeekConfiguration {
   enter: ScrollSeekToggle
-  exit: ScrollSeekToggle
   change: (velocity: number, range: ListRange) => void
+  exit: ScrollSeekToggle
+  placeholder: TSeekPlaceholder
 }
+
 interface ScrollSeekParams {
   isScrolling$: TObservable<boolean>
   scrollTop$: TObservable<number>
@@ -34,7 +39,7 @@ interface ScrollSeekParams {
 export function scrollSeekEngine({ isScrolling$, scrollTop$, rangeChanged$: range$ }: ScrollSeekParams) {
   const scrollVelocity$ = subject(0)
   const isSeeking$ = subject(false)
-  const scrollSeekConfiguration$ = subject<ScrollSeekConfiguration | undefined>(undefined)
+  const scrollSeekConfiguration$ = subject<ScrollSeekConfiguration | undefined | false>(false)
 
   isScrolling$
     .pipe(
@@ -74,7 +79,7 @@ export function scrollSeekEngine({ isScrolling$, scrollTop$, rangeChanged$: rang
 
   combineLatest(isSeeking$, scrollVelocity$, range$)
     .pipe(withLatestFrom(scrollSeekConfiguration$))
-    .subscribe(([[isSeeking, velocity, range], config]) => isSeeking && config!.change(velocity, range))
+    .subscribe(([[isSeeking, velocity, range], config]) => isSeeking && config && config!.change(velocity, range))
 
   return { isSeeking$, scrollSeekConfiguration$, scrollVelocity$ }
 }

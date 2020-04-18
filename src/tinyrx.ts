@@ -145,6 +145,16 @@ export function combineLatest<S1, S2, S3, S4>(
   s3: TObservable<S3>,
   s4: TObservable<S4>
 ): TObservable<[S1, S2, S3, S4]>
+export function combineLatest<S1, S2, S3, S4, S5>(
+  s1: TObservable<S1>,
+  s2: TObservable<S2>,
+  s3: TObservable<S3>,
+  s4: TObservable<S4>,
+  s5: TObservable<S5>
+): TObservable<[S1, S2, S3, S4, S5]>
+export function combineLatest<S1, S2, S3, S4, S5, S6>(
+  ...s: [TObservable<S1>, TObservable<S2>, TObservable<S3>, TObservable<S4>, TObservable<S5>, TObservable<S6>]
+): TObservable<[S1, S2, S3, S4, S5, S6]>
 export function combineLatest<S1, S2, S3, S4, S5, S6, S7>(
   s1: TObservable<S1>,
   s2: TObservable<S2>,
