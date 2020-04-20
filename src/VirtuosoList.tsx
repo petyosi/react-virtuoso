@@ -12,14 +12,11 @@ export interface TRenderProps {
 }
 export type TRender = (item: ListItem, props: TRenderProps) => ReactElement
 
-interface TListProps {
-  render: TRender
-}
-
-export const VirtuosoList: React.FC<TListProps> = React.memo(({ render }) => {
-  const { isSeeking, topList, list } = useContext(VirtuosoContext)!
+export const VirtuosoList: React.FC<{}> = React.memo(() => {
+  const { isSeeking, topList, list, itemRender } = useContext(VirtuosoContext)!
   const items = useOutput<ListItem[]>(list, [])
   const topItems = useOutput<ListItem[]>(topList, [])
+  const render = useOutput(itemRender, false as any)
   const renderPlaceholder = useOutput(isSeeking, false)
 
   const renderedItems: ReactNode[] = []
@@ -48,7 +45,8 @@ export const VirtuosoList: React.FC<TListProps> = React.memo(({ render }) => {
       renderPlaceholder,
       style,
     }
-    renderedItems.push(render(item, props))
+
+    render && renderedItems.push(render.render(item, props))
     topOffset += item.size
   })
 
@@ -57,14 +55,15 @@ export const VirtuosoList: React.FC<TListProps> = React.memo(({ render }) => {
       return
     }
 
-    renderedItems.push(
-      render(item, {
-        key: item.index,
-        'data-index': item.index,
-        'data-known-size': item.size,
-        renderPlaceholder,
-      })
-    )
+    render &&
+      renderedItems.push(
+        render.render(item, {
+          key: item.index,
+          'data-index': item.index,
+          'data-known-size': item.size,
+          renderPlaceholder,
+        })
+      )
   })
 
   return <> {renderedItems} </>

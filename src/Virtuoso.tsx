@@ -1,28 +1,24 @@
 import React, {
-  ComponentType,
   CSSProperties,
   FC,
   forwardRef,
   ReactElement,
-  useCallback,
   useImperativeHandle,
   useLayoutEffect,
   useState,
 } from 'react'
 import { TScrollLocation } from './EngineCommons'
-import { ListRange, ScrollSeekToggle } from './engines/scrollSeekEngine'
+import { ListRange, ScrollSeekConfiguration } from './engines/scrollSeekEngine'
 import { ListItem } from './GroupIndexTransposer'
 import { TSubscriber } from './tinyrx'
 import { VirtuosoContext } from './VirtuosoContext'
-import { TRender, TRenderProps } from './VirtuosoList'
+import { TRenderProps } from './VirtuosoList'
 import { VirtuosoStore } from './VirtuosoStore'
 import { DefaultListContainer, TFooterContainer, TListContainer, TScrollContainer, VirtuosoView } from './VirtuosoView'
 
 export type VirtuosoState = ReturnType<typeof VirtuosoStore>
 
 export type TItemContainer = React.FC<Omit<TRenderProps, 'renderPlaceholder' | 'scrollVelocity'>>
-
-type TSeekPlaceholder = ComponentType<{ height: number; index: number }>
 
 export interface VirtuosoProps {
   totalCount: number
@@ -51,17 +47,11 @@ export interface VirtuosoProps {
   ListContainer?: TListContainer
   ItemContainer?: TItemContainer
   maxHeightCacheSize?: number
-  scrollSeek?: {
-    enter: ScrollSeekToggle
-    change: (velocity: number, range: ListRange) => void
-    exit: ScrollSeekToggle
-    placeholder: TSeekPlaceholder
-  }
+  scrollSeek?: ScrollSeekConfiguration
 }
 
 export interface TVirtuosoPresentationProps {
   contextValue: VirtuosoState
-  item: TRender
   footer?: () => ReactElement
   style?: CSSProperties
   className?: string
@@ -75,13 +65,12 @@ export { TScrollContainer, TListContainer }
 
 const DEFAULT_STYLE = {}
 export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = React.memo(
-  ({ contextValue, style, className, item, footer, itemHeight, ScrollContainer, ListContainer, FooterContainer }) => {
+  ({ contextValue, style, className, footer, itemHeight, ScrollContainer, ListContainer, FooterContainer }) => {
     return (
       <VirtuosoContext.Provider value={contextValue}>
         <VirtuosoView
           style={style || DEFAULT_STYLE}
           className={className}
-          item={item}
           footer={footer}
           fixedItemHeight={itemHeight !== undefined}
           ScrollContainer={ScrollContainer}
@@ -99,7 +88,7 @@ export interface VirtuosoMethods {
 }
 
 export const Virtuoso = forwardRef<VirtuosoMethods, VirtuosoProps>((props, ref) => {
-  const [state] = useState(VirtuosoStore(props))
+  const [state] = useState(() => VirtuosoStore(props))
   useImperativeHandle(
     ref,
     () => ({
@@ -127,6 +116,11 @@ export const Virtuoso = forwardRef<VirtuosoMethods, VirtuosoProps>((props, ref) 
     state.maxRangeSize(props.maxHeightCacheSize || Infinity)
     state.rangeChanged(props.rangeChanged)
     state.scrollSeekConfiguration(props.scrollSeek)
+    state.computeItemKey(props.computeItemKey || (key => key))
+    state.itemContainer(props.ItemContainer || 'div')
+    state.renderProp(props.item)
+    state.dataKey(props.dataKey)
+
     return () => {
       state.itemsRendered(undefined)
       state.totalListHeightChanged(undefined)
@@ -145,37 +139,17 @@ export const Virtuoso = forwardRef<VirtuosoMethods, VirtuosoProps>((props, ref) 
     props.maxHeightCacheSize,
     props.rangeChanged,
     props.scrollSeek,
+    props.item,
+    props.ItemContainer,
+    props.computeItemKey,
+    props.dataKey,
   ])
-
-  const { scrollSeek, computeItemKey, dataKey, item: theItem, ItemContainer = 'div' } = props
-
-  const itemRender: TRender = useCallback(
-    (item, { key, renderPlaceholder, ...itemProps }) => {
-      if (computeItemKey) {
-        key = computeItemKey(item.index)
-      }
-
-      let children: ReactElement
-      if (scrollSeek && renderPlaceholder) {
-        children = React.createElement(scrollSeek.placeholder, {
-          height: itemProps['data-known-size'],
-          index: item.index,
-        })
-      } else {
-        children = theItem(item.index)
-      }
-
-      return React.createElement(ItemContainer, { ...itemProps, key }, children)
-    },
-    [theItem, scrollSeek, computeItemKey, ItemContainer, dataKey]
-  )
 
   return (
     <VirtuosoPresentation
       contextValue={state}
       style={props.style}
       className={props.className}
-      item={itemRender}
       footer={props.footer}
       itemHeight={props.itemHeight}
       ScrollContainer={props.ScrollContainer}

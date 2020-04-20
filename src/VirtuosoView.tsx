@@ -1,11 +1,11 @@
-import React, { ReactElement, useContext, FC, CSSProperties } from 'react'
-import { VirtuosoContext } from './VirtuosoContext'
-import { useHeight, CallbackRef, useOutput } from './Utils'
-import { VirtuosoScroller, TScrollContainer } from './VirtuosoScroller'
-import { VirtuosoList, TRender } from './VirtuosoList'
+import React, { CSSProperties, FC, ReactElement, useContext } from 'react'
 import { ItemHeight } from 'VirtuosoStore'
 import { viewportStyle } from './Style'
+import { CallbackRef, useHeight, useOutput } from './Utils'
+import { VirtuosoContext } from './VirtuosoContext'
 import { VirtuosoFiller } from './VirtuosoFiller'
+import { VirtuosoList } from './VirtuosoList'
+import { TScrollContainer, VirtuosoScroller } from './VirtuosoScroller'
 
 export const DefaultFooterContainer: React.FC<{ footerRef: CallbackRef }> = ({ children, footerRef }) => (
   <footer ref={footerRef}>{children}</footer>
@@ -98,9 +98,8 @@ export const VirtuosoView: React.FC<{
   ScrollContainer?: TScrollContainer
   ListContainer: TListContainer
   FooterContainer?: TFooterContainer
-  item: TRender
   fixedItemHeight: boolean
-}> = ({ style, footer, item, fixedItemHeight, ScrollContainer, ListContainer, FooterContainer, className }) => {
+}> = ({ style, footer, fixedItemHeight, ScrollContainer, ListContainer, FooterContainer, className }) => {
   const { scrollTo, scrollTop, totalHeight, viewportHeight } = useContext(VirtuosoContext)!
   const fillerHeight = useOutput<number>(totalHeight, 0)
   const reportScrollTop = (st: number) => {
@@ -119,7 +118,7 @@ export const VirtuosoView: React.FC<{
     >
       <div ref={viewportCallbackRef} style={viewportStyle}>
         <ListWrapper fixedItemHeight={fixedItemHeight} ListContainer={ListContainer}>
-          <VirtuosoList render={item} />
+          <VirtuosoList />
           {footer && <VirtuosoFooter footer={footer} FooterContainer={FooterContainer} />}
         </ListWrapper>
       </div>

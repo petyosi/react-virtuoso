@@ -1,13 +1,12 @@
-import React, { forwardRef, ReactElement, useCallback, useImperativeHandle, useLayoutEffect, useState } from 'react'
+import React, { forwardRef, ReactElement, useImperativeHandle, useLayoutEffect, useState } from 'react'
 import { TScrollLocation } from './EngineCommons'
 import { TItemContainer, VirtuosoPresentation, VirtuosoProps } from './Virtuoso'
-import { TRender } from './VirtuosoList'
 import { VirtuosoStore } from './VirtuosoStore'
 
 type GroupedVirtuosoProps = Pick<VirtuosoProps, Exclude<keyof VirtuosoProps, 'totalCount' | 'topItems' | 'item'>> & {
   groupCounts: number[]
   group: (groupIndex: number) => ReactElement
-  item: (index: number, groupIndex: number) => ReactElement
+  item: (index: number, groupIndex?: number) => ReactElement
   groupIndices?: (indices: number[]) => void
   GroupContainer?: TItemContainer
 }
@@ -37,6 +36,8 @@ export const GroupedVirtuoso = forwardRef<GroupedVirtuosoMethods, GroupedVirtuos
     state.groupIndices(props.groupIndices)
     state.itemsRendered(props.itemsRendered)
     state.totalListHeightChanged(props.totalListHeightChanged)
+    state.renderProp(props.item)
+    state.groupRenderProp(props.group)
     return () => {
       state.itemsRendered(undefined)
       state.totalListHeightChanged(undefined)
@@ -51,38 +52,15 @@ export const GroupedVirtuoso = forwardRef<GroupedVirtuosoMethods, GroupedVirtuos
     props.groupIndices,
     props.itemsRendered,
     props.totalListHeightChanged,
+    props.item,
+    props.group,
   ])
-
-  const itemRender: TRender = useCallback(
-    (item, { renderPlaceholder: _renderPlaceholder, ...itemProps }) => {
-      const ItemContainer = props.ItemContainer
-      const GroupContainer = props.GroupContainer || ItemContainer
-      if (item.type === 'group') {
-        const children = props.group(item.groupIndex)
-        if (GroupContainer) {
-          return <GroupContainer {...itemProps}>{children}</GroupContainer>
-        } else {
-          return <div {...itemProps}>{children}</div>
-        }
-      } else {
-        const children = props.item(item.transposedIndex, item.groupIndex)
-
-        if (ItemContainer) {
-          return <ItemContainer {...itemProps}>{children}</ItemContainer>
-        } else {
-          return <div {...itemProps}>{children}</div>
-        }
-      }
-    },
-    [props]
-  )
 
   return (
     <VirtuosoPresentation
       contextValue={state}
       style={props.style}
       className={props.className}
-      item={itemRender}
       footer={props.footer}
       itemHeight={props.itemHeight}
       ScrollContainer={props.ScrollContainer}

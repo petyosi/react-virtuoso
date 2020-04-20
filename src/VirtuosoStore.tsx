@@ -1,4 +1,5 @@
-import { coldSubject, duc, filter, map, subject, withLatestFrom, combineLatest } from '../src/tinyrx'
+import React, { ReactElement } from 'react'
+import { coldSubject, combineLatest, duc, filter, map, subject, withLatestFrom } from '../src/tinyrx'
 import { buildIsScrolling } from './EngineCommons'
 import { adjustForPrependedItemsEngine } from './engines/adjustForPrependedItemsEngine'
 import { followOutputEngine } from './engines/followOutputEngine'
@@ -143,6 +144,52 @@ const VirtuosoStore = ({
     .pipe(map(([domScrollTop, multiplier]) => domScrollTop * multiplier))
     .subscribe(scrollTop$.next)
 
+  const computeItemKey$ = subject((itemIndex: number) => itemIndex as React.Key)
+  const renderProp$ = subject((index: number, _groupIndex?: number) => index as any)
+  const groupRenderProp$ = subject((index: number) => index as any)
+  const itemContainer$ = subject<React.ComponentType<any> | string>('div')
+  const groupContainer$ = subject<React.ComponentType<any> | string>('div')
+  const itemRender$ = subject<any>(false)
+  const dataKey$ = subject<string | symbol | undefined>(Symbol('data-key'))
+
+  combineLatest(
+    renderProp$,
+    groupRenderProp$,
+    scrollSeekConfiguration$,
+    computeItemKey$,
+    itemContainer$,
+    groupContainer$,
+    dataKey$
+  )
+    .pipe(
+      map(([render, groupRender, scrollSeek, computeItemKey, ItemContainer, GroupContainer, _dataKey]) => {
+        return {
+          render: (item: any, { key, renderPlaceholder, ...itemProps }: any) => {
+            if (computeItemKey) {
+              key = computeItemKey(item.index)
+            }
+
+            if (item.type === 'group') {
+              return React.createElement(GroupContainer, { key, ...itemProps }, groupRender(item.groupIndex))
+            } else {
+              let children: ReactElement
+              if (scrollSeek && renderPlaceholder) {
+                children = React.createElement(scrollSeek.placeholder, {
+                  height: itemProps['data-known-size'],
+                  index: item.index,
+                })
+              } else {
+                children = render(item.transposedIndex)
+              }
+
+              return React.createElement(ItemContainer, { ...itemProps, key }, children)
+            }
+          },
+        }
+      })
+    )
+    .subscribe(itemRender$.next)
+
   return {
     groupCounts: makeInput(groupCounts$),
     itemHeights: makeInput(itemHeights$),
@@ -158,6 +205,15 @@ const VirtuosoStore = ({
     adjustForPrependedItems: makeInput(adjustForPrependedItems$),
     maxRangeSize: makeInput(maxRangeSize$),
     scrollSeekConfiguration: makeInput(scrollSeekConfiguration$),
+
+    renderProp: makeInput(renderProp$),
+    groupRenderProp: makeInput(groupRenderProp$),
+    computeItemKey: makeInput(computeItemKey$),
+    itemContainer: makeInput(itemContainer$),
+    groupContainer: makeInput(groupContainer$),
+    dataKey: makeInput(dataKey$),
+
+    itemRender: makeOutput(itemRender$),
 
     list: makeOutput(list$),
     isSeeking: makeOutput(isSeeking$),
