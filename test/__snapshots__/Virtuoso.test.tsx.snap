@@ -1,0 +1,103 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Test rendering of empty grouped list 1`] = `
+<div>
+  <div
+    style={
+      Object {
+        "WebkitOverflowScrolling": "touch",
+        "height": "40rem",
+        "outline": "none",
+        "overflowY": "auto",
+        "position": "relative",
+      }
+    }
+    tabIndex={0}
+  >
+    <div
+      style={
+        Object {
+          "height": "100%",
+          "overflow": "absolute",
+          "position": "absolute",
+          "top": 0,
+          "width": "100%",
+        }
+      }
+    >
+      <div
+        style={
+          Object {
+            "marginTop": "NaNpx",
+          }
+        }
+      >
+         
+         
+      </div>
+    </div>
+    <div
+      style={
+        Object {
+          "height": "0px",
+          "position": "absolute",
+          "top": 0,
+        }
+      }
+    >
+       
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test rendering of empty list 1`] = `
+<div>
+  <div
+    style={
+      Object {
+        "WebkitOverflowScrolling": "touch",
+        "height": "40rem",
+        "outline": "none",
+        "overflowY": "auto",
+        "position": "relative",
+      }
+    }
+    tabIndex={0}
+  >
+    <div
+      style={
+        Object {
+          "height": "100%",
+          "overflow": "absolute",
+          "position": "absolute",
+          "top": 0,
+          "width": "100%",
+        }
+      }
+    >
+      <div
+        style={
+          Object {
+            "marginTop": "NaNpx",
+          }
+        }
+      >
+         
+         
+      </div>
+    </div>
+    <div
+      style={
+        Object {
+          "height": "0px",
+          "position": "absolute",
+          "top": 0,
+        }
+      }
+    >
+       
+    </div>
+  </div>
+</div>
+`;

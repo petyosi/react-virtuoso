@@ -45,7 +45,9 @@ const DefaultScrollContainer: TScrollContainer = ({ className, style, reportScro
         theRef.addEventListener('scroll', onScroll, { passive: true })
         elRef.current = theRef
       } else {
-        elRef.current!.removeEventListener('scroll', onScroll)
+        if (elRef.current) {
+          elRef.current.removeEventListener('scroll', onScroll)
+        }
       }
     },
     [onScroll]
