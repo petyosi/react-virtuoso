@@ -1,7 +1,7 @@
 {
   "name": "react-virtuoso",
   "sideEffects": false,
-  "version": "0.16.0",
+  "version": "0.16.1",
   "homepage": "https://virtuoso.dev",
   "license": "MIT",
   "main": "dist/index.js",
@@ -30,8 +30,8 @@
     "@types/jest": "^24.0.25",
     "@types/lodash": "^4.14.144",
     "@types/react": "^16.9.34",
-    "@types/react-test-renderer": "^16.9.2",
     "@types/react-dom": "^16.9.6",
+    "@types/react-test-renderer": "^16.9.2",
     "faker": "^4.1.0",
     "husky": "^4.2.5",
     "parcel": "^1.12.3",
