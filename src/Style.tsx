@@ -5,5 +5,4 @@ export const viewportStyle: CSSProperties = {
   position: 'absolute',
   height: '100%',
   width: '100%',
-  overflow: 'absolute',
 }

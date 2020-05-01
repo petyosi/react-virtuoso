@@ -38,6 +38,9 @@ export const GroupedVirtuoso = forwardRef<GroupedVirtuosoMethods, GroupedVirtuos
     state.totalListHeightChanged(props.totalListHeightChanged)
     state.renderProp(props.item)
     state.groupRenderProp(props.group)
+    state.itemContainer(props.ItemContainer || 'div')
+    state.groupContainer(props.GroupContainer || 'div')
+
     return () => {
       state.itemsRendered(undefined)
       state.totalListHeightChanged(undefined)
@@ -54,6 +57,8 @@ export const GroupedVirtuoso = forwardRef<GroupedVirtuosoMethods, GroupedVirtuos
     props.totalListHeightChanged,
     props.item,
     props.group,
+    props.GroupContainer,
+    props.ItemContainer,
   ])
 
   return (

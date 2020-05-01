@@ -53,6 +53,20 @@ const App = () => {
       }}
       group={(index: number) => <div>Group {groups[index]}</div>}
       item={(index: number) => <div>User {index}</div>}
+      GroupContainer={({ children, style, ...props }) => {
+        return (
+          <div {...props} style={{ ...style, borderBottom: '1px solid red' }}>
+            {children}
+          </div>
+        )
+      }}
+      ItemContainer={({ children, style, ...props }) => {
+        return (
+          <div {...props} style={{ ...style, borderBottom: '1px solid blue' }}>
+            {children}
+          </div>
+        )
+      }}
       footer={() => {
         return (
           <div

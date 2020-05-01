@@ -18,7 +18,6 @@ exports[`Test rendering of empty grouped list 1`] = `
       style={
         Object {
           "height": "100%",
-          "overflow": "absolute",
           "position": "absolute",
           "top": 0,
           "width": "100%",
@@ -69,7 +68,6 @@ exports[`Test rendering of empty list 1`] = `
       style={
         Object {
           "height": "100%",
-          "overflow": "absolute",
           "position": "absolute",
           "top": 0,
           "width": "100%",
