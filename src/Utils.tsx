@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ResizeObserver from 'resize-observer-polyfill'
 import { TInput, TOutput } from './rxio'
 
@@ -57,7 +57,7 @@ function callbackToValue<T>(output: (callback: (val: T) => void) => void, defaul
 export function useOutput<T>(output: TOutput<T>, initialValue: T): T {
   const [value, setValue] = useState(callbackToValue<T>(output, initialValue))
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     output(setValue)
     return () => output(undefined)
   }, [output])

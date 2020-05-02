@@ -1,12 +1,4 @@
-import React, {
-  CSSProperties,
-  FC,
-  forwardRef,
-  ReactElement,
-  useImperativeHandle,
-  useLayoutEffect,
-  useState,
-} from 'react'
+import React, { CSSProperties, FC, forwardRef, ReactElement, useImperativeHandle, useEffect, useState } from 'react'
 import { TScrollLocation } from './EngineCommons'
 import { ListRange, ScrollSeekConfiguration } from './engines/scrollSeekEngine'
 import { ListItem } from './GroupIndexTransposer'
@@ -103,7 +95,7 @@ export const Virtuoso = forwardRef<VirtuosoMethods, VirtuosoProps>((props, ref) 
     [state]
   )
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     state.isScrolling(props.scrollingStateChange)
     state.atBottomStateChange(props.atBottomStateChange)
     state.endReached(props.endReached)

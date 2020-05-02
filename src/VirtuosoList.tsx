@@ -66,5 +66,5 @@ export const VirtuosoList: React.FC<{}> = React.memo(() => {
       )
   })
 
-  return <> {renderedItems} </>
+  return <>{renderedItems}</>
 })

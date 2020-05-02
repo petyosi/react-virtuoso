@@ -1,4 +1,4 @@
-import React, { forwardRef, ReactElement, useImperativeHandle, useLayoutEffect, useState } from 'react'
+import React, { forwardRef, ReactElement, useImperativeHandle, useState, useEffect } from 'react'
 import { TScrollLocation } from './EngineCommons'
 import { TItemContainer, VirtuosoPresentation, VirtuosoProps } from './Virtuoso'
 import { VirtuosoStore } from './VirtuosoStore'
@@ -27,7 +27,7 @@ export const GroupedVirtuoso = forwardRef<GroupedVirtuosoMethods, GroupedVirtuos
     [state]
   )
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     state.endReached(props.endReached)
     state.rangeChanged(props.rangeChanged)
     state.atBottomStateChange(props.atBottomStateChange)

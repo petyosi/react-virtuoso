@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Test rendering of empty grouped list 1`] = `
+exports[`render empty grouped list 1`] = `
 <div>
   <div
     style={
@@ -30,10 +30,7 @@ exports[`Test rendering of empty grouped list 1`] = `
             "marginTop": "NaNpx",
           }
         }
-      >
-         
-         
-      </div>
+      />
     </div>
     <div
       style={
@@ -50,7 +47,7 @@ exports[`Test rendering of empty grouped list 1`] = `
 </div>
 `;
 
-exports[`Test rendering of empty list 1`] = `
+exports[`render empty list 1`] = `
 <div>
   <div
     style={
@@ -80,10 +77,7 @@ exports[`Test rendering of empty list 1`] = `
             "marginTop": "NaNpx",
           }
         }
-      >
-         
-         
-      </div>
+      />
     </div>
     <div
       style={
