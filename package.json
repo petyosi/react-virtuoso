@@ -43,6 +43,7 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
+    "@scarf/scarf": "^1.0.5",
     "resize-observer-polyfill": "^1.5.1",
     "tslib": "^1.11.1"
   }
