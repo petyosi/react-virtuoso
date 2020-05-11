@@ -1,7 +1,7 @@
 {
   "name": "react-virtuoso",
   "sideEffects": false,
-  "version": "0.16.2",
+  "version": "0.16.3",
   "homepage": "https://virtuoso.dev",
   "license": "MIT",
   "main": "dist/index.js",
