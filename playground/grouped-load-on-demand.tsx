@@ -82,6 +82,23 @@ const App = () => {
           </div>
         )
       }}
+      scrollSeek={{
+        enter: (velocity, { startIndex, endIndex }) => {
+          console.log('enter velocity', velocity)
+          console.log('enter indexes', startIndex, endIndex)
+          return Math.abs(velocity) > 100
+        },
+        exit: (velocity, { startIndex, endIndex }) => {
+          console.log('exit velocity', velocity)
+          console.log('exit indexes', startIndex, endIndex)
+          return Math.abs(velocity) < 30
+        },
+        change: (velocity, { startIndex, endIndex }) => {
+          console.log('change velocity', velocity)
+          console.log('change indexes', startIndex, endIndex)
+        },
+        placeholder: ({ height }) => <div style={{ height }}></div>,
+      }}
     />
   )
 }

@@ -40,6 +40,7 @@ export const GroupedVirtuoso = forwardRef<GroupedVirtuosoMethods, GroupedVirtuos
     state.groupRenderProp(props.group)
     state.itemContainer(props.ItemContainer || 'div')
     state.groupContainer(props.GroupContainer || 'div')
+    state.scrollSeekConfiguration(props.scrollSeek)
 
     return () => {
       state.itemsRendered(undefined)
