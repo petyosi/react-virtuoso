@@ -23,6 +23,7 @@ export interface VirtuosoGridProps {
   itemClassName?: string
   scrollingStateChange?: (isScrolling: boolean) => void
   endReached?: (index: number) => void
+  initialItemCount?: number
 }
 
 type VirtuosoGridState = ReturnType<typeof VirtuosoGridEngine>
