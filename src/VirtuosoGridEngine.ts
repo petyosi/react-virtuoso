@@ -23,7 +23,7 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
   const totalCount$ = subject(0)
   const scrollTop$ = subject(0)
   const overscan$ = subject(0)
-  const itemRange$ = subject<GridItemRange>([0, initialItemCount - 1])
+  const itemRange$ = subject<GridItemRange>([0, max(initialItemCount - 1, 0)])
   const totalHeight$ = subject(0)
   const listOffset$ = subject(0)
   const scrollToIndex$ = coldSubject<TScrollLocation>()
