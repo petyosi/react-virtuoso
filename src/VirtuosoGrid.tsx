@@ -23,6 +23,7 @@ export interface VirtuosoGridProps {
   itemClassName?: string
   scrollingStateChange?: (isScrolling: boolean) => void
   endReached?: (index: number) => void
+  initialItemCount?: number
 }
 
 type VirtuosoGridState = ReturnType<typeof VirtuosoGridEngine>
@@ -37,7 +38,7 @@ type TItemBuilder = (
 ) => ReactElement[]
 
 export class VirtuosoGrid extends React.PureComponent<VirtuosoGridProps, VirtuosoGridState> {
-  public state = VirtuosoGridEngine()
+  public state = VirtuosoGridEngine(this.props.initialItemCount)
 
   public static getDerivedStateFromProps(props: VirtuosoGridProps, engine: VirtuosoGridState) {
     engine.overscan(props.overscan || 0)
