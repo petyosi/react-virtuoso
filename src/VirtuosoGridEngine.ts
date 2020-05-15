@@ -18,12 +18,12 @@ const { ceil, floor, min, max } = Math
 
 const hackFloor = (val: number) => (ceil(val) - val < 0.03 ? ceil(val) : floor(val))
 
-export const VirtuosoGridEngine = () => {
+export const VirtuosoGridEngine = (initialItemCount = 0) => {
   const gridDimensions$ = subject<GridDimensions>([0, 0, undefined, undefined])
   const totalCount$ = subject(0)
   const scrollTop$ = subject(0)
   const overscan$ = subject(0)
-  const itemRange$ = subject<GridItemRange>([0, 0])
+  const itemRange$ = subject<GridItemRange>([0, initialItemCount - 1])
   const totalHeight$ = subject(0)
   const listOffset$ = subject(0)
   const scrollToIndex$ = coldSubject<TScrollLocation>()
