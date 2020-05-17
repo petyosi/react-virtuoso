@@ -113,7 +113,11 @@ const VirtuosoStore = ({
     .pipe(
       withLatestFrom(adjustmentInProgress$),
       filter<[ListItem[], boolean]>(([list, inProgress]) => list.length !== 0 && !inProgress),
-      map(([{ 0: { index: startIndex }, length, [length - 1]: { index: endIndex } }]) => ({ startIndex, endIndex })),
+      map(([list]) => {
+        const { index: startIndex } = list[0]
+        const { index: endIndex } = list[list.length - 1]
+        return { startIndex, endIndex }
+      }),
       duc((current, next) => !current || current.startIndex !== next.startIndex || current.endIndex !== next.endIndex)
     )
     .subscribe(rangeChanged$.next)
