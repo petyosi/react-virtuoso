@@ -132,10 +132,12 @@ const VirtuosoStore = ({
   const domTotalHeight$ = totalHeight$.pipe(map(value => Math.min(value, MAX_OFFSET_HEIGHT)))
 
   const scrollTopMultiplier$ = combineLatest(totalHeight$, domTotalHeight$, viewportHeight$).pipe(
-    map(
-      ([totalHeight, domTotalHeight, viewportHeight]) =>
-        (totalHeight - viewportHeight) / (domTotalHeight - viewportHeight)
-    )
+    map(([totalHeight, domTotalHeight, viewportHeight]) => {
+      if (totalHeight === domTotalHeight) {
+        return 1
+      }
+      return (totalHeight - viewportHeight) / (domTotalHeight - viewportHeight)
+    })
   )
 
   const domScrollTop$ = subject(0, false)
