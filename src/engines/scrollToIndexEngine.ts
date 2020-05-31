@@ -70,7 +70,7 @@ export function scrollToIndexEngine({
 
         scrollTopReportedAfterScrollToIndex$.next(false)
         return {
-          top: Math.min(offset, Math.floor(totalHeight - viewportHeight)),
+          top: Math.max(0, Math.min(offset, Math.floor(totalHeight - viewportHeight))),
           behavior: location.behavior ?? 'auto',
         }
       })
