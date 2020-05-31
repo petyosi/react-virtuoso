@@ -27,7 +27,7 @@ exports[`render empty grouped list 1`] = `
       <div
         style={
           Object {
-            "marginTop": "NaNpx",
+            "marginTop": "0px",
           }
         }
       />
@@ -74,7 +74,7 @@ exports[`render empty list 1`] = `
       <div
         style={
           Object {
-            "marginTop": "NaNpx",
+            "marginTop": "0px",
           }
         }
       />
