@@ -1,10 +1,12 @@
 import React, { CSSProperties, ReactElement } from 'react'
+import { TSubscriber } from 'tinyrx'
 import { VirtuosoGridEngine } from './VirtuosoGridEngine'
 import { VirtuosoScroller, TScrollContainer } from './VirtuosoScroller'
 import { useOutput, useSize } from './Utils'
 import { viewportStyle } from './Style'
 import { VirtuosoFiller } from './VirtuosoFiller'
 import { TScrollLocation } from './EngineCommons'
+import { ListRange } from './engines/scrollSeekEngine'
 
 type TContainer =
   | React.ComponentType<{ className: string; style?: CSSProperties; key?: number }>
@@ -24,6 +26,7 @@ export interface VirtuosoGridProps {
   scrollingStateChange?: (isScrolling: boolean) => void
   endReached?: (index: number) => void
   initialItemCount?: number
+  rangeChanged?: TSubscriber<ListRange>
 }
 
 type VirtuosoGridState = ReturnType<typeof VirtuosoGridEngine>
@@ -45,6 +48,7 @@ export class VirtuosoGrid extends React.PureComponent<VirtuosoGridProps, Virtuos
     engine.totalCount(props.totalCount)
     engine.isScrolling(props.scrollingStateChange)
     engine.endReached(props.endReached)
+    engine.rangeChanged(props.rangeChanged)
     return null
   }
 

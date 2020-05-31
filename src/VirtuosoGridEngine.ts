@@ -1,6 +1,7 @@
 import { subject, map, combineLatest, withLatestFrom, coldSubject } from './tinyrx'
 import { makeInput, makeOutput } from './rxio'
 import { TScrollLocation, buildIsScrolling } from './EngineCommons'
+import { ListRange } from './engines/scrollSeekEngine'
 
 type GridDimensions = [
   number, // container width,
@@ -27,6 +28,7 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
   const totalHeight$ = subject(0)
   const listOffset$ = subject(0)
   const scrollToIndex$ = coldSubject<TScrollLocation>()
+  const rangeChanged$ = coldSubject<ListRange>()
 
   combineLatest(gridDimensions$, scrollTop$, overscan$, totalCount$)
     .pipe(withLatestFrom(itemRange$))
@@ -39,6 +41,7 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
         if (totalCount === 0) {
           itemRange$.next([0, -1])
           listOffset$.next(0)
+          rangeChanged$.next({ startIndex: 0, endIndex: -1 })
           return
         }
 
@@ -61,6 +64,7 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
 
           itemRange$.next([startIndex, endIndex])
           listOffset$.next(toRowIndex(startIndex) * itemHeight)
+          rangeChanged$.next({ startIndex, endIndex })
         }
 
         const listTop = itemHeight * toRowIndex(startIndex)
@@ -141,5 +145,6 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
     scrollTo: makeOutput(scrollTo$),
     isScrolling: makeOutput(isScrolling$),
     endReached: makeOutput(endReached$),
+    rangeChanged: makeOutput(rangeChanged$),
   }
 }
