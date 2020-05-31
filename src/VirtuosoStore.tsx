@@ -113,7 +113,11 @@ const VirtuosoStore = ({
     .pipe(
       withLatestFrom(adjustmentInProgress$),
       filter<[ListItem[], boolean]>(([list, inProgress]) => list.length !== 0 && !inProgress),
-      map(([{ 0: { index: startIndex }, length, [length - 1]: { index: endIndex } }]) => ({ startIndex, endIndex })),
+      map(([list]) => {
+        const { index: startIndex } = list[0]
+        const { index: endIndex } = list[list.length - 1]
+        return { startIndex, endIndex }
+      }),
       duc((current, next) => !current || current.startIndex !== next.startIndex || current.endIndex !== next.endIndex)
     )
     .subscribe(rangeChanged$.next)
@@ -128,10 +132,12 @@ const VirtuosoStore = ({
   const domTotalHeight$ = totalHeight$.pipe(map(value => Math.min(value, MAX_OFFSET_HEIGHT)))
 
   const scrollTopMultiplier$ = combineLatest(totalHeight$, domTotalHeight$, viewportHeight$).pipe(
-    map(
-      ([totalHeight, domTotalHeight, viewportHeight]) =>
-        (totalHeight - viewportHeight) / (domTotalHeight - viewportHeight)
-    )
+    map(([totalHeight, domTotalHeight, viewportHeight]) => {
+      if (totalHeight === domTotalHeight) {
+        return 1
+      }
+      return (totalHeight - viewportHeight) / (domTotalHeight - viewportHeight)
+    })
   )
 
   const domScrollTop$ = subject(0, false)

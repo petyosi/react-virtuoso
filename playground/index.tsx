@@ -2,33 +2,19 @@ import React, { useState } from 'react'
 import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../src/'
 
-const GenerateItem = index => (
-  <div style={{ height: '40px' }}>
-    Item {index} {Math.random()}
-  </div>
-)
+const GenerateItem = (index: number) => <div style={{ height: '40px' }}>{index}</div>
 
 const App = () => {
-  const [data, updateData] = useState({ count: 5, isUpdated: false, dataKey: '1' })
-
-  setTimeout(() => {
-    if (!data.isUpdated) {
-      console.log('update')
-      updateData({
-        count: 5,
-        isUpdated: true,
-        dataKey: '2',
-      })
-    }
-  }, 3000)
+  const [count, setCount] = useState(20)
 
   return (
     <div>
+      <button onClick={() => setCount(count + 10)}>Add 10</button>
       <Virtuoso
-        dataKey={data.dataKey}
-        totalCount={data.count}
+        totalCount={count}
         item={GenerateItem}
         style={{ height: '400px', width: '350px' }}
+        scrollingStateChange={scrollState => console.log({ scrollState })}
       />
     </div>
   )

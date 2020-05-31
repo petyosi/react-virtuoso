@@ -60,6 +60,7 @@ export const GroupedVirtuoso = forwardRef<GroupedVirtuosoMethods, GroupedVirtuos
     props.group,
     props.GroupContainer,
     props.ItemContainer,
+    props.scrollSeek,
   ])
 
   return (
