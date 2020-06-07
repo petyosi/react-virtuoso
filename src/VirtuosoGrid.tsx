@@ -94,7 +94,7 @@ const VirtuosoGridFC: React.FC<VirtuosoGridFCProps> = ({
 
   const fillerHeight = useOutput<number>(totalHeight, 0)
   const translate = useOutput<number>(listOffset, 0)
-  const listStyle = { marginTop: `${translate}px` }
+  const listStyle = { transform: `translateY(${translate}px)` }
   const itemIndexRange = useOutput(itemRange, [0, 0] as [number, number])
 
   const viewportCallbackRef = useSize(({ element, width, height }) => {
