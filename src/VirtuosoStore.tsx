@@ -185,7 +185,7 @@ const VirtuosoStore = ({
                   index: item.index,
                 })
               } else {
-                children = render(item.transposedIndex)
+                children = render(item.transposedIndex, item.groupIndex)
               }
 
               return React.createElement(ItemContainer, { ...itemProps, key }, children)
