@@ -6,6 +6,7 @@ export const getListTop = (items: ListItem[]) => (items.length > 0 ? items[0].of
 
 interface ListEngineParams {
   overscan: number
+  defaultItemHeight?: number
   viewportHeight$: TObservable<number>
   scrollTop$: TObservable<number>
   topListHeight$: TObservable<number>
@@ -20,6 +21,7 @@ interface ListEngineParams {
 
 export function listEngine({
   overscan,
+  defaultItemHeight,
   viewportHeight$,
   scrollTop$,
   topListHeight$,
@@ -99,7 +101,8 @@ export function listEngine({
           // this is a hack - we should let the probe item render,
           // but skip the real list until the viewport has scrolled
           // to the expected location
-          if (items.length > 1 && !scrolledToTopMostItem) {
+          // However, if we have default item height set then we can skip this.
+          if (items.length > 1 && !scrolledToTopMostItem && !defaultItemHeight) {
             return []
           }
 

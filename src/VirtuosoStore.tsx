@@ -81,6 +81,7 @@ const VirtuosoStore = ({
 
   const { listHeight$, list$, listOffset$, endReached$ } = listEngine({
     overscan,
+    defaultItemHeight,
     viewportHeight$,
     scrollTop$,
     totalHeight$,
