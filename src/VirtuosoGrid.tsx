@@ -27,6 +27,7 @@ export interface VirtuosoGridProps {
   endReached?: (index: number) => void
   initialItemCount?: number
   rangeChanged?: TSubscriber<ListRange>
+  computeItemKey?: (index: number) => number
 }
 
 type VirtuosoGridState = ReturnType<typeof VirtuosoGridEngine>
@@ -37,7 +38,8 @@ type TItemBuilder = (
   range: [number, number],
   item: (index: number) => ReactElement,
   itemClassName: string,
-  ItemContainer: TContainer
+  ItemContainer: TContainer,
+  computeItemKey: (index: number) => number
 ) => ReactElement[]
 
 export class VirtuosoGrid extends React.PureComponent<VirtuosoGridProps, VirtuosoGridState> {
@@ -61,14 +63,15 @@ export class VirtuosoGrid extends React.PureComponent<VirtuosoGridProps, Virtuos
   }
 }
 
-const buildItems: TItemBuilder = ([startIndex, endIndex], item, itemClassName, ItemContainer) => {
+const buildItems: TItemBuilder = ([startIndex, endIndex], item, itemClassName, ItemContainer, computeItemKey) => {
   const items = []
   for (let index = startIndex; index <= endIndex; index++) {
+    const key = computeItemKey(index)
     items.push(
       React.createElement(
         ItemContainer,
         {
-          key: index,
+          key,
           className: itemClassName,
         },
         item(index)
@@ -89,6 +92,7 @@ const VirtuosoGridFC: React.FC<VirtuosoGridFCProps> = ({
   listClassName = 'virtuoso-grid-list',
   engine,
   style = { height: '40rem' },
+  computeItemKey = key => key,
 }) => {
   const { itemRange, listOffset, totalHeight, gridDimensions, scrollTo, scrollTop } = engine
 
@@ -117,7 +121,7 @@ const VirtuosoGridFC: React.FC<VirtuosoGridFCProps> = ({
             style: listStyle,
             className: listClassName,
           },
-          buildItems(itemIndexRange, item, itemClassName, ItemContainer)
+          buildItems(itemIndexRange, item, itemClassName, ItemContainer, computeItemKey)
         )}
       </div>
 
