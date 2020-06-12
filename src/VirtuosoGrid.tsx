@@ -4,7 +4,6 @@ import { VirtuosoGridEngine } from './VirtuosoGridEngine'
 import { VirtuosoScroller, TScrollContainer } from './VirtuosoScroller'
 import { useOutput, useSize } from './Utils'
 import { viewportStyle } from './Style'
-import { VirtuosoFiller } from './VirtuosoFiller'
 import { TScrollLocation } from './EngineCommons'
 import { ListRange } from './engines/scrollSeekEngine'
 
@@ -94,11 +93,11 @@ const VirtuosoGridFC: React.FC<VirtuosoGridFCProps> = ({
   style = { height: '40rem' },
   computeItemKey = key => key,
 }) => {
-  const { itemRange, listOffset, totalHeight, gridDimensions, scrollTo, scrollTop } = engine
+  const { itemRange, listOffset, remainingHeight, gridDimensions, scrollTo, scrollTop } = engine
 
-  const fillerHeight = useOutput<number>(totalHeight, 0)
+  const fillerHeight = useOutput<number>(remainingHeight, 0)
   const translate = useOutput<number>(listOffset, 0)
-  const listStyle = { transform: `translateY(${translate}px)` }
+  const listStyle = { paddingTop: `${translate}px`, paddingBottom: `${fillerHeight}px` }
   const itemIndexRange = useOutput(itemRange, [0, 0] as [number, number])
 
   const viewportCallbackRef = useSize(({ element, width, height }) => {
@@ -124,8 +123,6 @@ const VirtuosoGridFC: React.FC<VirtuosoGridFCProps> = ({
           buildItems(itemIndexRange, item, itemClassName, ItemContainer, computeItemKey)
         )}
       </div>
-
-      <VirtuosoFiller height={fillerHeight} />
     </VirtuosoScroller>
   )
 }
