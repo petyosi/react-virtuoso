@@ -54,14 +54,14 @@ describe('Grid Virtuoso Engine', () => {
     expect(itemRangeCallback).toHaveBeenCalledWith([3, itemCount - 1 + 3])
   })
 
-  it('calculates the total height', () => {
-    const { totalCount, gridDimensions, totalHeight } = VirtuosoGridEngine()
+  it('calculates the remaining height', () => {
+    const { totalCount, gridDimensions, remainingHeight } = VirtuosoGridEngine()
     gridDimensions([10, 5, 3, 2])
     totalCount(20)
-    const totalHeightCallback = jest.fn()
-    totalHeight(totalHeightCallback)
+    const remainingHeightCallback = jest.fn()
+    remainingHeight(remainingHeightCallback)
 
-    expect(totalHeightCallback).toHaveBeenCalledWith(14)
+    expect(remainingHeightCallback).toHaveBeenCalledWith(14)
   })
 
   it('takes overscan into account', () => {
