@@ -25,7 +25,7 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
   const scrollTop$ = subject(0)
   const overscan$ = subject(0)
   const itemRange$ = subject<GridItemRange>([0, max(initialItemCount - 1, 0)])
-  const totalHeight$ = subject(0)
+  const remainingHeight$ = subject(0)
   const listOffset$ = subject(0)
   const scrollToIndex$ = coldSubject<TScrollLocation>()
   const rangeChanged$ = coldSubject<ListRange>()
@@ -81,7 +81,7 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
           updateRange(true)
         }
 
-        totalHeight$.next(itemHeight * toRowIndex(totalCount, ceil))
+        remainingHeight$.next(itemHeight * toRowIndex(totalCount - endIndex - 1, ceil))
       }
     )
 
@@ -140,7 +140,7 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
     scrollToIndex: makeInput(scrollToIndex$),
 
     itemRange: makeOutput(itemRange$),
-    totalHeight: makeOutput(totalHeight$),
+    remainingHeight: makeOutput(remainingHeight$),
     listOffset: makeOutput(listOffset$),
     scrollTo: makeOutput(scrollTo$),
     isScrolling: makeOutput(isScrolling$),
