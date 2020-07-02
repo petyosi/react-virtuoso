@@ -1,5 +1,5 @@
 import React, { CSSProperties, ReactElement } from 'react'
-import { TSubscriber } from 'tinyrx'
+import { TSubscriber } from './tinyrx'
 import { VirtuosoGridEngine } from './VirtuosoGridEngine'
 import { VirtuosoScroller, TScrollContainer } from './VirtuosoScroller'
 import { useOutput, useSize } from './Utils'
