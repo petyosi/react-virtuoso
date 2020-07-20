@@ -134,7 +134,7 @@ const VirtuosoStore = ({
 
   const scrollTopMultiplier$ = combineLatest(totalHeight$, domTotalHeight$, viewportHeight$).pipe(
     map(([totalHeight, domTotalHeight, viewportHeight]) => {
-      if (totalHeight === domTotalHeight) {
+      if (totalHeight === domTotalHeight || domTotalHeight === viewportHeight) {
         return 1
       }
       return (totalHeight - viewportHeight) / (domTotalHeight - viewportHeight)
