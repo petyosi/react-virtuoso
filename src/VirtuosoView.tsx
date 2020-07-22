@@ -49,7 +49,7 @@ const getHeights = (children: HTMLCollection) => {
     const knownSize = parseInt(child.dataset.knownSize!)
     const size = child.offsetHeight
 
-    if (size === knownSize) {
+    if (size === knownSize || size === 0) {
       continue
     }
 
