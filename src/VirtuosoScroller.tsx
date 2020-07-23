@@ -15,7 +15,7 @@ export type TScrollContainer = FC<{
   scrollTo: (callback: (scrollTop: ScrollToOptions) => void) => void
 }>
 
-const DefaultScrollContainer: TScrollContainer = ({ className, style, reportScrollTop, scrollTo, children }) => {
+const DefaultScrollContainer: TScrollContainer = ({ className, style, tabIndex='0', reportScrollTop, scrollTo, children }) => {
   const elRef = useRef<HTMLElement | null>(null)
   const smoothScrollTarget = useRef<number | null>(null)
   const currentScrollTop = useRef<number | null>()
@@ -63,7 +63,7 @@ const DefaultScrollContainer: TScrollContainer = ({ className, style, reportScro
   })
 
   return (
-    <div ref={ref} style={style} tabIndex={0} className={className}>
+    <div ref={ref} style={style} tabIndex={tabIndex} className={className}>
       {children}
     </div>
   )
