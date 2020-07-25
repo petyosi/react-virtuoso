@@ -73,7 +73,7 @@ Check the [responsive grid columns](https://virtuoso.dev/grid-responsive-columns
 The component accepts an optional
 `header` [render property](https://reactjs.org/docs/render-props.html),
 which is rendered before all items.
-The header can be used to host an indicator that the user has reached the top of the list.
+The header can be used to host an indicator that the user has reached the top of the list when using it bottom up.
 
 ### Footer
 
