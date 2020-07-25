@@ -26,6 +26,7 @@ export function offsetListEngine({
   topList$,
   transposer$,
 }: OffsetListEngineParams) {
+  const headerHeight$ = subject(0)
   const footerHeight$ = subject(0)
   const totalCount$ = subject(totalCount)
   const itemHeights$ = subject<ItemHeight[]>()
@@ -49,8 +50,11 @@ export function offsetListEngine({
   const offsetList$ = subject(initialOffsetList)
   const { stickyItems$ } = stickyItemsEngine({ offsetList$, scrollTop$, topList$, transposer$ })
 
-  const totalHeight$ = combineLatest(offsetList$, totalCount$, footerHeight$).pipe(
-    map(([offsetList, totalCount, footerHeight]) => offsetList.total(totalCount - 1) + footerHeight)
+  const totalHeight$ = combineLatest(offsetList$, totalCount$, headerHeight$, footerHeight$).pipe(
+    map(
+      ([offsetList, totalCount, headerHeight, footerHeight]) =>
+        offsetList.total(totalCount - 1) + headerHeight + footerHeight
+    )
   )
 
   if (!itemHeight) {
@@ -85,6 +89,7 @@ export function offsetListEngine({
     totalCount$,
     offsetList$,
     totalHeight$,
+    headerHeight$,
     footerHeight$,
     initialItemCount$,
     itemHeights$,

@@ -10,6 +10,7 @@ interface ListEngineParams {
   viewportHeight$: TObservable<number>
   scrollTop$: TObservable<number>
   topListHeight$: TObservable<number>
+  headerHeight$: TObservable<number>
   footerHeight$: TObservable<number>
   minListIndex$: TObservable<number>
   totalCount$: TObservable<number>
@@ -25,6 +26,7 @@ export function listEngine({
   viewportHeight$,
   scrollTop$,
   topListHeight$,
+  headerHeight$,
   footerHeight$,
   minListIndex$,
   totalCount$,
@@ -50,6 +52,7 @@ export function listEngine({
     constrainedScrollTop$,
     topListHeight$,
     listHeight$,
+    headerHeight$,
     footerHeight$,
     minListIndex$,
     totalCount$,
@@ -66,6 +69,7 @@ export function listEngine({
             scrollTop,
             topListHeight,
             listHeight,
+            headerHeight,
             footerHeight,
             minIndex,
             totalCount,
@@ -82,7 +86,7 @@ export function listEngine({
 
           const listTop = getListTop(items)
 
-          const listBottom = listTop - scrollTop + listHeight - footerHeight - topListHeight
+          const listBottom = listTop - scrollTop + listHeight - headerHeight - footerHeight - topListHeight
           const maxIndex = Math.max(totalCount - 1, 0)
           const indexOutOfAllowedRange =
             itemLength > 0 && (items[0].index < minIndex || items[itemLength - 1].index > maxIndex)

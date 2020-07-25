@@ -49,6 +49,7 @@ const VirtuosoStore = ({
     itemHeights$,
     offsetList$,
     totalCount$,
+    headerHeight$,
     footerHeight$,
     totalHeight$,
     heightsChanged$,
@@ -86,6 +87,7 @@ const VirtuosoStore = ({
     scrollTop$,
     totalHeight$,
     topListHeight$,
+    headerHeight$,
     footerHeight$,
     minListIndex$,
     totalCount$,
@@ -200,6 +202,7 @@ const VirtuosoStore = ({
   return {
     groupCounts: makeInput(groupCounts$),
     itemHeights: makeInput(itemHeights$),
+    headerHeight: makeInput(headerHeight$),
     footerHeight: makeInput(footerHeight$),
     listHeight: makeInput(listHeight$),
     viewportHeight: makeInput(viewportHeight$),

@@ -68,9 +68,11 @@ export const GroupedVirtuoso = forwardRef<GroupedVirtuosoMethods, GroupedVirtuos
       contextValue={state}
       style={props.style}
       className={props.className}
+      header={props.header}
       footer={props.footer}
       itemHeight={props.itemHeight}
       ScrollContainer={props.ScrollContainer}
+      HeaderContainer={props.HeaderContainer}
       FooterContainer={props.FooterContainer}
       ListContainer={props.ListContainer}
     />

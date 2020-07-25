@@ -19,6 +19,18 @@ describe('Virtuoso Store', () => {
     itemHeights([{ start: 0, end: 0, size: 50 }])
   })
 
+  it('leaves space for the header', done => {
+    const { totalHeight, headerHeight, itemHeights } = VirtuosoStore({ overscan: 0, totalCount: 100 })
+
+    itemHeights([{ start: 0, end: 0, size: 50 }])
+    headerHeight(50)
+
+    totalHeight(val => {
+      expect(val).toBe(5050)
+      done()
+    })
+  })
+
   it('leaves space for the footer', done => {
     const { totalHeight, footerHeight, itemHeights } = VirtuosoStore({ overscan: 0, totalCount: 100 })
 
