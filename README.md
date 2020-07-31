@@ -9,6 +9,7 @@ Out of the box, Virtuoso:
 - Supports **grouping with sticky group headers** (`GroupedVirtuoso`);
 - Supports **responsive grid layout** (`VirtuosoGrid`);
 - Automatically handles content resizing;
+- Can render header at the top of the list;
 - Can render footer at the end of the list;
 - Can **pin the first `N` items** to the top of the list.
 
@@ -66,6 +67,13 @@ The `VirtuosoGrid` component displays **same sized items** in multiple columns.
 The layout and item sizing is controlled through CSS class properties, which allows you to use media queries, min-width, percentage, etc.
 
 Check the [responsive grid columns](https://virtuoso.dev/grid-responsive-columns) example for a sample implementation.
+
+### Header
+
+The component accepts an optional
+`header` [render property](https://reactjs.org/docs/render-props.html),
+which is rendered before all items.
+The header can be used to host an indicator that the user has reached the top of the list when using it bottom up.
 
 ### Footer
 

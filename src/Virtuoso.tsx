@@ -6,7 +6,14 @@ import { TSubscriber } from './tinyrx'
 import { VirtuosoContext } from './VirtuosoContext'
 import { TRenderProps } from './VirtuosoList'
 import { VirtuosoStore } from './VirtuosoStore'
-import { DefaultListContainer, TFooterContainer, TListContainer, TScrollContainer, VirtuosoView } from './VirtuosoView'
+import {
+  DefaultListContainer,
+  THeaderContainer,
+  TFooterContainer,
+  TListContainer,
+  TScrollContainer,
+  VirtuosoView,
+} from './VirtuosoView'
 
 export type VirtuosoState = ReturnType<typeof VirtuosoStore>
 
@@ -16,6 +23,7 @@ export interface VirtuosoProps {
   totalCount: number
   overscan?: number
   topItems?: number
+  header?: () => ReactElement
   footer?: () => ReactElement
   item: (index: number) => ReactElement
   computeItemKey?: (index: number) => React.Key
@@ -35,6 +43,7 @@ export interface VirtuosoProps {
   initialTopMostItemIndex?: number
   followOutput?: boolean
   ScrollContainer?: TScrollContainer
+  HeaderContainer?: THeaderContainer
   FooterContainer?: TFooterContainer
   ListContainer?: TListContainer
   ItemContainer?: TItemContainer
@@ -44,11 +53,13 @@ export interface VirtuosoProps {
 
 export interface TVirtuosoPresentationProps {
   contextValue: VirtuosoState
+  header?: () => ReactElement
   footer?: () => ReactElement
   style?: CSSProperties
   className?: string
   itemHeight?: number
   ScrollContainer?: TScrollContainer
+  HeaderContainer?: THeaderContainer
   FooterContainer?: TFooterContainer
   ListContainer?: TListContainer
 }
@@ -57,15 +68,28 @@ export { TScrollContainer, TListContainer }
 
 const DEFAULT_STYLE = {}
 export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = React.memo(
-  ({ contextValue, style, className, footer, itemHeight, ScrollContainer, ListContainer, FooterContainer }) => {
+  ({
+    contextValue,
+    style,
+    className,
+    header,
+    footer,
+    itemHeight,
+    ScrollContainer,
+    ListContainer,
+    HeaderContainer,
+    FooterContainer,
+  }) => {
     return (
       <VirtuosoContext.Provider value={contextValue}>
         <VirtuosoView
           style={style || DEFAULT_STYLE}
           className={className}
+          header={header}
           footer={footer}
           fixedItemHeight={itemHeight !== undefined}
           ScrollContainer={ScrollContainer}
+          HeaderContainer={HeaderContainer}
           FooterContainer={FooterContainer}
           ListContainer={ListContainer || DefaultListContainer}
         />
@@ -142,9 +166,11 @@ export const Virtuoso = forwardRef<VirtuosoMethods, VirtuosoProps>((props, ref) 
       contextValue={state}
       style={props.style}
       className={props.className}
+      header={props.header}
       footer={props.footer}
       itemHeight={props.itemHeight}
       ScrollContainer={props.ScrollContainer}
+      HeaderContainer={props.HeaderContainer}
       FooterContainer={props.FooterContainer}
       ListContainer={props.ListContainer}
     />
