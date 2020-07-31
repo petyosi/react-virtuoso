@@ -15,7 +15,7 @@ export function scrolledToBottomEngine({ totalHeight$, viewportHeight$, scrollTo
     .pipe(
       map(([scrollTop, viewportHeight, totalHeight]) => {
         if (viewportHeight === 0) return false
-        return scrollTop === totalHeight - viewportHeight
+        return scrollTop === totalHeight - viewportHeight || totalHeight <= viewportHeight
       })
     )
     .subscribe(value => {
