@@ -1,4 +1,5 @@
-import React, { CSSProperties, FC, forwardRef, ReactElement, useImperativeHandle, useEffect, useState } from 'react'
+import * as React from 'react'
+import { CSSProperties, FC, forwardRef, ReactElement, useImperativeHandle, useEffect, useState } from 'react'
 import { TScrollLocation } from './EngineCommons'
 import { ListRange, ScrollSeekConfiguration } from './engines/scrollSeekEngine'
 import { ListItem } from './GroupIndexTransposer'

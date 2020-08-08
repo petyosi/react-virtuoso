@@ -1,4 +1,5 @@
-import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react'
+import * as React from 'react'
+import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
 import * as ReactDOM from 'react-dom'
 import { GroupedVirtuoso } from '../src'
 import { generateGroupedUsers } from './fakeData'
