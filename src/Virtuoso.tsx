@@ -51,6 +51,7 @@ export interface VirtuosoProps {
   ItemContainer?: TItemContainer
   maxHeightCacheSize?: number
   scrollSeek?: ScrollSeekConfiguration
+  emptyComponent?: React.ReactNode
 }
 
 export interface TVirtuosoPresentationProps {
@@ -64,6 +65,7 @@ export interface TVirtuosoPresentationProps {
   HeaderContainer?: THeaderContainer
   FooterContainer?: TFooterContainer
   ListContainer?: TListContainer
+  emptyComponent?: React.ReactNode
 }
 
 export { TScrollContainer, TListContainer }
@@ -81,6 +83,7 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = React.memo(
     ListContainer,
     HeaderContainer,
     FooterContainer,
+    emptyComponent,
   }) => {
     return (
       <VirtuosoContext.Provider value={contextValue}>
@@ -94,6 +97,7 @@ export const VirtuosoPresentation: FC<TVirtuosoPresentationProps> = React.memo(
           HeaderContainer={HeaderContainer}
           FooterContainer={FooterContainer}
           ListContainer={ListContainer || DefaultListContainer}
+          emptyComponent={emptyComponent}
         />
       </VirtuosoContext.Provider>
     )
@@ -177,6 +181,7 @@ export const Virtuoso = forwardRef<VirtuosoMethods, VirtuosoProps>((props, ref) 
       HeaderContainer={props.HeaderContainer}
       FooterContainer={props.FooterContainer}
       ListContainer={props.ListContainer}
+      emptyComponent={props.emptyComponent}
     />
   )
 })
