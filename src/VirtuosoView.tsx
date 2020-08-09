@@ -6,6 +6,7 @@ import { VirtuosoContext } from './VirtuosoContext'
 import { VirtuosoFiller } from './VirtuosoFiller'
 import { VirtuosoList } from './VirtuosoList'
 import { TScrollContainer, VirtuosoScroller } from './VirtuosoScroller'
+import { ListItem } from './GroupIndexTransposer'
 
 export const DefaultHeaderContainer: React.FC<{ headerRef: CallbackRef }> = ({ children, headerRef }) => (
   <header ref={headerRef}>{children}</header>
@@ -114,6 +115,7 @@ export const VirtuosoView: React.FC<{
   HeaderContainer?: THeaderContainer
   FooterContainer?: TFooterContainer
   fixedItemHeight: boolean
+  emptyComponent?: React.ReactNode
 }> = ({
   style,
   header,
@@ -124,9 +126,11 @@ export const VirtuosoView: React.FC<{
   HeaderContainer,
   FooterContainer,
   className,
+  emptyComponent,
 }) => {
-  const { scrollTo, scrollTop, totalHeight, viewportHeight } = useContext(VirtuosoContext)!
+  const { scrollTo, scrollTop, totalHeight, viewportHeight, list } = useContext(VirtuosoContext)!
   const fillerHeight = useOutput<number>(totalHeight, 0)
+  const items = useOutput<ListItem[]>(list, [])
   const reportScrollTop = (st: number) => {
     scrollTop(Math.max(st, 0))
   }
@@ -144,7 +148,7 @@ export const VirtuosoView: React.FC<{
       <div ref={viewportCallbackRef} style={viewportStyle}>
         <ListWrapper fixedItemHeight={fixedItemHeight} ListContainer={ListContainer}>
           {header && <VirtuosoHeader header={header} HeaderContainer={HeaderContainer} />}
-          <VirtuosoList />
+          {items.length === 0 ? <>{emptyComponent}</> : <VirtuosoList />}
           {footer && <VirtuosoFooter footer={footer} FooterContainer={FooterContainer} />}
         </ListWrapper>
       </div>
