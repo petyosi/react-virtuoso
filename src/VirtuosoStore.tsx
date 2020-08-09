@@ -80,7 +80,7 @@ const VirtuosoStore = ({
     heightsChanged$,
   })
 
-  const { listHeight$, list$, listOffset$, endReached$ } = listEngine({
+  const { listHeight$, list$, listOffset$, startReached$, endReached$ } = listEngine({
     overscan,
     defaultItemHeight,
     viewportHeight$,
@@ -232,6 +232,7 @@ const VirtuosoStore = ({
     topList: makeOutput(topList$),
     listOffset: makeOutput(domListOffset$),
     totalHeight: makeOutput(domTotalHeight$),
+    startReached: makeOutput(startReached$),
     endReached: makeOutput(endReached$),
     atBottomStateChange: makeOutput(scrolledToBottom$),
     totalListHeightChanged: makeOutput(totalHeight$),

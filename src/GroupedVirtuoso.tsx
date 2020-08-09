@@ -28,6 +28,7 @@ export const GroupedVirtuoso = forwardRef<GroupedVirtuosoMethods, GroupedVirtuos
   )
 
   useEffect(() => {
+    state.startReached(props.startReached)
     state.endReached(props.endReached)
     state.rangeChanged(props.rangeChanged)
     state.atBottomStateChange(props.atBottomStateChange)
@@ -48,6 +49,7 @@ export const GroupedVirtuoso = forwardRef<GroupedVirtuosoMethods, GroupedVirtuos
     }
   }, [
     state,
+    props.startReached,
     props.endReached,
     props.rangeChanged,
     props.atBottomStateChange,

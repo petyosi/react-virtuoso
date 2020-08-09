@@ -30,6 +30,7 @@ export interface VirtuosoProps {
   prependItemCount?: number
   itemHeight?: number
   defaultItemHeight?: number
+  startReached?: () => void
   endReached?: (index: number) => void
   scrollingStateChange?: TSubscriber<boolean>
   atBottomStateChange?: TSubscriber<boolean>
@@ -122,6 +123,7 @@ export const Virtuoso = forwardRef<VirtuosoMethods, VirtuosoProps>((props, ref) 
   useEffect(() => {
     state.isScrolling(props.scrollingStateChange)
     state.atBottomStateChange(props.atBottomStateChange)
+    state.startReached(props.startReached)
     state.endReached(props.endReached)
     state.topItemCount(props.topItems || 0)
     state.totalCount(props.totalCount)
@@ -145,6 +147,7 @@ export const Virtuoso = forwardRef<VirtuosoMethods, VirtuosoProps>((props, ref) 
     state,
     props.scrollingStateChange,
     props.atBottomStateChange,
+    props.startReached,
     props.endReached,
     props.topItems,
     props.totalCount,
