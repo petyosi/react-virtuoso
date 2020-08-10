@@ -2,7 +2,7 @@ import * as React from 'react'
 import { FC, CSSProperties, useCallback, useRef } from 'react'
 
 const scrollerStyle: React.CSSProperties = {
-  height: '40rem',
+  height: '100%',
   overflowY: 'auto',
   WebkitOverflowScrolling: 'touch',
   position: 'relative',
