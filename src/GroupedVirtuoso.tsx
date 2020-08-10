@@ -1,4 +1,5 @@
-import React, { forwardRef, ReactElement, useImperativeHandle, useState, useEffect } from 'react'
+import * as React from 'react'
+import { forwardRef, ReactElement, useImperativeHandle, useState, useEffect } from 'react'
 import { TScrollLocation } from './EngineCommons'
 import { TItemContainer, VirtuosoPresentation, VirtuosoProps } from './Virtuoso'
 import { VirtuosoStore } from './VirtuosoStore'

@@ -1,4 +1,4 @@
-import React from 'react'
+import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../../src/'
 import radar from '../lag-radar'

@@ -1,4 +1,5 @@
-import React, { useContext, ReactElement, CSSProperties, ReactNode } from 'react'
+import * as React from 'react'
+import { useContext, ReactElement, CSSProperties, ReactNode } from 'react'
 import { useOutput, positionStickyCssValue } from './Utils'
 import { VirtuosoContext } from './VirtuosoContext'
 import { ListItem } from './GroupIndexTransposer'

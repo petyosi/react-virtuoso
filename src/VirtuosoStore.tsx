@@ -1,4 +1,5 @@
-import React, { ReactElement } from 'react'
+import * as React from 'react'
+import { ReactElement } from 'react'
 import { coldSubject, combineLatest, duc, filter, map, subject, withLatestFrom } from '../src/tinyrx'
 import { buildIsScrolling } from './EngineCommons'
 import { adjustForPrependedItemsEngine } from './engines/adjustForPrependedItemsEngine'

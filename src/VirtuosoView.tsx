@@ -1,4 +1,5 @@
-import React, { CSSProperties, FC, ReactElement, useContext } from 'react'
+import * as React from 'react'
+import { CSSProperties, FC, ReactElement, useContext } from 'react'
 import { ItemHeight } from 'VirtuosoStore'
 import { viewportStyle } from './Style'
 import { CallbackRef, useHeight, useOutput } from './Utils'

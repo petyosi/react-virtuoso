@@ -1,4 +1,5 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react'
+import * as React from 'react'
+import { useRef, useEffect, useCallback, useState } from 'react'
 import * as ReactDOM from 'react-dom'
 
 import { VirtuosoGrid } from '../src/VirtuosoGrid'

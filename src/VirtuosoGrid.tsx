@@ -1,4 +1,5 @@
-import React, { CSSProperties, ReactElement } from 'react'
+import * as React from 'react'
+import { CSSProperties, ReactElement } from 'react'
 import { TSubscriber } from './tinyrx'
 import { VirtuosoGridEngine } from './VirtuosoGridEngine'
 import { VirtuosoScroller, TScrollContainer } from './VirtuosoScroller'
