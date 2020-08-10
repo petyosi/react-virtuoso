@@ -12,7 +12,11 @@ export interface TRenderProps {
 }
 export type TRender = (item: ListItem, props: TRenderProps) => ReactElement
 
-export const VirtuosoList: React.FC<{}> = React.memo(() => {
+export interface VirtuosoListProps {
+  emptyComponent?: React.ReactNode
+}
+
+export const VirtuosoList: React.FC<VirtuosoListProps> = React.memo(({ emptyComponent }) => {
   const { isSeeking, topList, list, itemRender } = useContext(VirtuosoContext)!
   const items = useOutput<ListItem[]>(list, [])
   const topItems = useOutput<ListItem[]>(topList, [])
@@ -66,5 +70,6 @@ export const VirtuosoList: React.FC<{}> = React.memo(() => {
       )
   })
 
+  if (renderedItems.length === 0) return <>{emptyComponent}</>
   return <>{renderedItems}</>
 })
