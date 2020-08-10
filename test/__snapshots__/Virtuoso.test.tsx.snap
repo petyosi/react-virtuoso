@@ -6,7 +6,7 @@ exports[`render empty grouped list 1`] = `
     style={
       Object {
         "WebkitOverflowScrolling": "touch",
-        "height": "40rem",
+        "height": "100%",
         "outline": "none",
         "overflowY": "auto",
         "position": "relative",
@@ -53,7 +53,7 @@ exports[`render empty list 1`] = `
     style={
       Object {
         "WebkitOverflowScrolling": "touch",
-        "height": "40rem",
+        "height": "100%",
         "outline": "none",
         "overflowY": "auto",
         "position": "relative",

@@ -91,7 +91,7 @@ const VirtuosoGridFC: React.FC<VirtuosoGridFCProps> = ({
   itemClassName = 'virtuoso-grid-item',
   listClassName = 'virtuoso-grid-list',
   engine,
-  style = { height: '40rem' },
+  style = { height: '100%' },
   computeItemKey = key => key,
 }) => {
   const { itemRange, listOffset, remainingHeight, gridDimensions, scrollTo, scrollTop } = engine
