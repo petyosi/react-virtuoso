@@ -36,6 +36,7 @@ export function listEngine({
   totalHeight$,
 }: ListEngineParams) {
   const listHeight$ = subject(0)
+  const startReached$ = coldSubject<number>()
   const endReached$ = coldSubject<number>()
   const list$ = subject<ListItem[]>([])
 
@@ -120,6 +121,12 @@ export function listEngine({
 
   const listOffset$ = combineLatest(list$, scrollTop$, topListHeight$).pipe(map(([items]) => getListTop(items)))
 
+  constrainedScrollTop$.subscribe(scrollTop => {
+    if (scrollTop === 0) {
+      startReached$.next(scrollTop)
+    }
+  })
+
   let currentEndIndex = 0
 
   list$
@@ -138,5 +145,5 @@ export function listEngine({
       }
     })
 
-  return { list$, listOffset$, listHeight$, endReached$ }
+  return { list$, listOffset$, listHeight$, startReached$, endReached$ }
 }
