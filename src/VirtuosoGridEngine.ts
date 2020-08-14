@@ -7,8 +7,10 @@ import { ListRange, scrollSeekEngine } from './engines/scrollSeekEngine'
 type GridDimensions = [
   number, // container width,
   number, // container height,
-  number | undefined, // item width,
-  number | undefined // item height
+  number | undefined, // item container width,
+  number | undefined, // item container height
+  number | undefined, // item content width
+  number | undefined // item container height
 ]
 
 type GridItemRange = [
@@ -29,7 +31,7 @@ const hackFloor = (val: number) => (ceil(val) - val < 0.03 ? ceil(val) : floor(v
 
 export const VirtuosoGridEngine = (initialItemCount = 0) => {
   const itemsRender = subject<any>(false)
-  const gridDimensions$ = subject<GridDimensions>([0, 0, undefined, undefined])
+  const gridDimensions$ = subject<GridDimensions>([0, 0, undefined, undefined, undefined, undefined])
   const totalCount$ = subject(0)
   const scrollTop$ = subject(0)
   const overscan$ = subject(0)
@@ -149,7 +151,7 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
 
   combineLatest(itemRange$, isSeeking$, scrollSeekConfiguration$, gridDimensions$)
     .pipe(
-      map(([[startIndex, endIndex], renderPlaceholder, scrollSeek, [_, __, ___, itemHeight]]) => {
+      map(([[startIndex, endIndex], renderPlaceholder, scrollSeek, [_, __, ___, ____, _____, itemHeight]]) => {
         const render: GridItemsRenderer = (item, itemClassName, ItemContainer, computeItemKey) => {
           const items = []
           for (let index = startIndex; index <= endIndex; index++) {
