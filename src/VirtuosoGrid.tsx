@@ -74,8 +74,16 @@ const VirtuosoGridFC: React.FC<VirtuosoGridFCProps> = ({
   const render = useOutput(itemsRender, false)
 
   const viewportCallbackRef = useSize(({ element, width, height }) => {
-    const firstItem = element.firstChild!.firstChild!.firstChild as HTMLElement
-    gridDimensions([width, height, firstItem.offsetWidth, firstItem.offsetHeight])
+    const firstItem = element.firstChild!.firstChild as HTMLElement
+    const firstItemContent = firstItem!.firstChild as HTMLElement
+    gridDimensions([
+      width,
+      height,
+      firstItem.offsetWidth,
+      firstItem.offsetHeight,
+      firstItemContent.offsetWidth,
+      firstItemContent.offsetHeight,
+    ])
   })
 
   return (
