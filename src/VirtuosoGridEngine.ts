@@ -10,7 +10,7 @@ type GridDimensions = [
   number | undefined, // item container width,
   number | undefined, // item container height
   number | undefined, // item content width
-  number | undefined // item container height
+  number | undefined // item content height
 ]
 
 type GridItemRange = [
