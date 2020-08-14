@@ -96,7 +96,7 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
         location = { index: location, align: 'start' }
       }
 
-      let { index, align = 'start' } = location
+      let { index, align = 'start', behavior = 'auto' } = location
 
       index = Math.max(0, index, Math.min(totalCount - 1, index))
 
@@ -110,7 +110,7 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
         offset = Math.round(offset - viewportHeight / 2 + itemHeight / 2)
       }
 
-      return { top: offset, behavior: 'auto' } as ScrollToOptions
+      return { top: offset, behavior } as ScrollToOptions
     })
   )
 
