@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { debounceTime, mapTo, skip, subject, TObservable, duc } from './tinyrx'
 
 interface TScrollLocationWithAlign {
@@ -7,6 +8,10 @@ interface TScrollLocationWithAlign {
 }
 
 export type TScrollLocation = number | TScrollLocationWithAlign
+
+export type TContainer =
+  | React.ComponentType<{ className: string; style?: React.CSSProperties; key?: number }>
+  | keyof JSX.IntrinsicElements
 
 export const buildIsScrolling = (scrollTop$: TObservable<number>): TObservable<boolean> => {
   const isScrolling$ = subject(false)

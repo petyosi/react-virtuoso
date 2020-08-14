@@ -7,3 +7,4 @@ dist
 .size-snapshot.json
 *.d.ts
 storybook-static
+.idea

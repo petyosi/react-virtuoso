@@ -1,7 +1,8 @@
+import * as React from 'react'
 import { subject, map, combineLatest, withLatestFrom, coldSubject } from './tinyrx'
 import { makeInput, makeOutput } from './rxio'
-import { TScrollLocation, buildIsScrolling } from './EngineCommons'
-import { ListRange } from './engines/scrollSeekEngine'
+import { TScrollLocation, TContainer, buildIsScrolling } from './EngineCommons'
+import { ListRange, scrollSeekEngine } from './engines/scrollSeekEngine'
 
 type GridDimensions = [
   number, // container width,
@@ -15,11 +16,19 @@ type GridItemRange = [
   number // end index
 ]
 
+type GridItemsRenderer = (
+  item: (index: number) => React.ReactElement,
+  itemClassName: string,
+  ItemContainer: TContainer,
+  computeItemKey: (index: number) => number
+) => React.ReactElement[]
+
 const { ceil, floor, min, max } = Math
 
 const hackFloor = (val: number) => (ceil(val) - val < 0.03 ? ceil(val) : floor(val))
 
 export const VirtuosoGridEngine = (initialItemCount = 0) => {
+  const itemsRender = subject<any>(false)
   const gridDimensions$ = subject<GridDimensions>([0, 0, undefined, undefined])
   const totalCount$ = subject(0)
   const scrollTop$ = subject(0)
@@ -132,12 +141,58 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
     }
   })
 
+  const { isSeeking$, scrollSeekConfiguration$ } = scrollSeekEngine({
+    scrollTop$,
+    isScrolling$,
+    rangeChanged$,
+  })
+
+  combineLatest(itemRange$, isSeeking$, scrollSeekConfiguration$, gridDimensions$)
+    .pipe(
+      map(([[startIndex, endIndex], renderPlaceholder, scrollSeek, [_, __, ___, itemHeight]]) => {
+        const render: GridItemsRenderer = (item, itemClassName, ItemContainer, computeItemKey) => {
+          const items = []
+          for (let index = startIndex; index <= endIndex; index++) {
+            const key = computeItemKey(index)
+            let children: React.ReactElement
+
+            if (scrollSeek && renderPlaceholder && itemHeight) {
+              children = React.createElement(scrollSeek.placeholder, {
+                height: itemHeight,
+                index,
+              })
+            } else {
+              children = item(index)
+            }
+
+            items.push(
+              React.createElement(
+                ItemContainer,
+                {
+                  key,
+                  className: itemClassName,
+                },
+                children
+              )
+            )
+          }
+
+          return items
+        }
+        return { render }
+      })
+    )
+    .subscribe(itemsRender.next)
+
   return {
     gridDimensions: makeInput(gridDimensions$),
     totalCount: makeInput(totalCount$),
     scrollTop: makeInput(scrollTop$),
     overscan: makeInput(overscan$),
     scrollToIndex: makeInput(scrollToIndex$),
+    scrollSeekConfiguration: makeInput(scrollSeekConfiguration$),
+
+    itemsRender: makeOutput(itemsRender),
 
     itemRange: makeOutput(itemRange$),
     remainingHeight: makeOutput(remainingHeight$),

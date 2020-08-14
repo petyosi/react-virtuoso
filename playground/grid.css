@@ -39,3 +39,34 @@
     width: 100%;
   }
 }
+
+.virtuoso-grid-placeholder-item {
+  padding: 16px;
+  width: 25%;
+  display: flex;
+  flex: none;
+  align-content: stretch;
+  box-sizing: border-box;
+}
+
+.item {
+  height: 150px;
+  background: white;
+  box-sizing: border-box;
+  flex: 1;
+  text-align: center;
+  font-size: 80%;
+  padding: 2rem;
+  box-shadow: 0 5px 6px -6px #777777;
+}
+
+.placeholder {
+  height: 150px;
+  background: red;
+  box-sizing: border-box;
+  flex: 1;
+  text-align: center;
+  font-size: 80%;
+  padding: 2rem;
+  box-shadow: 0 5px 6px -6px #777777;
+}
