@@ -1,6 +1,6 @@
 import { TScrollLocation } from '../EngineCommons'
 import { OffsetList } from '../OffsetList'
-import { coldSubject, map, subject, TObservable, TSubject, withLatestFrom } from '../tinyrx'
+import { coldSubject, map, subject, TObservable, TSubject, withLatestFrom, filter } from '../tinyrx'
 import { initialTopMostItemIndexEngine } from './initialTopMostItemEngine'
 
 export interface ScrollToIndexParams {
@@ -50,6 +50,11 @@ export function scrollToIndexEngine({
     .pipe(
       withLatestFrom(offsetList$, topListHeight$, stickyItems$, viewportHeight$, totalCount$, totalHeight$),
       map(([location, offsetList, topListHeight, stickyItems, viewportHeight, totalCount, totalHeight]) => {
+        if (offsetList.empty()) {
+          setTimeout(() => scrollToIndex$.next(location))
+          return
+        }
+
         if (typeof location === 'number') {
           location = { index: location, align: 'start', behavior: 'auto' }
         }
@@ -73,9 +78,10 @@ export function scrollToIndexEngine({
           top: Math.max(0, Math.min(offset, Math.floor(totalHeight - viewportHeight))),
           behavior: location.behavior ?? 'auto',
         }
-      })
+      }),
+      filter(value => value !== undefined)
     )
-    .subscribe(scrollTo$.next)
+    .subscribe(scrollTo$.next as any)
 
   scrollTop$.pipe(withLatestFrom(scrollTopReportedAfterScrollToIndex$)).subscribe(([_, scrollTopReported]) => {
     if (!scrollTopReported) {
