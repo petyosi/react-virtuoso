@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { CSSProperties, FC, ReactElement, useContext } from 'react'
+import { CSSProperties, FC, ReactElement, useContext, ComponentType } from 'react'
 import { ItemHeight } from 'VirtuosoStore'
 import { viewportStyle } from './Style'
 import { CallbackRef, useHeight, useOutput } from './Utils'
@@ -115,7 +115,7 @@ export const VirtuosoView: React.FC<{
   HeaderContainer?: THeaderContainer
   FooterContainer?: TFooterContainer
   fixedItemHeight: boolean
-  emptyComponent?: React.ReactNode
+  emptyComponent?: ComponentType
 }> = ({
   style,
   header,

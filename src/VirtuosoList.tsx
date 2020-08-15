@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useContext, ReactElement, CSSProperties, ReactNode } from 'react'
+import { useContext, ReactElement, CSSProperties, ReactNode, createElement, ComponentType } from 'react'
 import { useOutput, positionStickyCssValue } from './Utils'
 import { VirtuosoContext } from './VirtuosoContext'
 import { ListItem } from './GroupIndexTransposer'
@@ -14,7 +14,7 @@ export interface TRenderProps {
 export type TRender = (item: ListItem, props: TRenderProps) => ReactElement
 
 export interface VirtuosoListProps {
-  emptyComponent?: React.ReactNode
+  emptyComponent?: ComponentType
 }
 
 export const VirtuosoList: React.FC<VirtuosoListProps> = React.memo(({ emptyComponent }) => {
@@ -71,6 +71,6 @@ export const VirtuosoList: React.FC<VirtuosoListProps> = React.memo(({ emptyComp
       )
   })
 
-  if (renderedItems.length === 0) return <>{emptyComponent}</>
+  if (renderedItems.length === 0 && emptyComponent) return createElement(emptyComponent)
   return <>{renderedItems}</>
 })

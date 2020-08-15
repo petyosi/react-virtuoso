@@ -1,5 +1,14 @@
 import * as React from 'react'
-import { CSSProperties, FC, forwardRef, ReactElement, useImperativeHandle, useEffect, useState } from 'react'
+import {
+  CSSProperties,
+  FC,
+  forwardRef,
+  ReactElement,
+  useImperativeHandle,
+  useEffect,
+  useState,
+  ComponentType,
+} from 'react'
 import { TScrollLocation } from './EngineCommons'
 import { ListRange, ScrollSeekConfiguration } from './engines/scrollSeekEngine'
 import { ListItem } from './GroupIndexTransposer'
@@ -51,7 +60,7 @@ export interface VirtuosoProps {
   ItemContainer?: TItemContainer
   maxHeightCacheSize?: number
   scrollSeek?: ScrollSeekConfiguration
-  emptyComponent?: React.ReactNode
+  emptyComponent?: ComponentType
 }
 
 export interface TVirtuosoPresentationProps {
@@ -65,7 +74,7 @@ export interface TVirtuosoPresentationProps {
   HeaderContainer?: THeaderContainer
   FooterContainer?: TFooterContainer
   ListContainer?: TListContainer
-  emptyComponent?: React.ReactNode
+  emptyComponent?: ComponentType
 }
 
 export { TScrollContainer, TListContainer }
