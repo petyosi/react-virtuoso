@@ -6,7 +6,7 @@ describe('Grid Virtuoso Engine', () => {
 
     const itemRangeCallback = jest.fn()
 
-    gridDimensions([1000, 500, undefined, undefined])
+    gridDimensions([1000, 500, undefined, undefined, undefined, undefined])
 
     itemRange(itemRangeCallback)
     expect(itemRangeCallback).toHaveBeenCalledWith([0, 0])
@@ -16,7 +16,7 @@ describe('Grid Virtuoso Engine', () => {
     const { itemRange, gridDimensions, totalCount } = VirtuosoGridEngine()
 
     totalCount(2000)
-    gridDimensions([1000, 500, 300, 200])
+    gridDimensions([1000, 500, 300, 200, undefined, undefined])
 
     const itemCount = Math.floor(1000 / 300) * Math.ceil(500 / 200)
 
@@ -30,7 +30,7 @@ describe('Grid Virtuoso Engine', () => {
     const { totalCount, itemRange, gridDimensions, scrollTop } = VirtuosoGridEngine()
 
     totalCount(2000)
-    gridDimensions([1000, 500, 300, 200])
+    gridDimensions([1000, 500, 300, 200, undefined, undefined])
     const itemRangeCallback = jest.fn()
     itemRange(itemRangeCallback)
 
@@ -43,7 +43,7 @@ describe('Grid Virtuoso Engine', () => {
     const { totalCount, itemRange, gridDimensions, scrollTop } = VirtuosoGridEngine()
 
     totalCount(2000)
-    gridDimensions([1000, 500, 300, 200])
+    gridDimensions([1000, 500, 300, 200, undefined, undefined])
     scrollTop(300)
 
     const itemCount = Math.floor(1000 / 300) * Math.ceil(500 / 200)
@@ -56,7 +56,7 @@ describe('Grid Virtuoso Engine', () => {
 
   it('calculates the remaining height', () => {
     const { totalCount, gridDimensions, remainingHeight } = VirtuosoGridEngine()
-    gridDimensions([10, 5, 3, 2])
+    gridDimensions([10, 5, 3, 2, undefined, undefined])
     totalCount(20)
     const remainingHeightCallback = jest.fn()
     remainingHeight(remainingHeightCallback)
@@ -73,7 +73,7 @@ describe('Grid Virtuoso Engine', () => {
     const CONTAINER_HEIGHT = 500
     overscan(OVERSCAN)
     totalCount(2000)
-    gridDimensions([CONTAINER_WIDTH, CONTAINER_HEIGHT, ITEM_WIDTH, 200])
+    gridDimensions([CONTAINER_WIDTH, CONTAINER_HEIGHT, ITEM_WIDTH, 200, undefined, undefined])
 
     const itemCount = Math.floor(CONTAINER_WIDTH / ITEM_WIDTH) * Math.ceil((CONTAINER_HEIGHT + OVERSCAN) / 200)
 
@@ -87,7 +87,7 @@ describe('Grid Virtuoso Engine', () => {
     const { scrollTop, totalCount, gridDimensions, itemRange, overscan } = VirtuosoGridEngine()
     overscan(4)
     totalCount(39)
-    gridDimensions([9, 6, 3, 2])
+    gridDimensions([9, 6, 3, 2, undefined, undefined])
     scrollTop(20)
     const itemRangeCallback = jest.fn()
     itemRange(itemRangeCallback)
@@ -96,7 +96,7 @@ describe('Grid Virtuoso Engine', () => {
 
   it('does not overflow past the first item', () => {
     const { scrollTop, totalCount, gridDimensions, itemRange, overscan } = VirtuosoGridEngine()
-    gridDimensions([10, 5, 3, 2])
+    gridDimensions([10, 5, 3, 2, undefined, undefined])
     overscan(2)
     totalCount(30)
     let call = 0
@@ -113,7 +113,7 @@ describe('Grid Virtuoso Engine', () => {
 
   it('offsets list correctly', () => {
     const { scrollTop, totalCount, gridDimensions, listOffset } = VirtuosoGridEngine()
-    gridDimensions([10, 5, 3, 2])
+    gridDimensions([10, 5, 3, 2, undefined, undefined])
     totalCount(200)
     scrollTop(4)
     const listOffsetCallback = jest.fn()
