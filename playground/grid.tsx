@@ -3,12 +3,12 @@ import { useRef, useEffect, useCallback, useState } from 'react'
 import * as ReactDOM from 'react-dom'
 
 import { VirtuosoGrid } from '../src/VirtuosoGrid'
-import { getUser } from '../../site/src/examples/FakeData'
-import { UserItem } from '../../site/src/examples/ExampleComponents'
+import { getUser } from './fakeData'
+// import { UserItem } from '../../site/src/examples/ExampleComponents'
 import './grid.css'
 
 const GenerateItem = (index: number) => {
-  return <UserItem user={getUser(index)} index={index} />
+  return <div style={{ height: 500 }}>{getUser(index).name}</div>
 }
 
 const App = () => {
@@ -47,13 +47,7 @@ const App = () => {
       <button onClick={() => setTotal(0)}>Set to Zero</button>
       <button onClick={() => setTotal(2)}>Set to 2</button>
       <button onClick={() => setTotal(1000)}>Restore</button>
-      <VirtuosoGrid
-        style={{ width: '100%', height: '500px' }}
-        overscan={200}
-        totalCount={total}
-        item={GenerateItem}
-        endReached={() => loadMore()}
-      />
+      <VirtuosoGrid style={{ width: '100%', height: '500px' }} overscan={200} totalCount={25} item={GenerateItem} />
     </div>
   )
 }
