@@ -40,14 +40,12 @@ const App = () => {
     loadMore()
   }, [])
 
-  console.log(total)
-
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <button onClick={() => setTotal(0)}>Set to Zero</button>
       <button onClick={() => setTotal(2)}>Set to 2</button>
       <button onClick={() => setTotal(1000)}>Restore</button>
-      <VirtuosoGrid style={{ width: '100%', height: '500px' }} overscan={200} totalCount={25} item={GenerateItem} />
+      <VirtuosoGrid style={{ width: '100%', flex: 'auto' }} overscan={200} totalCount={75} item={GenerateItem} />
     </div>
   )
 }

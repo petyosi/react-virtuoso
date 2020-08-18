@@ -65,13 +65,12 @@ const VirtuosoGridFC: React.FC<VirtuosoGridFCProps> = ({
   style = { height: '100%' },
   computeItemKey = key => key,
 }) => {
-  const { listOffset, remainingHeight, gridDimensions, scrollTo, scrollTop, itemsRender } = engine
+  const { listOffsets, gridDimensions, scrollTo, scrollTop, itemsRender } = engine
 
-  const fillerHeight = useOutput<number>(remainingHeight, 0)
-  const translate = useOutput<number>(listOffset, 0)
-  const listStyle = { paddingTop: `${translate}px`, paddingBottom: `${fillerHeight}px` }
-
+  const { top, bottom } = useOutput(listOffsets, { top: 0, bottom: 0 })
   const render = useOutput(itemsRender, false)
+
+  const listStyle = { paddingTop: `${top}px`, paddingBottom: `${bottom}px` }
 
   const viewportCallbackRef = useSize(({ element, width, height }) => {
     const firstItem = element.firstChild!.firstChild as HTMLElement

@@ -25,6 +25,11 @@ type GridItemsRenderer = (
   computeItemKey: (index: number) => number
 ) => React.ReactElement[]
 
+type GridListOffsets = {
+  top: number
+  bottom: number
+}
+
 const { ceil, floor, min, max } = Math
 
 const hackFloor = (val: number) => (ceil(val) - val < 0.03 ? ceil(val) : floor(val))
@@ -36,22 +41,27 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
   const scrollTop$ = subject(0)
   const overscan$ = subject(0)
   const itemRange$ = subject<GridItemRange>([0, max(initialItemCount - 1, 0)])
-  const remainingHeight$ = subject(0)
-  const listOffset$ = subject(0)
   const scrollToIndex$ = coldSubject<TScrollLocation>()
   const rangeChanged$ = coldSubject<ListRange>()
+  const listOffsets$ = subject<GridListOffsets>()
+
+  const isInit$ = subject<boolean>(false)
 
   combineLatest(gridDimensions$, scrollTop$, overscan$, totalCount$)
-    .pipe(withLatestFrom(itemRange$))
+    .pipe(withLatestFrom(itemRange$, isInit$))
     .subscribe(
-      ([[[viewportWidth, viewportHeight, itemWidth, itemHeight], scrollTop, overscan, totalCount], itemRange]) => {
+      ([
+        [[viewportWidth, viewportHeight, itemWidth, itemHeight], scrollTop, overscan, totalCount],
+        itemRange,
+        isInit,
+      ]) => {
         if (itemWidth === undefined || itemHeight === undefined) {
           return
         }
 
         if (totalCount === 0) {
           itemRange$.next([0, -1])
-          listOffset$.next(0)
+          listOffsets$.next({ bottom: 0, top: 0 })
           rangeChanged$.next({ startIndex: 0, endIndex: -1 })
           return
         }
@@ -74,7 +84,11 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
           startIndex = min(endIndex, max(0, startIndex))
 
           itemRange$.next([startIndex, endIndex])
-          listOffset$.next(toRowIndex(startIndex) * itemHeight)
+
+          const remainingHeight = itemHeight * toRowIndex(totalCount - endIndex - 1, ceil)
+          const listOffset = toRowIndex(startIndex) * itemHeight
+
+          listOffsets$.next({ bottom: remainingHeight, top: listOffset })
           rangeChanged$.next({ startIndex, endIndex })
         }
 
@@ -90,9 +104,10 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
           // user is scrolling down - list bottom is above the bottom edge of the viewport
         } else if (listBottom < scrollTop + viewportHeight) {
           updateRange(true)
+        } else if (!isInit) {
+          isInit$.next(true)
+          updateRange(true)
         }
-
-        remainingHeight$.next(itemHeight * toRowIndex(totalCount - endIndex - 1, ceil))
       }
     )
 
@@ -197,8 +212,7 @@ export const VirtuosoGridEngine = (initialItemCount = 0) => {
     itemsRender: makeOutput(itemsRender),
 
     itemRange: makeOutput(itemRange$),
-    remainingHeight: makeOutput(remainingHeight$),
-    listOffset: makeOutput(listOffset$),
+    listOffsets: makeOutput(listOffsets$),
     scrollTo: makeOutput(scrollTo$),
     isScrolling: makeOutput(isScrolling$),
     endReached: makeOutput(endReached$),
