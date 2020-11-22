@@ -1,0 +1,80 @@
+/* stylelint-disable docusaurus/copyright-header */
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #0253b3;
+  --ifm-color-primary-dark: rgb(33, 175, 144);
+  --ifm-color-primary-darker: rgb(31, 165, 136);
+  --ifm-color-primary-darkest: rgb(26, 136, 112);
+  --ifm-color-primary-light: rgb(70, 203, 174);
+  --ifm-color-primary-lighter: rgb(102, 212, 189);
+  --ifm-color-primary-lightest: rgb(146, 224, 208);
+  --ifm-code-font-size: 95%;
+  --ifm-container-width: 1440px;
+  --ifm-background-color: white;
+  --ifm-code-font-size: 80%;
+}
+
+.docusaurus-highlight-code-line {
+  background-color: rgb(72, 77, 91);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+.mdxCodeBlock_node_modules-\@docusaurus-theme-classic-lib-theme-MDXComponents- {
+  display: grid;
+  grid-template-columns: 60% 40%;
+  grid-template-rows: 2.5rem auto;
+}
+
+.codeBlockContent_node_modules-\@docusaurus-theme-classic-lib-theme-CodeBlock- {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.playgroundEditorHeader_node_modules-\@docusaurus-theme-live-codeblock-src-theme-Playground- {
+  display: none;
+}
+
+.playgroundEditor_node_modules-\@docusaurus-theme-live-codeblock-src-theme-Playground- {
+  grid-column: 1;
+  grid-row: span 2;
+}
+
+.playgroundPreviewHeader_node_modules-\@docusaurus-theme-live-codeblock-src-theme-Playground- {
+  grid-column: 2;
+  grid-row: 1;
+  padding: 0.5rem !important;
+}
+
+.playgroundPreview_node_modules-\@docusaurus-theme-live-codeblock-src-theme-Playground- {
+  grid-column: 2;
+  grid-row: 2;
+  border-bottom-left-radius: 0 !important;
+  font-size: 1rem;
+}
+
+.playgroundPreview_node_modules-\@docusaurus-theme-live-codeblock-src-theme-Playground-
+  > div {
+  height: 100%;
+}
+
+.property {
+  margin-bottom: 1rem;
+}
+
+.property .card__header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.property .card__header h3 {
+  flex: 1;
+  margin-block-end: 0;
+}
