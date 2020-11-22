@@ -1,0 +1,7 @@
+{
+  "name": "react-virtuoso-lerna",
+  "private": true,
+  "devDependencies": {
+    "lerna": "^3.22.1"
+  }
+}
