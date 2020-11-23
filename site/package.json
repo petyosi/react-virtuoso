@@ -24,10 +24,10 @@
     "clsx": "^1.1.1",
     "faker": "^5.1.0",
     "lodash": "^4.17.20",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-sortable-hoc": "^1.11.0",
-    "react-virtuoso": "latest"
+    "react-sortable-hoc": "^1.11.0"
+  },
+  "devDependencies": {
+    "eslint-plugin-json": "^2.1.1"
   },
   "browserslist": {
     "production": [
