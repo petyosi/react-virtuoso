@@ -10,7 +10,7 @@ The React Virtuoso component renders as several nested `DIV` elements. The defau
 ```txt
 components.Scroller (div)
   |-viewport (div)  
-    |-header(div*)
+    |-header(div* headerFooterTag)
       |-components.Header
     |-components.List (div)
       |-components.Group (div+)
@@ -18,7 +18,7 @@ components.Scroller (div)
       |-components.Item (div+)
         |-itemContent
       |-components.EmptyPlaceholder
-    |-footer(div*)
+    |-footer(div*, headerFooterTag)
       |-components.Footer
     |-components.List (Top Items) (div)
       |-components.Item (div+)
