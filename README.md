@@ -1,5 +1,5 @@
-<div style=" border-radius: 4px; padding: 0.4rem; background: #cce5ff; border: #b8daff; margin-bottom: 2rem">
-  <h2 style="color: #004085;">React Virtuoso v1 beta is now available</h2>
+<hr />
+  <h2 style="color: #004085;">React Virtuoso v1 beta is now available 🎉🎉🎉</h2>
 
   V1 brings improvements to reverse infinite scrolling behavior - suitable for **chat** and **feed** user interfaces. Give it a try today:
 
@@ -8,8 +8,7 @@
   ```
 
   A list of what's new and the breaking changes between v0.x and v1.x [are available at the v0 to v1 migration guide](https://github.com/petyosi/react-virtuoso/blob/next/site/docs/migrate-v0-to-v1.md). 
-</div>
-
+<hr />
 <img src="https://user-images.githubusercontent.com/13347/57673110-85aab180-7623-11e9-97b4-27bbdcf8cf40.png" width="292">
 
 [![npm version](https://badge.fury.io/js/react-virtuoso.svg)](https://badge.fury.io/js/react-virtuoso)
