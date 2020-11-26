@@ -2,7 +2,7 @@
   "name": "react-virtuoso",
   "author": "Petyo Ivanov",
   "sideEffects": false,
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "publishConfig": {
     "tag": "next"
   },
