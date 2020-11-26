@@ -1948,11 +1948,11 @@
   integrity sha512-ewFXqrQHlFsgc09MK5jP5iR7vumV/BYayNC6PgJO2LPe8vrnNFyjQjSppfEngITi0qvfKtzFvgKymGheFM9UOA==
 
 "@types/react-dom@^16.9.8":
-  version "16.9.8"
-  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-16.9.8.tgz#fe4c1e11dfc67155733dfa6aa65108b4971cb423"
-  integrity sha512-ykkPQ+5nFknnlU6lDd947WbQ6TE3NNzbQAkInC2EKY1qeYdTKp7onFusmYZb+ityzx2YviqT6BXSu+LyWWJwcA==
+  version "16.9.10"
+  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-16.9.10.tgz#4485b0bec3d41f856181b717f45fd7831101156f"
+  integrity sha512-ItatOrnXDMAYpv6G8UCk2VhbYVTjZT9aorLtA/OzDN9XJ2GKcfam68jutoAcILdRjsRUO8qb7AmyObF77Q8QFw==
   dependencies:
-    "@types/react" "*"
+    "@types/react" "^16"
 
 "@types/react-native@*":
   version "0.63.35"
@@ -1968,13 +1968,21 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react@*", "@types/react@^16.9.38":
+"@types/react@*":
   version "16.9.38"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-16.9.38.tgz#868405dace93a4095d3e054f4c4a1de7a1ac0680"
   integrity sha512-pHAeZbjjNRa/hxyNuLrvbxhhnKyKNiLC6I5fRF2Zr/t/S6zS41MiyzH4+c+1I9vVfvuRt1VS2Lodjr4ZWnxrdA==
   dependencies:
     "@types/prop-types" "*"
     csstype "^2.2.0"
+
+"@types/react@^16", "@types/react@^16.9.38":
+  version "16.14.2"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-16.14.2.tgz#85dcc0947d0645349923c04ccef6018a1ab7538c"
+  integrity sha512-BzzcAlyDxXl2nANlabtT4thtvbbnhee8hMmH/CcJrISDBVcJS1iOsP1f0OAgSdGE0MsY9tqcrb9YoZcOFv9dbQ==
+  dependencies:
+    "@types/prop-types" "*"
+    csstype "^3.0.2"
 
 "@types/resolve@0.0.8":
   version "0.0.8"
@@ -2073,16 +2081,16 @@
     tsutils "^3.17.1"
 
 "@virtuoso.dev/react-urx@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@virtuoso.dev/react-urx/-/react-urx-0.2.0.tgz#7f396b2a0bafc5ace9a466842bd6cb61e6650e33"
-  integrity sha512-2H4FYboTr1qTbf9XaPHtxNpg+1bOF6vm87I7pFP1zCeOugTdgqDaQ5RaKwRD6owue6tooyhyS3GZ36NvB+rAoA==
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@virtuoso.dev/react-urx/-/react-urx-0.2.1.tgz#770c82a4f7944a4fad1a0ef689f7f7dafbda1af7"
+  integrity sha512-RiRG8+lMB2mf+lxgI3p1c7I1G2uRX5A25inxlGO3EFgjPzD1oX3g6yaH7ioOjAieBb2OKmaoR+imKXNzTIuzNQ==
   dependencies:
-    "@virtuoso.dev/urx" "^0.2.0"
+    "@virtuoso.dev/urx" "^0.2.1"
 
-"@virtuoso.dev/urx@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@virtuoso.dev/urx/-/urx-0.2.0.tgz#6b3642592f4a10c9abf4b9148bbb7f619ebfe85f"
-  integrity sha512-pwILbKrO8Lfvy/cqJTEXKSqLmUCFYu2DAx+VIjlBmQwLl0HZZtPvks3T+17lqg3JA9TF8pW8VtkQsqJsqSvdEg==
+"@virtuoso.dev/urx@^0.2.0", "@virtuoso.dev/urx@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@virtuoso.dev/urx/-/urx-0.2.1.tgz#d81d9ac2ae5e8cd24d0b4595b8131f9280b48945"
+  integrity sha512-OpaQmK4EGH+DVwIvS0zuhLQPvLb8yWzTy07iDEVGTE1GFMznRhnF+aSZeMOshllEZkRzjjzOWxLxrkPR3vOkrQ==
 
 abab@^2.0.0:
   version "2.0.3"
@@ -8611,9 +8619,9 @@ react-app-polyfill@^1.0.6:
     whatwg-fetch "^3.0.0"
 
 react-dom@^16.13.1:
-  version "16.13.1"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.13.1.tgz#c1bd37331a0486c078ee54c4740720993b2e0e7f"
-  integrity sha512-81PIMmVLnCNLO/fFOQxdQkvEq/+Hfpv24XNJfpyZhTRfO0QcmQIF/PgCa1zCOj2w1hrn12MFLyaJ/G0+Mxtfag==
+  version "16.14.0"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.14.0.tgz#7ad838ec29a777fb3c75c3a190f661cf92ab8b89"
+  integrity sha512-1gCeQXDLoIqMgqD3IO2Ah9bnf0w9kzhwN5q4FGnHZ67hBm9yePzB5JJAIQCc8x3pFnNlwFq4RidZggNAAkzWWw==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
@@ -8636,9 +8644,9 @@ react-test-renderer@^16.13.1:
     scheduler "^0.19.1"
 
 react@^16.13.1:
-  version "16.13.1"
-  resolved "https://registry.yarnpkg.com/react/-/react-16.13.1.tgz#2e818822f1a9743122c063d6410d85c1e3afe48e"
-  integrity sha512-YMZQQq32xHLX0bz5Mnibv1/LHb3Sqzngu7xstSM+vrkE5Kzr9xE0yMByK5kMoTK30YVJE61WfbxIFFvfeDKT1w==
+  version "16.14.0"
+  resolved "https://registry.yarnpkg.com/react/-/react-16.14.0.tgz#94d776ddd0aaa37da3eda8fc5b6b18a4c9a3114d"
+  integrity sha512-0X2CImDkJGApiAlcf0ODKIneSwBPhqJawOa5wCtKbu7ZECrmS26NvtSILynQ66cgkT/RJ4LidJOc3bUESwmU8g==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"

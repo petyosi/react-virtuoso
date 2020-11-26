@@ -9,7 +9,7 @@ import {
   merge,
   pipe,
   skip,
-  statefulStreamFromEmitter,
+  streamFromEmitter,
   tup,
   statefulStream,
   stream,
@@ -32,12 +32,11 @@ export const stateFlagsSystem = system(([{ scrollTop, viewportHeight }]) => {
   const listStateListener = stream<ListBottomInfo>()
 
   // skip 1 to avoid an initial on/off flick
-  const isScrolling = statefulStreamFromEmitter(
+  const isScrolling = streamFromEmitter(
     pipe(
       merge(pipe(duc(scrollTop), skip(1), mapTo(true)), pipe(duc(scrollTop), skip(1), mapTo(false), debounceTime(200))),
       distinctUntilChanged()
-    ),
-    false
+    )
   )
 
   connect(
