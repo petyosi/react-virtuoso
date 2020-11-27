@@ -9,15 +9,18 @@ export default function useScrollTop(scrollTopCallback: (scrollTop: number) => v
 
   const handler = useCallback(
     (ev: Event) => {
-      const scrollTop = (ev.target as HTMLElement).scrollTop
+      const el = ev.target as HTMLElement
+      const scrollTop = el.scrollTop
       scrollTopCallback(Math.max(scrollTop, 0))
 
-      if (scrollTopTarget.current !== null && scrollTop === scrollTopTarget.current) {
-        scrollTopTarget.current = null
-        smoothScrollTargetReached(true)
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current)
-          timeoutRef.current = null
+      if (scrollTopTarget.current !== null) {
+        if (scrollTop === scrollTopTarget.current || scrollTop <= 0 || scrollTop === el.scrollHeight - el.offsetHeight) {
+          scrollTopTarget.current = null
+          smoothScrollTargetReached(true)
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current)
+            timeoutRef.current = null
+          }
         }
       }
     },
@@ -40,17 +43,23 @@ export default function useScrollTop(scrollTopCallback: (scrollTop: number) => v
       return
     }
 
+    const isSmooth = location.behavior === 'smooth'
+
     // avoid system hanging because the DOM never called back
     // with the scrollTop
-    if (scrollerElement.offsetHeight === scrollerElement.scrollHeight) {
+    // scroller is already at this location
+    if (scrollerElement.offsetHeight === scrollerElement.scrollHeight || location.top === scrollerElement.scrollTop) {
       scrollTopCallback(scrollerElement.scrollTop)
+      if (isSmooth) {
+        smoothScrollTargetReached(true)
+      }
       return
     }
 
     const maxScrollTop = scrollerElement.scrollHeight - scrollerElement.offsetHeight
     location.top = Math.max(Math.min(maxScrollTop, location.top!), 0)
 
-    if (location.behavior === 'smooth') {
+    if (isSmooth) {
       scrollTopTarget.current = location.top
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
@@ -58,6 +67,7 @@ export default function useScrollTop(scrollTopCallback: (scrollTop: number) => v
 
       timeoutRef.current = setTimeout(() => {
         timeoutRef.current = null
+        scrollTopTarget.current = null
         smoothScrollTargetReached(true)
       }, 1000)
     } else {

@@ -85,8 +85,6 @@ export const upwardScrollFixSystem = system(
       )
     }
 
-    subscribe(scrollBy, val => console.log(val))
-
     subscribe(
       pipe(
         unshiftWith,

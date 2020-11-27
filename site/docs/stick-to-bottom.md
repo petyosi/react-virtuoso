@@ -20,7 +20,10 @@ The `followOutput` property accepts `true` or `"smooth"`. Smooth mode looks bett
   const [showButton, setShowButton] = useState(false)
 
   useEffect(() => {
-    return () => clearInterval(appendInterval.current)
+      return () => {
+        clearInterval(appendInterval.current)
+        clearTimeout(showButtonTimeoutRef.current)
+      }
   }, [])
 
   useEffect(() => {
