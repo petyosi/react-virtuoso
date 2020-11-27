@@ -30,7 +30,7 @@ export const listSystem = system(
   ([
     { totalCount, sizeRanges, fixedItemSize, defaultItemSize, trackItemSizes, data, firstItemIndex, groupIndices },
     { initialTopMostItemIndex },
-    { viewportHeight, scrollTo, scrollBy, scrollTop, smoothScrollTargetReached },
+    { deviation, viewportHeight, scrollTo, scrollBy, scrollTop, smoothScrollTargetReached },
     followOutput,
     { listState, topItemsIndexes, ...flags },
     { scrollToIndex },
@@ -65,6 +65,7 @@ export const listSystem = system(
       scrollToIndex,
       trackItemSizes,
       groupIndices,
+      deviation,
 
       // exported from stateFlagsSystem
       ...flags,

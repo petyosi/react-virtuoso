@@ -1,105 +1,123 @@
-import * as React from 'react'
-import { forwardRef } from 'react'
+import React, { useRef, useState } from 'react'
 import * as ReactDOM from 'react-dom'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import { Virtuoso } from '../src/'
+import faker from 'faker'
 
-const data = [
-  { id: '1', message: 'lorem ipsum sin amet' },
-  { id: '2', message: 'lorem ipsum sin amet' },
-  { id: '1', message: 'lorem ipsum sin amet' },
-  { id: '2', message: 'lorem ipsum sin amet' },
-  { id: '2', message: 'lorem ipsum sin amet' },
-  { id: '1', message: 'lorem ipsum sin amet' },
-  { id: '2', message: 'lorem ipsum sin amet' },
-  { id: '1', message: 'lorem ipsum sin amet' },
-  { id: '2', message: 'lorem ipsum sin amet' },
-  { id: '2', message: 'lorem ipsum sin amet' },
-  { id: '1', message: 'lorem ipsum sin amet' },
-  { id: '2', message: 'lorem ipsum sin amet' },
-  { id: '1', message: 'lorem ipsum sin amet' },
-  { id: '2', message: 'lorem ipsum sin amet' },
-  { id: '2', message: 'lorem ipsum sin amet' },
-  { id: '1', message: 'lorem ipsum sin amet' },
-  { id: '2', message: 'lorem ipsum sin amet' },
-  { id: '1', message: 'lorem ipsum sin amet' },
-  { id: '2', message: 'lorem ipsum sin amet' },
-  { id: '2', message: 'lorem ipsum sin amet' },
-  { id: '1', message: 'lorem ipsum sin amet' },
-  { id: '2', message: 'lorem ipsum sin amet' },
-  { id: '1', message: 'lorem ipsum sin amet' },
-  { id: '2', message: 'lorem ipsum sin amet' },
-  { id: '2', message: 'lorem ipsum sin amet' },
-]
-
-interface ChatListProps {
-  messages: { id: string; message: string }[]
-  height?: number
-  userId: string
+interface BubbleProps {
+  text: string
+  fromUser?: boolean
+  className?: string
 }
 
-const Root = styled.div<{ fromUser?: boolean; height?: number }>`
-  width: 100%;
-  height: ${({ height }) => (height ? `${height}px` : '100%')};
-  position: relative;
-  box-shadow: 0px 0px 10px #d92534;
-  border-radius: 4px;
-  overflow: hidden;
-  padding: 12px 24px;
-`
-
-const BubbleWrapper = styled.div<{ fromUser?: boolean }>`
+const BubbleWrap = styled.div<{ fromUser?: boolean }>`
   display: flex;
   justify-content: ${({ fromUser }) => fromUser && 'flex-end'};
   width: 100%;
+  padding: 12px 0;
 `
 
-const Bubble = styled.div<{ fromUser?: boolean }>`
-  margin: 12px 0;
-  background: ${({ fromUser }) => (fromUser ? 'red' : 'orange')};
+const Content = styled.div<{ fromUser?: boolean }>`
+  background: ${({ fromUser }) => (fromUser ? 'orange' : 'red')};
   color: white;
   width: 60%;
   padding: 12px;
   border-radius: 4px;
+  word-break: break-word;
 `
 
-const Chat = forwardRef(({ userId, messages = [], height }: ChatListProps, ref: React.Ref<any>) => {
-  const row = (i: number) => {
-    const { message, id } = messages[i]
-    const fromUser = id === userId
-    return (
-      <BubbleWrapper fromUser={fromUser} key={i}>
-        <Bubble key={i} fromUser={fromUser}>
-          {i} - {message}
-        </Bubble>
-      </BubbleWrapper>
-    )
+function Bubble({ text, fromUser, className }: BubbleProps) {
+  return (
+    <BubbleWrap fromUser={fromUser} className={className}>
+      <Content fromUser={fromUser}>{text}</Content>
+    </BubbleWrap>
+  )
+}
+
+interface ChatListProps {
+  messages: { id: string; message: string }[]
+  userId: string
+  onSend: (message: string) => void
+  height?: number
+  placeholder?: string
+}
+
+const Root = styled.div<{ fromUser?: boolean }>`
+  padding: 12px 24px;
+`
+
+const TextWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  margin-top: 12px;
+`
+
+function ChatList({ userId, messages = [], onSend, placeholder }: ChatListProps) {
+  const [newMessage, setNewMessage] = useState('')
+  const ref = useRef(null)
+  const onSendMessage = () => {
+    onSend(newMessage)
+    setNewMessage('')
   }
 
+  const row = React.useMemo(
+    () => (i: number, { message, id }: any) => {
+      const fromUser = id === userId
+      return <Bubble key={i} fromUser={fromUser} text={message} />
+    },
+    [userId]
+  )
+
   return (
-    <Root height={height}>
+    <Root
+      style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        border: '1px solid red',
+      }}
+    >
       <Virtuoso
         ref={ref}
-        style={{ height }}
-        totalCount={messages.length}
+        style={{ flex: 1 }}
         initialTopMostItemIndex={messages.length - 1}
         followOutput="smooth"
-        item={i => row(i)}
+        itemContent={row}
+        data={messages}
       />
+      <TextWrapper style={{ flex: 0, minHeight: 30 }}>
+        <textarea value={newMessage} onChange={e => setNewMessage(e.target.value)} placeholder={placeholder} />
+        <button onClick={onSendMessage}>send</button>
+      </TextWrapper>
     </Root>
   )
-})
+}
+
+const data = [...Array(30)].map(_ => ({
+  id: faker.random.number({ min: 1, max: 2 }).toString(),
+  message: faker.lorem.sentences(),
+}))
 
 function App() {
   const [messages, setMessages] = React.useState(data)
-  const onSend = () => {
-    setMessages(x => [...x, { id: '1', message: 'This is a new random message!!!' }])
-  }
+  const userId = '1'
   return (
-    <>
-      <Chat userId="1" messages={messages} height={500} />
-      <button onClick={() => onSend()}>add message</button>
-    </>
+    <div
+      style={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <ChatList
+        messages={messages}
+        userId="1"
+        placeholder="Say hi!"
+        onSend={message => setMessages(x => [...x, { id: userId, message }])}
+      />
+    </div>
   )
 }
 

@@ -36,7 +36,7 @@ export const getOverscan = (overscan: Overscan, end: ListEnd, direction: ScrollD
 }
 
 export const sizeRangeSystem = system(
-  ([{ scrollTop, viewportHeight }]) => {
+  ([{ scrollTop, viewportHeight, deviation }]) => {
     const listBoundary = stream<NumberTuple>()
     const headerHeight = statefulStream(0)
     const footerHeight = statefulStream(0)
@@ -51,11 +51,15 @@ export const sizeRangeSystem = system(
           duc(headerHeight),
           duc(listBoundary, boundryComparator),
           duc(overscan),
-          duc(topListHeight)
+          duc(topListHeight),
+          duc(deviation)
         ),
-        map(([scrollTop, viewportHeight, headerHeight, [listTop, listBottom], overscan, topListHeight]) => {
-          const top = scrollTop - headerHeight
+        map(([scrollTop, viewportHeight, headerHeight, [listTop, listBottom], overscan, topListHeight, deviation]) => {
+          const top = scrollTop - headerHeight - deviation
           let direction: ChangeDirection = NONE
+
+          listTop -= deviation
+          listBottom -= deviation
 
           if (listTop > scrollTop + topListHeight) {
             direction = UP

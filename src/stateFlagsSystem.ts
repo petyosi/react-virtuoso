@@ -34,7 +34,7 @@ export const stateFlagsSystem = system(([{ scrollTop, viewportHeight }]) => {
   // skip 1 to avoid an initial on/off flick
   const isScrolling = streamFromEmitter(
     pipe(
-      merge(pipe(duc(scrollTop), skip(1), mapTo(true)), pipe(duc(scrollTop), skip(1), mapTo(false), debounceTime(200))),
+      merge(pipe(duc(scrollTop), skip(1), mapTo(true)), pipe(duc(scrollTop), skip(1), mapTo(false), debounceTime(100))),
       distinctUntilChanged()
     )
   )

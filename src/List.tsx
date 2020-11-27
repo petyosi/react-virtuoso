@@ -203,6 +203,7 @@ const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => <div st
 
 export const Items = React.memo(({ showTopList = false }: { showTopList?: boolean }) => {
   const listState = useEmitterValue('listState')
+  const deviation = useEmitterValue('deviation')
   const sizeRanges = usePublisher('sizeRanges')
   const itemContent = useEmitterValue('itemContent')
   const groupContent = useEmitterValue('groupContent')
@@ -220,6 +221,7 @@ export const Items = React.memo(({ showTopList = false }: { showTopList?: boolea
     : {
         paddingTop: (listState as ListState).offsetTop,
         paddingBottom: (listState as ListState).offsetBottom,
+        marginTop: deviation,
       }
 
   const itemElement = components.Item || 'div'

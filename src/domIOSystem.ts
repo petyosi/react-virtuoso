@@ -7,6 +7,7 @@ export type ScrollDirection = typeof UP | typeof DOWN
 export const domIOSystem = system(
   () => {
     const scrollTop = stream<number>()
+    const deviation = statefulStream(0)
     const smoothScrollTargetReached = stream<true>()
     const statefulScrollTop = statefulStream(0)
     const viewportHeight = stream<number>()
@@ -43,6 +44,7 @@ export const domIOSystem = system(
       // state
       scrollDirection,
       statefulScrollTop,
+      deviation,
     }
   },
   [],
