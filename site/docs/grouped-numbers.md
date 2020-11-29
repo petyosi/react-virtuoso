@@ -22,7 +22,7 @@ The example below shows a simple grouping mode - 10,000 items in groups of 10.
             <div style={{ backgroundColor: 'var(--ifm-background-color)' }}>Group {index * 10} &ndash; {index * 10 + 10}</div>
         )
       }}
-      item={(index, groupIndex) => {
+      itemContent={(index, groupIndex) => {
         return (
               <div>{index} (group {groupIndex})</div>
         )

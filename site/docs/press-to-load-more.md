@@ -16,21 +16,27 @@ Scroll to the bottom of the list and press the button to load 100 more items. Th
 
   const loadMore = useCallback(() => {
     setLoading(true)
-    setTimeout(() => {
+    return setTimeout(() => {
       setItems((items) =>  ([...items, ...Array(100).fill(true).map((_, i) => getUser(i))]) )
       setLoading(() => false)
     }, 500)
   }, [setItems, setLoading])
 
   useEffect(() => {
-    loadMore()
+    const timeout = loadMore()
+    return () => clearTimeout(timeout)
   }, [])
 
   return (
     <Virtuoso
       style={{height: 300}}
       data={items}
-      itemContent={(index, item) => (<div>{item.name}</div>)}
+      itemContent={(index, item) => {
+      if (!item) {
+        throw new Error(`Invalid index ${index}`)
+      }
+        return (<div>{item.name}</div>)
+        }}
       components={{
         Footer: () => {
           return (

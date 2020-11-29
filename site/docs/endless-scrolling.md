@@ -15,12 +15,15 @@ Scroll fast to the bottom of the list to load additional items.
   const [items, setItems] = useState(() => [])
 
   const loadMore = useCallback(() => {
-    setTimeout(() => {
+    return setTimeout(() => {
       setItems((items) =>  ([...items, ...Array(100).fill(true).map((_, i) => getUser(i))]) )
     }, 200)
   }, [setItems])
 
-  useEffect(loadMore, [])
+  useEffect(() => {
+    const timeout = loadMore()
+    return () => clearTimeout(timeout)
+  }, [])
 
   return (
     <Virtuoso
