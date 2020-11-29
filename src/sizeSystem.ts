@@ -268,15 +268,6 @@ export const sizeSystem = system(
 
     connect(
       pipe(
-        data,
-        filter(data => data !== undefined),
-        map(data => data!.length)
-      ),
-      totalCount
-    )
-
-    connect(
-      pipe(
         unshiftWith,
         withLatestFrom(sizes),
         map(([unshiftWith, sizes]) => {

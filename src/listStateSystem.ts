@@ -179,7 +179,7 @@ export const listStateSystem = system(
           duc(totalCount),
           duc(sizes),
           duc(initialTopMostItemIndex),
-          duc(scrolledToInitialItem),
+          scrolledToInitialItem,
           duc(topItemsIndexes),
           duc(firstItemIndex)
         ),
@@ -281,6 +281,15 @@ export const listStateSystem = system(
         distinctUntilChanged()
       ),
       EMPTY_LIST_STATE
+    )
+
+    connect(
+      pipe(
+        data,
+        filter(data => data !== undefined),
+        map(data => data!.length)
+      ),
+      totalCount
     )
 
     connect(pipe(listState, map(prop('topListHeight'))), topListHeight)
