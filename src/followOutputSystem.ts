@@ -30,6 +30,5 @@ export const followOutputSystem = system(([{ totalCount, listRefresh }, { isAtBo
     }
   )
 
-  // subscribe(isAtBottom, value => console.log(value))
   return { followOutput }
 }, tup(sizeSystem, stateFlagsSystem, scrollToIndexSystem, initialTopMostItemIndexSystem))

@@ -73,8 +73,6 @@ export const scrollToIndexSystem = system(
             cleanup()
             if (listChanged) {
               publish(scrollToIndex, location)
-            } else {
-              // console.log('done')
             }
           }
 

@@ -66,7 +66,6 @@ This can improve scrolling performance and delay the actual load of data from th
           scrollSeekConfiguration={{
             enter: (velocity) => Math.abs(velocity) > 50,
             exit: (velocity) => {
-              console.log(velocity)
               const shouldExit = Math.abs(velocity) < 10;
               if (shouldExit) {
                 setVisibleRange(["-", "-"]);
