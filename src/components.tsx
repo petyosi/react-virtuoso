@@ -189,7 +189,7 @@ export interface VirtuosoGridProps
   /**
    * Use the `components` property for advanced customization of the elements rendered by the list.
    */
-  components: GridProps['components']
+  components?: GridProps['components']
 }
 
 export type VirtuosoHandle = ListHandle

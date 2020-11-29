@@ -20,6 +20,7 @@ import { sizeRangeSystem } from './sizeRangeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
 import { IndexLocation, normalizeIndexLocation } from './scrollToIndexSystem'
 import { scrollSeekSystem } from './scrollSeekSystem'
+import { propsReadySystem } from './propsReadySystem'
 
 export interface ElementDimensions {
   width: number
@@ -72,7 +73,13 @@ function buildItems(startIndex: number, endIndex: number) {
   return Array.from({ length: endIndex - startIndex + 1 }).map((_, i) => ({ index: i + startIndex } as GridItem))
 }
 export const gridSystem = system(
-  ([{ overscan, visibleRange, listBoundary }, { scrollTop, viewportHeight, scrollBy, scrollTo }, stateFlags, scrollSeek]) => {
+  ([
+    { overscan, visibleRange, listBoundary },
+    { scrollTop, viewportHeight, scrollBy, scrollTo },
+    stateFlags,
+    scrollSeek,
+    { propsReady, didMount },
+  ]) => {
     const totalCount = statefulStream(0)
     const initialItemCount = statefulStream(0)
     const gridState = statefulStream(INITIAL_GRID_STATE)
@@ -80,14 +87,12 @@ export const gridSystem = system(
     const itemDimensions = statefulStream<ElementDimensions>({ height: 0, width: 0 })
     const scrollToIndex = stream<IndexLocation>()
 
-    // subscribe(listBoundary, value => console.log(value))
-    // subscribe(visibleRange, value => console.log(value))
-    //
     connect(
       pipe(
-        initialItemCount,
-        filter(value => value !== 0),
-        map(count => {
+        didMount,
+        withLatestFrom(initialItemCount),
+        filter(([, count]) => count !== 0),
+        map(([, count]) => {
           return {
             items: buildItems(0, count - 1),
             top: 0,
@@ -104,7 +109,7 @@ export const gridSystem = system(
 
     connect(
       pipe(
-        combineLatest(totalCount, visibleRange),
+        combineLatest(duc(totalCount), visibleRange),
         withLatestFrom(viewportDimensions, itemDimensions),
         map(([[totalCount, [startOffset, endOffset]], viewport, item]) => {
           const { height: itemHeight, width: itemWidth } = item
@@ -246,9 +251,10 @@ export const gridSystem = system(
       startReached,
       endReached,
       rangeChanged,
+      propsReady,
     }
   },
-  tup(sizeRangeSystem, domIOSystem, stateFlagsSystem, scrollSeekSystem)
+  tup(sizeRangeSystem, domIOSystem, stateFlagsSystem, scrollSeekSystem, propsReadySystem)
 )
 
 function gridLayout(viewport: ElementDimensions, item: ElementDimensions, items: GridItem[]): GridLayout {
