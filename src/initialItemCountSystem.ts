@@ -1,18 +1,19 @@
-import { system, combineLatest, statefulStream, connect, pipe, filter, withLatestFrom, map, tup } from '@virtuoso.dev/urx'
+import * as u from '@virtuoso.dev/urx'
 import { listStateSystem, buildListState } from './listStateSystem'
 import { sizeSystem } from './sizeSystem'
 import { propsReadySystem } from './propsReadySystem'
 
-export const initialItemCountSystem = system(
-  ([{ sizes, firstItemIndex }, { listState }, { propsReady }]) => {
-    const initialItemCount = statefulStream(0)
+export const initialItemCountSystem = u.system(
+  ([{ sizes, firstItemIndex }, { listState }, { didMount }]) => {
+    const initialItemCount = u.statefulStream(0)
 
-    connect(
-      pipe(
-        combineLatest(initialItemCount, propsReady),
-        filter(([count, ready]) => ready && count !== 0),
-        withLatestFrom(sizes, firstItemIndex),
-        map(([[count], sizes, firstItemIndex]) => {
+    u.connect(
+      u.pipe(
+        didMount,
+        u.withLatestFrom(initialItemCount),
+        u.filter(([, count]) => count !== 0),
+        u.withLatestFrom(sizes, firstItemIndex),
+        u.map(([[, count], sizes, firstItemIndex]) => {
           let includedGroupsCount = 0
           if (sizes.groupIndices.length > 0) {
             for (let index of sizes.groupIndices) {
@@ -32,6 +33,6 @@ export const initialItemCountSystem = system(
 
     return { initialItemCount }
   },
-  tup(sizeSystem, listStateSystem, propsReadySystem),
+  u.tup(sizeSystem, listStateSystem, propsReadySystem),
   { singleton: true }
 )

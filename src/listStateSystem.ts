@@ -165,7 +165,7 @@ export const listStateSystem = system(
     { scrolledToInitialItem, initialTopMostItemIndex },
     { topListHeight },
     stateFlags,
-    { propsReady },
+    { didMount },
   ]) => {
     const topItemsIndexes = statefulStream<Array<number>>([])
     const itemsRendered = stream<ListItem[]>()
@@ -174,7 +174,7 @@ export const listStateSystem = system(
     const listState = statefulStreamFromEmitter(
       pipe(
         combineLatest(
-          propsReady,
+          didMount,
           duc(visibleRange),
           duc(totalCount),
           duc(sizes),
@@ -183,7 +183,7 @@ export const listStateSystem = system(
           duc(topItemsIndexes),
           duc(firstItemIndex)
         ),
-        filter(([propsReady]) => propsReady),
+        filter(([didMount]) => didMount),
         withLatestFrom(data),
         map(
           ([
@@ -277,18 +277,19 @@ export const listStateSystem = system(
 
             return buildListState(items, topItems, totalCount, sizes, firstItemIndex)
           }
-        )
+        ),
+        distinctUntilChanged()
       ),
       EMPTY_LIST_STATE
     )
 
-    connect(pipe(duc(listState), map(prop('topListHeight'))), topListHeight)
+    connect(pipe(listState, map(prop('topListHeight'))), topListHeight)
     connect(topListHeight, rangeTopListHeight)
     connect(listState, stateFlags.listStateListener)
 
     connect(
       pipe(
-        duc(listState),
+        listState,
         map(state => [state.top, state.bottom])
       ),
       listBoundary
@@ -296,7 +297,7 @@ export const listStateSystem = system(
 
     connect(
       pipe(
-        duc(listState),
+        listState,
         map(state => state.items)
       ),
       itemsRendered
@@ -304,7 +305,7 @@ export const listStateSystem = system(
 
     const endReached = streamFromEmitter(
       pipe(
-        duc(listState),
+        listState,
         filter(({ items }) => items.length > 0),
         withLatestFrom(totalCount),
         filter(([{ items }, totalCount]) => items[items.length - 1].originalIndex === totalCount - 1),
@@ -315,7 +316,7 @@ export const listStateSystem = system(
 
     const startReached = streamFromEmitter(
       pipe(
-        duc(listState),
+        listState,
         filter(({ items }) => items.length > 0 && items[0].originalIndex === 0),
         mapTo(0)
       )
@@ -323,7 +324,7 @@ export const listStateSystem = system(
 
     const rangeChanged = streamFromEmitter(
       pipe(
-        duc(listState),
+        listState,
         filter(({ items }) => items.length > 0),
         map(({ items }) => {
           return {

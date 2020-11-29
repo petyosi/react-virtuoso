@@ -52,7 +52,7 @@ export const stateFlagsSystem = system(([{ scrollTop, viewportHeight }]) => {
 
   connect(
     pipe(
-      combineLatest(duc(listStateListener), duc(scrollTop), duc(viewportHeight)),
+      combineLatest(listStateListener, duc(scrollTop), duc(viewportHeight)),
       map(([{ bottom, offsetBottom }, scrollTop, viewportHeight]) => {
         // console.log(offsetBottom === 0 && scrollTop + viewportHeight - bottom > -4)
         return offsetBottom === 0 && scrollTop + viewportHeight - bottom > -4
