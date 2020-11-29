@@ -43,6 +43,7 @@
 
 .playgroundPreview > div {
   height: 100%;
+  min-height: 400px;
 }
 
 .liveBlock {

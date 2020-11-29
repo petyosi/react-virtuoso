@@ -12,16 +12,18 @@ Resize your browser and scroll the list around the items reposition correctly wi
 
 ```jsx live
 <Virtuoso
-  data={generateRandomItems(100)}
-  itemContent={(index, item) => (
+  data={generateUsers(100)}
+  itemContent={(index, user) => (
     <div
       style={{
-        padding: "1rem 0",
+        backgroundColor: user.bgColor,
+        padding: '1rem 0.5rem',
       }}
     >
-      <h4>{item.text}</h4>
-
-      {item.longText}
+      <h4>{user.name}</h4>
+      <div style={{ marginTop: '1rem' }}>
+        {user.description}
+      </div>
     </div>
   )}
 />

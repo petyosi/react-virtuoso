@@ -51,22 +51,28 @@ const avatarPlaceholder = (text = ' ') =>
 
 const generated = []
 
-function user() {
+function toggleBg(index) {
+  return index % 2 ? 'var(--ifm-background-color)' : 'var(--ifm-color-emphasis-200)'
+}
+
+function user(index = 0) {
   let firstName = faker.name.firstName()
   let lastName = faker.name.lastName()
 
   return {
+    index: index + 1,
+    bgColor: toggleBg(index),
     name: `${firstName} ${lastName}`,
     initials: `${firstName.substr(0, 1)}${lastName.substr(0, 1)}`,
-    description: faker.company.catchPhrase(),
-    bgColor: faker.commerce.color(),
-    fgColor: faker.commerce.color(),
-    longText: faker.lorem.paragraphs(4),
+    jobTitle: faker.name.jobTitle(),
+    description: faker.lorem.sentence(10),
+    longText: faker.lorem.paragraphs(1),
   }
 }
+
 export const getUser = index => {
   if (!generated[index]) {
-    generated[index] = user()
+    generated[index] = user(index)
   }
 
   return generated[index]
@@ -81,7 +87,12 @@ const userSorter = (a, b) => {
   }
   return 0
 }
-export const generateGroupedUsers = length => {
+
+const generateUsers = (length, startIndex = 0) => {
+  return Array.from({ length }).map((_, i) => getUser(i + startIndex))
+}
+
+const generateGroupedUsers = length => {
   const users = Array.from({ length })
     .map((_, i) => getUser(i))
     .sort(userSorter)
@@ -102,10 +113,13 @@ const ReactLiveScope = {
   VirtuosoGrid,
   generateRandomItems,
   avatar,
+  toggleBg,
   avatarPlaceholder,
   getUser,
   user,
+  toggleBg,
   generateGroupedUsers,
+  generateUsers,
   styled,
   MaterialUI: {
     Avatar,

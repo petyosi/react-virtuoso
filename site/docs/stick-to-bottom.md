@@ -12,7 +12,7 @@ The `followOutput` property accepts `true` or `"smooth"`. Smooth mode looks bett
 
 ```jsx live
 () => {
-  const [users, setUsers] = useState(() => Array(1000).fill(true).map(user))
+  const [users, setUsers] = useState(() => generateUsers(100))
   const appendInterval = useRef(null)
   const virtuosoRef = useRef(null)
   const [atBottom, setAtBottom] = useState(false)
@@ -51,11 +51,10 @@ The `followOutput` property accepts `true` or `"smooth"`. Smooth mode looks bett
         setAtBottom(bottom)
       }}
       itemContent={(index, user) => {
-          return <div>
-            <strong>{user.name}</strong>
-            <br />
-            {user.description}
-          </div>
+        return <div style={{ backgroundColor: toggleBg(index), padding: '1rem 0.5rem' }}>
+        <h4>{user.name}</h4>
+        <div style={{ marginTop: '1rem' }}>{user.description}</div>
+        </div>
       }}
       followOutput={"smooth"}
     />

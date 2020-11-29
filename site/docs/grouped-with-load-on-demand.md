@@ -58,10 +58,10 @@ The `setTimeout` delay is just for illustrative purposes - in reality, the data 
     <GroupedVirtuoso
       groupCounts={currentGroupCounts}
       groupContent={index => (
-        <div style={{ backgroundColor: 'var(--ifm-color-emphasis-200)' }}>Group {groups[index]}</div>
+        <div style={{ backgroundColor: 'var(--ifm-background-color)', paddingTop: '1rem' }}>Group {groups[index]}</div>
       )}
       itemContent={index => (
-        <div>{users[index].name}</div>
+        <div style={{ backgroundColor: toggleBg(index) }}>{users[index].name}</div>
       )}
       components={{
         Footer: () => {

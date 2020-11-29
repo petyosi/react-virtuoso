@@ -22,7 +22,7 @@ The example is contributed by [mitchellwarr](https://github.com/mitchellwarr).
 
   return (
     <Virtuoso
-      data={generateRandomItems(100)}
+      data={generateUsers(100)}
       components={{
         List: React.forwardRef((props, ref) => {
           return (
@@ -38,17 +38,12 @@ The example is contributed by [mitchellwarr](https://github.com/mitchellwarr).
             return <ItemContainerSortable index={index} {...props} />;
         }
       }}
-      itemContent={(index, item) => (
-        <div
-          style={{
-            padding: "1rem 0",
-          }}
-        >
-          <h4>{item.text}</h4>
-
-          {item.longText}
+      itemContent={(index, user) => {
+        return <div style={{ backgroundColor: user.bgColor, padding: '1rem 0.5rem' }}>
+        <h4>{user.index}. {user.name}</h4>
+        <div style={{ marginTop: '1rem' }}>{user.description}</div>
         </div>
-      )}
+      }}
     />
   )
 }

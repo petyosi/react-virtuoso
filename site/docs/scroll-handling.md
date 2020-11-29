@@ -15,17 +15,17 @@ Handling this event can be used to optimize performance by hiding/replacing cert
 ```jsx live
 () => {
   const [isScrolling, setIsScrolling] = useState(false);
-  const items = useMemo(() => generateRandomItems(100), [])
+  const users = useMemo(() => generateUsers(100), [])
   return (
     <Virtuoso
-      data={items}
+      data={users}
       isScrolling={setIsScrolling}
-      itemContent={(index, item) => {
+      itemContent={(index, user) => {
         return (
           <div
             style={{
-              borderBottom: "1px solid #ccc",
-              padding: '1em 0'
+              backgroundColor: user.bgColor,
+              padding: '1rem 0'
             }}
           >
             
@@ -33,7 +33,10 @@ Handling this event can be used to optimize performance by hiding/replacing cert
               {isScrolling ? avatarPlaceholder() : avatar() }
             </div>
 
-            {item.longText}
+            <h4>{user.name}</h4>
+            <div style={{ marginTop: '1rem' }}>
+            {user.longText}
+            </div>
           </div>
         )
       }}

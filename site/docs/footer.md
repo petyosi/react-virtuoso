@@ -14,7 +14,7 @@ Scroll to the bottom of the list to see `end reached`.
 
 ```jsx live
 <Virtuoso
-  data={generateRandomItems(100)}
+  data={generateUsers(100)}
   components={{
     Footer: () => {
       return (
@@ -29,14 +29,14 @@ Scroll to the bottom of the list to see `end reached`.
       );
     },
   }}
-  itemContent={(index, item) => (
+  itemContent={(index, user) => (
     <div
       style={{
-        height: item.height,
-        borderBottom: "1px solid #ccc",
+        backgroundColor: user.bgColor,
+        padding: '1rem 0.5rem',
       }}
     >
-      {item.text}
+      <h4>{user.name}</h4>
     </div>
   )}
 />

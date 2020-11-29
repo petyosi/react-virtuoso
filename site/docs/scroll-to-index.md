@@ -15,7 +15,7 @@ Warning: Using smooth scrolling over large amount of items can kill performance 
   const [align, setAlign] = useState("start");
   const [behavior, setBehavior] = useState("auto");
   const virtuoso = useRef(null);
-  const items = useMemo(() => generateRandomItems(1000), []);
+  const users = useMemo(() => generateUsers(1000), []);
   return (
     <div>
       <ul className="knobs">
@@ -81,23 +81,24 @@ Warning: Using smooth scrolling over large amount of items can kill performance 
           </label>
         </li>
       </ul>
+
       <div style={{height: 600}}>
         <Virtuoso
-          data={items}
+          data={users}
           ref={virtuoso}
-          itemContent={(index, item) => {
+          itemContent={(index, user) => {
             return (
               <div
                 style={{
-                  borderBottom: "1px solid #ccc",
-                  padding: "1em 0",
+                  backgroundColor: user.bgColor,
+                  padding: "1rem 0",
                 }}
               >
                 <div style={{ float: "left", margin: "1rem" }}>{avatar()}</div>
 
-                <h4>{item.text}</h4>
+                <h4>{user.index}. {user.name}</h4>
 
-                {item.longText}
+                {user.longText}
               </div>
             );
           }}

@@ -19,7 +19,7 @@ This can improve scrolling performance and delay the actual load of data from th
     []
   );
 
-  const users = useMemo(() => Array(1000).fill(true).map((_, i) => getUser(i)), [])
+  const users = useMemo(() => generateUsers(1000), [])
 
   // use the visible range to provide information
   // about the list current position.
@@ -39,7 +39,7 @@ This can improve scrolling performance and delay the actual load of data from th
       <div style={{ flex: 1 }}>
         <Virtuoso
           data={users}
-          itemContent={(index, user) => <div>{user.name}</div>}
+          itemContent={(index, user) => <div style={{ backgroundColor: toggleBg(index) }}>{user.name}</div>}
           components={{
             // You can use index to randomize
             // and make the placeholder list more organic.
@@ -56,7 +56,7 @@ This can improve scrolling performance and delay the actual load of data from th
               >
                 <div
                   style={{
-                    background: "#e5e5e5",
+                    background: index % 2 ? "var(--ifm-color-emphasis-100)": "var(--ifm-color-emphasis-200)",
                     height: randomHeights[index % 10],
                   }}
                 ></div>

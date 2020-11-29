@@ -20,12 +20,12 @@ This example re-creates the UI of the iOS contacts listview.
           groupCounts={groupCounts}
           groupContent={index => {
           return <div style={{ 
-            backgroundColor: 'var(--ifm-color-emphasis-200)', 
+            backgroundColor: 'var(--ifm-background-color)', 
             padding: '0.3rem 1rem'
           }}>{groups[index]}</div>
           }}
           itemContent={index => {
-            return <div style={{ padding: '0.5rem 1rem' }}>
+            return <div style={{ padding: '0.5rem 1rem', backgroundColor: toggleBg(index) }}>
             <h4>{users[index].name}</h4>
 
             <p style={{ marginBottom: 0 }}>{users[index].description}</p>

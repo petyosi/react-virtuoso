@@ -14,9 +14,6 @@ This example shows how to increase the item count and instruct the component tha
 () => {
   const START_INDEX = 10000
   const INITIAL_ITEM_COUNT = 200
-  const generateUsers = useCallback((length, startIndex) => {
-      return Array.from({ length }).map((_, index) => getUser(startIndex + index))
-  }, [])
 
   const [firstItemIndex, setFirstItemIndex] = useState(START_INDEX)
   const [users, setUsers] = useState(() =>
@@ -43,7 +40,10 @@ This example shows how to increase the item count and instruct the component tha
       data={users}
       startReached={prependItems}
       itemContent={(index, user) => {
-        return <div>{index}. {user.name}</div>
+        return <div style={{ backgroundColor: user.bgColor, padding: '1rem 0.5rem' }}>
+        <h4>{user.index}. {user.name}</h4>
+        <div style={{ marginTop: '1rem' }}>{user.description}</div>
+        </div>
       }}
     />
   )

@@ -11,16 +11,16 @@ Scroll to the bottom of the list and press the button to load 100 more items. Th
 
 ```jsx live
 () => {
-  const [items, setItems] = useState(() => [])
+  const [users, setUsers] = useState(() => [])
   const [loading, setLoading] = useState(false)
 
   const loadMore = useCallback(() => {
     setLoading(true)
     return setTimeout(() => {
-      setItems((items) =>  ([...items, ...Array(100).fill(true).map((_, i) => getUser(i))]) )
+      setUsers((users) =>  ([...users, ...generateUsers(100, users.length)]) )
       setLoading(() => false)
     }, 500)
-  }, [setItems, setLoading])
+  }, [setUsers, setLoading])
 
   useEffect(() => {
     const timeout = loadMore()
@@ -30,13 +30,8 @@ Scroll to the bottom of the list and press the button to load 100 more items. Th
   return (
     <Virtuoso
       style={{height: 300}}
-      data={items}
-      itemContent={(index, item) => {
-      if (!item) {
-        throw new Error(`Invalid index ${index}`)
-      }
-        return (<div>{item.name}</div>)
-        }}
+      data={users}
+      itemContent={(index, user) => { return (<div style={{ backgroundColor: user.bgColor }}>{user.name}</div>) }}
       components={{
         Footer: () => {
           return (

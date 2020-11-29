@@ -22,12 +22,13 @@ The `groupCounts` specifies how many items each group has -> `[ 20, 30, 15, 10 ]
         return <div 
         style={{ 
           backgroundColor: 'var(--ifm-background-color)', 
+          paddingTop: '1rem',
           borderBottom: '1px solid #ccc' 
         }}>{groups[index]}</div>
       }}
 
       itemContent={index => {
-        return <div>{users[index].name}</div>
+        return <div style={{ backgroundColor: toggleBg(index) }}>{users[index].name}</div>
       }}
     />
   )

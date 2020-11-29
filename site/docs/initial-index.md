@@ -11,14 +11,15 @@ Note: The property applies to the list only on mount. If you want to change the 
 
 ```jsx live
 <Virtuoso
-  data={generateRandomItems(1000)}
+  data={generateUsers(1000)}
   initialTopMostItemIndex={800}
-  itemContent={(index, item) => (
+  itemContent={(index, user) => (
     <div style={{ 
-      height: item.height, 
-      borderBottom: "1px solid #ccc" 
+      backgroundColor: user.bgColor,
+      padding: '1rem 0.5rem'
     }}>
-      {item.text}
+      <h4>{user.index}. {user.name}</h4>
+      <div style={{ marginTop: '1rem' }}>{user.description}</div>
     </div>
   )}
 />

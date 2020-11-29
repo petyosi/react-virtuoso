@@ -12,13 +12,13 @@ Scroll fast to the bottom of the list to load additional items.
 
 ```jsx live
 () => {
-  const [items, setItems] = useState(() => [])
+  const [users, setUsers] = useState(() => [])
 
   const loadMore = useCallback(() => {
     return setTimeout(() => {
-      setItems((items) =>  ([...items, ...Array(100).fill(true).map((_, i) => getUser(i))]) )
+      setUsers((users) =>  ([...users, ...generateUsers(100, users.length)]) )
     }, 200)
-  }, [setItems])
+  }, [setUsers])
 
   useEffect(() => {
     const timeout = loadMore()
@@ -28,10 +28,10 @@ Scroll fast to the bottom of the list to load additional items.
   return (
     <Virtuoso
       style={{height: 300}}
-      data={items}
+      data={users}
       endReached={loadMore}
       overscan={200}
-      itemContent={(index, item) => (<div>{item.name}</div>)}
+      itemContent={(index, user) => { return (<div style={{ backgroundColor: user.bgColor }}>{user.name}</div>) }}
       components={{
         Footer: () => {
           return (
