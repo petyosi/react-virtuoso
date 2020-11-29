@@ -4,8 +4,8 @@ import { ListItem, listStateSystem } from './listStateSystem'
 import { offsetOf, sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
 
-const UA = window?.navigator?.userAgent
-const GLITCHY_SCROLL_BY = (UA && !!UA.match(/iPad/i)) || !!UA.match(/iPhone/i)
+const UA = typeof window !== 'undefined' && window?.navigator?.userAgent
+const GLITCHY_SCROLL_BY = UA && (!!UA.match(/iPad/i) || !!UA.match(/iPhone/i))
 /**
  * Fixes upward scrolling by calculating and compensation from changed item heights, using scrollBy.
  */
