@@ -201,7 +201,7 @@ const combinedSystem = system(([listSystem, propsSystem]) => {
 
 const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => <div style={{ height }}></div>
 
-export const Items = React.memo(({ showTopList = false }: { showTopList?: boolean }) => {
+export const Items = React.memo(function VirtuosoItems({ showTopList = false }: { showTopList?: boolean }) {
   const listState = useEmitterValue('listState')
   const deviation = useEmitterValue('deviation')
   const sizeRanges = usePublisher('sizeRanges')
@@ -291,7 +291,7 @@ const topItemListStyle: CSSProperties = {
   top: 0,
 }
 
-const Header: FC = React.memo(() => {
+const Header: FC = React.memo(function VirtuosoHeader() {
   const components = useEmitterValue('components')
   const headerHeight = usePublisher('headerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
@@ -299,7 +299,7 @@ const Header: FC = React.memo(() => {
   return components.Header ? createElement(headerFooterTag, { ref }, createElement(components.Header)) : null
 })
 
-const Footer: FC = React.memo(() => {
+const Footer: FC = React.memo(function VirtuosoFooter() {
   const components = useEmitterValue('components')
   const footerHeight = usePublisher('footerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
@@ -314,7 +314,7 @@ export interface Hooks {
 }
 
 export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hooks) {
-  const Scroller: FC<HTMLProps> = React.memo(({ style, children, ...props }) => {
+  const Scroller: FC<HTMLProps> = React.memo(function VirtuosoScroller({ style, children, ...props }) {
     const scrollTopCallback = usePublisher('scrollTop')
     const scrollerElement = useEmitterValue('components').Scroller || 'div'
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
@@ -336,7 +336,7 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
   return Scroller
 }
 
-const ListRoot: FC<HTMLProps> = React.memo(({ ...props }) => {
+const ListRoot: FC<HTMLProps> = React.memo(function VirtuosoRoot({ ...props }) {
   const viewportHeight = usePublisher('viewportHeight')
   const viewportRef = useSize(compose(viewportHeight, prop('offsetHeight')))
   const headerHeight = useEmitterValue('headerHeight')

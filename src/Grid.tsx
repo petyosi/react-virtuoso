@@ -98,7 +98,7 @@ const combinedSystem = system(([gridSystem, gridComponentPropsSystem]) => {
   return { ...gridSystem, ...gridComponentPropsSystem, ...deprecatedProps }
 }, tup(gridSystem, gridComponentPropsSystem))
 
-const GridItems: FC = React.memo(() => {
+const GridItems: FC = React.memo(function GridItems() {
   const gridState = useEmitterValue('gridState')
   const listClassName = useEmitterValue('listClassName')
   const itemClassName = useEmitterValue('itemClassName')
@@ -131,7 +131,7 @@ const GridItems: FC = React.memo(() => {
   )
 })
 
-const GridRoot: FC<HTMLProps> = React.memo(({ ...props }) => {
+const GridRoot: FC<HTMLProps> = React.memo(function GridRoot({ ...props }) {
   const viewportDimensions = usePublisher('viewportDimensions')
 
   const viewportRef = useSize(el => {
