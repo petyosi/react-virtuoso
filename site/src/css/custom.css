@@ -27,44 +27,6 @@
   padding: 0 var(--ifm-pre-padding);
 }
 
-.mdxCodeBlock_node_modules-\@docusaurus-theme-classic-lib-theme-MDXComponents- {
-  display: grid;
-  grid-template-columns: 60% 40%;
-  grid-template-rows: 2.5rem auto;
-}
-
-.codeBlockContent_node_modules-\@docusaurus-theme-classic-lib-theme-CodeBlock- {
-  grid-column: span 2;
-  grid-row: span 2;
-}
-
-.playgroundEditorHeader_node_modules-\@docusaurus-theme-live-codeblock-src-theme-Playground- {
-  display: none;
-}
-
-.playgroundEditor_node_modules-\@docusaurus-theme-live-codeblock-src-theme-Playground- {
-  grid-column: 1;
-  grid-row: span 2;
-}
-
-.playgroundPreviewHeader_node_modules-\@docusaurus-theme-live-codeblock-src-theme-Playground- {
-  grid-column: 2;
-  grid-row: 1;
-  padding: 0.5rem !important;
-}
-
-.playgroundPreview_node_modules-\@docusaurus-theme-live-codeblock-src-theme-Playground- {
-  grid-column: 2;
-  grid-row: 2;
-  border-bottom-left-radius: 0 !important;
-  font-size: 1rem;
-}
-
-.playgroundPreview_node_modules-\@docusaurus-theme-live-codeblock-src-theme-Playground-
-  > div {
-  height: 100%;
-}
-
 .property {
   margin-bottom: 1rem;
 }
