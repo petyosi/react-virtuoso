@@ -69,6 +69,10 @@ See how it works in the [Customize Structure](./customize-structure.md).
 
 A rename. No change in the behavior.
 
+### `footer` is now `components.Footer`
+
+A rename. No change in the behavior.
+
 ### `scrollSeek` is now `scrollSeekConfiguration`
 
 The `scrollSeek.placeholder` is moved to `components.ScrollSeekPlaceholder`
