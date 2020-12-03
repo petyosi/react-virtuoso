@@ -21,13 +21,6 @@ export interface SizeRange {
   size: number
 }
 
-export interface Item {
-  index: number
-  offset: number
-  size: number
-  data?: any
-}
-
 export type Data = any[] | undefined
 
 function rangeIncludes(refRange: SizeRange) {

@@ -21,13 +21,20 @@
     "@mdx-js/react": "^1.5.8",
     "@types/faker": "^5.1.4",
     "@types/lodash": "^4.14.165",
+    "@types/react": "link:../node_modules/@types/react",
     "clsx": "^1.1.1",
     "faker": "^5.1.0",
     "lodash": "^4.17.20",
     "react-sortable-hoc": "^1.11.0"
   },
   "devDependencies": {
-    "eslint-plugin-json": "^2.1.1"
+    "docusaurus-plugin-typedoc": "^0.4.0",
+    "eslint-plugin-json": "^2.1.1",
+    "typedoc": "^0.19.2",
+    "typedoc-plugin-markdown": "^3.0.11"
+  },
+  "resolutions": {
+    "@types/react": "^16.14.2"
   },
   "browserslist": {
     "production": [

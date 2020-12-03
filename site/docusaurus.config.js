@@ -53,4 +53,21 @@ module.exports = {
       },
     ],
   ],
+  plugins: [
+    [
+      'docusaurus-plugin-typedoc',
+      {
+        // Plugin options
+        inputFiles: ['../src/index.tsx'],
+        exclude: ['../src/hooks/**', '../src/AATree.ts', '../src/*System.ts', '../src/utils/**', '../src/+(Grid|List).tsx'],
+
+        jsx: 'react',
+        tsconfig: '../tsconfig.json',
+        ignoreCompilerErrors: true,
+        excludeNotExported: true,
+        hideProjectName: true,
+        hideBreadcrumbs: true,
+      },
+    ],
+  ],
 }

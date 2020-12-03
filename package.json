@@ -41,10 +41,9 @@
     "@types/lodash": "^4.14.165",
     "@types/parcel-bundler": "^1.12.1",
     "@types/puppeteer": "^3.0.1",
-    "@types/react": "^16.9.38",
+    "@types/react": "^16.14.2",
     "@types/react-dom": "^16.9.8",
     "@types/react-test-renderer": "^16.9.3",
-    "@types/styled-components": "^5.1.4",
     "eslint-plugin-html": "^6.0.2",
     "eslint-plugin-json": "^2.1.1",
     "faker": "^5.1.0",
@@ -59,10 +58,12 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-test-renderer": "^16.13.1",
-    "styled-components": "^5.2.1",
     "tsdx": "^0.13.2",
     "tslib": "^2.0.0",
     "typescript": "^3.9.5"
+  },
+  "resolutions": {
+    "@types/react": "^16.14.2"
   },
   "engines": {
     "node": ">=10"

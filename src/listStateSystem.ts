@@ -25,23 +25,10 @@ import { ListRange } from './interfaces'
 import { propsReadySystem } from './propsReadySystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
-import { Data, Item, originalIndexFromItemIndex, SizeState, sizeSystem } from './sizeSystem'
+import { Data, originalIndexFromItemIndex, SizeState, sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
 import { domIOSystem } from './domIOSystem'
-
-interface RecordItem extends Item {
-  type?: undefined
-  groupIndex?: number
-  originalIndex?: number
-  data?: any
-}
-
-interface GroupItem extends Item {
-  type: 'group'
-  originalIndex?: number
-}
-
-export type ListItem = RecordItem | GroupItem
+import { Item, ListItem } from './interfaces'
 
 export interface TopListState {
   items: ListItem[]

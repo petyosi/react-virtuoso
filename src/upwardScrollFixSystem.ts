@@ -1,8 +1,9 @@
 import { connect, filter, getValue, handleNext, map, pipe, publish, scan, subscribe, system, tup, withLatestFrom } from '@virtuoso.dev/urx'
 import { UP, domIOSystem } from './domIOSystem'
-import { ListItem, listStateSystem } from './listStateSystem'
+import { listStateSystem } from './listStateSystem'
 import { offsetOf, sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
+import { ListItem } from './interfaces'
 
 const UA = typeof window !== 'undefined' && window?.navigator?.userAgent
 const GLITCHY_SCROLL_BY = UA && (!!UA.match(/iPad/i) || !!UA.match(/iPhone/i))

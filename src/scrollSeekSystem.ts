@@ -18,25 +18,7 @@ import {
 import { domIOSystem } from './domIOSystem'
 import { ListRange } from './interfaces'
 import { stateFlagsSystem } from './stateFlagsSystem'
-
-export interface ScrollSeekToggle {
-  (velocity: number, range: ListRange): boolean
-}
-
-export interface ScrollSeekConfiguration {
-  /**
-   * Callback to determine if the list should enter "scroll seek" mode.
-   */
-  enter: ScrollSeekToggle
-  /**
-   * called during scrolling in scroll seek mode - use to display a hint where the list is.
-   */
-  change?: (velocity: number, range: ListRange) => void
-  /**
-   * Callback to determine if the list should enter "scroll seek" mode.
-   */
-  exit: ScrollSeekToggle
-}
+import { ScrollSeekConfiguration } from './interfaces'
 
 export const scrollSeekSystem = system(
   ([{ scrollTop }, { isScrolling }]) => {

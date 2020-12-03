@@ -1,5 +1,16 @@
-import { ForwardRefExoticComponent } from 'react'
-import { ListHandle, List, ItemContent, GroupItemContent } from './List'
+import { ForwardRefExoticComponent, ReactNode } from 'react'
+import {
+  ListItem,
+  FollowOutput,
+  GroupItemContent,
+  Components,
+  ComputeItemKey,
+  ScrollSeekConfiguration,
+  ListRange,
+  IndexLocationWithAlign,
+  GroupContent,
+} from './interfaces'
+import { ListHandle, List } from './List'
 import { GridHandle, Grid } from './Grid'
 type CompProps<T> = T extends React.ForwardRefExoticComponent<infer R> ? R : never
 type ListProps = CompProps<typeof List>
@@ -7,56 +18,54 @@ type GridProps = CompProps<typeof Grid>
 
 export interface VirtuosoProps extends Omit<ListProps, 'groupCounts' | 'groupContent'> {
   /**
-   * the total amount of items to be rendered.
+   * The total amount of items to be rendered.
    */
-  totalCount?: ListProps['totalCount']
+  totalCount?: number
 
   /**
-   * the data items to be rendered.
-   *
-   * If data is set, the total count will be inferred from the length of the array.
+   * The data items to be rendered. If data is set, the total count will be inferred from the length of the array.
    */
-  data?: ListProps['data']
+  data?: any[]
 
   /**
    * Set the overscan property to make the component "chunk" the rendering of new items on scroll.
    * The property causes the component to render more items than the necessary, but reduces the re-renders on scroll.
    * Setting { main: number, reverse: number } lets you extend the list in both the main and the reverse scrollable directions.
    */
-  overscan?: ListProps['overscan']
+  overscan?: number | { main: number; reverse: number }
 
   /**
    * Set the amount of items to remain fixed at the top of the list.
    *
    * For a header that scrolls away when scrolling, check the `components.Header` property.
    */
-  topItemCount?: ListProps['topItemCount']
+  topItemCount?: number
 
   /**
    * Set to a value between 0 and totalCount - 1 to make the list start scrolled to that item.
    */
-  initialTopMostItemIndex?: ListProps['initialTopMostItemIndex']
+  initialTopMostItemIndex?: number
 
   /**
    * Use for server-side rendering - if set, the list will render the specified amount of items
    * regardless of the container / item size.
    */
-  initialItemCount?: ListProps['initialItemCount']
+  initialItemCount?: number
 
   /**
    * Use the `components` property for advanced customization of the elements rendered by the list.
    */
-  components?: ListProps['components']
+  components?: Components
 
   /**
    * Set the callback to specify the contents of the item.
    */
-  itemContent?: ItemContent
+  itemContent?: (index: number, data?: any) => ReactNode
 
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.
    */
-  computeItemKey?: ListProps['computeItemKey']
+  computeItemKey?: ComputeItemKey
 
   /**
    * By default, the component assumes the default item height from the first rendered item (rendering it as a "probe").
@@ -67,78 +76,79 @@ export interface VirtuosoProps extends Omit<ListProps, 'groupCounts' | 'groupCon
    * Setting `defaultItemHeight` causes the component to skip the "probe" rendering and use the property
    * value as default height instead.
    */
-  defaultItemHeight?: ListProps['defaultItemHeight']
+  defaultItemHeight?: number
 
   /**
    * Can be used to improve performance if the rendered items are of known size.
    * Setting it causes the component to skip item measurements.
    */
-  fixedItemHeight?: ListProps['fixedItemHeight']
+  fixedItemHeight?: number
 
   /**
    * Use to display placeholders if the user scrolls fast through the list.
    *
    * Set `components.ScrollSeekPlaceholder` to change the placeholder content.
    */
-  scrollSeekConfiguration?: ListProps['scrollSeekConfiguration']
+  scrollSeekConfiguration?: ScrollSeekConfiguration | false
 
   /**
    * If set to true, the list automatically scrolls to bottom if the total count is changed.
+   * Pass "smooth" to have animated scrolling to.
    */
-  followOutput?: ListProps['followOutput']
+  followOutput?: FollowOutput
 
   /**
    * Set to customize the wrapper tag for the header and footer components (default is `div`).
    */
-  headerFooterTag?: ListProps['headerFooterTag']
+  headerFooterTag?: string
 
   /**
    * Use when implementing inverse infinite scrolling - decrease the value this property
    * in combination with  `data` or `totalCount` to prepend items to the top of the list.
    */
-  firstItemIndex?: ListProps['firstItemIndex']
+  firstItemIndex?: number
 
   /**
    * Called when the list starts/stops scrolling.
    */
-  isScrolling?: ListProps['isScrolling']
+  isScrolling?: (isScrolling: boolean) => void
 
   /**
    * Gets called when the user scrolls to the end of the list.
    * Receives the last item index as an argument. Can be used to implement endless scrolling.
    */
-  endReached?: ListProps['endReached']
+  endReached?: (index: number) => void
 
   /**
    * Called when the user scrolls to the start of the list.
    */
-  startReached?: ListProps['startReached']
+  startReached?: (index: number) => void
 
   /**
    * Called with the new set of items each time the list items are rendered due to scrolling.
    */
-  rangeChanged?: ListProps['rangeChanged']
+  rangeChanged?: (range: ListRange) => void
 
   /**
    * Called with true / false when the list has reached the bottom / gets scrolled up.
    * Can be used to load newer items, like `tail -f`.
    */
-  atBottomStateChange?: ListProps['atBottomStateChange']
+  atBottomStateChange?: (atBottom: boolean) => void
 
   /**
    * Called with `true` / `false` when the list has reached the top / gets scrolled down.
    */
-  atTopStateChange?: ListProps['atTopStateChange']
+  atTopStateChange?: (atTop: boolean) => void
 
   /**
    * Called when the total list height is changed due to new items or viewport resize.
    */
-  totalListHeightChanged?: ListProps['totalListHeightChanged']
+  totalListHeightChanged?: (height: number) => void
 
   /**
    * Called with the new set of items each time the list items are rendered due to scrolling.
    */
-  itemsRendered?: ListProps['itemsRendered']
+  itemsRendered?: (items: ListItem[]) => void
 }
 
 export interface GroupedVirtuosoProps
@@ -148,12 +158,12 @@ export interface GroupedVirtuosoProps
    * Specifies the amount of items in each group (and, actually, how many groups are there).
    * For example, passing [20, 30] will display 2 groups with 20 and 30 items each.
    */
-  groupCounts: ListProps['groupCounts']
+  groupCounts?: number[]
 
   /**
    * Specifies how each each group header gets rendered. The callback receives the zero-based index of the group.
    */
-  groupContent?: ListProps['groupContent']
+  groupContent?: GroupContent
 
   /**
    * Specifies how each each item gets rendered.
@@ -161,23 +171,9 @@ export interface GroupedVirtuosoProps
   itemContent?: GroupItemContent
 }
 
-export interface VirtuosoGridProps
-  extends Pick<
-      VirtuosoProps,
-      | 'overscan'
-      | 'computeItemKey'
-      | 'initialItemCount'
-      | 'scrollSeekConfiguration'
-      | 'isScrolling'
-      | 'endReached'
-      | 'startReached'
-      | 'rangeChanged'
-      | 'atBottomStateChange'
-      | 'atTopStateChange'
-    >,
-    GridProps {
+export interface VirtuosoGridProps extends GridProps {
   /**
-   * the total amount of items to be rendered.
+   * The total amount of items to be rendered.
    */
   totalCount: GridProps['totalCount']
 
@@ -190,11 +186,85 @@ export interface VirtuosoGridProps
    * Use the `components` property for advanced customization of the elements rendered by the list.
    */
   components?: GridProps['components']
+
+  /**
+   * Set the overscan property to make the component "chunk" the rendering of new items on scroll.
+   * The property causes the component to render more items than the necessary, but reduces the re-renders on scroll.
+   * Setting { main: number, reverse: number } lets you extend the list in both the main and the reverse scrollable directions.
+   */
+  overscan?: number | { main: number; reverse: number }
+
+  /**
+   * If specified, the component will use the function to generate the `key` property for each list item.
+   */
+  computeItemKey?: ComputeItemKey
+
+  /**
+   * Use to display placeholders if the user scrolls fast through the list.
+   *
+   * Set `components.ScrollSeekPlaceholder` to change the placeholder content.
+   */
+  scrollSeekConfiguration?: ScrollSeekConfiguration | false
+
+  /**
+   * Called when the list starts/stops scrolling.
+   */
+  isScrolling?: (isScrolling: boolean) => void
+
+  /**
+   * Gets called when the user scrolls to the end of the list.
+   * Receives the last item index as an argument. Can be used to implement endless scrolling.
+   */
+  endReached?: (index: number) => void
+
+  /**
+   * Called when the user scrolls to the start of the list.
+   */
+  startReached?: (index: number) => void
+
+  /**
+   * Called with the new set of items each time the list items are rendered due to scrolling.
+   */
+  rangeChanged?: (range: ListRange) => void
+
+  /**
+   * Called with true / false when the list has reached the bottom / gets scrolled up.
+   * Can be used to load newer items, like `tail -f`.
+   */
+  atBottomStateChange?: (atBottom: boolean) => void
+
+  /**
+   * Called with `true` / `false` when the list has reached the top / gets scrolled down.
+   */
+  atTopStateChange?: (atTop: boolean) => void
 }
 
-export type VirtuosoHandle = ListHandle
-export type GroupedVirtuosoHandle = ListHandle
-export type VirtuosoGridHandle = GridHandle
+export interface VirtuosoHandle extends ListHandle {
+  /**
+   * Scrolls the component to the specified item index. See {{IndexLocationWithAlign}} for more options.
+   */
+  scrollToIndex(location: number | IndexLocationWithAlign): void
+  /**
+   * Scrolls the component to the specified location. See [ScrollToOptions (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/ScrollToOptions)
+   */
+  scrollTo(location: ScrollToOptions): void
+  /**
+   * Scrolls the component with the specified amount. See [ScrollToOptions (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/ScrollToOptions)
+   */
+  scrollBy(location: ScrollToOptions): void
+}
+
+export interface GroupedVirtuosoHandle extends ListHandle {
+  scrollToIndex(location: number | IndexLocationWithAlign): void
+  scrollTo(location: ScrollToOptions): void
+  scrollBy(location: ScrollToOptions): void
+}
+
+export interface VirtuosoGridHandle extends GridHandle {
+  scrollToIndex(location: number | IndexLocationWithAlign): void
+  scrollTo(location: ScrollToOptions): void
+  scrollBy(location: ScrollToOptions): void
+}
 
 export const Virtuoso: ForwardRefExoticComponent<VirtuosoProps> = List
 export const GroupedVirtuoso: ForwardRefExoticComponent<GroupedVirtuosoProps> = List

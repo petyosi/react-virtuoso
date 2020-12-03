@@ -23,6 +23,7 @@ module.exports = {
     ],
     'Customize Markup': ['custom-scroll-container', 'customize-structure'],
     Grid: ['grid-responsive-columns'],
-    'API Reference': ['api-virtuoso'],
+    'API Reference': ['virtuoso-api-reference', 'virtuoso-grid-api-reference'],
+    Interfaces: require('./typedoc-sidebar.js')[3].items.filter(item => !/handle|props|components/.test(item)),
   },
 }

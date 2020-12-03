@@ -40,3 +40,29 @@
   flex: 1;
   margin-block-end: 0;
 }
+
+.generated-api p:first-child,
+.generated-api h2,
+.generated-api h2:nth-of-type(2),
+.generated-api table:first-of-type,
+.generated-api ul:first-of-type {
+  display: none;
+}
+
+.generated-api h3 + p + p {
+  display: none;
+}
+
+.generated-api h3 {
+  display: none;
+}
+
+.generated-api h3 + p > code:first-child {
+  display: none;
+}
+
+.generated-api hr {
+  border: 0;
+  height: 1px;
+  background-color: var(--ifm-toc-border-color);
+}

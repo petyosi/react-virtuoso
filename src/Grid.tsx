@@ -17,7 +17,8 @@ import * as React from 'react'
 import { createElement, ComponentType, CSSProperties, FC, ReactNode, Ref } from 'react'
 import { gridSystem } from './gridSystem'
 import useSize from './hooks/useSize'
-import { buildScroller, ComputeItemKey, HTMLProps, identity, viewportStyle, addDeprecatedAlias } from './List'
+import { buildScroller, identity, viewportStyle, addDeprecatedAlias } from './List'
+import { ComputeItemKey, HTMLProps } from './interfaces'
 
 export interface GridComponents {
   /**

@@ -3,8 +3,7 @@ import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
 import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
-
-export type FollowOutput = boolean | 'smooth' | 'auto'
+import { FollowOutput } from './interfaces'
 
 const behaviorFromFollowOutput = (follow: FollowOutput) => (follow === 'smooth' ? 'smooth' : 'auto')
 

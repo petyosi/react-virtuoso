@@ -3,12 +3,7 @@ import { findMaxKeyValue } from './AATree'
 import { domIOSystem } from './domIOSystem'
 import { offsetOf, originalIndexFromItemIndex, sizeSystem } from './sizeSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
-
-export interface IndexLocationWithAlign {
-  index: number
-  align?: 'start' | 'center' | 'end'
-  behavior?: 'smooth' | 'auto'
-}
+import { IndexLocationWithAlign } from './interfaces'
 
 export type IndexLocation = number | IndexLocationWithAlign
 
