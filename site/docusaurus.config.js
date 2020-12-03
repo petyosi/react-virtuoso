@@ -3,13 +3,14 @@ const path = require('path')
 module.exports = {
   title: 'React Virtuoso',
   tagline: 'Powerful, Elegant and Simple Virtual List for React',
-  url: 'https://virtuoso.dev/',
+  url: 'https://virtuoso.dev',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   favicon: 'img/favicon.ico',
   organizationName: 'virtuoso.dev', // Usually your GitHub org/user name.
   projectName: 'react-virtuoso', // Usually your repo name.
   themeConfig: {
+    googleAnalytics: { trackingID: 'UA-140068800-1' },
     navbar: {
       title: '',
       logo: {
@@ -54,6 +55,7 @@ module.exports = {
     ],
   ],
   plugins: [
+    '@docusaurus/plugin-google-analytics',
     [
       'docusaurus-plugin-typedoc',
       {
