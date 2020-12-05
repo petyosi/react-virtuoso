@@ -245,7 +245,9 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
     const scrollTopCallback = usePublisher('scrollTop')
     const scrollerElement = useEmitterValue('components').Scroller || 'div'
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
-    const { scrollerRef, scrollByCallback, scrollToCallback } = useScrollTop(scrollTopCallback, smoothScrollTargetReached)
+    const { scrollerRef, scrollByCallback, scrollToCallback } = useScrollTop(scrollTopCallback, smoothScrollTargetReached, scrollerElement)
+
+    console.log(scrollerElement)
 
     useEmitter('scrollTo', scrollToCallback)
     useEmitter('scrollBy', scrollByCallback)

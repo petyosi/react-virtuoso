@@ -2,7 +2,11 @@ import { useRef, useCallback, useEffect } from 'react'
 
 export type CallbackRefParam = HTMLElement | null
 
-export default function useScrollTop(scrollTopCallback: (scrollTop: number) => void, smoothScrollTargetReached: (yes: true) => void) {
+export default function useScrollTop(
+  scrollTopCallback: (scrollTop: number) => void,
+  smoothScrollTargetReached: (yes: true) => void,
+  scrollerElement: any
+) {
   const scrollerRef = useRef<any>(null)
   const scrollTopTarget = useRef<any>(null)
   const timeoutRef = useRef<any>(null)
@@ -30,12 +34,12 @@ export default function useScrollTop(scrollTopCallback: (scrollTop: number) => v
   useEffect(() => {
     const localRef = scrollerRef.current!
     handler({ target: localRef } as Event)
-    localRef.addEventListener('scroll', handler)
+    localRef.addEventListener('scroll', handler, { passive: true })
 
     return () => {
       localRef.removeEventListener('scroll', handler)
     }
-  }, [scrollerRef, handler])
+  }, [scrollerRef, handler, scrollerElement])
 
   const scrollToCallback = (location: ScrollToOptions) => {
     const scrollerElement = scrollerRef.current
