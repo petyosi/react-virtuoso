@@ -13,6 +13,7 @@ describe('list with hundred items', () => {
 
   it('renders only 10 items', async () => {
     await page.goto('http://localhost:1234/')
+    await page.waitFor(100)
     const itemCount = await page.evaluate(() => {
       const listContainer = document.querySelector('#root > div > div > div')
       return listContainer!.childElementCount
