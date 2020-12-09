@@ -11,10 +11,10 @@
     "serve": "docusaurus serve"
   },
   "dependencies": {
-    "@docusaurus/core": "2.0.0-alpha.69",
-    "@docusaurus/plugin-google-analytics": "^2.0.0-alpha.69",
-    "@docusaurus/preset-classic": "2.0.0-alpha.69",
-    "@docusaurus/theme-live-codeblock": "^2.0.0-alpha.69",
+    "@docusaurus/core": "2.0.0-alpha.66",
+    "@docusaurus/plugin-google-analytics": "2.0.0-alpha.66",
+    "@docusaurus/preset-classic": "2.0.0-alpha.66",
+    "@docusaurus/theme-live-codeblock": "2.0.0-alpha.66",
     "@emotion/core": "^11.0.0",
     "@emotion/react": "^11.1.1",
     "@emotion/styled": "^11.0.0",
