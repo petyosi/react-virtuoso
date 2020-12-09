@@ -151,15 +151,11 @@ const GridRoot: FC<HTMLProps> = React.memo(function GridRoot({ ...props }) {
   )
 })
 
-export type GridHandle = RefHandle<typeof Grid>
-
 const { Component: Grid, usePublisher, useEmitterValue, useEmitter } = systemToComponent(
   combinedSystem,
   {
-    required: {
-      totalCount: 'totalCount',
-    },
     optional: {
+      totalCount: 'totalCount',
       overscan: 'overscan',
       itemContent: 'itemContent',
       components: 'components',
@@ -191,6 +187,9 @@ const { Component: Grid, usePublisher, useEmitterValue, useEmitter } = systemToC
   GridRoot
 )
 
+export type foo<T> = T extends React.ForwardRefExoticComponent<React.RefAttributes<infer Handle>> ? Handle : never
+
+export type GridHandle = RefHandle<typeof Grid>
 export { Grid }
 
 const Scroller = buildScroller({ usePublisher, useEmitterValue, useEmitter })
