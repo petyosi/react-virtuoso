@@ -12,6 +12,8 @@ import {
   connect,
   pipe,
   withLatestFrom,
+  statefulStreamFromEmitter,
+  distinctUntilChanged,
 } from '@virtuoso.dev/urx'
 import * as React from 'react'
 import { createElement, ComponentType, CSSProperties, FC, ReactNode, Ref } from 'react'
@@ -24,7 +26,7 @@ export interface GridComponents {
   /**
    * Set to customize the item wrapping element. Use only if you would like to render list from elements different than a `div`.
    */
-  Item?: ComponentType
+  Item?: ComponentType<HTMLProps & { 'data-index': number }>
 
   /**
    * Set to customize the outermost scrollable element. This should not be necessary in general,
@@ -35,20 +37,18 @@ export interface GridComponents {
   /**
    * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
    */
-  List?: ComponentType<{ style: CSSProperties }>
+  List?: ComponentType<HTMLProps & { ref: Ref<HTMLDivElement> }>
 
   /**
    * Set to render an item placeholder when the user scrolls fast.
    * See the `scrollSeekConfiguration` property for more details.
    */
-  ScrollSeekPlaceholder?: ComponentType<{ index: number; height: number }>
+  ScrollSeekPlaceholder?: ComponentType<{ style: CSSProperties }>
 }
 
 export interface GridItemContent {
   (index: number): ReactNode
 }
-
-const DefaultScrollSeekPlaceholder = ({ style }: { style: CSSProperties }) => <div style={style}></div>
 
 const gridComponentPropsSystem = system(() => {
   const itemContent = statefulStream<GridItemContent>(index => `Item ${index}`)
@@ -57,7 +57,28 @@ const gridComponentPropsSystem = system(() => {
   const listClassName = statefulStream('virtuoso-grid-list')
   const computeItemKey = statefulStream<ComputeItemKey>(identity)
 
-  return { itemContent, components, computeItemKey, itemClassName, listClassName }
+  const distinctProp = <K extends keyof GridComponents>(propName: K, defaultValue: GridComponents[K] | null | 'div' = null) => {
+    return statefulStreamFromEmitter(
+      pipe(
+        components,
+        map(components => components[propName] as GridComponents[K]),
+        distinctUntilChanged()
+      ),
+      defaultValue
+    )
+  }
+
+  return {
+    itemContent,
+    components,
+    computeItemKey,
+    itemClassName,
+    listClassName,
+    ListComponent: distinctProp('List', 'div'),
+    ItemComponent: distinctProp('Item', 'div'),
+    ScrollerComponent: distinctProp('Scroller', 'div'),
+    ScrollSeekPlaceholder: distinctProp('ScrollSeekPlaceholder', 'div'),
+  }
 })
 
 const combinedSystem = system(([gridSystem, gridComponentPropsSystem]) => {
@@ -106,7 +127,9 @@ const GridItems: FC = React.memo(function GridItems() {
   const itemContent = useEmitterValue('itemContent')
   const computeItemKey = useEmitterValue('computeItemKey')
   const isSeeking = useEmitterValue('isSeeking')
-  const { Item = 'div', List = 'div', ScrollSeekPlaceholder = DefaultScrollSeekPlaceholder } = useEmitterValue('components')
+  const ItemComponent = useEmitterValue('ItemComponent')!
+  const ListComponent = useEmitterValue('ListComponent')!
+  const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder')!
 
   const itemDimensions = usePublisher('itemDimensions')
 
@@ -121,13 +144,13 @@ const GridItems: FC = React.memo(function GridItems() {
   })
 
   return createElement(
-    List,
+    ListComponent,
     { ref: listRef, className: listClassName, style: { paddingTop: gridState.offsetTop, paddingBottom: gridState.offsetBottom } },
     gridState.items.map(item => {
       const key = computeItemKey(item.index)
       return isSeeking
         ? createElement(ScrollSeekPlaceholder, { key, style: { height: gridState.itemHeight, width: gridState.itemWidth } })
-        : createElement(Item, { className: itemClassName, 'data-index': item.index, key }, itemContent(item.index))
+        : createElement(ItemComponent, { className: itemClassName, 'data-index': item.index, key }, itemContent(item.index))
     })
   )
 })
