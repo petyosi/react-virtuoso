@@ -27,6 +27,12 @@ Out of the box, Virtuoso:
 
 For live examples and documentation, check the [website](//virtuoso.dev).
 
+## Sponsors
+
+[![Stream](https://i.imgur.com/oU7XYkk.png)](https://getstream.io/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship)
+
+React Virtuoso is proudly sponsored by [Stream](https://getstream.io/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship), the leading provider in enterprise grade [Feed](https://getstream.io/activity-feeds/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship) & [Chat](https://getstream.io/chat/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship) APIs. To learn more about Stream, [click here](https://getstream.io/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship).
+
 ## Get Started
 
 Install the package in your React project:
