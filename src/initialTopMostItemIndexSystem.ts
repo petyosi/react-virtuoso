@@ -3,25 +3,18 @@ import { empty } from './AATree'
 import { sizeSystem } from './sizeSystem'
 import { domIOSystem } from './domIOSystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
-
-function take<T>(times = 1): u.Operator<T> {
-  return done => value => {
-    if (times-- > 0) {
-      done(value)
-    }
-  }
-}
+import { propsReadySystem } from './propsReadySystem'
 
 export const initialTopMostItemIndexSystem = u.system(
-  ([{ sizes, listRefresh }, { scrollTop }, { scrollToIndex }]) => {
+  ([{ sizes, listRefresh }, { scrollTop }, { scrollToIndex }, { didMount }]) => {
     const scrolledToInitialItem = u.statefulStream(true)
     const initialTopMostItemIndex = u.statefulStream(0)
 
     u.connect(
       u.pipe(
-        u.duc(initialTopMostItemIndex),
-        u.filter(index => index !== 0),
-        take(1),
+        didMount,
+        u.withLatestFrom(initialTopMostItemIndex),
+        u.filter(([_, index]) => index !== 0),
         u.mapTo(false)
       ),
       scrolledToInitialItem
@@ -50,6 +43,6 @@ export const initialTopMostItemIndexSystem = u.system(
       initialTopMostItemIndex,
     }
   },
-  u.tup(sizeSystem, domIOSystem, scrollToIndexSystem),
+  u.tup(sizeSystem, domIOSystem, scrollToIndexSystem, propsReadySystem),
   { singleton: true }
 )
