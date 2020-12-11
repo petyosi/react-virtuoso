@@ -1,6 +1,6 @@
 module.exports = {
   someSidebar: {
-    Introduction: ['getting-started', 'migrate-v0-to-v1'],
+    Introduction: ['getting-started', 'troubleshooting', 'migrate-v0-to-v1'],
     Basics: [
       'hello',
       'top-items',
