@@ -72,7 +72,8 @@ jobs:
       - name: Deploy docs
         if: github.ref == 'refs/heads/master'
         env:
-          GIT_USER: petyosi
+          GIT_USER: git
+          USE_SSH: true
         run: |
           cd site
           yarn deploy
