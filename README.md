@@ -2,9 +2,9 @@
 
 [![npm version](https://badge.fury.io/js/react-virtuoso.svg)](//badge.fury.io/js/react-virtuoso)
 
-**React Virtuoso** is the most powerful React virtual list component, full stop. Here's why in no particular order:
+**React Virtuoso** is the most powerful React virtual list component, full stop. Here's why:
 
-- Variable sized items out of the box; no manual measurements or hard-coded item heights is necessary;
+- Variable sized items out of the box; no manual measurements or hard-coding item heights is necessary;
 - Support for [reverse (bottom up) scrolling and prepending items](//virtuoso.dev/prepend-items/) (chat, feeds, etc);
 - [Grouped mode with sticky headers](//virtuoso.dev/grouped-by-first-letter/);
 - [Responsive grid layout](//virtuoso.dev/grid-responsive-columns/);
@@ -16,6 +16,14 @@
 - [Scroll to index method](//virtuoso.dev/scroll-to-index/).
 
 For live examples and documentation, check the [documentation website](//virtuoso.dev).
+
+## Sponsors
+
+[![Stream](https://i.imgur.com/oU7XYkk.png)](https://getstream.io/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship)
+
+React Virtuoso is proudly sponsored by [Stream](https://getstream.io/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship), the leading provider in enterprise grade [Feed](https://getstream.io/activity-feeds/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship) & [Chat](https://getstream.io/chat/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship) APIs. To learn more about Stream, [click here](https://getstream.io/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship).
+
+If you are using Virtuoso for work, [sponsor it](https://www.patreon.com/react_virtuoso). Any donation helps a lot with the project development and maintenance.
 
 ## Get Started
 
@@ -69,16 +77,15 @@ Petyo Ivanov [@petyosi](//twitter.com/petyosi).
 ### Fixes and new Features
 
 To run the tests, use `npm run test`. 
-A holistic, "e2e" test suite is runnable with `npm run e2e`, with the pages being `e2e/*.tsx` and the tests `e2e/*.test.ts`. 
+An end-to-end browser-based test suite is runnable with `npm run e2e`, with the pages being `e2e/*.tsx` and the tests `e2e/*.test.ts`. 
 
-A convenient way to debug something is by previewing one of the e2e test cases. 
+A convenient way to debug something is to preview one the e2e test cases in the browser. 
 To do that, run `npm run preview e2e/hello.tsx`. There are several other examples in the `e2e` directory.
 
 ### Docs 
 
 The documentation site is built with docusaurus and the content is available in the `site/docs` directory.
 The API reference is generated from the doc comments in `src/components.tsx`.
-
 
 ## License
 
