@@ -3,9 +3,6 @@
   "author": "Petyo Ivanov",
   "sideEffects": false,
   "version": "1.0.0-beta.5",
-  "publishConfig": {
-    "tag": "next"
-  },
   "homepage": "https://virtuoso.dev/",
   "license": "MIT",
   "main": "dist/index.js",
