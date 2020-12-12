@@ -2,7 +2,7 @@
   "name": "react-virtuoso",
   "author": "Petyo Ivanov",
   "sideEffects": false,
-  "version": "1.0.0",
+  "version": "0.0.0-development",
   "homepage": "https://virtuoso.dev/",
   "license": "MIT",
   "main": "dist/index.js",
@@ -18,7 +18,8 @@
     "e2e": "tsdx test --run-in-band --passWithNoTests --config jest.e2e.config.js",
     "lint": "tsdx lint",
     "prepare": "tsdx build",
-    "preview": "node e2e/preview.js"
+    "preview": "node e2e/preview.js",
+    "semantic-release": "semantic-release"
   },
   "dependencies": {
     "@virtuoso.dev/react-urx": "^0.2.0",
@@ -55,6 +56,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-test-renderer": "^16.13.1",
+    "semantic-release": "^17.3.0",
     "tsdx": "^0.13.2",
     "tslib": "^2.0.0",
     "typescript": "^3.9.5"
@@ -75,5 +77,9 @@
     "semi": false,
     "singleQuote": true,
     "trailingComma": "es5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/petyosi/react-virtuoso.git"
   }
 }
