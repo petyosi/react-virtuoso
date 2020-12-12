@@ -32,19 +32,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-      - run: yarn install --frozen-lockfile
+      - name: yarn install 
+        run: |
+          yarn install --frozen-lockfile
+          yarn install --frozen-lockfile --cwd site
 
-      - run: yarn install --frozen-lockfile --cwd site
+      - name: run lint and tests
+        run: |
+          yarn lint
+          yarn test -- --ci 
+          yarn e2e -- --ci
 
-      - run: yarn lint
-
-      - run: yarn test -- --ci 
-
-      - run: yarn e2e -- --ci
-
-      - run: yarn build
-
-      - run: |
+      - name: build site
+        run: |
           cd site 
           yarn build
 
@@ -54,28 +54,25 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npx semantic-release
 
-      # - name: Configure GH Access
-      #   if: github.ref == 'refs/heads/master'
-      #   run: |
-      #     mkdir -p ~/.ssh
-      #     ssh-keyscan github.com >> ~/.ssh/known_hosts
-      #     echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_rsa
-      #     chmod 600 ~/.ssh/id_rsa
-      #     git config --global user.email "underlog@gmail.com"
-      #     git config --global user.name "Petyo Ivanov"
-      #     cat <<EOT >> ~/.ssh/config
-      #     Host github.com
-      #     HostName github.com
-      #     IdentityFile ~/.ssh/id_rsa
-      #     EOT
+      - name: Configure GH Access
+        if: github.ref == 'refs/heads/master'
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          git config --global user.email "underlog@gmail.com"
+          git config --global user.name "Petyo Ivanov"
+          cat <<EOT >> ~/.ssh/config
+          Host github.com
+          HostName github.com
+          IdentityFile ~/.ssh/id_rsa
+          EOT
 
-      # - if: github.ref == 'refs/heads/master'
-      #   run: |
-      #     echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > .npmrc
-      #     yarn pub
-
-      # - name: Deploy docs
-      #   if: github.ref == 'refs/heads/master'
-      #   run: |
-      #     cd packages/docs
-      #     yarn deploy
+      - name: Deploy docs
+        if: github.ref == 'refs/heads/master'
+        env:
+          GIT_USER: petyosi
+        run: |
+          cd site
+          yarn deploy
