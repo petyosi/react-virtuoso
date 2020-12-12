@@ -7,7 +7,7 @@ module.exports = {
   baseUrl: '/',
   onBrokenLinks: 'throw',
   favicon: 'img/favicon.ico',
-  organizationName: 'virtuoso.dev', // Usually your GitHub org/user name.
+  organizationName: 'petyosi', // Usually your GitHub org/user name.
   projectName: 'react-virtuoso', // Usually your repo name.
   themeConfig: {
     googleAnalytics: { trackingID: 'UA-140068800-1' },
