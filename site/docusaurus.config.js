@@ -19,6 +19,14 @@ module.exports = {
       },
       items: [
         {
+          to: '/',
+          label: 'Docs',
+        },
+        {
+          to: 'blog',
+          label: 'Blog',
+        },
+        {
           href: 'https://github.com/petyosi/react-virtuoso',
           label: 'GitHub',
           position: 'right',
