@@ -296,8 +296,9 @@ export const listStateSystem = u.system(
     const startReached = u.streamFromEmitter(
       u.pipe(
         listState,
-        u.filter(({ items }) => items.length > 0 && items[0].originalIndex === 0),
-        u.mapTo(0)
+        u.filter(({ items, topItems }) => items.length > 0 && items[0].originalIndex === topItems.length),
+        u.map(({ items }) => items[0].index),
+        u.distinctUntilChanged()
       )
     )
 
