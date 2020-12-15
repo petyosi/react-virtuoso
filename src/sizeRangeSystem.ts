@@ -1,16 +1,4 @@
-import {
-  combineLatest,
-  duc,
-  filter,
-  map,
-  pipe,
-  StatefulStream,
-  statefulStream,
-  statefulStreamFromEmitter,
-  stream,
-  system,
-  tup,
-} from '@virtuoso.dev/urx'
+import * as u from '@virtuoso.dev/urx'
 import { domIOSystem, DOWN, ScrollDirection, UP } from './domIOSystem'
 
 export type NumberTuple = [number, number]
@@ -35,26 +23,26 @@ export const getOverscan = (overscan: Overscan, end: ListEnd, direction: ScrollD
   }
 }
 
-export const sizeRangeSystem = system(
+export const sizeRangeSystem = u.system(
   ([{ scrollTop, viewportHeight, deviation }]) => {
-    const listBoundary = stream<NumberTuple>()
-    const headerHeight = statefulStream(0)
-    const footerHeight = statefulStream(0)
-    const topListHeight = statefulStream(0)
-    const overscan = statefulStream<Overscan>(0)
+    const listBoundary = u.stream<NumberTuple>()
+    const headerHeight = u.statefulStream(0)
+    const footerHeight = u.statefulStream(0)
+    const topListHeight = u.statefulStream(0)
+    const overscan = u.statefulStream<Overscan>(0)
 
-    const visibleRange = (statefulStreamFromEmitter(
-      pipe(
-        combineLatest(
-          duc(scrollTop),
-          duc(viewportHeight),
-          duc(headerHeight),
-          duc(listBoundary, boundryComparator),
-          duc(overscan),
-          duc(topListHeight),
-          duc(deviation)
+    const visibleRange = (u.statefulStreamFromEmitter(
+      u.pipe(
+        u.combineLatest(
+          u.duc(scrollTop),
+          u.duc(viewportHeight),
+          u.duc(headerHeight),
+          u.duc(listBoundary, boundryComparator),
+          u.duc(overscan),
+          u.duc(topListHeight),
+          u.duc(deviation)
         ),
-        map(([scrollTop, viewportHeight, headerHeight, [listTop, listBottom], overscan, topListHeight, deviation]) => {
+        u.map(([scrollTop, viewportHeight, headerHeight, [listTop, listBottom], overscan, topListHeight, deviation]) => {
           const top = scrollTop - headerHeight - deviation
           let direction: ChangeDirection = NONE
 
@@ -78,10 +66,11 @@ export const sizeRangeSystem = system(
 
           return null
         }),
-        filter(value => value != null)
+        u.filter(value => value != null),
+        u.distinctUntilChanged(boundryComparator as any)
       ),
       [0, 0]
-    ) as unknown) as StatefulStream<NumberTuple>
+    ) as unknown) as u.StatefulStream<NumberTuple>
 
     return {
       // input
@@ -95,6 +84,6 @@ export const sizeRangeSystem = system(
       visibleRange,
     }
   },
-  tup(domIOSystem),
+  u.tup(domIOSystem),
   { singleton: true }
 )

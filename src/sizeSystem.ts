@@ -1,18 +1,4 @@
-import {
-  connect,
-  distinctUntilChanged,
-  system,
-  filter,
-  map,
-  pipe,
-  scan,
-  statefulStream,
-  statefulStreamFromEmitter,
-  stream,
-  streamFromEmitter,
-  withLatestFrom,
-  mapTo,
-} from '@virtuoso.dev/urx'
+import * as u from '@virtuoso.dev/urx'
 import { AANode, empty, find, findMaxKeyValue, insert, newTree, Range, rangesWithin, remove, walk } from './AATree'
 
 export interface SizeRange {
@@ -189,64 +175,71 @@ export function originalIndexFromItemIndex(itemIndex: number, sizes: SizeState) 
 }
 
 type OptionalNumber = number | undefined
-export const sizeSystem = system(
+export const sizeSystem = u.system(
   () => {
-    const sizeRanges = stream<SizeRange[]>()
-    const totalCount = stream<number>()
-    const unshiftWith = stream<number>()
-    const firstItemIndex = statefulStream(0)
-    const groupIndices = statefulStream([] as number[])
-    const fixedItemSize = statefulStream<OptionalNumber>(undefined)
-    const defaultItemSize = statefulStream<OptionalNumber>(undefined)
-    const data = statefulStream<Data>(undefined)
+    const sizeRanges = u.stream<SizeRange[]>()
+    const totalCount = u.stream<number>()
+    const unshiftWith = u.stream<number>()
+    const firstItemIndex = u.statefulStream(0)
+    const groupIndices = u.statefulStream([] as number[])
+    const fixedItemSize = u.statefulStream<OptionalNumber>(undefined)
+    const defaultItemSize = u.statefulStream<OptionalNumber>(undefined)
+    const data = u.statefulStream<Data>(undefined)
     const initial = initialSizeState()
-    const isGrouped = statefulStream(false)
 
-    const sizes = statefulStreamFromEmitter(
-      pipe(sizeRanges, withLatestFrom(groupIndices), scan(sizeStateReducer, initial), distinctUntilChanged()),
+    const sizes = u.statefulStreamFromEmitter(
+      u.pipe(sizeRanges, u.withLatestFrom(groupIndices), u.scan(sizeStateReducer, initial), u.distinctUntilChanged()),
       initial
     )
 
-    connect(
-      pipe(
+    u.connect(
+      u.pipe(
         groupIndices,
-        withLatestFrom(sizes),
-        map(([groupIndices, sizes]) => ({
-          ...sizes,
-          groupIndices,
-          groupOffsetTree: groupIndices.reduce((tree, index) => {
-            return insert(tree, index, offsetOf(index, sizes))
-          }, newTree<number>()),
-        }))
+        u.filter(indexes => indexes.length > 0),
+        u.withLatestFrom(sizes),
+        u.map(([groupIndices, sizes]) => {
+          // the initial pass through that finds empty sizes,
+          // so we record the first group only
+          const groupOffsetTree = false
+            ? insert(newTree<number>(), 0, 0)
+            : groupIndices.reduce((tree, index, idx) => {
+                return insert(tree, index, offsetOf(index, sizes) || idx)
+              }, newTree<number>())
+
+          return {
+            ...sizes,
+            groupIndices,
+            groupOffsetTree,
+          }
+        })
       ),
       sizes
     )
 
-    connect(pipe(groupIndices, mapTo(true)), isGrouped)
+    u.connect(fixedItemSize, defaultItemSize)
 
-    connect(fixedItemSize, defaultItemSize)
-    const trackItemSizes = statefulStreamFromEmitter(
-      pipe(
+    const trackItemSizes = u.statefulStreamFromEmitter(
+      u.pipe(
         fixedItemSize,
-        map(size => size === undefined)
+        u.map(size => size === undefined)
       ),
       true
     )
 
-    connect(
-      pipe(
+    u.connect(
+      u.pipe(
         defaultItemSize,
-        filter(value => value !== undefined),
-        map(size => [{ startIndex: 0, endIndex: 0, size }] as SizeRange[])
+        u.filter(value => value !== undefined),
+        u.map(size => [{ startIndex: 0, endIndex: 0, size }] as SizeRange[])
       ),
       sizeRanges
     )
 
-    const listRefresh = streamFromEmitter(
-      pipe(
+    const listRefresh = u.streamFromEmitter(
+      u.pipe(
         sizeRanges,
-        withLatestFrom(sizes),
-        scan(
+        u.withLatestFrom(sizes),
+        u.scan(
           ({ sizes: oldSizes }, [_, newSizes]) => {
             return {
               changed: newSizes !== oldSizes,
@@ -255,15 +248,15 @@ export const sizeSystem = system(
           },
           { changed: false, sizes: initial }
         ),
-        map(value => value.changed)
+        u.map(value => value.changed)
       )
     )
 
-    connect(
-      pipe(
+    u.connect(
+      u.pipe(
         unshiftWith,
-        withLatestFrom(sizes),
-        map(([unshiftWith, sizes]) => {
+        u.withLatestFrom(sizes),
+        u.map(([unshiftWith, sizes]) => {
           if (sizes.groupIndices.length > 0) {
             throw new Error('Virtuoso: prepending items does not work with groups')
           }
@@ -287,17 +280,17 @@ export const sizeSystem = system(
       sizeRanges
     )
 
-    connect(
-      pipe(
+    u.connect(
+      u.pipe(
         firstItemIndex,
-        scan(
+        u.scan(
           (prev, next) => {
             return { diff: prev.prev - next, prev: next }
           },
           { diff: 0, prev: 0 }
         ),
-        map(val => val.diff),
-        filter(value => value > 0)
+        u.map(val => val.diff),
+        u.filter(value => value > 0)
       ),
       unshiftWith
     )

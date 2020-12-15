@@ -25,6 +25,7 @@ describe('grid system', () => {
     expect(getValue(gridState).items).toHaveLength(1)
 
     publish(scrollTop, 0)
+
     publish(viewportDimensions, {
       width: 1000,
       height: 500,

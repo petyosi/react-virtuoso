@@ -341,15 +341,15 @@ describe('size engine', () => {
   })
 
   describe('group indices', () => {
-    it('creates 0 valued groupOffsetTree', () => {
+    it('starts with dummy valued groupOffsetTree', () => {
       let { groupIndices, sizes } = init(sizeSystem)
       publish(groupIndices, [0, 6, 11])
       expect(getValue(sizes).groupIndices).toEqual([0, 6, 11])
 
       expect(toKV(getValue(sizes).groupOffsetTree)).toEqual([
         [0, 0],
-        [6, 0],
-        [11, 0],
+        [6, 1],
+        [11, 2],
       ])
     })
 

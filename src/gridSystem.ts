@@ -1,20 +1,4 @@
-import {
-  distinctUntilChanged,
-  filter,
-  duc,
-  combineLatest,
-  connect,
-  map,
-  pipe,
-  statefulStream,
-  system,
-  tup,
-  withLatestFrom,
-  subscribe,
-  streamFromEmitter,
-  mapTo,
-  stream,
-} from '@virtuoso.dev/urx'
+import * as u from '@virtuoso.dev/urx'
 import { domIOSystem } from './domIOSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
@@ -67,12 +51,10 @@ const PROBE_GRID_STATE: GridState = {
 const { ceil, floor, min, max } = Math
 const hackFloor = (val: number) => (ceil(val) - val < 0.03 ? ceil(val) : floor(val))
 
-void { subscribe, min, max, hackFloor }
-
 function buildItems(startIndex: number, endIndex: number) {
   return Array.from({ length: endIndex - startIndex + 1 }).map((_, i) => ({ index: i + startIndex } as GridItem))
 }
-export const gridSystem = system(
+export const gridSystem = u.system(
   ([
     { overscan, visibleRange, listBoundary },
     { scrollTop, viewportHeight, scrollBy, scrollTo },
@@ -80,19 +62,19 @@ export const gridSystem = system(
     scrollSeek,
     { propsReady, didMount },
   ]) => {
-    const totalCount = statefulStream(0)
-    const initialItemCount = statefulStream(0)
-    const gridState = statefulStream(INITIAL_GRID_STATE)
-    const viewportDimensions = statefulStream<ElementDimensions>({ height: 0, width: 0 })
-    const itemDimensions = statefulStream<ElementDimensions>({ height: 0, width: 0 })
-    const scrollToIndex = stream<IndexLocation>()
+    const totalCount = u.statefulStream(0)
+    const initialItemCount = u.statefulStream(0)
+    const gridState = u.statefulStream(INITIAL_GRID_STATE)
+    const viewportDimensions = u.statefulStream<ElementDimensions>({ height: 0, width: 0 })
+    const itemDimensions = u.statefulStream<ElementDimensions>({ height: 0, width: 0 })
+    const scrollToIndex = u.stream<IndexLocation>()
 
-    connect(
-      pipe(
+    u.connect(
+      u.pipe(
         didMount,
-        withLatestFrom(initialItemCount),
-        filter(([, count]) => count !== 0),
-        map(([, count]) => {
+        u.withLatestFrom(initialItemCount),
+        u.filter(([, count]) => count !== 0),
+        u.map(([, count]) => {
           return {
             items: buildItems(0, count - 1),
             top: 0,
@@ -107,11 +89,11 @@ export const gridSystem = system(
       gridState
     )
 
-    connect(
-      pipe(
-        combineLatest(duc(totalCount), visibleRange),
-        withLatestFrom(viewportDimensions, itemDimensions),
-        map(([[totalCount, [startOffset, endOffset]], viewport, item]) => {
+    u.connect(
+      u.pipe(
+        u.combineLatest(u.duc(totalCount), visibleRange, itemDimensions),
+        u.withLatestFrom(viewportDimensions),
+        u.map(([[totalCount, [startOffset, endOffset], item], viewport]) => {
           const { height: itemHeight, width: itemWidth } = item
           const { width: viewportWidth } = viewport
 
@@ -140,18 +122,18 @@ export const gridSystem = system(
       gridState
     )
 
-    connect(
-      pipe(
+    u.connect(
+      u.pipe(
         viewportDimensions,
-        map(({ height }) => height)
+        u.map(({ height }) => height)
       ),
       viewportHeight
     )
 
-    connect(
-      pipe(
-        combineLatest(viewportDimensions, itemDimensions, gridState),
-        map(([viewport, item, { items }]) => {
+    u.connect(
+      u.pipe(
+        u.combineLatest(viewportDimensions, itemDimensions, gridState),
+        u.map(([viewport, item, { items }]) => {
           const { top, bottom } = gridLayout(viewport, item, items)
           return [top, bottom]
         })
@@ -159,61 +141,61 @@ export const gridSystem = system(
       listBoundary
     )
 
-    connect(
-      pipe(
+    u.connect(
+      u.pipe(
         listBoundary,
-        withLatestFrom(gridState),
-        map(([[, bottom], { offsetBottom }]) => {
+        u.withLatestFrom(gridState),
+        u.map(([[, bottom], { offsetBottom }]) => {
           return { bottom, offsetBottom }
         })
       ),
       stateFlags.listStateListener
     )
 
-    const endReached = streamFromEmitter(
-      pipe(
-        duc(gridState),
-        filter(({ items }) => items.length > 0),
-        withLatestFrom(totalCount),
-        filter(([{ items }, totalCount]) => items[items.length - 1].index === totalCount - 1),
-        map(([, totalCount]) => totalCount - 1),
-        distinctUntilChanged()
+    const endReached = u.streamFromEmitter(
+      u.pipe(
+        u.duc(gridState),
+        u.filter(({ items }) => items.length > 0),
+        u.withLatestFrom(totalCount),
+        u.filter(([{ items }, totalCount]) => items[items.length - 1].index === totalCount - 1),
+        u.map(([, totalCount]) => totalCount - 1),
+        u.distinctUntilChanged()
       )
     )
 
-    const startReached = streamFromEmitter(
-      pipe(
-        duc(gridState),
-        filter(({ items }) => {
+    const startReached = u.streamFromEmitter(
+      u.pipe(
+        u.duc(gridState),
+        u.filter(({ items }) => {
           return items.length > 0 && items[0].index === 0
         }),
-        mapTo(0)
+        u.mapTo(0)
       )
     )
 
-    const rangeChanged = streamFromEmitter(
-      pipe(
-        duc(gridState),
-        filter(({ items }) => items.length > 0),
-        map(({ items }) => {
+    const rangeChanged = u.streamFromEmitter(
+      u.pipe(
+        u.duc(gridState),
+        u.filter(({ items }) => items.length > 0),
+        u.map(({ items }) => {
           return {
             startIndex: items[0].index,
             endIndex: items[items.length - 1].index,
           }
         }),
-        distinctUntilChanged((prev, next) => {
+        u.distinctUntilChanged((prev, next) => {
           return prev && prev.startIndex === next.startIndex && prev.endIndex === next.endIndex
         })
       )
     )
 
-    connect(rangeChanged, scrollSeek.scrollSeekRangeChanged)
+    u.connect(rangeChanged, scrollSeek.scrollSeekRangeChanged)
 
-    connect(
-      pipe(
+    u.connect(
+      u.pipe(
         scrollToIndex,
-        withLatestFrom(viewportDimensions, itemDimensions, totalCount),
-        map(([location, viewport, item, totalCount]) => {
+        u.withLatestFrom(viewportDimensions, itemDimensions, totalCount),
+        u.map(([location, viewport, item, totalCount]) => {
           let { index, align, behavior } = normalizeIndexLocation(location)
 
           index = Math.max(0, index, Math.min(totalCount - 1, index))
@@ -254,7 +236,7 @@ export const gridSystem = system(
       propsReady,
     }
   },
-  tup(sizeRangeSystem, domIOSystem, stateFlagsSystem, scrollSeekSystem, propsReadySystem)
+  u.tup(sizeRangeSystem, domIOSystem, stateFlagsSystem, scrollSeekSystem, propsReadySystem)
 )
 
 function gridLayout(viewport: ElementDimensions, item: ElementDimensions, items: GridItem[]): GridLayout {

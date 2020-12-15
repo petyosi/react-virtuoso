@@ -1,23 +1,4 @@
-import {
-  combineLatest,
-  connect,
-  distinctUntilChanged,
-  duc,
-  filter,
-  map,
-  mapTo,
-  pipe,
-  prop,
-  statefulStream,
-  statefulStreamFromEmitter,
-  stream,
-  streamFromEmitter,
-  system,
-  tap,
-  tup,
-  withLatestFrom,
-  getValue,
-} from '@virtuoso.dev/urx'
+import * as u from '@virtuoso.dev/urx'
 import { empty, find, findMaxKeyValue, Range, rangesWithin } from './AATree'
 import { groupedListSystem } from './groupedListSystem'
 import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
@@ -143,7 +124,7 @@ export function buildListState(items: Item[], topItems: Item[], totalCount: numb
   }
 }
 
-export const listStateSystem = system(
+export const listStateSystem = u.system(
   ([
     { statefulScrollTop },
     { sizes, totalCount, data, firstItemIndex },
@@ -154,25 +135,26 @@ export const listStateSystem = system(
     stateFlags,
     { didMount },
   ]) => {
-    const topItemsIndexes = statefulStream<Array<number>>([])
-    const itemsRendered = stream<ListItem[]>()
+    const topItemsIndexes = u.statefulStream<Array<number>>([])
+    const itemsRendered = u.stream<ListItem[]>()
 
-    connect(groupedListSystem.topItemsIndexes, topItemsIndexes)
-    const listState = statefulStreamFromEmitter(
-      pipe(
-        combineLatest(
+    u.connect(groupedListSystem.topItemsIndexes, topItemsIndexes)
+
+    const listState = u.statefulStreamFromEmitter(
+      u.pipe(
+        u.combineLatest(
           didMount,
-          duc(visibleRange),
-          duc(totalCount),
-          duc(sizes),
-          duc(initialTopMostItemIndex),
+          u.duc(visibleRange),
+          u.duc(totalCount),
+          u.duc(sizes),
+          u.duc(initialTopMostItemIndex),
           scrolledToInitialItem,
-          duc(topItemsIndexes),
-          duc(firstItemIndex)
+          u.duc(topItemsIndexes),
+          u.duc(firstItemIndex)
         ),
-        filter(([didMount]) => didMount),
-        withLatestFrom(data),
-        map(
+        u.filter(([didMount]) => didMount),
+        u.withLatestFrom(data),
+        u.map(
           ([
             [
               ,
@@ -186,14 +168,15 @@ export const listStateSystem = system(
             ],
             data,
           ]) => {
-            const { sizeTree, offsetTree } = sizes
+            const sizesValue = sizes
+            const { sizeTree, offsetTree } = sizesValue
 
             if (totalCount === 0 || (startOffset === 0 && endOffset === 0)) {
               return EMPTY_LIST_STATE
             }
 
             if (empty(sizeTree)) {
-              return buildListState(probeItemSet(initialTopMostItemIndex, sizes, data), [], totalCount, sizes, firstItemIndex)
+              return buildListState(probeItemSet(initialTopMostItemIndex, sizesValue, data), [], totalCount, sizesValue, firstItemIndex)
             }
 
             let topItems = [] as Item[]
@@ -202,7 +185,7 @@ export const listStateSystem = system(
               let startIndex = topItemsIndexes[0]
               let endIndex = topItemsIndexes[topItemsIndexes.length - 1]
               let offset = 0
-              for (const range of rangesWithin(sizes.sizeTree, startIndex, endIndex)) {
+              for (const range of rangesWithin(sizeTree, startIndex, endIndex)) {
                 let size = range.value
                 let rangeStartIndex = Math.max(range.start, startIndex)
                 let rangeEndIndex = Math.min(range.end, endIndex)
@@ -219,13 +202,13 @@ export const listStateSystem = system(
             // This is a condition to be avaluated past the probe check, do not merge
             // with the totalcount check above
             if (!scrolledToInitialItem) {
-              return buildListState([], topItems, totalCount, sizes, firstItemIndex)
+              return buildListState([], topItems, totalCount, sizesValue, firstItemIndex)
             }
 
             // pull a fresh top group, avoids a bug where
             // scrolling up too fast causes stack overflow
-            if (!empty(sizes.groupOffsetTree)) {
-              topItemsIndexes = [findMaxKeyValue(sizes.groupOffsetTree, getValue(statefulScrollTop), 'v')[0]]
+            if (!empty(sizesValue.groupOffsetTree)) {
+              topItemsIndexes = [findMaxKeyValue(sizesValue.groupOffsetTree, u.getValue(statefulScrollTop), 'v')[0]]
             }
 
             let minStartIndex = topItemsIndexes.length > 0 ? topItemsIndexes[topItemsIndexes.length - 1] + 1 : 0
@@ -233,7 +216,7 @@ export const listStateSystem = system(
             let endIndex = findMaxKeyValue(offsetTree, endOffset, 'v')[0]!
             const maxIndex = totalCount - 1
 
-            const items = tap([] as Item[], result => {
+            const items = u.tap([] as Item[], result => {
               for (const range of rangesWithin(offsetTree, startIndex, endIndex)) {
                 let offset = range.value
                 let rangeStartIndex = range.start
@@ -262,73 +245,73 @@ export const listStateSystem = system(
               }
             })
 
-            return buildListState(items, topItems, totalCount, sizes, firstItemIndex)
+            return buildListState(items, topItems, totalCount, sizesValue, firstItemIndex)
           }
         ),
-        distinctUntilChanged()
+        u.distinctUntilChanged()
       ),
       EMPTY_LIST_STATE
     )
 
-    connect(
-      pipe(
+    u.connect(
+      u.pipe(
         data,
-        filter(data => data !== undefined),
-        map(data => data!.length)
+        u.filter(data => data !== undefined),
+        u.map(data => data!.length)
       ),
       totalCount
     )
 
-    connect(pipe(listState, map(prop('topListHeight'))), topListHeight)
-    connect(topListHeight, rangeTopListHeight)
-    connect(listState, stateFlags.listStateListener)
+    u.connect(u.pipe(listState, u.map(u.prop('topListHeight'))), topListHeight)
+    u.connect(topListHeight, rangeTopListHeight)
+    u.connect(listState, stateFlags.listStateListener)
 
-    connect(
-      pipe(
+    u.connect(
+      u.pipe(
         listState,
-        map(state => [state.top, state.bottom])
+        u.map(state => [state.top, state.bottom])
       ),
       listBoundary
     )
 
-    connect(
-      pipe(
+    u.connect(
+      u.pipe(
         listState,
-        map(state => state.items)
+        u.map(state => state.items)
       ),
       itemsRendered
     )
 
-    const endReached = streamFromEmitter(
-      pipe(
+    const endReached = u.streamFromEmitter(
+      u.pipe(
         listState,
-        filter(({ items }) => items.length > 0),
-        withLatestFrom(totalCount),
-        filter(([{ items }, totalCount]) => items[items.length - 1].originalIndex === totalCount - 1),
-        map(([, totalCount]) => totalCount - 1),
-        distinctUntilChanged()
+        u.filter(({ items }) => items.length > 0),
+        u.withLatestFrom(totalCount),
+        u.filter(([{ items }, totalCount]) => items[items.length - 1].originalIndex === totalCount - 1),
+        u.map(([, totalCount]) => totalCount - 1),
+        u.distinctUntilChanged()
       )
     )
 
-    const startReached = streamFromEmitter(
-      pipe(
+    const startReached = u.streamFromEmitter(
+      u.pipe(
         listState,
-        filter(({ items }) => items.length > 0 && items[0].originalIndex === 0),
-        mapTo(0)
+        u.filter(({ items }) => items.length > 0 && items[0].originalIndex === 0),
+        u.mapTo(0)
       )
     )
 
-    const rangeChanged = streamFromEmitter(
-      pipe(
+    const rangeChanged = u.streamFromEmitter(
+      u.pipe(
         listState,
-        filter(({ items }) => items.length > 0),
-        map(({ items }) => {
+        u.filter(({ items }) => items.length > 0),
+        u.map(({ items }) => {
           return {
             startIndex: items[0].originalIndex,
             endIndex: items[items.length - 1].originalIndex,
           } as ListRange
         }),
-        distinctUntilChanged((prev, next) => {
+        u.distinctUntilChanged((prev, next) => {
           return prev && prev.startIndex === next.startIndex && prev.endIndex === next.endIndex
         })
       )
@@ -336,7 +319,7 @@ export const listStateSystem = system(
 
     return { listState, topItemsIndexes, endReached, startReached, rangeChanged, itemsRendered, ...stateFlags }
   },
-  tup(
+  u.tup(
     domIOSystem,
     sizeSystem,
     groupedListSystem,
