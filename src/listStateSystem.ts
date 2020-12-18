@@ -308,8 +308,8 @@ export const listStateSystem = u.system(
         u.filter(({ items }) => items.length > 0),
         u.map(({ items }) => {
           return {
-            startIndex: items[0].originalIndex,
-            endIndex: items[items.length - 1].originalIndex,
+            startIndex: items[0].index,
+            endIndex: items[items.length - 1].index,
           } as ListRange
         }),
         u.distinctUntilChanged((prev, next) => {
