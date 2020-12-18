@@ -150,22 +150,20 @@ export const listStateSystem = u.system(
           u.duc(initialTopMostItemIndex),
           scrolledToInitialItem,
           u.duc(topItemsIndexes),
-          u.duc(firstItemIndex)
+          u.duc(firstItemIndex),
+          data
         ),
         u.filter(([didMount]) => didMount),
-        u.withLatestFrom(data),
         u.map(
           ([
-            [
-              ,
-              [startOffset, endOffset],
-              totalCount,
-              sizes,
-              initialTopMostItemIndex,
-              scrolledToInitialItem,
-              topItemsIndexes,
-              firstItemIndex,
-            ],
+            ,
+            [startOffset, endOffset],
+            totalCount,
+            sizes,
+            initialTopMostItemIndex,
+            scrolledToInitialItem,
+            topItemsIndexes,
+            firstItemIndex,
             data,
           ]) => {
             const sizesValue = sizes

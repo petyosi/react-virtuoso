@@ -139,4 +139,43 @@ describe('List', () => {
 
     expect(listParent.firstElementChild.textContent).toBe('Item 0')
   })
+
+  it('updates when data is propagated (same length)', () => {
+    let scroller: any
+    let viewport: any
+    let listParent: any
+
+    const Case = () => {
+      const [data, setData] = React.useState([{ name: 'Item 0' }] as any[])
+
+      return (
+        <>
+          <List
+            data={data}
+            itemContent={(_: number, item: { name: string }) => {
+              return item.name
+            }}
+          />
+          <button onClick={() => setData([{ name: 'Item 1' }])}>Set Data</button>
+        </>
+      )
+    }
+
+    act(() => {
+      render(<Case />, container)
+    })
+
+    scroller = container.firstElementChild
+    viewport = scroller.firstElementChild
+    listParent = viewport.firstElementChild
+
+    act(() => {
+      scroller.triggerScroll(0)
+      viewport.triggerResize({ offsetHeight: 100 })
+      listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
+      container.querySelector('button').dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    })
+
+    expect(listParent.firstElementChild.textContent).toBe('Item 1')
+  })
 })
