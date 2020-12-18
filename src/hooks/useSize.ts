@@ -6,7 +6,13 @@ export type CallbackRefParam = HTMLElement | null
 export default function useSize(callback: (e: HTMLElement) => void, enabled: boolean = true) {
   const ref = useRef<CallbackRefParam>(null)
   const observer = new ResizeObserver(entries => {
-    callback(entries[0].target as HTMLElement)
+    const element = entries[0].target as HTMLElement
+    // if display: none, the element won't have an offsetParent
+    // measuring it at this mode is not going to work
+    // https://stackoverflow.com/a/21696585/1009797
+    if (element.offsetParent !== null) {
+      callback(element)
+    }
   })
 
   const callbackRef = (elRef: CallbackRefParam) => {
