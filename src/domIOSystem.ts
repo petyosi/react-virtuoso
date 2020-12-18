@@ -1,32 +1,32 @@
-import { connect, pipe, scan, map, system, stream, statefulStream } from '@virtuoso.dev/urx'
+import * as u from '@virtuoso.dev/urx'
 
 export const UP = 'up' as const
 export const DOWN = 'down' as const
 export type ScrollDirection = typeof UP | typeof DOWN
 
-export const domIOSystem = system(
+export const domIOSystem = u.system(
   () => {
-    const scrollTop = stream<number>()
-    const deviation = statefulStream(0)
-    const smoothScrollTargetReached = stream<true>()
-    const statefulScrollTop = statefulStream(0)
-    const viewportHeight = stream<number>()
-    const scrollTo = stream<ScrollToOptions>()
-    const scrollBy = stream<ScrollToOptions>()
+    const scrollTop = u.stream<number>()
+    const deviation = u.statefulStream(0)
+    const smoothScrollTargetReached = u.stream<true>()
+    const statefulScrollTop = u.statefulStream(0)
+    const viewportHeight = u.stream<number>()
+    const scrollTo = u.stream<ScrollToOptions>()
+    const scrollBy = u.stream<ScrollToOptions>()
 
-    connect(scrollTop, statefulScrollTop)
-    const scrollDirection = statefulStream<ScrollDirection>(DOWN)
+    u.connect(scrollTop, statefulScrollTop)
+    const scrollDirection = u.statefulStream<ScrollDirection>(DOWN)
 
-    connect(
-      pipe(
+    u.connect(
+      u.pipe(
         scrollTop,
-        scan(
+        u.scan(
           (acc, scrollTop) => {
             return { direction: scrollTop < acc.prevScrollTop ? UP : DOWN, prevScrollTop: scrollTop }
           },
           { direction: DOWN, prevScrollTop: 0 } as { direction: ScrollDirection; prevScrollTop: number }
         ),
-        map(value => value.direction)
+        u.map(value => value.direction)
       ),
       scrollDirection
     )
