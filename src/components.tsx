@@ -47,6 +47,13 @@ export interface VirtuosoProps extends Omit<ListProps, 'groupCounts' | 'groupCon
   initialTopMostItemIndex?: number
 
   /**
+   * Set this value to offset the initial location of the list.
+   * Warning: using this property will still run a render cycle at the scrollTop: 0 list window.
+   * If possible, avoid using it and stick to `initialTopMostItemIndex` instead.
+   */
+  initialScrollTop?: number
+
+  /**
    * Use for server-side rendering - if set, the list will render the specified amount of items
    * regardless of the container / item size.
    */

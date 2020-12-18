@@ -341,6 +341,7 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
       data: 'data',
       firstItemIndex: 'firstItemIndex',
       initialItemCount: 'initialItemCount',
+      initialScrollTop: 'initialScrollTop',
 
       // deprecated
       item: 'item',
