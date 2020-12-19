@@ -5,8 +5,9 @@ sidebar_label: Endless Scrolling
 slug: /endless-scrolling/
 ---
 
-The `endReached` callback can be used to automatically load more items when the user scrolls to the bottom of the list. 
-If you would like to load items more aggressively, you can increase the `overscan` value.
+The `endReached` callback property can be used to automatically load more items when the user scrolls to the bottom of the list, creating endless scrolling. 
+If you would like to load items more aggressively, you can increase the `overscan` value. 
+For reverse endless scrolling implementation, check [/prepend-items/](the prepend items) example.
 
 Scroll fast to the bottom of the list to load additional items.
 
