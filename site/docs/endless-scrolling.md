@@ -3,6 +3,7 @@ id: endless-scrolling
 title: Endless Scrolling
 sidebar_label: Endless Scrolling
 slug: /endless-scrolling/
+description: The React Virtuoso component makes it trivial to implement infinite scrolling lists in both directions with variably sized items.
 ---
 
 The `endReached` callback property can be used to automatically load more items when the user scrolls to the bottom of the list, creating endless scrolling. 
