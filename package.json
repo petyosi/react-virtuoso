@@ -7,6 +7,26 @@
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/react-virtuoso.esm.js",
+  "exports": {
+    ".": {
+      "require": "./dist/react-virtuoso.cjs.production.min.js",
+      "import": "./dist/react-virtuoso.esm.js"
+    }
+  },
+  "keywords": [
+    "react",
+    "reactjs",
+    "virtual",
+    "endless",
+    "load more",
+    "list",
+    "scrolling",
+    "infinite",
+    "virtualized",
+    "grid",
+    "feed",
+    "chat"
+  ],
   "typings": "dist/index.d.ts",
   "files": [
     "dist"
