@@ -1,6 +1,6 @@
 import * as u from '@virtuoso.dev/urx'
 import { domIOSystem } from './domIOSystem'
-import { sizeRangeSystem } from './sizeRangeSystem'
+import { sizeRangeSystem, boundryComparator } from './sizeRangeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
 import { IndexLocation, normalizeIndexLocation } from './scrollToIndexSystem'
 import { scrollSeekSystem } from './scrollSeekSystem'
@@ -135,8 +135,9 @@ export const gridSystem = u.system(
         u.combineLatest(viewportDimensions, itemDimensions, gridState),
         u.map(([viewport, item, { items }]) => {
           const { top, bottom } = gridLayout(viewport, item, items)
-          return [top, bottom]
-        })
+          return [top, bottom] as [number, number]
+        }),
+        u.distinctUntilChanged(boundryComparator)
       ),
       listBoundary
     )

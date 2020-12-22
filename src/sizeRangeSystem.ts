@@ -9,7 +9,7 @@ export const NONE = 'none' as const
 export type ListEnd = typeof TOP | typeof BOTTOM
 export type ChangeDirection = typeof UP | typeof DOWN | typeof NONE
 
-const boundryComparator = (prev: NumberTuple, current: NumberTuple) => prev && prev[0] === current[0] && prev[1] === current[1]
+export const boundryComparator = (prev: NumberTuple, current: NumberTuple) => prev && prev[0] === current[0] && prev[1] === current[1]
 
 export const getOverscan = (overscan: Overscan, end: ListEnd, direction: ScrollDirection) => {
   if (typeof overscan === 'number') {
