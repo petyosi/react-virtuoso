@@ -91,7 +91,11 @@ export const gridSystem = u.system(
 
     u.connect(
       u.pipe(
-        u.combineLatest(u.duc(totalCount), visibleRange, itemDimensions),
+        u.combineLatest(
+          u.duc(totalCount),
+          visibleRange,
+          u.duc(itemDimensions, (prev, next) => prev && prev.width === next.width && prev.height === next.height)
+        ),
         u.withLatestFrom(viewportDimensions),
         u.map(([[totalCount, [startOffset, endOffset], item], viewport]) => {
           const { height: itemHeight, width: itemWidth } = item
