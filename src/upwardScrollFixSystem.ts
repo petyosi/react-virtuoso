@@ -92,8 +92,8 @@ export const upwardScrollFixSystem = system(
         withLatestFrom(sizes, listState),
         map(([unshiftWith, sizeState, listState]) => {
           return {
-            index: listState.items[0].index + unshiftWith,
-            offset: offsetOf(listState.items[0].index, sizeState),
+            index: listState.items[0].originalIndex! + unshiftWith,
+            offset: offsetOf(listState.items[0].originalIndex!, sizeState),
           }
         })
       ),
