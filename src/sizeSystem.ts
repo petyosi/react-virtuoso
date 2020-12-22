@@ -254,6 +254,25 @@ export const sizeSystem = u.system(
 
     u.connect(
       u.pipe(
+        firstItemIndex,
+        u.scan(
+          (prev, next) => {
+            return { diff: prev.prev - next, prev: next }
+          },
+          { diff: 0, prev: 0 }
+        ),
+        u.map(val => val.diff),
+        u.filter(value => value > 0)
+      ),
+      unshiftWith
+    )
+
+    // hack to capture the current list top item before the sizes get refreshed
+    // :(
+    const prioUnshiftWith = u.streamFromEmitter(unshiftWith)
+
+    u.connect(
+      u.pipe(
         unshiftWith,
         u.withLatestFrom(sizes),
         u.map(([unshiftWith, sizes]) => {
@@ -280,21 +299,6 @@ export const sizeSystem = u.system(
       sizeRanges
     )
 
-    u.connect(
-      u.pipe(
-        firstItemIndex,
-        u.scan(
-          (prev, next) => {
-            return { diff: prev.prev - next, prev: next }
-          },
-          { diff: 0, prev: 0 }
-        ),
-        u.map(val => val.diff),
-        u.filter(value => value > 0)
-      ),
-      unshiftWith
-    )
-
     return {
       // input
       data,
@@ -304,6 +308,7 @@ export const sizeSystem = u.system(
       defaultItemSize,
       fixedItemSize,
       unshiftWith,
+      prioUnshiftWith,
       firstItemIndex,
 
       // output

@@ -1,15 +1,14 @@
 import * as u from '@virtuoso.dev/urx'
 import { empty, find, findMaxKeyValue, Range, rangesWithin } from './AATree'
+import { domIOSystem } from './domIOSystem'
 import { groupedListSystem } from './groupedListSystem'
 import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
-import { ListRange } from './interfaces'
+import { Item, ListItem, ListRange } from './interfaces'
 import { propsReadySystem } from './propsReadySystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
 import { Data, originalIndexFromItemIndex, SizeState, sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
-import { domIOSystem } from './domIOSystem'
-import { Item, ListItem } from './interfaces'
 
 export interface TopListState {
   items: ListItem[]
@@ -153,7 +152,7 @@ export const listStateSystem = u.system(
           u.duc(firstItemIndex),
           data
         ),
-        u.filter(([didMount]) => didMount),
+        u.filter(([mount]) => mount),
         u.map(
           ([
             ,
@@ -294,7 +293,10 @@ export const listStateSystem = u.system(
     const startReached = u.streamFromEmitter(
       u.pipe(
         listState,
-        u.filter(({ items, topItems }) => items.length > 0 && items[0].originalIndex === topItems.length),
+        u.throttleTime(100),
+        u.filter(({ items, topItems }) => {
+          return items.length > 0 && items[0].originalIndex === topItems.length
+        }),
         u.map(({ items }) => items[0].index),
         u.distinctUntilChanged()
       )

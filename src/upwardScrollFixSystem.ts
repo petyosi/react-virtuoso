@@ -1,4 +1,4 @@
-import { connect, filter, getValue, handleNext, map, pipe, publish, scan, subscribe, system, tup, withLatestFrom } from '@virtuoso.dev/urx'
+import * as u from '@virtuoso.dev/urx'
 import { UP, domIOSystem } from './domIOSystem'
 import { listStateSystem } from './listStateSystem'
 import { offsetOf, sizeSystem } from './sizeSystem'
@@ -10,16 +10,16 @@ const GLITCHY_SCROLL_BY = UA && (!!UA.match(/iPad/i) || !!UA.match(/iPhone/i))
 /**
  * Fixes upward scrolling by calculating and compensation from changed item heights, using scrollBy.
  */
-export const upwardScrollFixSystem = system(
-  ([{ scrollBy, scrollTop, scrollDirection, deviation }, { isScrolling }, { listState }, { unshiftWith, sizes, listRefresh }]) => {
-    const deviationOffset = pipe(
+export const upwardScrollFixSystem = u.system(
+  ([{ scrollBy, scrollTop, scrollDirection, deviation }, { isScrolling }, { listState }, { prioUnshiftWith, sizes }]) => {
+    const deviationOffset = u.pipe(
       listState,
-      withLatestFrom(scrollTop, scrollDirection),
-      filter(([, scrollTop, scrollDirection]) => {
+      u.withLatestFrom(scrollTop, scrollDirection),
+      u.filter(([, scrollTop, scrollDirection]) => {
         return scrollTop !== 0 && scrollDirection === UP
       }),
-      map(([state]) => state),
-      scan(
+      u.map(([state]) => state),
+      u.scan(
         ([, prevItems], { items }) => {
           let newDev = 0
           if (prevItems.length > 0 && items.length > 0) {
@@ -47,65 +47,67 @@ export const upwardScrollFixSystem = system(
         },
         [0, []] as [number, ListItem[]]
       ),
-      filter(([amount]) => amount !== 0),
-      map(([amount]) => amount)
+      u.filter(([amount]) => amount !== 0),
+      u.map(([amount]) => amount)
     )
 
     if (GLITCHY_SCROLL_BY) {
-      connect(
-        pipe(
+      u.connect(
+        u.pipe(
           deviationOffset,
-          withLatestFrom(deviation),
-          map(([amount, deviation]) => deviation - amount)
+          u.withLatestFrom(deviation),
+          u.map(([amount, deviation]) => deviation - amount)
         ),
         deviation
       )
 
       // when the browser stops scrolling,
       // restore the position and reset the glitching
-      subscribe(
-        pipe(
+      u.subscribe(
+        u.pipe(
           isScrolling,
-          filter(is => !is),
-          withLatestFrom(deviation),
-          filter(([_, deviation]) => deviation !== 0),
-          map(([_, deviation]) => deviation)
+          u.filter(is => !is),
+          u.withLatestFrom(deviation),
+          u.filter(([_, deviation]) => deviation !== 0),
+          u.map(([_, deviation]) => deviation)
         ),
         offset => {
-          publish(scrollBy, { top: -offset, behavior: 'auto' })
-          publish(deviation, 0)
+          u.publish(scrollBy, { top: -offset, behavior: 'auto' })
+          u.publish(deviation, 0)
         }
       )
     } else {
-      connect(
-        pipe(
+      u.connect(
+        u.pipe(
           deviationOffset,
-          map(offset => ({ top: offset, behavior: 'auto' }))
+          u.map(offset => ({ top: offset, behavior: 'auto' }))
         ),
         scrollBy
       )
     }
 
-    subscribe(
-      pipe(
-        unshiftWith,
-        withLatestFrom(sizes, listState),
-        map(([unshiftWith, sizeState, listState]) => {
+    u.subscribe(
+      u.pipe(
+        prioUnshiftWith,
+        u.map(unshiftWith => {
+          const currentTopIndex = u.getValue(listState).items[0].originalIndex!
+
+          console.log({ currentTopIndex })
           return {
-            index: listState.items[0].originalIndex! + unshiftWith,
-            offset: offsetOf(listState.items[0].originalIndex!, sizeState),
+            index: currentTopIndex + unshiftWith,
+            offset: offsetOf(currentTopIndex, u.getValue(sizes)),
           }
         })
       ),
       ({ index, offset }) => {
-        handleNext(listRefresh, () => {
-          const newOffset = offsetOf(index, getValue(sizes))
-          publish(scrollBy, { top: newOffset - offset })
+        setTimeout(() => {
+          const newOffset = offsetOf(index, u.getValue(sizes))
+          u.publish(scrollBy, { top: newOffset - offset })
         })
       }
     )
 
     return { deviation }
   },
-  tup(domIOSystem, stateFlagsSystem, listStateSystem, sizeSystem)
+  u.tup(domIOSystem, stateFlagsSystem, listStateSystem, sizeSystem)
 )

@@ -324,6 +324,7 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
   {
     required: {},
     optional: {
+      firstItemIndex: 'firstItemIndex',
       itemContent: 'itemContent',
       groupContent: 'groupContent',
       overscan: 'overscan',
@@ -339,7 +340,6 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
       followOutput: 'followOutput',
       headerFooterTag: 'headerFooterTag',
       data: 'data',
-      firstItemIndex: 'firstItemIndex',
       initialItemCount: 'initialItemCount',
       initialScrollTop: 'initialScrollTop',
 
