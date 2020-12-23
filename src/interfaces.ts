@@ -1,15 +1,15 @@
-import { ComponentType, CSSProperties, HTMLAttributes, Key, ReactNode, Ref } from 'react'
+import { ComponentPropsWithRef, ComponentType, HTMLAttributes, Key, ReactNode, Ref } from 'react'
 export interface ListRange {
   startIndex: number
   endIndex: number
 }
 
-export interface ItemContent {
-  (index: number, data?: any): ReactNode
+export interface ItemContent<D> {
+  (index: number, data: D): ReactNode
 }
 
-export interface GroupItemContent {
-  (index: number, groupIndex: number, data?: any): ReactNode
+export interface GroupItemContent<D> {
+  (index: number, groupIndex: number, data: D): ReactNode
 }
 
 export interface GroupContent {
@@ -60,7 +60,7 @@ export interface Components {
   /**
    * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
    */
-  List?: ComponentType<{ ref: Ref<HTMLDivElement>; style: CSSProperties }>
+  List?: ComponentType<ComponentPropsWithRef<'div'>>
 
   /**
    * Set to render a custom UI when the list is empty.
@@ -96,25 +96,25 @@ export interface ScrollSeekConfiguration {
 
 export type FollowOutput = boolean | 'smooth' | 'auto'
 
-export interface Item {
+export interface Item<D> {
   index: number
   offset: number
   size: number
-  data?: any
+  data?: D
 }
-export interface RecordItem extends Item {
+export interface RecordItem<D> extends Item<D> {
   type?: undefined
   groupIndex?: number
   originalIndex?: number
-  data?: any
+  data?: D
 }
 
-export interface GroupItem extends Item {
+export interface GroupItem<D> extends Item<D> {
   type: 'group'
   originalIndex?: number
 }
 
-export type ListItem = RecordItem | GroupItem
+export type ListItem<D> = RecordItem<D> | GroupItem<D>
 
 export interface IndexLocationWithAlign {
   /**

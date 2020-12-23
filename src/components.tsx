@@ -1,7 +1,8 @@
-import { ForwardRefExoticComponent, ReactNode } from 'react'
+import React, { ComponentPropsWithoutRef, ForwardRefExoticComponent, ReactElement, Ref } from 'react'
 import {
   ListItem,
   FollowOutput,
+  ItemContent,
   GroupItemContent,
   Components,
   ComputeItemKey,
@@ -16,7 +17,7 @@ type CompProps<T> = T extends React.ForwardRefExoticComponent<infer R> ? R : nev
 type ListProps = CompProps<typeof List>
 type GridProps = CompProps<typeof Grid>
 
-export interface VirtuosoProps extends Omit<ListProps, 'groupCounts' | 'groupContent'> {
+export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'groupContent'>, ComponentPropsWithoutRef<'div'> {
   /**
    * The total amount of items to be rendered.
    */
@@ -25,7 +26,7 @@ export interface VirtuosoProps extends Omit<ListProps, 'groupCounts' | 'groupCon
   /**
    * The data items to be rendered. If data is set, the total count will be inferred from the length of the array.
    */
-  data?: any[]
+  data?: D[]
 
   /**
    * Set the overscan property to make the component "chunk" the rendering of new items on scroll.
@@ -67,7 +68,7 @@ export interface VirtuosoProps extends Omit<ListProps, 'groupCounts' | 'groupCon
   /**
    * Set the callback to specify the contents of the item.
    */
-  itemContent?: (index: number, data?: any) => ReactNode
+  itemContent?: ItemContent<D>
 
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.
@@ -155,11 +156,11 @@ export interface VirtuosoProps extends Omit<ListProps, 'groupCounts' | 'groupCon
   /**
    * Called with the new set of items each time the list items are rendered due to scrolling.
    */
-  itemsRendered?: (items: ListItem[]) => void
+  itemsRendered?: (items: ListItem<D>[]) => void
 }
 
-export interface GroupedVirtuosoProps
-  extends Omit<VirtuosoProps, 'totalCount' | 'itemContent'>,
+export interface GroupedVirtuosoProps<D>
+  extends Omit<VirtuosoProps<D>, 'totalCount' | 'itemContent'>,
     Pick<ListProps, 'groupCounts' | 'groupContent'> {
   /**
    * Specifies the amount of items in each group (and, actually, how many groups are there).
@@ -175,7 +176,7 @@ export interface GroupedVirtuosoProps
   /**
    * Specifies how each each item gets rendered.
    */
-  itemContent?: GroupItemContent
+  itemContent?: GroupItemContent<D>
 }
 
 export interface VirtuosoGridProps extends GridProps {
@@ -273,6 +274,8 @@ export interface VirtuosoGridHandle extends GridHandle {
   scrollBy(location: ScrollToOptions): void
 }
 
-export const Virtuoso: ForwardRefExoticComponent<VirtuosoProps> = List
-export const GroupedVirtuoso: ForwardRefExoticComponent<GroupedVirtuosoProps> = List
+export const Virtuoso = List as <D extends unknown = any>(props: VirtuosoProps<D> & { ref?: Ref<VirtuosoHandle> }) => ReactElement
+export const GroupedVirtuoso = List as <D extends unknown = any>(
+  props: GroupedVirtuosoProps<D> & { ref?: Ref<GroupedVirtuosoHandle> }
+) => ReactElement
 export const VirtuosoGrid: ForwardRefExoticComponent<VirtuosoGridProps> = Grid

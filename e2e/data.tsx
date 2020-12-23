@@ -4,11 +4,10 @@ import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../src'
 
 function generateItems(length: number) {
-  return Array.from({ length }).map((_, index) => `My Item ${index}`)
+  return Array.from({ length }, (_, index) => `My Item ${index}`)
 }
 
-const itemContent = (_, __, data) => {
-  console.log(data)
+const itemContent = (_: number, data: string) => {
   return <div style={{ height: 30 }}>{data}</div>
 }
 const App = () => {

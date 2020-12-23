@@ -43,9 +43,9 @@ export const upwardScrollFixSystem = u.system(
             }
           }
 
-          return [newDev, items] as [number, ListItem[]]
+          return [newDev, items] as [number, ListItem<any>[]]
         },
-        [0, []] as [number, ListItem[]]
+        [0, []] as [number, ListItem<any>[]]
       ),
       u.filter(([amount]) => amount !== 0),
       u.map(([amount]) => amount)

@@ -10,14 +10,15 @@ import { sizeRangeSystem } from './sizeRangeSystem'
 import { Data, originalIndexFromItemIndex, SizeState, sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
 
+export type ListItems = ListItem<any>[]
 export interface TopListState {
-  items: ListItem[]
+  items: ListItems
   listHeight: number
 }
 
 export interface ListState {
-  items: ListItem[]
-  topItems: ListItem[]
+  items: ListItems
+  topItems: ListItems
   topListHeight: number
   offsetTop: number
   offsetBottom: number
@@ -39,8 +40,8 @@ function probeItemSet(index: number, sizes: SizeState, data: Data) {
 }
 
 const EMPTY_LIST_STATE: ListState = {
-  items: [] as ListItem[],
-  topItems: [] as ListItem[],
+  items: [] as ListItems,
+  topItems: [] as ListItems,
   offsetTop: 0,
   offsetBottom: 0,
   top: 0,
@@ -48,7 +49,7 @@ const EMPTY_LIST_STATE: ListState = {
   topListHeight: 0,
 }
 
-function transposeItems(items: Item[], sizes: SizeState, firstItemIndex: number): ListItem[] {
+function transposeItems(items: Item<any>[], sizes: SizeState, firstItemIndex: number): ListItems {
   if (items.length === 0) {
     return []
   }
@@ -60,7 +61,7 @@ function transposeItems(items: Item[], sizes: SizeState, firstItemIndex: number)
   const startIndex = items[0].index
   const endIndex = items[items.length - 1].index
 
-  const transposedItems = [] as ListItem[]
+  const transposedItems = [] as ListItems
   const groupRanges = rangesWithin(sizes.groupOffsetTree, startIndex, endIndex)
   let currentRange: Range<number> | undefined = undefined
   let currentGroupIndex: number = 0
@@ -94,10 +95,16 @@ function transposeItems(items: Item[], sizes: SizeState, firstItemIndex: number)
     })
   }
 
-  return transposedItems as ListItem[]
+  return transposedItems as ListItems
 }
 
-export function buildListState(items: Item[], topItems: Item[], totalCount: number, sizes: SizeState, firstItemIndex: number): ListState {
+export function buildListState(
+  items: Item<any>[],
+  topItems: Item<any>[],
+  totalCount: number,
+  sizes: SizeState,
+  firstItemIndex: number
+): ListState {
   const { lastSize, lastOffset, lastIndex } = sizes
   let offsetTop = 0
   let bottom = 0
@@ -135,7 +142,7 @@ export const listStateSystem = u.system(
     { didMount },
   ]) => {
     const topItemsIndexes = u.statefulStream<Array<number>>([])
-    const itemsRendered = u.stream<ListItem[]>()
+    const itemsRendered = u.stream<ListItems>()
 
     u.connect(groupedListSystem.topItemsIndexes, topItemsIndexes)
 
@@ -176,7 +183,7 @@ export const listStateSystem = u.system(
               return buildListState(probeItemSet(initialTopMostItemIndex, sizesValue, data), [], totalCount, sizesValue, firstItemIndex)
             }
 
-            let topItems = [] as Item[]
+            let topItems = [] as Item<any>[]
 
             if (topItemsIndexes.length > 0) {
               let startIndex = topItemsIndexes[0]
@@ -213,7 +220,7 @@ export const listStateSystem = u.system(
             let endIndex = findMaxKeyValue(offsetTree, endOffset, 'v')[0]!
             const maxIndex = totalCount - 1
 
-            const items = u.tap([] as Item[], result => {
+            const items = u.tap([] as Item<any>[], result => {
               for (const range of rangesWithin(offsetTree, startIndex, endIndex)) {
                 let offset = range.value
                 let rangeStartIndex = range.start
