@@ -29,8 +29,8 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
   data?: D[]
 
   /**
-   * Set the overscan property to make the component "chunk" the rendering of new items on scroll.
-   * The property causes the component to render more items than the necessary, but reduces the re-renders on scroll.
+   * Increases the visual window which is used to calculate the rendered items with the specified **amount in pixels**.
+   * Effectively, this makes the component "chunk" the rendering of new items by renderng more items than the necessary, but reducing the re-renders on scroll.
    * Setting { main: number, reverse: number } lets you extend the list in both the main and the reverse scrollable directions.
    */
   overscan?: number | { main: number; reverse: number }
