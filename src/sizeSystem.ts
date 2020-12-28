@@ -202,13 +202,9 @@ export const sizeSystem = u.system(
         u.filter(indexes => indexes.length > 0),
         u.withLatestFrom(sizes),
         u.map(([groupIndices, sizes]) => {
-          // the initial pass through that finds empty sizes,
-          // so we record the first group only
-          const groupOffsetTree = false
-            ? insert(newTree<number>(), 0, 0)
-            : groupIndices.reduce((tree, index, idx) => {
-                return insert(tree, index, offsetOf(index, sizes) || idx)
-              }, newTree<number>())
+          const groupOffsetTree = groupIndices.reduce((tree, index, idx) => {
+            return insert(tree, index, offsetOf(index, sizes) || idx)
+          }, newTree<number>())
 
           return {
             ...sizes,

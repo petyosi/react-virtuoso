@@ -11,7 +11,7 @@ import {
   streamFromEmitter,
   tup,
 } from '@virtuoso.dev/urx'
-import { empty, findMaxKeyValue } from './AATree'
+import { findMaxKeyValue } from './AATree'
 import { domIOSystem } from './domIOSystem'
 import { sizeSystem, hasGroups } from './sizeSystem'
 export interface GroupIndexesAndCount {
