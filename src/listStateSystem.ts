@@ -7,7 +7,7 @@ import { Item, ListItem, ListRange } from './interfaces'
 import { propsReadySystem } from './propsReadySystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
-import { Data, originalIndexFromItemIndex, SizeState, sizeSystem } from './sizeSystem'
+import { Data, originalIndexFromItemIndex, SizeState, sizeSystem, hasGroups } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
 
 export type ListItems = ListItem<any>[]
@@ -27,7 +27,7 @@ export interface ListState {
 }
 
 function probeItemSet(index: number, sizes: SizeState, data: Data) {
-  if (!empty(sizes.groupOffsetTree)) {
+  if (hasGroups(sizes)) {
     const itemIndex = originalIndexFromItemIndex(index, sizes)
     const groupIndex = findMaxKeyValue(sizes.groupOffsetTree, itemIndex)[0]
 
@@ -54,7 +54,7 @@ function transposeItems(items: Item<any>[], sizes: SizeState, firstItemIndex: nu
     return []
   }
 
-  if (empty(sizes.groupOffsetTree)) {
+  if (!hasGroups(sizes)) {
     return items.map(item => ({ ...item, index: item.index + firstItemIndex, originalIndex: item.index }))
   }
 
@@ -211,7 +211,7 @@ export const listStateSystem = u.system(
 
             // pull a fresh top group, avoids a bug where
             // scrolling up too fast causes stack overflow
-            if (!empty(sizesValue.groupOffsetTree)) {
+            if (hasGroups(sizesValue)) {
               topItemsIndexes = [findMaxKeyValue(sizesValue.groupOffsetTree, u.getValue(statefulScrollTop), 'v')[0]]
             }
 

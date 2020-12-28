@@ -13,7 +13,7 @@ import {
 } from '@virtuoso.dev/urx'
 import { empty, findMaxKeyValue } from './AATree'
 import { domIOSystem } from './domIOSystem'
-import { sizeSystem } from './sizeSystem'
+import { sizeSystem, hasGroups } from './sizeSystem'
 export interface GroupIndexesAndCount {
   totalCount: number
   groupIndices: number[]
@@ -43,7 +43,7 @@ export const groupedListSystem = system(([{ totalCount, groupIndices, sizes }, {
   connect(
     pipe(
       combineLatest(scrollTop, sizes),
-      filter(([_, state]) => !empty(state.groupOffsetTree)),
+      filter(([_, sizes]) => hasGroups(sizes)),
       map(([scrollTop, state]) => findMaxKeyValue(state.groupOffsetTree, scrollTop, 'v')[0]),
       distinctUntilChanged(),
       map(index => [index])

@@ -162,7 +162,7 @@ export function offsetOf(index: number, state: Pick<SizeState, 'sizeTree' | 'off
 }
 
 export function originalIndexFromItemIndex(itemIndex: number, sizes: SizeState) {
-  if (empty(sizes.groupOffsetTree)) {
+  if (!hasGroups(sizes)) {
     return itemIndex
   }
 
@@ -172,6 +172,10 @@ export function originalIndexFromItemIndex(itemIndex: number, sizes: SizeState) 
   }
   // we find the real item index, offseting it by the number of group items before it
   return itemIndex + groupOffset
+}
+
+export function hasGroups(sizes: SizeState) {
+  return !empty(sizes.groupOffsetTree)
 }
 
 type OptionalNumber = number | undefined
