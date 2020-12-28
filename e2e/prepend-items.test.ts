@@ -28,12 +28,12 @@ describe('list with prependable items', () => {
       document.querySelector('button')!.click()
     })
 
-    expect(await getScrollTop()).toBe(75)
+    expect(await getScrollTop()).toBe(110) // 55x2
 
     await page.evaluate(() => {
       document.querySelector('button')!.click()
     })
 
-    expect(await getScrollTop()).toBe(150)
+    expect(await getScrollTop()).toBe(220)
   })
 })

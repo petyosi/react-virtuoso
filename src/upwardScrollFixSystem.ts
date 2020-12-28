@@ -92,7 +92,6 @@ export const upwardScrollFixSystem = u.system(
         u.map(unshiftWith => {
           const currentTopIndex = u.getValue(listState).items[0].originalIndex!
 
-          console.log({ currentTopIndex })
           return {
             index: currentTopIndex + unshiftWith,
             offset: offsetOf(currentTopIndex, u.getValue(sizes)),
@@ -100,8 +99,10 @@ export const upwardScrollFixSystem = u.system(
         })
       ),
       ({ index, offset }) => {
-        setTimeout(() => {
-          const newOffset = offsetOf(index, u.getValue(sizes))
+        // unshiftWith will alter sizes.
+        // sizes are statefulStream, that's why we skip the immediate
+        u.handleNext(u.pipe(sizes, u.skip(1)), sizeValue => {
+          const newOffset = offsetOf(index, sizeValue)
           u.publish(scrollBy, { top: newOffset - offset })
         })
       }
