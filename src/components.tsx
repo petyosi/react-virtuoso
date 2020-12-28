@@ -157,6 +157,12 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
    * Called with the new set of items each time the list items are rendered due to scrolling.
    */
   itemsRendered?: (items: ListItem<D>[]) => void
+
+  /**
+   * Setting `alignToBottom` to `true` aligns the items to the bottom of the list if the list is shorter than the viewport.
+   * Use `followOutput` property to keep the list aligned when new items are appended.
+   */
+  alignToBottom?: boolean
 }
 
 export interface GroupedVirtuosoProps<D>

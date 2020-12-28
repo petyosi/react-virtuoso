@@ -175,11 +175,12 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const computeItemKey = useEmitterValue('computeItemKey')
   const isSeeking = useEmitterValue('isSeeking')
   const hasGroups = useEmitterValue('groupIndices').length > 0
+  const paddingTopAddition = useEmitterValue('paddingTopAddition')
 
   const containerStyle: CSSProperties = showTopList
     ? {}
     : {
-        paddingTop: (listState as ListState).offsetTop,
+        paddingTop: (listState as ListState).offsetTop + paddingTopAddition,
         paddingBottom: (listState as ListState).offsetBottom,
         marginTop: deviation,
       }
@@ -342,6 +343,7 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
       data: 'data',
       initialItemCount: 'initialItemCount',
       initialScrollTop: 'initialScrollTop',
+      alignToBottom: 'alignToBottom',
 
       // deprecated
       item: 'item',
