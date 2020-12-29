@@ -14,7 +14,7 @@ describe('scroll to index', () => {
 
   beforeEach(async () => {
     await page.reload()
-    await page.waitFor(600) // :(
+    await page.waitFor(900) // :(
   })
 
   it('scrolls to 50px', async () => {
