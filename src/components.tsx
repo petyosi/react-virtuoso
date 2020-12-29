@@ -113,6 +113,8 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
   /**
    * Use when implementing inverse infinite scrolling - decrease the value this property
    * in combination with  `data` or `totalCount` to prepend items to the top of the list.
+   *
+   * Warning: the firstItemIndex should **be a positive number**, based on the total amount of items to be displayed.
    */
   firstItemIndex?: number
 
