@@ -21,7 +21,9 @@ export const initialScrollTopSystem = u.system(
             u.filter(val => val !== 0)
           ),
           () => {
-            u.publish(scrollTo, location)
+            setTimeout(() => {
+              u.publish(scrollTo, location)
+            })
           }
         )
       }
