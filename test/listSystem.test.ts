@@ -190,8 +190,6 @@ describe('list engine', () => {
         behavior: 'auto',
       })
     })
-    it.todo('readjusts twice if sizes keep changing')
-    it.todo('navigates to a specific location using scrollTo')
   })
 
   describe('scrolling up after a jump', () => {
@@ -399,6 +397,24 @@ describe('list engine', () => {
       expect(sub).toHaveBeenCalledWith(50 + 40 + 1000 * 30)
       // 7 items should be rendered
       expect(getValue(listState).items).toHaveLength(5)
+    })
+  })
+
+  describe('align to bottom', () => {
+    it('pads the top with the difference of the viewport and the list size', () => {
+      const { propsReady, paddingTopAddition, alignToBottom, sizeRanges, scrollTop, viewportHeight, totalCount } = init(listSystem)
+
+      publish(alignToBottom, true)
+      publish(scrollTop, 0)
+      publish(viewportHeight, 1200)
+      publish(totalCount, 5)
+      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
+      const sub = jest.fn()
+      subscribe(paddingTopAddition, sub)
+      publish(propsReady, true)
+      expect(sub).toHaveBeenCalledWith(1200 - 5 * 30)
+      publish(viewportHeight, 1100)
+      expect(sub).toHaveBeenCalledWith(1100 - 5 * 30)
     })
   })
 })
