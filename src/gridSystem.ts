@@ -50,7 +50,10 @@ const PROBE_GRID_STATE: GridState = {
 }
 
 const { ceil, floor, min, max } = Math
-const hackFloor = (val: number) => (ceil(val) - val < 0.03 ? ceil(val) : floor(val))
+
+function hackFloor(val: number) {
+  return ceil(val) - val < 0.03 ? ceil(val) : floor(val)
+}
 
 function buildItems(startIndex: number, endIndex: number) {
   return Array.from({ length: endIndex - startIndex + 1 }).map((_, i) => ({ index: i + startIndex } as GridItem))
