@@ -9,6 +9,7 @@ import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
 import { Data, originalIndexFromItemIndex, SizeState, sizeSystem, hasGroups } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
+import { rangeComparator, tupleComparator } from './comparators'
 
 export type ListItems = ListItem<any>[]
 export interface TopListState {
@@ -290,10 +291,11 @@ export const listStateSystem = u.system(
       u.pipe(
         listState,
         u.filter(({ items }) => items.length > 0),
-        u.withLatestFrom(totalCount),
+        u.withLatestFrom(totalCount, data),
         u.filter(([{ items }, totalCount]) => items[items.length - 1].originalIndex === totalCount - 1),
-        u.map(([, totalCount]) => totalCount - 1),
-        u.distinctUntilChanged()
+        u.map(([, totalCount, data]) => [totalCount - 1, data] as [number, any[]]),
+        u.distinctUntilChanged(tupleComparator),
+        u.map(([count]) => count)
       )
     )
 
@@ -319,9 +321,7 @@ export const listStateSystem = u.system(
             endIndex: items[items.length - 1].index,
           } as ListRange
         }),
-        u.distinctUntilChanged((prev, next) => {
-          return prev && prev.startIndex === next.startIndex && prev.endIndex === next.endIndex
-        })
+        u.distinctUntilChanged(rangeComparator)
       )
     )
 

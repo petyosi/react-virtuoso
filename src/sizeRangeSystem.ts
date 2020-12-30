@@ -1,5 +1,6 @@
 import * as u from '@virtuoso.dev/urx'
 import { domIOSystem, DOWN, ScrollDirection, UP } from './domIOSystem'
+import { tupleComparator } from './comparators'
 
 export type NumberTuple = [number, number]
 export type Overscan = number | { main: number; reverse: number }
@@ -8,8 +9,6 @@ export const BOTTOM = 'bottom' as const
 export const NONE = 'none' as const
 export type ListEnd = typeof TOP | typeof BOTTOM
 export type ChangeDirection = typeof UP | typeof DOWN | typeof NONE
-
-export const boundryComparator = (prev: NumberTuple, current: NumberTuple) => prev && prev[0] === current[0] && prev[1] === current[1]
 
 export const getOverscan = (overscan: Overscan, end: ListEnd, direction: ScrollDirection) => {
   if (typeof overscan === 'number') {
@@ -37,7 +36,7 @@ export const sizeRangeSystem = u.system(
           u.duc(scrollTop),
           u.duc(viewportHeight),
           u.duc(headerHeight),
-          u.duc(listBoundary, boundryComparator),
+          u.duc(listBoundary, tupleComparator),
           u.duc(overscan),
           u.duc(topListHeight),
           u.duc(deviation)
@@ -67,7 +66,7 @@ export const sizeRangeSystem = u.system(
           return null
         }),
         u.filter(value => value != null),
-        u.distinctUntilChanged(boundryComparator as any)
+        u.distinctUntilChanged(tupleComparator as any)
       ),
       [0, 0]
     ) as unknown) as u.StatefulStream<NumberTuple>

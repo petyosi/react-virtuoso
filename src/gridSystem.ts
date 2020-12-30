@@ -1,10 +1,11 @@
 import * as u from '@virtuoso.dev/urx'
+import { rangeComparator, tupleComparator } from './comparators'
 import { domIOSystem } from './domIOSystem'
-import { sizeRangeSystem, boundryComparator } from './sizeRangeSystem'
-import { stateFlagsSystem } from './stateFlagsSystem'
-import { IndexLocation, normalizeIndexLocation } from './scrollToIndexSystem'
-import { scrollSeekSystem } from './scrollSeekSystem'
 import { propsReadySystem } from './propsReadySystem'
+import { scrollSeekSystem } from './scrollSeekSystem'
+import { IndexLocation, normalizeIndexLocation } from './scrollToIndexSystem'
+import { sizeRangeSystem } from './sizeRangeSystem'
+import { stateFlagsSystem } from './stateFlagsSystem'
 
 export interface ElementDimensions {
   width: number
@@ -141,7 +142,7 @@ export const gridSystem = u.system(
           const { top, bottom } = gridLayout(viewport, item, items)
           return [top, bottom] as [number, number]
         }),
-        u.distinctUntilChanged(boundryComparator)
+        u.distinctUntilChanged(tupleComparator)
       ),
       listBoundary
     )
@@ -189,9 +190,7 @@ export const gridSystem = u.system(
             endIndex: items[items.length - 1].index,
           }
         }),
-        u.distinctUntilChanged((prev, next) => {
-          return prev && prev.startIndex === next.startIndex && prev.endIndex === next.endIndex
-        })
+        u.distinctUntilChanged(rangeComparator)
       )
     )
 
