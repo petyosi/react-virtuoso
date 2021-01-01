@@ -11,7 +11,7 @@ const GLITCHY_SCROLL_BY = UA && (!!UA.match(/iPad/i) || !!UA.match(/iPhone/i))
  * Fixes upward scrolling by calculating and compensation from changed item heights, using scrollBy.
  */
 export const upwardScrollFixSystem = u.system(
-  ([{ scrollBy, scrollTop, scrollDirection, deviation }, { isScrolling }, { listState }, { prioUnshiftWith, sizes }]) => {
+  ([{ scrollBy, scrollTop, scrollDirection, deviation }, { isScrolling }, { listState }, { unshiftWith, beforeUnshiftWith, sizes }]) => {
     const deviationOffset = u.pipe(
       listState,
       u.withLatestFrom(scrollTop, scrollDirection),
@@ -86,26 +86,33 @@ export const upwardScrollFixSystem = u.system(
       )
     }
 
-    u.subscribe(
+    const unshiftPayload = u.stream<{ index: number; offset: number }>()
+
+    u.connect(
       u.pipe(
-        prioUnshiftWith,
-        u.map(unshiftWith => {
+        beforeUnshiftWith,
+        u.map(indexOffset => {
           const currentTopIndex = u.getValue(listState).items[0].originalIndex!
 
           return {
-            index: currentTopIndex + unshiftWith,
+            index: currentTopIndex + indexOffset,
             offset: offsetOf(currentTopIndex, u.getValue(sizes)),
           }
         })
       ),
-      ({ index, offset }) => {
-        // unshiftWith will alter sizes.
-        // sizes are statefulStream, that's why we skip the immediate
-        u.handleNext(u.pipe(sizes, u.skip(1)), sizeValue => {
-          const newOffset = offsetOf(index, sizeValue)
-          u.publish(scrollBy, { top: newOffset - offset })
+      unshiftPayload
+    )
+
+    u.connect(
+      u.pipe(
+        unshiftWith,
+        u.withLatestFrom(unshiftPayload),
+        u.map(([, { index, offset }]) => {
+          const newOffset = offsetOf(index, u.getValue(sizes))
+          return { top: newOffset - offset }
         })
-      }
+      ),
+      scrollBy
     )
 
     return { deviation }

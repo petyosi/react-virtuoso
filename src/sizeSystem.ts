@@ -269,7 +269,7 @@ export const sizeSystem = u.system(
 
     // hack to capture the current list top item before the sizes get refreshed
     // :(
-    const prioUnshiftWith = u.streamFromEmitter(unshiftWith)
+    const beforeUnshiftWith = u.streamFromEmitter(unshiftWith)
 
     u.connect(
       u.pipe(
@@ -308,7 +308,7 @@ export const sizeSystem = u.system(
       defaultItemSize,
       fixedItemSize,
       unshiftWith,
-      prioUnshiftWith,
+      beforeUnshiftWith,
       firstItemIndex,
 
       // output
