@@ -37,16 +37,16 @@ The example below displayes 500 records grouped by name, using the [the List com
         );
       },
 
-      Group: ({ children, ...props }) => {
+      Group: ({ children, style, ...props }) => {
         return (
           <ListSubheader
             component="div"
             {...props}
             style={{
+              ...style,
               backgroundColor: 'var(--ifm-background-color)',
               margin: 0
             }}
-            disableSticky={true}
           >
             {children}
           </ListSubheader>
