@@ -2,7 +2,6 @@ import { connect, system, handleNext, subscribe, map, pipe, publish, statefulStr
 import { findMaxKeyValue } from './AATree'
 import { domIOSystem } from './domIOSystem'
 import { offsetOf, originalIndexFromItemIndex, sizeSystem } from './sizeSystem'
-import { sizeRangeSystem } from './sizeRangeSystem'
 import { IndexLocationWithAlign } from './interfaces'
 
 export type IndexLocation = number | IndexLocationWithAlign
@@ -20,7 +19,7 @@ export function normalizeIndexLocation(location: IndexLocation) {
 }
 
 export const scrollToIndexSystem = system(
-  ([{ sizes, totalCount, listRefresh }, { viewportHeight, scrollTo, smoothScrollTargetReached }, { headerHeight }]) => {
+  ([{ sizes, totalCount, listRefresh }, { viewportHeight, scrollTo, smoothScrollTargetReached, headerHeight }]) => {
     const scrollToIndex = stream<IndexLocation>()
     const topListHeight = statefulStream(0)
 
@@ -103,6 +102,6 @@ export const scrollToIndexSystem = system(
       topListHeight,
     }
   },
-  tup(sizeSystem, domIOSystem, sizeRangeSystem),
+  tup(sizeSystem, domIOSystem),
   { singleton: true }
 )

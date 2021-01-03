@@ -352,6 +352,50 @@ describe('list engine', () => {
         ],
       })
     })
+
+    it('takes header height into account', () => {
+      const { propsReady, sizeRanges, scrollTop, headerHeight, viewportHeight, listState, groupCounts } = init(listSystem)
+      publish(
+        groupCounts,
+        Array.from({ length: 20 }, () => 3)
+      )
+      publish(scrollTop, 0)
+      publish(viewportHeight, 300)
+      publish(propsReady, true)
+
+      publish(sizeRanges, [
+        { startIndex: 0, endIndex: 0, size: 30 },
+        { startIndex: 1, endIndex: 3, size: 20 },
+      ])
+
+      publish(headerHeight, 80)
+
+      expect(getValue(listState)).toMatchObject({
+        topItems: [{ type: 'group', index: 0, size: 30, offset: 0 }],
+        topListHeight: 30,
+      })
+
+      publish(scrollTop, 90)
+
+      expect(getValue(listState)).toMatchObject({
+        topItems: [{ type: 'group', index: 0, size: 30, offset: 0 }],
+      })
+
+      /*
+        expect(getValue(listState)).toMatchObject({
+          items: [
+            { index: 0, groupIndex: 0, size: 20, offset: 30 },
+            { index: 1, groupIndex: 0, size: 20, offset: 50 },
+            { index: 2, groupIndex: 0, size: 20, offset: 70 },
+            { type: 'group', index: 1, size: 30, offset: 90 },
+            { index: 3, groupIndex: 1, size: 20, offset: 120 },
+            { index: 4, groupIndex: 1, size: 20, offset: 140 },
+            { index: 5, groupIndex: 1, size: 20, offset: 160 },
+            { type: 'group', index: 2, size: 30, offset: 180 },
+          ],
+        })
+           */
+    })
   })
 
   describe('headerHeight', () => {

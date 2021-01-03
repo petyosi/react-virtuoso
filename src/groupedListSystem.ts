@@ -33,7 +33,7 @@ export function groupCountsToIndicesAndCount(counts: number[]) {
   )
 }
 
-export const groupedListSystem = system(([{ totalCount, groupIndices, sizes }, { scrollTop }]) => {
+export const groupedListSystem = system(([{ totalCount, groupIndices, sizes }, { scrollTop, headerHeight }]) => {
   const groupCounts = stream<number[]>()
   const topItemsIndexes = stream<[number]>()
   const groupIndicesAndCount = streamFromEmitter(pipe(groupCounts, map(groupCountsToIndicesAndCount)))
@@ -42,9 +42,9 @@ export const groupedListSystem = system(([{ totalCount, groupIndices, sizes }, {
 
   connect(
     pipe(
-      combineLatest(scrollTop, sizes),
+      combineLatest(scrollTop, sizes, headerHeight),
       filter(([_, sizes]) => hasGroups(sizes)),
-      map(([scrollTop, state]) => findMaxKeyValue(state.groupOffsetTree, scrollTop, 'v')[0]),
+      map(([scrollTop, state, headerHeight]) => findMaxKeyValue(state.groupOffsetTree, Math.max(scrollTop - headerHeight, 0), 'v')[0]),
       distinctUntilChanged(),
       map(index => [index])
     ),

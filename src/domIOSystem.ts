@@ -11,6 +11,8 @@ export const domIOSystem = u.system(
     const smoothScrollTargetReached = u.stream<true>()
     const statefulScrollTop = u.statefulStream(0)
     const viewportHeight = u.stream<number>()
+    const headerHeight = u.statefulStream(0)
+    const footerHeight = u.statefulStream(0)
     const scrollTo = u.stream<ScrollToOptions>()
     const scrollBy = u.stream<ScrollToOptions>()
 
@@ -35,6 +37,8 @@ export const domIOSystem = u.system(
       // input
       scrollTop,
       viewportHeight,
+      headerHeight,
+      footerHeight,
       smoothScrollTargetReached,
 
       // signals

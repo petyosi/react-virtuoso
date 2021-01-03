@@ -133,7 +133,7 @@ export function buildListState(
 
 export const listStateSystem = u.system(
   ([
-    { statefulScrollTop },
+    { statefulScrollTop, headerHeight },
     { sizes, totalCount, data, firstItemIndex },
     groupedListSystem,
     { visibleRange, listBoundary, topListHeight: rangeTopListHeight },
@@ -213,7 +213,8 @@ export const listStateSystem = u.system(
             // pull a fresh top group, avoids a bug where
             // scrolling up too fast causes stack overflow
             if (hasGroups(sizesValue)) {
-              topItemsIndexes = [findMaxKeyValue(sizesValue.groupOffsetTree, u.getValue(statefulScrollTop), 'v')[0]]
+              const scrollTop = Math.max(u.getValue(statefulScrollTop) - u.getValue(headerHeight), 0)
+              topItemsIndexes = [findMaxKeyValue(sizesValue.groupOffsetTree, scrollTop, 'v')[0]]
             }
 
             let minStartIndex = topItemsIndexes.length > 0 ? topItemsIndexes[topItemsIndexes.length - 1] + 1 : 0

@@ -23,10 +23,8 @@ export const getOverscan = (overscan: Overscan, end: ListEnd, direction: ScrollD
 }
 
 export const sizeRangeSystem = u.system(
-  ([{ scrollTop, viewportHeight, deviation }]) => {
+  ([{ scrollTop, viewportHeight, deviation, headerHeight }]) => {
     const listBoundary = u.stream<NumberTuple>()
-    const headerHeight = u.statefulStream(0)
-    const footerHeight = u.statefulStream(0)
     const topListHeight = u.statefulStream(0)
     const overscan = u.statefulStream<Overscan>(0)
 
@@ -74,8 +72,6 @@ export const sizeRangeSystem = u.system(
     return {
       // input
       listBoundary,
-      headerHeight,
-      footerHeight,
       overscan,
       topListHeight,
 

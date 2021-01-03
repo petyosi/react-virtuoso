@@ -1,6 +1,6 @@
 import * as u from '@virtuoso.dev/urx'
 import { listStateSystem } from './listStateSystem'
-import { sizeRangeSystem } from './sizeRangeSystem'
+import { domIOSystem } from './domIOSystem'
 
 export const totalListHeightSystem = u.system(
   ([{ footerHeight, headerHeight }, { listState }]) => {
@@ -19,6 +19,6 @@ export const totalListHeightSystem = u.system(
 
     return { totalListHeight, totalListHeightChanged }
   },
-  u.tup(sizeRangeSystem, listStateSystem),
+  u.tup(domIOSystem, listStateSystem),
   { singleton: true }
 )
