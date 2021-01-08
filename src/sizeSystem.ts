@@ -7,7 +7,7 @@ export interface SizeRange {
   size: number
 }
 
-export type Data = any[] | undefined
+export type Data = readonly any[] | undefined
 
 function rangeIncludes(refRange: SizeRange) {
   const { size, startIndex, endIndex } = refRange

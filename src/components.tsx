@@ -26,7 +26,7 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
   /**
    * The data items to be rendered. If data is set, the total count will be inferred from the length of the array.
    */
-  data?: D[]
+  data?: readonly D[]
 
   /**
    * Increases the visual window which is used to calculate the rendered items with the specified **amount in pixels**.
