@@ -14,27 +14,4 @@ const App = () => {
   )
 }
 
-/*
-      header={() => <>Header</>}
-      footer={() => <>Footer</>}
-      HeaderContainer={() => 'foo'}
-      FooterContainer={() => 'foo'}
-      ItemContainer={({ children, ...props }) => (
-        <div style={{ border: '1px solid blue' }} {...props}>
-          {children}
-        </div>
-      )}
-      emptyComponent={() => <div>No records</div>}
-      ListContainer={React.forwardRef<{}, { style: React.CSSProperties }>(({ children, style, ...props }, ref) => (
-        <div style={{ ...style, border: '1px solid red' }} {...props} ref={ref}>
-          {children}
-        </div>
-      ))}
-      ScrollContainer={React.forwardRef<{}, { style: React.CSSProperties }>(({ children, style, ...props }, ref) => (
-        <div style={{ ...style, border: '1px solid black' }} {...props} ref={ref}>
-          {children}
-        </div>
-      ))}
-   */
-
 ReactDOM.render(<App />, document.getElementById('root'))
