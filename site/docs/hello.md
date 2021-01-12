@@ -31,7 +31,7 @@ It is up to you to build and return the respective content for it.
 />
 ```
 
-## List with `itemCount`
+## List with `itemContent`
 
 ```jsx live
 () => {
