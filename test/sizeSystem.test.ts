@@ -456,4 +456,32 @@ describe('size engine', () => {
       expect(sub).toHaveBeenCalledWith(50)
     })
   })
+
+  it('trims the sizes when total count decreases', () => {
+    let { sizeRanges, totalCount, sizes } = init(sizeSystem)
+    publish(totalCount, 5)
+    publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 1 }])
+    publish(sizeRanges, [{ startIndex: 3, endIndex: 3, size: 3 }])
+    publish(sizeRanges, [{ startIndex: 4, endIndex: 4, size: 2 }])
+    publish(totalCount, 4)
+    expect(getValue(sizes)).toMatchObject({ lastIndex: 4, lastOffset: 6, lastSize: 1 })
+  })
+
+  it('trims the sizes when total count decreases (case 2)', () => {
+    let { sizeRanges, totalCount, sizes } = init(sizeSystem)
+    publish(totalCount, 9)
+    publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 1 }])
+    publish(sizeRanges, [{ startIndex: 3, endIndex: 6, size: 3 }])
+    publish(totalCount, 5)
+    expect(getValue(sizes)).toMatchObject({ lastIndex: 5, lastOffset: 9, lastSize: 1 })
+  })
+
+  it('trims the sizes when total count decreases (case 3)', () => {
+    let { sizeRanges, totalCount, sizes } = init(sizeSystem)
+    publish(totalCount, 9)
+    publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 1 }])
+    publish(sizeRanges, [{ startIndex: 3, endIndex: 6, size: 3 }])
+    publish(totalCount, 3)
+    expect(getValue(sizes)).toMatchObject({ lastIndex: 0, lastOffset: 0, lastSize: 1 })
+  })
 })

@@ -46,7 +46,7 @@ export function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[], onRe
         firstPassDone = true
       } else {
         // remove the range if it starts within the new range OR if
-        // it has the same value as it, in order to perfrom a merge
+        // it has the same value as it, in order to perform a merge
         if (endIndex >= rangeStart || size === rangeValue) {
           sizeTree = remove(sizeTree, rangeStart)
           onRemove(rangeStart)
@@ -170,7 +170,7 @@ export function originalIndexFromItemIndex(itemIndex: number, sizes: SizeState) 
   while (sizes.groupIndices[groupOffset] <= itemIndex + groupOffset) {
     groupOffset++
   }
-  // we find the real item index, offseting it by the number of group items before it
+  // we find the real item index, offsetting it by the number of group items before it
   return itemIndex + groupOffset
 }
 
@@ -214,6 +214,28 @@ export const sizeSystem = u.system(
         })
       ),
       sizes
+    )
+
+    // decreasing the total count should remove any existing entries
+    // beyond the last index - do this by publishing the default size as a range over them.
+    u.connect(
+      u.pipe(
+        totalCount,
+        u.withLatestFrom(sizes),
+        u.filter(([totalCount, { lastIndex }]) => {
+          return totalCount < lastIndex
+        }),
+        u.map(([totalCount, { lastIndex, lastSize }]) => {
+          return [
+            {
+              startIndex: totalCount,
+              endIndex: lastIndex,
+              size: lastSize,
+            },
+          ] as SizeRange[]
+        })
+      ),
+      sizeRanges
     )
 
     u.connect(fixedItemSize, defaultItemSize)
