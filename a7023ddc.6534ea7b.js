@@ -1,1 +1,0 @@
-(window.webpackJsonp=window.webpackJsonp||[]).push([[48],{106:function(a){a.exports=JSON.parse('{"urx":{"allTagsPath":"/blog/tags","slug":"urx","name":"urx","count":1,"permalink":"/blog/tags/urx"},"state-management":{"allTagsPath":"/blog/tags","slug":"state-management","name":"state-management","count":1,"permalink":"/blog/tags/state-management"}}')}}]);
