@@ -132,21 +132,46 @@ integrade a custom scrolling library (like [React scrollbars](https://github.com
 
 Check the [custom scroll container](/custom-scroll-container) example for a starting point.
 
-## Performance Factors
+## Performance 
 
 Several factors affect the component performance.
 The first and most important one _size of the visible area_.
-Redrawing large items takes more time and reduces the frame rate.
-To see if this affects you, reduce the component width or height; Set the `style` property
-to something like `{{width: '200px'}}`.
+Redrawing more items takes more time and reduces the frame rate.
+To see if this affects you, reduce the component width or height; 
+Set the `style` property to something like `{{width: '200px'}}`.
 
-Next, if the content in the item prop is complex / large,
-use [React.memo](https://reactjs.org/docs/react-api.html#reactmemo) for the `item` render prop contents.
+Next, if the items are complex or slow to render, use [React.memo](https://reactjs.org/docs/react-api.html#reactmemo) for the `itemContent` contents.
+
+```jsx
+// Item contents are cached properly with React.memo
+const InnerItem = React.memo(({ index }) => {
+  React.useEffect(() => {
+    console.log('inner mounting', index)
+    return () => {
+      console.log('inner unmounting', index)
+    }
+  }, [index])
+  return <div style={{ height: 30 }}>Item {index}</div>
+})
+
+// The callback is executed often - don't inline complex components in here.
+const itemContent = (index) => {
+  console.log('providing content', index)
+  return <InnerItem index={index} />
+}
+
+const App = () => {
+  return <Virtuoso totalCount={100} itemContent={itemContent} style={{ height: 300 }} />
+}
+
+ReactDOM.render(<App />, document.getElementById('root'))
+```
 
 You can experiment with the `overscan` property which specifies
 how much more to render in addition to the viewport visible height.
 For example, if the component is `100px` tall, setting the `overscan`
 to `150` will cause the list to render **at least** `250px` of content.
+
 In a nutshell, increasing the `overscan` causes less frequent re-renders,
 but makes each re-render more expensive (because more items will get replaced).
 
@@ -154,9 +179,6 @@ Loading images and displaying complex components while scrolling can cause jank.
 To fix that, you can hook to the `scrollingStateChange` callback and replace
 the complex content in the item with a simplified one.
 Check the [scroll handling example](/scroll-handling) for a possible implementation.
-
-Finally, as a last resort, you can speed up things by hard-coding the size of the items using the `itemHeight` property.
-This will cause the component to stop measuring and observing the item sizes. Be careful with that option; ensure that the items won't change size on different resolutions.
 
 ## Gotchas
 
@@ -176,6 +198,8 @@ To avoid that, if you are putting paragraphs and headings inside the `item`, mak
   )}
 />
 ```
+
+Few more common problems are mentioned in the [troubleshooting section](/troubleshooting).
 
 ## Browser Support
 
