@@ -22,7 +22,7 @@ import { createElement, CSSProperties, FC } from 'react'
 import useChangedChildSizes from './hooks/useChangedChildSizes'
 import useScrollTop from './hooks/useScrollTop'
 import useSize from './hooks/useSize'
-import { Components, ComputeItemKey, GroupContent, HTMLProps } from './interfaces'
+import { Components, ComputeItemKey, GroupContent, ListRootProps } from './interfaces'
 import { ListState } from './listStateSystem'
 import { listSystem } from './listSystem'
 import { positionStickyCssValue } from './utils/positionStickyCssValue'
@@ -273,7 +273,7 @@ export interface Hooks {
 }
 
 export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hooks) {
-  const Scroller: FC<HTMLProps> = React.memo(function VirtuosoScroller({ style, children, ...props }) {
+  const Scroller: Components['Scroller'] = React.memo(function VirtuosoScroller({ style, children, ...props }) {
     const scrollTopCallback = usePublisher('scrollTop')
     const ScrollerComponent = useEmitterValue('ScrollerComponent')!
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
@@ -299,7 +299,7 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
   return Scroller
 }
 
-const ListRoot: FC<HTMLProps> = React.memo(function VirtuosoRoot({ ...props }) {
+const ListRoot: FC<ListRootProps> = React.memo(function VirtuosoRoot(props) {
   const viewportHeight = usePublisher('viewportHeight')
   const viewportRef = useSize(compose(viewportHeight, prop('offsetHeight')))
   const headerHeight = useEmitterValue('headerHeight')

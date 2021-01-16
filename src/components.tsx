@@ -1,23 +1,23 @@
-import React, { ComponentPropsWithoutRef, ForwardRefExoticComponent, ReactElement, Ref } from 'react'
+import React, { ForwardRefExoticComponent, ReactElement, Ref } from 'react'
+import { Grid, GridHandle } from './Grid'
 import {
-  ListItem,
-  FollowOutput,
-  ItemContent,
-  GroupItemContent,
   Components,
   ComputeItemKey,
-  ScrollSeekConfiguration,
-  ListRange,
-  IndexLocationWithAlign,
+  FollowOutput,
   GroupContent,
+  GroupItemContent,
+  IndexLocationWithAlign,
+  ItemContent,
+  ListItem,
+  ListRange,
+  ScrollSeekConfiguration,
 } from './interfaces'
-import { ListHandle, List } from './List'
-import { GridHandle, Grid } from './Grid'
+import { List, ListHandle } from './List'
 type CompProps<T> = T extends React.ForwardRefExoticComponent<infer R> ? R : never
 type ListProps = CompProps<typeof List>
 type GridProps = CompProps<typeof Grid>
 
-export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'groupContent'>, ComponentPropsWithoutRef<'div'> {
+export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'groupContent'> {
   /**
    * The total amount of items to be rendered.
    */

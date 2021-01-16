@@ -1,54 +1,26 @@
 import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
 import {
-  map,
-  statefulStream,
-  subscribe,
+  connect,
+  distinctUntilChanged,
   getValue,
+  map,
+  pipe,
   publish,
-  system,
-  tup,
+  statefulStream,
+  statefulStreamFromEmitter,
   stream,
   Stream,
-  connect,
-  pipe,
+  subscribe,
+  system,
+  tup,
   withLatestFrom,
-  statefulStreamFromEmitter,
-  distinctUntilChanged,
 } from '@virtuoso.dev/urx'
 import * as React from 'react'
-import { createElement, ComponentType, CSSProperties, FC, ReactNode, Ref } from 'react'
+import { createElement, FC } from 'react'
 import { gridSystem } from './gridSystem'
 import useSize from './hooks/useSize'
-import { buildScroller, identity, viewportStyle, addDeprecatedAlias } from './List'
-import { ComputeItemKey, HTMLProps } from './interfaces'
-
-export interface GridComponents {
-  /**
-   * Set to customize the item wrapping element. Use only if you would like to render list from elements different than a `div`.
-   */
-  Item?: ComponentType<HTMLProps & { 'data-index': number }>
-
-  /**
-   * Set to customize the outermost scrollable element. This should not be necessary in general,
-   * as the component passes its HTML attribute props to it.
-   */
-  Scroller?: ComponentType<HTMLProps & { ref: Ref<HTMLDivElement> }>
-
-  /**
-   * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
-   */
-  List?: ComponentType<HTMLProps & { ref: Ref<HTMLDivElement> }>
-
-  /**
-   * Set to render an item placeholder when the user scrolls fast.
-   * See the `scrollSeekConfiguration` property for more details.
-   */
-  ScrollSeekPlaceholder?: ComponentType<{ style: CSSProperties }>
-}
-
-export interface GridItemContent {
-  (index: number): ReactNode
-}
+import { ComputeItemKey, GridComponents, GridItemContent, GridRootProps } from './interfaces'
+import { addDeprecatedAlias, buildScroller, identity, viewportStyle } from './List'
 
 const gridComponentPropsSystem = system(() => {
   const itemContent = statefulStream<GridItemContent>(index => `Item ${index}`)
@@ -155,7 +127,7 @@ const GridItems: FC = React.memo(function GridItems() {
   )
 })
 
-const GridRoot: FC<HTMLProps> = React.memo(function GridRoot({ ...props }) {
+const GridRoot: FC<GridRootProps> = React.memo(function GridRoot({ ...props }) {
   const viewportDimensions = usePublisher('viewportDimensions')
 
   const viewportRef = useSize(el => {

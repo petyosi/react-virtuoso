@@ -1,4 +1,4 @@
-import { ComponentPropsWithRef, ComponentType, HTMLAttributes, Key, ReactNode, Ref } from 'react'
+import { ComponentPropsWithRef, ComponentType, Key, ReactNode, CSSProperties } from 'react'
 export interface ListRange {
   startIndex: number
   endIndex: number
@@ -16,8 +16,6 @@ export interface GroupContent {
   (index: number): ReactNode
 }
 
-export type HTMLProps = HTMLAttributes<HTMLDivElement>
-
 export interface ItemProps {
   'data-index': number
   'data-item-index': number
@@ -31,6 +29,32 @@ export interface GroupProps {
   'data-known-size': number
 }
 
+/**
+ * Passed to the Components.List custom component
+ */
+export interface ListProps extends Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'ref'> {}
+
+/**
+ * Passed to the Components.List custom component
+ */
+export interface GridListProps extends Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'ref' | 'className'> {}
+
+/**
+ * Passed to the Components.Scroller custom component
+ */
+export interface ScrollerProps extends Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'tabIndex' | 'ref'> {}
+
+/**
+ * Passed to the Components.ScrollSeekPlaceholder custom component
+ */
+export interface ScrollSeekPlaceholderProps {
+  index: number
+  height: number
+}
+
+/**
+ * Customize the Virtuoso rendering by passing a set of custom components.
+ */
 export interface Components {
   /**
    * Set to render a component at the top of the list.
@@ -55,20 +79,22 @@ export interface Components {
    * Set to customize the outermost scrollable element. This should not be necessary in general,
    * as the component passes its HTML attribute props to it.
    */
-  Scroller?: ComponentType<HTMLProps & { ref: Ref<HTMLDivElement> }>
+  Scroller?: ComponentType<ScrollerProps>
 
   /**
    * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
    */
-  List?: ComponentType<ComponentPropsWithRef<'div'>>
+  List?: ComponentType<ListProps>
 
   /**
    * Set to render a custom UI when the list is empty.
    */
   EmptyPlaceholder?: ComponentType
 
-  /** Set to render an item placeholder when the user scrolls fast.  See the `scrollSeek` property for more details.  */
-  ScrollSeekPlaceholder?: ComponentType<{ index: number; height: number }>
+  /**
+   * Set to render an item placeholder when the user scrolls fast.  See the `scrollSeek` property for more details.
+   */
+  ScrollSeekPlaceholder?: ComponentType<ScrollSeekPlaceholderProps>
 }
 
 export interface ComputeItemKey {
@@ -129,4 +155,40 @@ export interface IndexLocationWithAlign {
    * Set 'smooth' to have an animated transition to the specified location.
    */
   behavior?: 'smooth' | 'auto'
+}
+
+export type ListRootProps = Omit<React.HTMLProps<'div'>, 'ref' | 'data'>
+export type GridRootProps = Omit<React.HTMLProps<'div'>, 'ref' | 'data'>
+
+export interface GridItem {
+  'data-index': number
+  className?: string
+}
+
+export interface GridComponents {
+  /**
+   * Set to customize the item wrapping element. Use only if you would like to render list from elements different than a `div`.
+   */
+  Item?: ComponentType<GridItem>
+
+  /**
+   * Set to customize the outermost scrollable element. This should not be necessary in general,
+   * as the component passes its HTML attribute props to it.
+   */
+  Scroller?: ComponentType<ScrollerProps>
+
+  /**
+   * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
+   */
+  List?: ComponentType<GridListProps>
+
+  /**
+   * Set to render an item placeholder when the user scrolls fast.
+   * See the `scrollSeekConfiguration` property for more details.
+   */
+  ScrollSeekPlaceholder?: ComponentType<{ style: CSSProperties }>
+}
+
+export interface GridItemContent {
+  (index: number): ReactNode
 }

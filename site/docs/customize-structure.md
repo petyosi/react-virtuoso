@@ -9,7 +9,7 @@ The React Virtuoso component renders as several nested `DIV` elements. The defau
 
 ```txt
 components.Scroller (div)
-  |-viewport (div)  
+  |-viewport (div)
     |-header(div* headerFooterTag)
       |-components.Header
     |-components.List (div)
@@ -25,16 +25,20 @@ components.Scroller (div)
         |-itemContent
       |-components.Group (div+)
         |-groupItemContent
-    
+
 ```
 
-To change what's rendered, pass your component to the specified key in `components`. Notice that the `List` component needs to accept and pass its ref to the actual DOM element. 
+To change what's rendered, pass your component to the specified key in `components`. Notice that the `List` component needs to accept and pass its `ref` to the actual DOM element.
 The example below adds borders to each customizable element.
 
 ```jsx live
 () => {
-  const Item = styled.div`border: 2px solid red`
-  const ListEl = styled.div`border: 1px solid blue`
+  const Item = styled.div`
+    border: 2px solid red;
+  `
+  const ListEl = styled.div`
+    border: 1px solid blue;
+  `
   const Header = () => 'Header'
   const Footer = () => 'Footer'
 
@@ -42,10 +46,22 @@ The example below adds borders to each customizable element.
     return <ListEl {...props} ref={ref} />
   })
 
-  return <Virtuoso
-    components={{ Item, List, Header, Footer }}
-    totalCount={30}
-    itemContent={(idx) => `Item ${idx}`}
-  />
+  return <Virtuoso components={{ Item, List, Header, Footer }} totalCount={30} itemContent={idx => `Item ${idx}`} />
 }
+```
+
+## TypeScript Interfaces
+
+The types for each component are available in the `Components` interface. The example below annotates the `Scroller` custom component:
+
+```tsx
+import { Components } from 'react-virtuoso'
+
+const Scroller: Components['Scroller'] = React.forwardRef(({ style, children }, ref) => {
+  return (
+    <div style={style} ref={ref}>
+      {children}
+    </div>
+  )
+})
 ```
