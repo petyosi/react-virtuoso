@@ -1,20 +1,5 @@
 import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
-import {
-  connect,
-  distinctUntilChanged,
-  getValue,
-  map,
-  pipe,
-  publish,
-  statefulStream,
-  statefulStreamFromEmitter,
-  stream,
-  Stream,
-  subscribe,
-  system,
-  tup,
-  withLatestFrom,
-} from '@virtuoso.dev/urx'
+import * as u from '@virtuoso.dev/urx'
 import * as React from 'react'
 import { createElement, FC } from 'react'
 import { gridSystem } from './gridSystem'
@@ -22,19 +7,19 @@ import useSize from './hooks/useSize'
 import { ComputeItemKey, GridComponents, GridItemContent, GridRootProps } from './interfaces'
 import { addDeprecatedAlias, buildScroller, identity, viewportStyle } from './List'
 
-const gridComponentPropsSystem = system(() => {
-  const itemContent = statefulStream<GridItemContent>(index => `Item ${index}`)
-  const components = statefulStream<GridComponents>({})
-  const itemClassName = statefulStream('virtuoso-grid-item')
-  const listClassName = statefulStream('virtuoso-grid-list')
-  const computeItemKey = statefulStream<ComputeItemKey>(identity)
+const gridComponentPropsSystem = u.system(() => {
+  const itemContent = u.statefulStream<GridItemContent>(index => `Item ${index}`)
+  const components = u.statefulStream<GridComponents>({})
+  const itemClassName = u.statefulStream('virtuoso-grid-item')
+  const listClassName = u.statefulStream('virtuoso-grid-list')
+  const computeItemKey = u.statefulStream<ComputeItemKey>(identity)
 
   const distinctProp = <K extends keyof GridComponents>(propName: K, defaultValue: GridComponents[K] | null | 'div' = null) => {
-    return statefulStreamFromEmitter(
-      pipe(
+    return u.statefulStreamFromEmitter(
+      u.pipe(
         components,
-        map(components => components[propName] as GridComponents[K]),
-        distinctUntilChanged()
+        u.map(components => components[propName] as GridComponents[K]),
+        u.distinctUntilChanged()
       ),
       defaultValue
     )
@@ -53,22 +38,22 @@ const gridComponentPropsSystem = system(() => {
   }
 })
 
-const combinedSystem = system(([gridSystem, gridComponentPropsSystem]) => {
+const combinedSystem = u.system(([gridSystem, gridComponentPropsSystem]) => {
   const deprecatedProps = {
     item: addDeprecatedAlias(gridComponentPropsSystem.itemContent, 'Rename the %citem%c prop to %citemContent.'),
-    ItemContainer: stream<any>(),
-    ScrollContainer: stream<any>(),
-    ListContainer: stream<any>(),
-    emptyComponent: stream<any>(),
-    scrollSeek: stream<any>(),
+    ItemContainer: u.stream<any>(),
+    ScrollContainer: u.stream<any>(),
+    ListContainer: u.stream<any>(),
+    emptyComponent: u.stream<any>(),
+    scrollSeek: u.stream<any>(),
   }
 
-  function deprecateComponentProp(stream: Stream<any>, componentName: string, propName: string) {
-    connect(
-      pipe(
+  function deprecateComponentProp(stream: u.Stream<any>, componentName: string, propName: string) {
+    u.connect(
+      u.pipe(
         stream,
-        withLatestFrom(gridComponentPropsSystem.components),
-        map(([comp, components]) => {
+        u.withLatestFrom(gridComponentPropsSystem.components),
+        u.map(([comp, components]) => {
           console.warn(`react-virtuoso: ${propName} property is deprecated. Pass components.${componentName} instead.`)
           return { ...components, [componentName]: comp }
         })
@@ -77,12 +62,15 @@ const combinedSystem = system(([gridSystem, gridComponentPropsSystem]) => {
     )
   }
 
-  subscribe(deprecatedProps.scrollSeek, ({ placeholder, ...config }) => {
+  u.subscribe(deprecatedProps.scrollSeek, ({ placeholder, ...config }) => {
     console.warn(
       `react-virtuoso: scrollSeek property is deprecated. Pass scrollSeekConfiguration and specify the placeholder in components.ScrollSeekPlaceholder instead.`
     )
-    publish(gridComponentPropsSystem.components, { ...getValue(gridComponentPropsSystem.components), ScrollSeekPlaceholder: placeholder })
-    publish(gridSystem.scrollSeekConfiguration, config)
+    u.publish(gridComponentPropsSystem.components, {
+      ...u.getValue(gridComponentPropsSystem.components),
+      ScrollSeekPlaceholder: placeholder,
+    })
+    u.publish(gridSystem.scrollSeekConfiguration, config)
   })
 
   deprecateComponentProp(deprecatedProps.ItemContainer, 'Item', 'ItemContainer')
@@ -90,7 +78,7 @@ const combinedSystem = system(([gridSystem, gridComponentPropsSystem]) => {
   deprecateComponentProp(deprecatedProps.ScrollContainer, 'Scroller', 'ScrollContainer')
 
   return { ...gridSystem, ...gridComponentPropsSystem, ...deprecatedProps }
-}, tup(gridSystem, gridComponentPropsSystem))
+}, u.tup(gridSystem, gridComponentPropsSystem))
 
 const GridItems: FC = React.memo(function GridItems() {
   const gridState = useEmitterValue('gridState')
