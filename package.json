@@ -37,6 +37,7 @@
     "test": "tsdx test --passWithNoTests",
     "e2e": "tsdx test --run-in-band --passWithNoTests --config jest.e2e.config.js",
     "lint": "tsdx lint",
+    "typecheck": "tsc --noEmit",
     "prepare": "tsdx build",
     "preview": "node e2e/preview.js",
     "semantic-release": "semantic-release"
