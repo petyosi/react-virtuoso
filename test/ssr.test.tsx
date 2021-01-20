@@ -36,4 +36,11 @@ describe('SSR List', () => {
 
     expect(document.querySelector('#root > div > div')!.childElementCount).toEqual(33)
   })
+
+  it('renders 30 items in window scroller mode', () => {
+    const html = ReactDOMServer.renderToString(<List id="root" useWindowScroll totalCount={20000} initialItemCount={30} />)
+    const { document } = new JSDOM(html).window
+
+    expect(document.querySelector('#root > div > div')!.childElementCount).toEqual(30)
+  })
 })

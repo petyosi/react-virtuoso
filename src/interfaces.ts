@@ -192,3 +192,8 @@ export interface GridComponents {
 export interface GridItemContent {
   (index: number): ReactNode
 }
+
+export interface WindowViewportInfo {
+  offsetTop: number
+  visibleHeight: number
+}

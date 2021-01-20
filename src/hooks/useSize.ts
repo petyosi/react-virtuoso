@@ -3,7 +3,7 @@ import ResizeObserver from 'resize-observer-polyfill'
 
 export type CallbackRefParam = HTMLElement | null
 
-export default function useSize(callback: (e: HTMLElement) => void, enabled: boolean = true) {
+export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled: boolean = true) {
   const ref = useRef<CallbackRefParam>(null)
   const observer = new ResizeObserver(entries => {
     const element = entries[0].target as HTMLElement
@@ -31,5 +31,9 @@ export default function useSize(callback: (e: HTMLElement) => void, enabled: boo
     }
   }
 
-  return callbackRef
+  return { ref, callbackRef }
+}
+
+export default function useSize(callback: (e: HTMLElement) => void, enabled: boolean = true) {
+  return useSizeWithElRef(callback, enabled).callbackRef
 }

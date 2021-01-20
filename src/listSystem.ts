@@ -15,11 +15,12 @@ import { totalListHeightSystem } from './totalListHeightSystem'
 import { upwardScrollFixSystem } from './upwardScrollFixSystem'
 import { initialScrollTopSystem } from './initialScrollTopSystem'
 import { alignToBottomSystem } from './alignToBottomSystem'
+import { windowScrollerSystem } from './windowScrollerSystem'
 
 // workaround the growing list of systems below
 // fix this with 4.1 recursive conditional types
 const featureGroup1System = system(
-  ([sizeRange, initialItemCount, propsReady, scrollSeek, totalListHeight, initialScrollTopSystem, alignToBottom]) => {
+  ([sizeRange, initialItemCount, propsReady, scrollSeek, totalListHeight, initialScrollTopSystem, alignToBottom, windowScroller]) => {
     return {
       ...sizeRange,
       ...initialItemCount,
@@ -28,6 +29,7 @@ const featureGroup1System = system(
       ...totalListHeight,
       ...initialScrollTopSystem,
       ...alignToBottom,
+      ...windowScroller,
     }
   },
   tup(
@@ -37,7 +39,8 @@ const featureGroup1System = system(
     scrollSeekSystem,
     totalListHeightSystem,
     initialScrollTopSystem,
-    alignToBottomSystem
+    alignToBottomSystem,
+    windowScrollerSystem
   )
 )
 

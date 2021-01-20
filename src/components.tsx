@@ -165,6 +165,11 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
    * Use `followOutput` property to keep the list aligned when new items are appended.
    */
   alignToBottom?: boolean
+
+  /**
+   * Experimental - uses the document scroller rather than wrapping the list in its own.
+   */
+  useWindowScroll?: boolean
 }
 
 export interface GroupedVirtuosoProps<D>

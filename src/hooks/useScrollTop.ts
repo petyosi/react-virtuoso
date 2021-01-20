@@ -14,7 +14,7 @@ export default function useScrollTop(
   const handler = useCallback(
     (ev: Event) => {
       const el = ev.target as HTMLElement
-      const scrollTop = el.scrollTop
+      const scrollTop = (el as any) === window || (el as any) === document ? document.documentElement.scrollTop : el.scrollTop
       scrollTopCallback(Math.max(scrollTop, 0))
 
       if (scrollTopTarget.current !== null) {
@@ -49,18 +49,20 @@ export default function useScrollTop(
 
     const isSmooth = location.behavior === 'smooth'
 
+    const { offsetHeight, scrollHeight, scrollTop } = scrollerElement === window ? document.documentElement : scrollerElement
+
     // avoid system hanging because the DOM never called back
     // with the scrollTop
     // scroller is already at this location
-    if (scrollerElement.offsetHeight === scrollerElement.scrollHeight || location.top === scrollerElement.scrollTop) {
-      scrollTopCallback(scrollerElement.scrollTop)
+    if (offsetHeight === scrollHeight || location.top === scrollTop) {
+      scrollTopCallback(scrollTop)
       if (isSmooth) {
         smoothScrollTargetReached(true)
       }
       return
     }
 
-    const maxScrollTop = scrollerElement.scrollHeight - scrollerElement.offsetHeight
+    const maxScrollTop = scrollHeight - offsetHeight
     location.top = Math.max(Math.min(maxScrollTop, location.top!), 0)
 
     if (isSmooth) {

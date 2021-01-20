@@ -19,6 +19,7 @@ import {
 } from '@virtuoso.dev/urx'
 import * as React from 'react'
 import { createElement, CSSProperties, FC } from 'react'
+import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 import useChangedChildSizes from './hooks/useChangedChildSizes'
 import useScrollTop from './hooks/useScrollTop'
 import useSize from './hooks/useSize'
@@ -26,6 +27,7 @@ import { Components, ComputeItemKey, GroupContent, ListRootProps } from './inter
 import { ListState } from './listStateSystem'
 import { listSystem } from './listSystem'
 import { positionStickyCssValue } from './utils/positionStickyCssValue'
+import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 
 export function identity<T>(value: T) {
   return value
@@ -299,22 +301,82 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
   return Scroller
 }
 
-const ListRoot: FC<ListRootProps> = React.memo(function VirtuosoRoot(props) {
+export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue }: Hooks) {
+  const Scroller: Components['Scroller'] = React.memo(function VirtuosoWindowScroller({ style, children, ...props }) {
+    const scrollTopCallback = usePublisher('windowScrollTop')
+    const ScrollerComponent = useEmitterValue('ScrollerComponent')!
+    const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
+    const totalListHeight = useEmitterValue('totalListHeight')
+    const { scrollerRef, scrollByCallback, scrollToCallback } = useScrollTop(
+      scrollTopCallback,
+      smoothScrollTargetReached,
+      ScrollerComponent
+    )
+
+    useIsomorphicLayoutEffect(() => {
+      scrollerRef.current = window
+      return () => {
+        scrollerRef.current = null
+      }
+    }, [scrollerRef])
+
+    useEmitter('scrollTo', scrollToCallback)
+    useEmitter('scrollBy', scrollByCallback)
+    return createElement(
+      ScrollerComponent,
+      {
+        style: { position: 'relative', ...style, height: totalListHeight },
+        ...props,
+      },
+      children
+    )
+  })
+  return Scroller
+}
+
+const Viewport: FC<{}> = ({ children }) => {
   const viewportHeight = usePublisher('viewportHeight')
   const viewportRef = useSize(compose(viewportHeight, prop('offsetHeight')))
-  const headerHeight = useEmitterValue('headerHeight')
 
   return (
-    <Scroller {...props}>
-      <div style={viewportStyle} ref={viewportRef}>
+    <div style={viewportStyle} ref={viewportRef}>
+      {children}
+    </div>
+  )
+}
+
+const WindowViewport: FC<{}> = ({ children }) => {
+  const windowViewportRect = usePublisher('windowViewportRect')
+  const viewportRef = useWindowViewportRectRef(windowViewportRect)
+
+  return (
+    <div ref={viewportRef} style={viewportStyle}>
+      {children}
+    </div>
+  )
+}
+
+const TopItemListContainer: FC<{}> = ({ children }) => {
+  const headerHeight = useEmitterValue('headerHeight')
+
+  return <div style={{ ...topItemListStyle, marginTop: `${headerHeight}px` }}>{children}</div>
+}
+
+const ListRoot: FC<ListRootProps> = React.memo(function VirtuosoRoot(props) {
+  const useWindowScroll = useEmitterValue('useWindowScroll')
+  const TheScroller = useWindowScroll ? WindowScroller : Scroller
+  const TheViewport = useWindowScroll ? WindowViewport : Viewport
+  return (
+    <TheScroller {...props}>
+      <TheViewport>
         <Header />
         <Items />
         <Footer />
-      </div>
-      <div style={{ ...topItemListStyle, marginTop: `${headerHeight}px` }}>
+      </TheViewport>
+      <TopItemListContainer>
         <Items showTopList={true} />
-      </div>
-    </Scroller>
+      </TopItemListContainer>
+    </TheScroller>
   )
 })
 
@@ -344,6 +406,7 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
       initialItemCount: 'initialItemCount',
       initialScrollTop: 'initialScrollTop',
       alignToBottom: 'alignToBottom',
+      useWindowScroll: 'useWindowScroll',
 
       // deprecated
       item: 'item',
@@ -385,3 +448,4 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
 )
 
 const Scroller = buildScroller({ usePublisher, useEmitterValue, useEmitter })
+const WindowScroller = buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })
