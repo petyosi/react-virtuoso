@@ -1,4 +1,3 @@
-import 'expect-puppeteer'
 import startServer from './_server'
 
 describe('list with prependable items', () => {
@@ -12,7 +11,7 @@ describe('list with prependable items', () => {
   })
 
   async function getScrollTop() {
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
     return await page.evaluate(() => {
       const scroller = document.querySelector('#root > div > div')
       return scroller!.scrollTop

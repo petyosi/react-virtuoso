@@ -1,4 +1,3 @@
-import 'expect-puppeteer'
 import startServer from './_server'
 
 describe('jagged grouped list', () => {
@@ -14,7 +13,7 @@ describe('jagged grouped list', () => {
 
   beforeEach(async () => {
     await page.reload()
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
   })
 
   it('renders correct sizing', async () => {
@@ -33,7 +32,7 @@ describe('jagged grouped list', () => {
       scroller.scrollTo({ top: 500 })
     })
 
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
 
     const stickyItemIndex = await page.evaluate(() => {
       const stickyItem = document.querySelector('#root > div > div:last-child > div > div') as HTMLElement

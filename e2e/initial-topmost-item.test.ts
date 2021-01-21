@@ -1,4 +1,3 @@
-import 'expect-puppeteer'
 import startServer from './_server'
 
 describe('jagged list with initial topmost item', () => {
@@ -15,7 +14,7 @@ describe('jagged list with initial topmost item', () => {
   // first item size, which is 20px
   it('scrolls to the correct position', async () => {
     await page.goto('http://localhost:1234/')
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
       const listContainer = document.querySelector('#root > div')
@@ -34,7 +33,7 @@ describe('jagged list with initial topmost item', () => {
 
   it('sticks the item to the top', async () => {
     await page.goto('http://localhost:1234/')
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
 
     const firstChildIndex = await page.evaluate(() => {
       const firstChild = document.querySelector('#root > div > div > div > div') as HTMLElement

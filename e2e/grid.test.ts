@@ -1,4 +1,3 @@
-import 'expect-puppeteer'
 import startServer from './_server'
 
 describe('list with hundred items', () => {
@@ -13,7 +12,7 @@ describe('list with hundred items', () => {
 
   it('renders 20 items', async () => {
     await page.goto('http://localhost:1234/')
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
     const itemCount = await page.evaluate(() => {
       const listContainer = document.querySelector('#root > div > div > div')
       return listContainer!.childElementCount
@@ -23,7 +22,7 @@ describe('list with hundred items', () => {
 
   it('fills in the scroller', async () => {
     await page.goto('http://localhost:1234/')
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
     const scrollHeight = await page.evaluate(() => {
       const scroller = document.querySelector('#root > div')
       return scroller!.scrollHeight

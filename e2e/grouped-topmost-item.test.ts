@@ -1,7 +1,4 @@
-import 'expect-puppeteer'
 import startServer from './_server'
-
-jest.setTimeout(1000000)
 
 describe('jagged grouped list', () => {
   let server: any
@@ -16,7 +13,7 @@ describe('jagged grouped list', () => {
 
   beforeEach(async () => {
     await page.reload()
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
   })
 
   it('puts the specified item below the group', async () => {

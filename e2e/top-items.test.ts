@@ -1,4 +1,3 @@
-import 'expect-puppeteer'
 import startServer from './_server'
 
 describe('jagged list with 2 top items', () => {
@@ -13,7 +12,7 @@ describe('jagged list with 2 top items', () => {
 
   it('stays at top at start', async () => {
     await page.goto('http://localhost:1234/')
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
       const listContainer = document.querySelector('#root > div')
@@ -31,7 +30,7 @@ describe('jagged list with 2 top items', () => {
 
   it('renders correct amount of items', async () => {
     await page.goto('http://localhost:1234/')
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
     const childElementCount = await page.evaluate(() => {
       const listContainer = document.querySelectorAll('#root > div > div > div')[0]
       return listContainer!.childElementCount
@@ -41,14 +40,14 @@ describe('jagged list with 2 top items', () => {
 
   it('renders the full list correctly', async () => {
     await page.goto('http://localhost:1234/')
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
 
     await page.evaluate(() => {
       const scroller = document.querySelector('#root > div')
       scroller!.scrollTo({ top: 2000 })
     })
 
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
 
     const firstChildIndex = await page.evaluate(() => {
       const firstChild = document.querySelector('#root > div > div > div > div') as HTMLElement

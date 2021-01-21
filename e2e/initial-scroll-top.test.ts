@@ -1,4 +1,3 @@
-import 'expect-puppeteer'
 import startServer from './_server'
 
 describe('scroll to index', () => {
@@ -14,7 +13,7 @@ describe('scroll to index', () => {
 
   beforeEach(async () => {
     await page.reload()
-    await page.waitFor(200) // :(
+    await page.waitForTimeout(200) // :(
   })
 
   it('scrolls to 50px', async () => {

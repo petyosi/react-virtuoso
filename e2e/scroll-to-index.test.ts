@@ -1,4 +1,3 @@
-import 'expect-puppeteer'
 import startServer from './_server'
 
 describe('scroll to index', () => {
@@ -14,7 +13,7 @@ describe('scroll to index', () => {
 
   beforeEach(async () => {
     await page.reload()
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
   })
 
   // the example below goes to 670, because the initial render
@@ -23,7 +22,7 @@ describe('scroll to index', () => {
   it('scrolls to the top 30 item', async () => {
     await page.click('#start-30')
 
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
       const listContainer = document.querySelectorAll('#root > div')[1]
@@ -36,7 +35,7 @@ describe('scroll to index', () => {
   it('scrolls to the mid 50 item', async () => {
     await page.click('#center-50')
 
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
       const listContainer = document.querySelectorAll('#root > div')[1]
@@ -49,7 +48,7 @@ describe('scroll to index', () => {
   it('scrolls to the end 99 item', async () => {
     await page.click('#end-99')
 
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
       const listContainer = document.querySelectorAll('#root > div')[1]

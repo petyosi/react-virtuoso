@@ -1,4 +1,3 @@
-import 'expect-puppeteer'
 import startServer from './_server'
 
 describe('list with scroll seek placeholders', () => {
@@ -14,7 +13,7 @@ describe('list with scroll seek placeholders', () => {
 
   beforeEach(async () => {
     await page.reload()
-    await page.waitFor(100)
+    await page.waitForTimeout(100)
   })
 
   it('renders placeholders when scrolled', async () => {
@@ -25,7 +24,7 @@ describe('list with scroll seek placeholders', () => {
       }, 10)
     })
 
-    await page.waitFor(200)
+    await page.waitForTimeout(200)
 
     const color = await page.evaluate(() => {
       const stickyItem = document.querySelector('#root > div > div:first-child > div > div') as HTMLElement
