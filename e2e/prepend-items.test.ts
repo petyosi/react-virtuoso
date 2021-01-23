@@ -1,4 +1,10 @@
 describe('list with prependable items', () => {
+  beforeEach(async () => {
+    await page.goto('http://localhost:1234/prepend-items')
+    await page.waitForSelector('#test-root')
+    await page.waitForTimeout(100)
+  })
+
   async function getScrollTop() {
     await page.waitForTimeout(100)
     return await page.evaluate(() => {
@@ -8,8 +14,6 @@ describe('list with prependable items', () => {
   }
 
   it('keeps the location at where ', async () => {
-    await page.goto('http://localhost:1234/prepend-items')
-
     expect(await getScrollTop()).toBe(0)
 
     await page.evaluate(() => {

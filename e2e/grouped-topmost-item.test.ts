@@ -1,10 +1,7 @@
 describe('jagged grouped list', () => {
-  beforeAll(async () => {
-    await page.goto('http://localhost:1234/grouped-topmost-item')
-  })
-
   beforeEach(async () => {
-    await page.reload()
+    await page.goto('http://localhost:1234/grouped-topmost-item')
+    await page.waitForSelector('#test-root > div')
     await page.waitForTimeout(100)
   })
 

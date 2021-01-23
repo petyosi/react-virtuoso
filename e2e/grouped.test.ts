@@ -1,12 +1,11 @@
 describe('jagged grouped list', () => {
   beforeAll(async () => {
     await page.goto('http://localhost:1234/grouped')
-  })
-
-  beforeEach(async () => {
-    await page.reload()
+    await page.waitForSelector('#test-root > div')
     await page.waitForTimeout(100)
   })
+
+  beforeEach(async () => {})
 
   it('renders correct sizing', async () => {
     const [paddingTop, paddingBottom] = await page.evaluate(() => {
