@@ -1,10 +1,13 @@
 describe('jagged list with initial topmost item', () => {
+  beforeEach(async () => {
+    await page.goto('http://localhost:1234/initial-topmost-item')
+    await page.waitForSelector('#test-root > div')
+    await page.waitForTimeout(100)
+  })
+
   // the real position here would be 1500, but the calc is based on the
   // first item size, which is 20px
   it('scrolls to the correct position', async () => {
-    await page.goto('http://localhost:1234/initial-topmost-item')
-    await page.waitForTimeout(100)
-
     const scrollTop = await page.evaluate(() => {
       const listContainer = document.querySelector('#test-root > div')
       return listContainer!.scrollTop
@@ -21,9 +24,6 @@ describe('jagged list with initial topmost item', () => {
   })
 
   it('sticks the item to the top', async () => {
-    await page.goto('http://localhost:1234/initial-topmost-item')
-    await page.waitForTimeout(100)
-
     const firstChildIndex = await page.evaluate(() => {
       const firstChild = document.querySelector('#test-root > div > div > div > div') as HTMLElement
       return firstChild.dataset['index']

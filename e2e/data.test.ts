@@ -1,7 +1,11 @@
 describe('list with hundred items', () => {
-  it('renders 10 items', async () => {
+  beforeEach(async () => {
     await page.goto('http://localhost:1234/data')
+    await page.waitForSelector('#test-root > div')
     await page.waitForTimeout(100)
+  })
+
+  it('renders 10 items', async () => {
     const itemCount = await page.evaluate(() => {
       const listContainer = document.querySelector('#test-root > div > div > div > div')
       return listContainer!.childElementCount
@@ -10,8 +14,6 @@ describe('list with hundred items', () => {
   })
 
   it('fills in the scroller', async () => {
-    await page.goto('http://localhost:1234/data')
-    await page.waitForTimeout(100)
     const scrollHeight = await page.evaluate(() => {
       const scroller = document.querySelector('#test-root > div > div')
       return scroller!.scrollHeight
@@ -20,8 +22,6 @@ describe('list with hundred items', () => {
   })
 
   it('increases the items', async () => {
-    await page.goto('http://localhost:1234/data')
-    await page.waitForTimeout(100)
     await page.evaluate(() => {
       document.querySelector('button')!.click()
     })
