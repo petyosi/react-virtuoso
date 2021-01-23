@@ -1,10 +1,7 @@
 describe('list with scroll seek placeholders', () => {
-  beforeAll(async () => {
-    await page.goto('http://localhost:1234/scroll-seek-placeholder')
-  })
-
   beforeEach(async () => {
-    await page.reload()
+    await page.goto('http://localhost:1234/scroll-seek-placeholder')
+    await page.waitForSelector('#test-root div')
     await page.waitForTimeout(100)
   })
 
