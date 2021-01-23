@@ -1,25 +1,14 @@
-import startServer from './_server'
-
 describe('list with prependable items', () => {
-  let server: any
-  beforeAll(async () => {
-    server = await startServer('prepend-items')
-  })
-
-  afterAll(async () => {
-    await server.close()
-  })
-
   async function getScrollTop() {
     await page.waitForTimeout(100)
     return await page.evaluate(() => {
-      const scroller = document.querySelector('#root > div > div')
+      const scroller = document.querySelector('#test-root > div > div')
       return scroller!.scrollTop
     })
   }
 
   it('keeps the location at where ', async () => {
-    await page.goto('http://localhost:1234/')
+    await page.goto('http://localhost:1234/prepend-items')
 
     expect(await getScrollTop()).toBe(0)
 

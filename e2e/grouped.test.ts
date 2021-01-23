@@ -1,14 +1,6 @@
-import startServer from './_server'
-
 describe('jagged grouped list', () => {
-  let server: any
   beforeAll(async () => {
-    server = await startServer('grouped')
-    await page.goto('http://localhost:1234/')
-  })
-
-  afterAll(async () => {
-    await server.close()
+    await page.goto('http://localhost:1234/grouped')
   })
 
   beforeEach(async () => {
@@ -18,7 +10,7 @@ describe('jagged grouped list', () => {
 
   it('renders correct sizing', async () => {
     const [paddingTop, paddingBottom] = await page.evaluate(() => {
-      const listContainer = document.querySelector('#root > div > div > div:first-child') as HTMLElement
+      const listContainer = document.querySelector('#test-root > div > div > div:first-child') as HTMLElement
       return [listContainer!.style.paddingTop, listContainer!.style.paddingBottom]
     })
 
@@ -28,14 +20,14 @@ describe('jagged grouped list', () => {
 
   it('renders correct state when scrolled', async () => {
     await page.evaluate(() => {
-      const scroller = document.querySelector('#root > div') as HTMLElement
+      const scroller = document.querySelector('#test-root > div') as HTMLElement
       scroller.scrollTo({ top: 500 })
     })
 
     await page.waitForTimeout(100)
 
     const stickyItemIndex = await page.evaluate(() => {
-      const stickyItem = document.querySelector('#root > div > div:last-child > div > div') as HTMLElement
+      const stickyItem = document.querySelector('#test-root > div > div:last-child > div > div') as HTMLElement
       return stickyItem.dataset['index']
     })
 

@@ -9,4 +9,6 @@ module.exports = {
   transform: {
     ...tsjPreset.transform,
   },
+  globalSetup: './e2e/__setup',
+  globalTeardown: './e2e/__teardown',
 }

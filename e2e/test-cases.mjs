@@ -33,7 +33,7 @@ export default function App() {
     <Router>
       <div style={{ height: '100%', display: 'flex' }}>
 
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1 }} id="test-root">
         <Switch>
           {exampleComponents.map(({ name, component }, index) => (
             <Route key={index} path={name} component={component} />
@@ -61,7 +61,7 @@ const htmlCode = `
     <meta charset="UTF-8" />
     <title>RV Test Cases</title>
     <style type="text/css" media="screen">
-      html, body, #root {
+      html, body, #test-root {
         height: 100%;
         padding: 0;
         margin: 0;

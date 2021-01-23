@@ -1,14 +1,6 @@
-import startServer from './_server'
-
 describe('scroll to index', () => {
-  let server: any
   beforeAll(async () => {
-    server = await startServer('scroll-to-index')
-    await page.goto('http://localhost:1234/')
-  })
-
-  afterAll(async () => {
-    await server.close()
+    await page.goto('http://localhost:1234/scroll-to-index')
   })
 
   beforeEach(async () => {
@@ -25,7 +17,7 @@ describe('scroll to index', () => {
     await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
-      const listContainer = document.querySelectorAll('#root > div')[1]
+      const listContainer = document.querySelectorAll('#test-root > div')[1]
       return listContainer!.scrollTop
     })
 
@@ -38,7 +30,7 @@ describe('scroll to index', () => {
     await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
-      const listContainer = document.querySelectorAll('#root > div')[1]
+      const listContainer = document.querySelectorAll('#test-root > div')[1]
       return listContainer!.scrollTop
     })
     const rendered30s = 11
@@ -51,7 +43,7 @@ describe('scroll to index', () => {
     await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
-      const listContainer = document.querySelectorAll('#root > div')[1]
+      const listContainer = document.querySelectorAll('#test-root > div')[1]
       return listContainer!.scrollTop
     })
 

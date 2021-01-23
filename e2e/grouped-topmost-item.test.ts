@@ -1,14 +1,6 @@
-import startServer from './_server'
-
 describe('jagged grouped list', () => {
-  let server: any
   beforeAll(async () => {
-    server = await startServer('grouped-topmost-item')
-    await page.goto('http://localhost:1234/')
-  })
-
-  afterAll(async () => {
-    await server.close()
+    await page.goto('http://localhost:1234/grouped-topmost-item')
   })
 
   beforeEach(async () => {
@@ -19,7 +11,7 @@ describe('jagged grouped list', () => {
   it('puts the specified item below the group', async () => {
     // we pick the second item, the first should remain under the group header
     const stickyItemIndex = await page.evaluate(() => {
-      const stickyItem = document.querySelector('#root > div > div:first-child > div > div:nth-child(2)') as HTMLElement
+      const stickyItem = document.querySelector('#test-root > div > div:first-child > div > div:nth-child(2)') as HTMLElement
       return stickyItem.dataset['itemIndex']
     })
 
