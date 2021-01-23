@@ -1,8 +1,7 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../src/'
 
-const App = () => {
+export default function App() {
   return (
     <div style={{ padding: '20px' }}>
       <Virtuoso
@@ -18,5 +17,3 @@ const App = () => {
     </div>
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

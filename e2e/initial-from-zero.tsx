@@ -1,8 +1,7 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../src/'
 
-const App = () => {
+export default function App() {
   const [items, setItems] = React.useState(Array.from({ length: 0 }).map(() => 'item'))
   const initialTopMostItemIndex = Math.max(0, items.length - 1)
   // set the initialTopMostItemIndex to 999 to have the list start at the bottom
@@ -34,5 +33,3 @@ const App = () => {
     </div>
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

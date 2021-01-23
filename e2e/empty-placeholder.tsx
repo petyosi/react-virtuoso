@@ -1,9 +1,8 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../src'
 import { useState } from 'react'
 
-const App = () => {
+export default function App() {
   const [totalCount, setTotalCount] = useState(1000)
   return (
     <div>
@@ -21,5 +20,3 @@ const App = () => {
     </div>
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

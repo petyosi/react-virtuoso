@@ -1,8 +1,7 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../src'
 
-const App = () => {
+export default function App() {
   return (
     <Virtuoso
       totalCount={100}
@@ -16,5 +15,3 @@ const App = () => {
     />
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

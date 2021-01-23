@@ -1,8 +1,7 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { GroupedVirtuoso } from '../src'
 
-const App = () => {
+export default function App() {
   return (
     <GroupedVirtuoso
       groupCounts={Array.from({ length: 20 }).fill(3) as number[]}
@@ -12,5 +11,3 @@ const App = () => {
     />
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

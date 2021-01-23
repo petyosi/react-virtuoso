@@ -1,10 +1,9 @@
 import * as React from 'react'
 import { useState, useRef } from 'react'
-import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../src'
 
 const itemContent = (index: number) => <div style={{ height: index % 2 ? 20 : 30, background: 'white' }}>Item {index}</div>
-const App = () => {
+export default function App() {
   const [count, setCount] = useState(100)
   const appendInterval = useRef(null)
   return (
@@ -30,5 +29,3 @@ const App = () => {
     </>
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

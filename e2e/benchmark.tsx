@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../src'
 
 const CONTENT = {
@@ -8,16 +7,8 @@ const CONTENT = {
   2: 'Cras vel augue at lorem congue tempus. Donec convallis leo neque, eu convallis mauris pulvinar et. ',
 }
 
-const HEIGHTS = {
-  0: 20,
-  1: 25,
-  2: 30,
-}
-
 const itemContent = (index: number) => <div style={{ borderBottom: '1px solid black', padding: '1rem' }}>{CONTENT[index % 3]}</div>
 
-const App = () => {
+export default function App() {
   return <Virtuoso totalCount={100000} initialTopMostItemIndex={99999} itemContent={itemContent} />
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

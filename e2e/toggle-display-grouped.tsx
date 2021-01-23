@@ -1,8 +1,7 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { GroupedVirtuoso } from '../src'
 
-const App = () => {
+export default function App() {
   const [visible, setVisible] = React.useState(true)
   return (
     <>
@@ -16,5 +15,3 @@ const App = () => {
     </>
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

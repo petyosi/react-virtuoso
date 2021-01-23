@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { GroupedVirtuoso } from '../src'
 import { useMemo, useRef, useState, useEffect } from 'react'
 import faker from 'faker'
@@ -98,8 +97,9 @@ const Components = {
   },
 }
 const Style = { height: '350px', width: '300px' }
-const App = () => {
-  const { loadMore, endReached, groupCounts, users, groups } = useGroupedUsers(500)
+
+export default function App() {
+  const { loadMore, groupCounts, users, groups } = useGroupedUsers(500)
 
   useEffect(loadMore, [])
 
@@ -128,5 +128,3 @@ const App = () => {
     />
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

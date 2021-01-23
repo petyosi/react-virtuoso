@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { useState } from 'react'
-import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../src'
 
 function generateItems(length: number) {
@@ -10,7 +9,7 @@ function generateItems(length: number) {
 const itemContent = (_: number, data: string) => {
   return <div style={{ height: 30 }}>{data}</div>
 }
-const App = () => {
+export default function App() {
   const [data, setData] = useState(() => generateItems(100))
 
   return (
@@ -28,5 +27,3 @@ const App = () => {
     </div>
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

@@ -1,12 +1,11 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../src/'
 import { useState, useCallback } from 'react'
 
 const START_INDEX = 10000
 const INITIAL_ITEM_COUNT = 100
 
-const App = () => {
+export default function App() {
   const [firstItemIndex, setFirstItemIndex] = useState(START_INDEX)
   const [items, setItems] = useState(() => new Array(INITIAL_ITEM_COUNT).fill(''))
 
@@ -58,5 +57,3 @@ const App = () => {
     </div>
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

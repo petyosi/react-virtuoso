@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { VirtuosoGrid, VirtuosoGridHandle } from '../src'
 import styled from '@emotion/styled'
 
@@ -46,7 +45,7 @@ const Item = React.memo<any>(({ item }) => {
   return <div style={{ backgroundColor: item.selected ? 'blue' : 'white' }}>Item {item.index}</div>
 })
 
-const App = () => {
+export default function App() {
   const ref = React.createRef<VirtuosoGridHandle>()
   const [items, setItems] = React.useState(() => {
     return Array.from({ length: 1000 }, (_, index) => {
@@ -86,5 +85,3 @@ const App = () => {
     </>
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { VirtuosoGrid, VirtuosoGridHandle } from '../src'
 import styled from '@emotion/styled'
 
@@ -41,7 +40,7 @@ const ListContainer = styled.div`
   flex-wrap: wrap;
 `
 
-const App = () => {
+export default function App() {
   const ref = React.createRef<VirtuosoGridHandle>()
 
   return (
@@ -82,5 +81,3 @@ const App = () => {
     </>
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

@@ -1,11 +1,10 @@
 import * as React from 'react'
 import { useState } from 'react'
-import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../src'
 
 const itemContent = (index: number) => <div style={{ height: index % 2 ? 20 : 55 }}>Item {index}</div>
 const style = { height: 300 }
-const App = () => {
+export default function App() {
   const [count, setCount] = useState(100)
   const [firstItemIndex, setFirstItemIndex] = useState(200)
   return (
@@ -23,5 +22,3 @@ const App = () => {
     </div>
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

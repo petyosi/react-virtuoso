@@ -1,5 +1,4 @@
 import React, { useRef, useState } from 'react'
-import * as ReactDOM from 'react-dom'
 import styled from '@emotion/styled'
 import { Virtuoso } from '../src/'
 import faker from 'faker'
@@ -100,7 +99,7 @@ const data = [...Array(30)].map(_ => ({
   message: faker.lorem.sentences(),
 }))
 
-function App() {
+export default function App() {
   const [messages, setMessages] = React.useState(data)
   const userId = '1'
   return (
@@ -120,5 +119,3 @@ function App() {
     </div>
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

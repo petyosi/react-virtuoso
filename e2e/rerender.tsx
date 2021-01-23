@@ -1,8 +1,7 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { Virtuoso, VirtuosoGrid } from '../src/'
 
-const App = () => {
+export default function App() {
   const [foo, setFoo] = React.useState(Symbol())
   const [bar, setBar] = React.useState([])
   console.log(foo)
@@ -16,7 +15,7 @@ const App = () => {
       <Virtuoso
         data={bar}
         style={{ height: 300 }}
-        itemContent={(index, item) => {
+        itemContent={(_, item) => {
           if (item === undefined) {
             debugger
           }
@@ -28,5 +27,3 @@ const App = () => {
     </>
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

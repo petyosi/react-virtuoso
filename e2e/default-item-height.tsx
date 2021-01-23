@@ -1,8 +1,7 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../src'
 
-const App = () => {
+export default function App() {
   return (
     <Virtuoso
       computeItemKey={key => `item-${key}`}
@@ -14,4 +13,3 @@ const App = () => {
   )
 }
 
-ReactDOM.render(<App />, document.getElementById('root'))

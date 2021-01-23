@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../src'
 
 const FancyScroller = React.forwardRef(({ children, ...props }, ref: React.Ref<HTMLDivElement>) => {
@@ -12,7 +11,7 @@ const FancyScroller = React.forwardRef(({ children, ...props }, ref: React.Ref<H
   )
 })
 
-const App = () => {
+export default function App() {
   return (
     <Virtuoso
       components={{
@@ -25,5 +24,3 @@ const App = () => {
     />
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

@@ -1,10 +1,9 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import { Virtuoso } from '../src'
+import { GroupedVirtuoso } from '../src'
 
-const App = () => {
+export default function App() {
   return (
-    <Virtuoso
+    <GroupedVirtuoso
       groupCounts={[10, 10, 10, 10, 10]}
       topItemCount={2}
       components={{
@@ -30,5 +29,3 @@ const App = () => {
     />
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

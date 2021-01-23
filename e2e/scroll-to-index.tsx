@@ -1,8 +1,7 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { Virtuoso, VirtuosoHandle } from '../src'
 
-const App = () => {
+export default function App() {
   const ref = React.createRef<VirtuosoHandle>()
   return (
     <>
@@ -26,5 +25,3 @@ const App = () => {
     </>
   )
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))

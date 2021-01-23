@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as ReactDOM from 'react-dom'
 import { Virtuoso } from '../src/'
 
 window.addEventListener('error', event => {
@@ -14,8 +13,6 @@ const ResizingDiv = ({ children }) => {
   return <div style={{ height, transition: 'all 0.5s linear', border: '1px solid blue' }}>{children}</div>
 }
 
-const App = () => {
+export default function App() {
   return <Virtuoso totalCount={100} itemContent={index => <ResizingDiv>Item {index}</ResizingDiv>} style={{ height: 300 }} />
 }
-
-ReactDOM.render(<App />, document.getElementById('root'))
