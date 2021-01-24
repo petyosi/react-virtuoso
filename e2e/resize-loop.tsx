@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Virtuoso } from '../src/'
 
 window.addEventListener('error', event => {
-  console.log(event)
+  // console.log(event)
 })
 
 const ResizingDiv = ({ children }) => {

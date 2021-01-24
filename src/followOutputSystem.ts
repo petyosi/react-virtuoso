@@ -1,33 +1,37 @@
-import { duc, filter, handleNext, pipe, publish, statefulStream, subscribe, system, tup, withLatestFrom } from '@virtuoso.dev/urx'
+import * as u from '@virtuoso.dev/urx'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
 import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
 import { FollowOutput } from './interfaces'
+import { propsReadySystem } from './propsReadySystem'
 
 const behaviorFromFollowOutput = (follow: FollowOutput) => (follow === 'smooth' ? 'smooth' : 'auto')
 
-export const followOutputSystem = system(([{ totalCount, listRefresh }, { isAtBottom }, { scrollToIndex }, { scrolledToInitialItem }]) => {
-  const followOutput = statefulStream<FollowOutput>(false)
+export const followOutputSystem = u.system(
+  ([{ totalCount, listRefresh }, { isAtBottom }, { scrollToIndex }, { scrolledToInitialItem }, { didMount }]) => {
+    const followOutput = u.statefulStream<FollowOutput>(false)
 
-  subscribe(
-    pipe(
-      duc(totalCount),
-      withLatestFrom(followOutput, isAtBottom, scrolledToInitialItem),
-      filter(([_, followOutput, isAtBottom, scrolledToInitialItem]) => {
-        return followOutput && isAtBottom && scrolledToInitialItem
-      })
-    ),
-    ([totalCount, followOutput]) => {
-      handleNext(listRefresh, () => {
-        publish(scrollToIndex, {
-          index: totalCount - 1,
-          align: 'end',
-          behavior: behaviorFromFollowOutput(followOutput),
+    u.subscribe(
+      u.pipe(
+        u.combineLatest(u.duc(totalCount), didMount),
+        u.withLatestFrom(followOutput, isAtBottom, scrolledToInitialItem),
+        u.filter(([[, didMount], followOutput, isAtBottom, scrolledToInitialItem]) => {
+          return followOutput && isAtBottom && scrolledToInitialItem && didMount
         })
-      })
-    }
-  )
+      ),
+      ([[totalCount], followOutput]) => {
+        u.handleNext(listRefresh, () => {
+          u.publish(scrollToIndex, {
+            index: totalCount - 1,
+            align: 'end',
+            behavior: behaviorFromFollowOutput(followOutput),
+          })
+        })
+      }
+    )
 
-  return { followOutput }
-}, tup(sizeSystem, stateFlagsSystem, scrollToIndexSystem, initialTopMostItemIndexSystem))
+    return { followOutput }
+  },
+  u.tup(sizeSystem, stateFlagsSystem, scrollToIndexSystem, initialTopMostItemIndexSystem, propsReadySystem)
+)
