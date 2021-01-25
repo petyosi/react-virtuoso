@@ -170,6 +170,11 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
    * Experimental - uses the document scroller rather than wrapping the list in its own.
    */
   useWindowScroll?: boolean
+
+  /**
+   * Provides access to the root DOM element
+   */
+  scrollerRef?: (ref: HTMLElement | null) => any
 }
 
 export interface GroupedVirtuosoProps<D>
@@ -258,6 +263,11 @@ export interface VirtuosoGridProps extends GridProps {
    * Called with `true` / `false` when the list has reached the top / gets scrolled down.
    */
   atTopStateChange?: (atTop: boolean) => void
+
+  /**
+   * Provides access to the root DOM element
+   */
+  scrollerRef?: (ref: HTMLElement | null) => any
 }
 
 export interface VirtuosoHandle extends ListHandle {

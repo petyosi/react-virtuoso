@@ -5,7 +5,8 @@ export type CallbackRefParam = HTMLElement | null
 export default function useScrollTop(
   scrollTopCallback: (scrollTop: number) => void,
   smoothScrollTargetReached: (yes: true) => void,
-  scrollerElement: any
+  scrollerElement: any,
+  scrollerRefCallback = (_ref: HTMLElement | null) => {}
 ) {
   const scrollerRef = useRef<any>(null)
   const scrollTopTarget = useRef<any>(null)
@@ -33,13 +34,16 @@ export default function useScrollTop(
 
   useEffect(() => {
     const localRef = scrollerRef.current!
+
+    scrollerRefCallback(scrollerRef.current!)
     handler({ target: localRef } as Event)
     localRef.addEventListener('scroll', handler, { passive: true })
 
     return () => {
+      scrollerRefCallback(null)
       localRef.removeEventListener('scroll', handler)
     }
-  }, [scrollerRef, handler, scrollerElement])
+  }, [scrollerRef, handler, scrollerElement, scrollerRefCallback])
 
   function scrollToCallback(location: ScrollToOptions) {
     const scrollerElement = scrollerRef.current

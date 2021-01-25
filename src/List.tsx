@@ -39,6 +39,7 @@ const listComponentPropsSystem = system(() => {
   const components = statefulStream<Components>({})
   const computeItemKey = statefulStream<ComputeItemKey>(identity)
   const headerFooterTag = statefulStream('div')
+  const scrollerRef = statefulStream((_ref: HTMLElement | null) => {})
 
   const distinctProp = <K extends keyof Components>(propName: K, defaultValue: Components[K] | null | 'div' = null) => {
     return statefulStreamFromEmitter(
@@ -57,6 +58,7 @@ const listComponentPropsSystem = system(() => {
     components,
     computeItemKey,
     headerFooterTag,
+    scrollerRef,
     FooterComponent: distinctProp('Footer'),
     HeaderComponent: distinctProp('Header'),
     ListComponent: distinctProp('List', 'div'),
@@ -279,10 +281,13 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
     const scrollTopCallback = usePublisher('scrollTop')
     const ScrollerComponent = useEmitterValue('ScrollerComponent')!
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
+    const scrollerRefCallback = useEmitterValue('scrollerRef')
+
     const { scrollerRef, scrollByCallback, scrollToCallback } = useScrollTop(
       scrollTopCallback,
       smoothScrollTargetReached,
-      ScrollerComponent
+      ScrollerComponent,
+      scrollerRefCallback
     )
 
     useEmitter('scrollTo', scrollToCallback)
@@ -407,6 +412,7 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
       initialScrollTop: 'initialScrollTop',
       alignToBottom: 'alignToBottom',
       useWindowScroll: 'useWindowScroll',
+      scrollerRef: 'scrollerRef',
 
       // deprecated
       item: 'item',
