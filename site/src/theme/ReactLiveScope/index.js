@@ -18,6 +18,7 @@ import ListSubheader from '@material-ui/core/ListSubheader'
 import ListItemAvatar from '@material-ui/core/ListItemAvatar'
 import Avatar from '@material-ui/core/Avatar'
 import * as ReactSortableHOC from 'react-sortable-hoc'
+import * as ReactBeautifulDnd from 'react-beautiful-dnd'
 
 const randomHeight = () => Math.floor(Math.random() * 30 + 24)
 
@@ -105,6 +106,7 @@ const generateGroupedUsers = length => {
 
 // Add react-live imports you need here
 const ReactLiveScope = {
+  ReactBeautifulDnd,
   ReactSortableHOC,
   React,
   ...React,
@@ -117,7 +119,6 @@ const ReactLiveScope = {
   avatarPlaceholder,
   getUser,
   user,
-  toggleBg,
   generateGroupedUsers,
   generateUsers,
   styled,

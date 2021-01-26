@@ -1,8 +1,14 @@
-import React, { useState } from 'react'
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
-import { Components, Virtuoso } from '../src'
+---
+id: react-beautiful-dnd
+title: React Beautiful DND
+sidebar_label: React Beautiful DND
+slug: /react-beautiful-dnd/
+---
 
-export default function App() {
+The example below integrates React Virtuoso with [React Beautiful DND](https://github.com/atlassian/react-beautiful-dnd). 
+
+```jsx live
+() => {
   const [items, setItems] = useState(() => {
     return Array.from({ length: 1000 }, (_, k) => ({
       id: `id:${k}`,
@@ -10,7 +16,7 @@ export default function App() {
     }))
   })
 
-  const reorder = React.useCallback((list: any[], startIndex: number, endIndex: number) => {
+  const reorder = React.useCallback((list, startIndex, endIndex) => {
     const result = Array.from(list)
     const [removed] = result.splice(startIndex, 1)
     result.splice(endIndex, 0, removed)
@@ -19,7 +25,7 @@ export default function App() {
   }, [])
 
   const onDragEnd = React.useCallback(
-    (result: any) => {
+    (result) => {
       if (!result.destination) {
         return
       }
@@ -56,7 +62,7 @@ export default function App() {
     }
   }, [])
 
-  const HeightPreservingItem: Components['Item'] = React.useMemo(() => {
+  const HeightPreservingItem = React.useMemo(() => {
     return ({ children, ...props }) => {
       return (
         // the height is necessary to prevent the item container from collapsing, which confuses Virtuoso measurements
@@ -69,8 +75,8 @@ export default function App() {
 
   return (
     <div>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable
+      <ReactBeautifulDnd.DragDropContext onDragEnd={onDragEnd}>
+        <ReactBeautifulDnd.Droppable
           droppableId="droppable"
           mode="virtual"
           renderClone={(provided, snapshot, rubric) => (
@@ -85,19 +91,20 @@ export default function App() {
                 }}
                 scrollerRef={provided.innerRef}
                 data={items}
-                style={{ width: 300, height: 500 }}
+                style={{ height: 500 }}
                 itemContent={(index, item) => {
                   return (
-                    <Draggable draggableId={item.id} index={index} key={item.id}>
+                    <ReactBeautifulDnd.Draggable draggableId={item.id} index={index} key={item.id}>
                       {provided => <Item provided={provided} item={item} isDragging={false} />}
-                    </Draggable>
+                    </ReactBeautifulDnd.Draggable>
                   )
                 }}
               />
             )
           }}
-        </Droppable>
-      </DragDropContext>
+        </ReactBeautifulDnd.Droppable>
+      </ReactBeautifulDnd.DragDropContext>
     </div>
   )
 }
+```

@@ -33,7 +33,7 @@ export default function App() {
     <Router>
       <div style={{ height: '100%', display: 'flex' }}>
 
-        <div style={{ flex: 1, border: '1px solid blue', height: '100%'  }} id="test-root" >
+        <div style={{ flex: 1, height: '100%'  }} id="test-root" >
         <Switch>
           {exampleComponents.map(({ name, component }, index) => (
             <Route key={index} path={name} component={component} />

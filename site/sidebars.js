@@ -20,6 +20,7 @@ module.exports = {
       'scroll-seek-placeholders',
       'material-ui-endless-scrolling',
       'react-sortable-hoc',
+      'react-beautiful-dnd',
       'window-scrolling',
     ],
     'Customize Markup': ['custom-scroll-container', 'customize-structure'],
