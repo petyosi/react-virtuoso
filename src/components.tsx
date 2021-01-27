@@ -100,8 +100,22 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
   scrollSeekConfiguration?: ScrollSeekConfiguration | false
 
   /**
-   * If set to true, the list automatically scrolls to bottom if the total count is changed.
-   * Pass "smooth" to have animated scrolling to.
+   * If set to `true`, the list automatically scrolls to bottom if the total count is changed.
+   * Set to `"smooth"` for an animated scrolling.
+   *
+   * By default, `followOutput` scrolls down only if the list is already at the bottom.
+   * To implement an arbitrary logic behind that, pass a function:
+   *
+   * ```tsx
+   * <Virtuoso
+   *  followOutput={(isAtBottom: boolean) => {
+   *    if (expression) {
+   *      return 'smooth' // can be 'auto' or false to avoid scrolling
+   *    } else {
+   *      return false
+   *    }
+   *  }} />
+   * ```
    */
   followOutput?: FollowOutput
 

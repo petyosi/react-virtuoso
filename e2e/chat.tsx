@@ -37,6 +37,7 @@ interface ChatListProps {
   messages: { id: string; message: string }[]
   userId: string
   onSend: (message: string) => void
+  onReceive: () => void
   height?: number
   placeholder?: string
 }
@@ -53,12 +54,19 @@ const TextWrapper = styled.div`
   margin-top: 12px;
 `
 
-function ChatList({ userId, messages = [], onSend, placeholder }: ChatListProps) {
+function ChatList({ userId, messages = [], onSend, onReceive, placeholder }: ChatListProps) {
   const [newMessage, setNewMessage] = useState('')
   const ref = useRef(null)
+  const isMyOwnMessage = useRef(false)
   const onSendMessage = () => {
+    isMyOwnMessage.current = true
     onSend(newMessage)
     setNewMessage('')
+  }
+
+  const onReceiveMessage = () => {
+    isMyOwnMessage.current = false
+    onReceive()
   }
 
   const row = React.useMemo(
@@ -82,13 +90,36 @@ function ChatList({ userId, messages = [], onSend, placeholder }: ChatListProps)
         ref={ref}
         style={{ flex: 1 }}
         initialTopMostItemIndex={messages.length - 1}
-        followOutput="smooth"
+        followOutput={isAtBottom => {
+          if (isMyOwnMessage.current) {
+            // if the user has scrolled away and sends a message, bring him to the bottom instantly
+            return isAtBottom ? 'smooth' : 'auto'
+          } else {
+            // a message from another user has been received - don't pull to bottom unless already there
+            return isAtBottom ? 'smooth' : false
+          }
+        }}
         itemContent={row}
         data={messages}
       />
       <TextWrapper style={{ flex: 0, minHeight: 30 }}>
-        <textarea value={newMessage} onChange={e => setNewMessage(e.target.value)} placeholder={placeholder} />
-        <button onClick={onSendMessage}>send</button>
+        <form
+          onSubmit={e => {
+            e.preventDefault()
+            onSendMessage()
+          }}
+        >
+          <input
+            type="text"
+            value={newMessage}
+            onChange={e => setNewMessage((e.target as HTMLInputElement).value)}
+            placeholder={placeholder}
+          />
+          <button type="submit">send</button> |
+          <button type="button" onClick={onReceiveMessage}>
+            receive
+          </button>
+        </form>
       </TextWrapper>
     </Root>
   )
@@ -115,6 +146,9 @@ export default function App() {
         userId="1"
         placeholder="Say hi!"
         onSend={message => setMessages(x => [...x, { id: userId, message }])}
+        onReceive={() => {
+          setMessages(x => [...x, { id: '2', message: faker.lorem.sentences() }])
+        }}
       />
     </div>
   )

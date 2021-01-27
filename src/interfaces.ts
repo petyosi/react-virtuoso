@@ -120,7 +120,9 @@ export interface ScrollSeekConfiguration {
   exit: ScrollSeekToggle
 }
 
-export type FollowOutput = boolean | 'smooth' | 'auto'
+export type FollowOutputScalarType = boolean | 'smooth' | 'auto'
+export type FollowOutputCallback = (isAtBottom: boolean) => FollowOutputScalarType
+export type FollowOutput = FollowOutputCallback | FollowOutputScalarType
 
 export interface Item<D> {
   index: number
