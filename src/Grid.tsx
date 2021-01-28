@@ -147,6 +147,8 @@ const { Component: Grid, usePublisher, useEmitterValue, useEmitter } = systemToC
       computeItemKey: 'computeItemKey',
       initialItemCount: 'initialItemCount',
       scrollSeekConfiguration: 'scrollSeekConfiguration',
+      listClassName: 'listClassName',
+      itemClassName: 'itemClassName',
 
       // deprecated
       item: 'item',

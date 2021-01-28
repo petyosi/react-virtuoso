@@ -282,6 +282,16 @@ export interface VirtuosoGridProps extends GridProps {
    * Provides access to the root DOM element
    */
   scrollerRef?: (ref: HTMLElement | null) => any
+
+  /**
+   * Sets the className for the list DOM element
+   */
+  listClassName?: string
+
+  /**
+   * Sets the grid items' className
+   */
+  itemClassName?: string
 }
 
 export interface VirtuosoHandle extends ListHandle {
