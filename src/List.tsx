@@ -184,7 +184,9 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const containerStyle: CSSProperties = showTopList
     ? {}
     : {
-        paddingTop: (listState as ListState).offsetTop + paddingTopAddition,
+        boxSizing: 'border-box',
+        height: listState.offsetBottom + listState.bottom,
+        paddingTop: listState.offsetTop + paddingTopAddition,
         paddingBottom: (listState as ListState).offsetBottom,
         marginTop: deviation,
       }
