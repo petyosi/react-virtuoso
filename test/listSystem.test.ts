@@ -198,7 +198,6 @@ describe('list engine', () => {
       const SIZE = 30
       const {
         propsReady,
-        scrollBy,
         initialTopMostItemIndex,
         listState,
         scrollTop,
@@ -206,6 +205,7 @@ describe('list engine', () => {
         viewportHeight,
         totalCount,
         sizeRanges,
+        deviation,
       } = init(listSystem)
 
       publish(initialTopMostItemIndex, INITIAL_INDEX)
@@ -221,7 +221,7 @@ describe('list engine', () => {
       subscribe(scrollTo, sub)
 
       const scrollBySub = jest.fn()
-      subscribe(scrollBy, scrollBySub)
+      subscribe(deviation, scrollBySub)
 
       publish(sizeRanges, [{ startIndex: INITIAL_INDEX, endIndex: INITIAL_INDEX, size: SIZE }])
 
@@ -244,7 +244,7 @@ describe('list engine', () => {
         },
       ])
 
-      expect(scrollBySub).toHaveBeenCalledWith({ top: 40, behavior: 'auto' })
+      expect(scrollBySub).toHaveBeenCalledWith(-40)
     })
   })
 

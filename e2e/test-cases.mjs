@@ -41,7 +41,7 @@ export default function App() {
         </Switch>
       </div>
 
-      <ul style={{ minWidth: 200 }}>
+      <ul style={{ minWidth: 200 }} id="side-nav">
         { exampleComponents.map(({ name }, index) => <li key={index}><Link to={name}>{name}</Link></li> }
       </ul>
 
@@ -60,11 +60,18 @@ const htmlCode = `
   <head>
     <meta charset="UTF-8" />
     <title>RV Test Cases</title>
-    <style type="text/css" media="screen">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type="text/css">
       html, body, #root {
         height: 100%;
         padding: 0;
         margin: 0;
+      }
+
+      @media screen and (max-width: 900px) {
+        #side-nav {
+          display: none;
+        }
       }
     </style>
   </head>

@@ -125,7 +125,7 @@ function ChatList({ userId, messages = [], onSend, onReceive, placeholder }: Cha
   )
 }
 
-const data = [...Array(30)].map(_ => ({
+const data = [...Array(130)].map(_ => ({
   id: faker.random.number({ min: 1, max: 2 }).toString(),
   message: faker.lorem.sentences(),
 }))

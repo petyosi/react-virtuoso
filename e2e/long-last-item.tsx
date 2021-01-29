@@ -7,7 +7,7 @@ export default function App() {
       computeItemKey={key => `item-${key}`}
       totalCount={10}
       initialTopMostItemIndex={9}
-      itemContent={index => <div style={{ height: index % 2 ? 800 : 100 }}>Group {index}</div>}
+      itemContent={index => <div style={{ backgroundColor: '#e5e5e5', height: index % 2 ? 800 : 100 }}>Group {index}</div>}
       style={{ height: 500 }}
     />
   )

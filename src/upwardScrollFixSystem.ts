@@ -5,8 +5,6 @@ import { offsetOf, sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
 import { ListItem } from './interfaces'
 
-const UA = typeof window !== 'undefined' && window?.navigator?.userAgent
-const GLITCHY_SCROLL_BY = UA && (!!UA.match(/iPad/i) || !!UA.match(/iPhone/i))
 /**
  * Fixes upward scrolling by calculating and compensation from changed item heights, using scrollBy.
  */
@@ -51,40 +49,30 @@ export const upwardScrollFixSystem = u.system(
       u.map(([amount]) => amount)
     )
 
-    if (GLITCHY_SCROLL_BY) {
-      u.connect(
-        u.pipe(
-          deviationOffset,
-          u.withLatestFrom(deviation),
-          u.map(([amount, deviation]) => deviation - amount)
-        ),
-        deviation
-      )
+    u.connect(
+      u.pipe(
+        deviationOffset,
+        u.withLatestFrom(deviation),
+        u.map(([amount, deviation]) => deviation - amount)
+      ),
+      deviation
+    )
 
-      // when the browser stops scrolling,
-      // restore the position and reset the glitching
-      u.subscribe(
-        u.pipe(
-          isScrolling,
-          u.filter(is => !is),
-          u.withLatestFrom(deviation),
-          u.filter(([_, deviation]) => deviation !== 0),
-          u.map(([_, deviation]) => deviation)
-        ),
-        offset => {
-          u.publish(scrollBy, { top: -offset, behavior: 'auto' })
-          u.publish(deviation, 0)
-        }
-      )
-    } else {
-      u.connect(
-        u.pipe(
-          deviationOffset,
-          u.map(offset => ({ top: offset, behavior: 'auto' }))
-        ),
-        scrollBy
-      )
-    }
+    // when the browser stops scrolling,
+    // restore the position and reset the glitching
+    u.subscribe(
+      u.pipe(
+        isScrolling,
+        u.filter(is => !is),
+        u.withLatestFrom(deviation),
+        u.filter(([_, deviation]) => deviation !== 0),
+        u.map(([_, deviation]) => deviation)
+      ),
+      offset => {
+        u.publish(scrollBy, { top: -offset, behavior: 'auto' })
+        u.publish(deviation, 0)
+      }
+    )
 
     const unshiftPayload = u.stream<{ index: number; offset: number }>()
 
