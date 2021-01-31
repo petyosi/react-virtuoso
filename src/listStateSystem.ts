@@ -303,7 +303,7 @@ export const listStateSystem = u.system(
     const startReached = u.streamFromEmitter(
       u.pipe(
         listState,
-        u.throttleTime(100),
+        u.throttleTime(200),
         u.filter(({ items, topItems }) => {
           return items.length > 0 && items[0].originalIndex === topItems.length
         }),
