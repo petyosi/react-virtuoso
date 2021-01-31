@@ -13,19 +13,19 @@ describe('list with prependable items', () => {
     })
   }
 
-  it('keeps the location at where ', async () => {
+  it('keeps the location at where it should be', async () => {
     expect(await getScrollTop()).toBe(0)
 
     await page.evaluate(() => {
       document.querySelector('button')!.click()
     })
 
-    expect(await getScrollTop()).toBe(110) // 55x2
+    expect(await getScrollTop()).toBe(55 + 20) // 55x2
 
     await page.evaluate(() => {
       document.querySelector('button')!.click()
     })
 
-    expect(await getScrollTop()).toBe(220)
+    expect(await getScrollTop()).toBe(2 * (55 + 20))
   })
 })

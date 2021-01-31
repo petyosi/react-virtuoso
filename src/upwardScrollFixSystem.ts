@@ -9,44 +9,46 @@ import { ListItem } from './interfaces'
  * Fixes upward scrolling by calculating and compensation from changed item heights, using scrollBy.
  */
 export const upwardScrollFixSystem = u.system(
-  ([{ scrollBy, scrollTop, scrollDirection, deviation }, { isScrolling }, { listState }, { unshiftWith, beforeUnshiftWith, sizes }]) => {
-    const deviationOffset = u.pipe(
-      listState,
-      u.withLatestFrom(scrollTop, scrollDirection),
-      u.filter(([, scrollTop, scrollDirection]) => {
-        return scrollTop !== 0 && scrollDirection === UP
-      }),
-      u.map(([state]) => state),
-      u.scan(
-        ([, prevItems], { items }) => {
-          let newDev = 0
-          if (prevItems.length > 0 && items.length > 0) {
-            const atStart = prevItems[0].originalIndex === 0 && items[0].originalIndex === 0
+  ([{ scrollBy, scrollTop, scrollDirection, deviation }, { isScrolling }, { listState }, { beforeUnshiftWith, sizes, listRefresh }]) => {
+    const deviationOffset = u.streamFromEmitter(
+      u.pipe(
+        listState,
+        u.withLatestFrom(scrollTop, scrollDirection),
+        u.filter(([, scrollTop, scrollDirection]) => {
+          return scrollTop !== 0 && scrollDirection === UP
+        }),
+        u.map(([state]) => state),
+        u.scan(
+          ([, prevItems], { items }) => {
+            let newDev = 0
+            if (prevItems.length > 0 && items.length > 0) {
+              const atStart = prevItems[0].originalIndex === 0 && items[0].originalIndex === 0
 
-            if (!atStart) {
-              for (let index = items.length - 1; index >= 0; index--) {
-                const item = items[index]
+              if (!atStart) {
+                for (let index = items.length - 1; index >= 0; index--) {
+                  const item = items[index]
 
-                const prevItem = prevItems.find(pItem => pItem.originalIndex === item.originalIndex)
+                  const prevItem = prevItems.find(pItem => pItem.originalIndex === item.originalIndex)
 
-                if (!prevItem) {
-                  continue
-                }
+                  if (!prevItem) {
+                    continue
+                  }
 
-                if (item.offset !== prevItem.offset) {
-                  newDev = item.offset - prevItem.offset
-                  break
+                  if (item.offset !== prevItem.offset) {
+                    newDev = item.offset - prevItem.offset
+                    break
+                  }
                 }
               }
             }
-          }
 
-          return [newDev, items] as [number, ListItem<any>[]]
-        },
-        [0, []] as [number, ListItem<any>[]]
-      ),
-      u.filter(([amount]) => amount !== 0),
-      u.map(([amount]) => amount)
+            return [newDev, items] as [number, ListItem<any>[]]
+          },
+          [0, []] as [number, ListItem<any>[]]
+        ),
+        u.filter(([amount]) => amount !== 0),
+        u.map(([amount]) => amount)
+      )
     )
 
     u.connect(
@@ -62,10 +64,8 @@ export const upwardScrollFixSystem = u.system(
     // restore the position and reset the glitching
     u.subscribe(
       u.pipe(
-        isScrolling,
-        u.filter(is => !is),
-        u.withLatestFrom(deviation),
-        u.filter(([_, deviation]) => deviation !== 0),
+        u.combineLatest(u.statefulStreamFromEmitter(isScrolling, false), deviation),
+        u.filter(([is, deviation]) => !is && deviation !== 0),
         u.map(([_, deviation]) => deviation)
       ),
       offset => {
@@ -74,9 +74,7 @@ export const upwardScrollFixSystem = u.system(
       }
     )
 
-    const unshiftPayload = u.stream<{ index: number; offset: number }>()
-
-    u.connect(
+    u.subscribe(
       u.pipe(
         beforeUnshiftWith,
         u.map(indexOffset => {
@@ -88,19 +86,14 @@ export const upwardScrollFixSystem = u.system(
           }
         })
       ),
-      unshiftPayload
-    )
-
-    u.connect(
-      u.pipe(
-        unshiftWith,
-        u.withLatestFrom(unshiftPayload),
-        u.map(([, { index, offset }]) => {
+      ({ index, offset }) => {
+        // a list refresh will be triggered immediately from the unshiftWith pushing new items.
+        // Skip it, and handle the one coming from the DOM.
+        u.handleNext(u.pipe(listRefresh, u.skip(1)), () => {
           const newOffset = offsetOf(index, u.getValue(sizes))
-          return { top: newOffset - offset }
+          u.publish(deviationOffset, newOffset - offset)
         })
-      ),
-      scrollBy
+      }
     )
 
     return { deviation }
