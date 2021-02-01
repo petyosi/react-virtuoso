@@ -62,10 +62,13 @@ const htmlCode = `
     <title>RV Test Cases</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style type="text/css">
-      html, body, #root {
-        height: 100%;
+      html, body {
         padding: 0;
         margin: 0;
+      }
+
+      #root {
+        min-height: 500px;
       }
 
       @media screen and (max-width: 900px) {

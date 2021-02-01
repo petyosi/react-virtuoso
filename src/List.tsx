@@ -327,7 +327,7 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
       }
     }, [scrollerRef])
 
-    useEmitter('scrollTo', scrollToCallback)
+    useEmitter('windowScrollTo', scrollToCallback)
     useEmitter('scrollBy', scrollByCallback)
     return createElement(
       ScrollerComponent,

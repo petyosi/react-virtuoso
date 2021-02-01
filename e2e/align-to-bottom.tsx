@@ -4,7 +4,7 @@ import { Virtuoso } from '../src/'
 export default function App() {
   const [total, setTotal] = React.useState(10)
   return (
-    <div style={{ display: 'flex', height: '100%', flexDirection: 'column', border: '1px solid red' }}>
+    <div style={{ display: 'flex', height: '500px', flexDirection: 'column', border: '1px solid red' }}>
       <Virtuoso
         computeItemKey={key => `item-${key}`}
         alignToBottom={true}

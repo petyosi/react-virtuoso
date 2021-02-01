@@ -53,7 +53,20 @@ export default function useScrollTop(
 
     const isSmooth = location.behavior === 'smooth'
 
-    const { offsetHeight, scrollHeight, scrollTop } = scrollerElement === window ? document.documentElement : scrollerElement
+    let offsetHeight: number
+    let scrollHeight: number
+    let scrollTop: number
+
+    if (scrollerElement === window) {
+      // this is not a mistake
+      scrollHeight = document.documentElement.offsetHeight
+      offsetHeight = window.innerHeight
+      scrollTop = document.documentElement.scrollTop
+    } else {
+      scrollHeight = scrollerElement.scrollHeight
+      offsetHeight = scrollerElement.offsetHeight
+      scrollTop = scrollerElement.scrollTop
+    }
 
     // avoid system hanging because the DOM never called back
     // with the scrollTop

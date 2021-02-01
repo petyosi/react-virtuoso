@@ -2,17 +2,16 @@ import * as React from 'react'
 import { Virtuoso } from '../src/'
 
 export default function App() {
+  const ref = React.useRef(null)
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ padding: '100px' }}>
+      <button onClick={() => ref.current.scrollToIndex(20)}>Scroll</button>
       <Virtuoso
-        computeItemKey={key => `item-${key}`}
-        initialItemCount={30}
+        ref={ref}
         totalCount={100}
-        topItemCount={3}
         itemContent={index => <div style={{ height: 30 }}>Item {index}</div>}
         style={{ border: '1px solid red', height: '300px' }}
         useWindowScroll={true}
-        initialTopMostItemIndex={40}
       />
     </div>
   )
