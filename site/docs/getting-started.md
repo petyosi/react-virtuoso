@@ -128,7 +128,7 @@ examples for possible usage of the method.
 ### Customize the Scroll Container
 
 You can swap the virutoso scroller implementation in order to add custom scroll logic or to
-integrade a custom scrolling library (like [React scrollbars](https://github.com/malte-wessel/react-custom-scrollbars)).
+integrate a custom scrolling library (like [React scrollbars](https://github.com/malte-wessel/react-custom-scrollbars)).
 
 Check the [custom scroll container](/custom-scroll-container) example for a starting point.
 
