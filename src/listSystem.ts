@@ -47,7 +47,7 @@ const featureGroup1System = system(
 export const listSystem = system(
   ([
     { totalCount, sizeRanges, fixedItemSize, defaultItemSize, trackItemSizes, data, firstItemIndex, groupIndices },
-    { initialTopMostItemIndex },
+    { initialTopMostItemIndex, scrolledToInitialItem },
     domIO,
     followOutput,
     { listState, topItemsIndexes, ...flags },
@@ -66,6 +66,7 @@ export const listSystem = system(
       firstItemIndex,
       sizeRanges,
       initialTopMostItemIndex,
+      scrolledToInitialItem,
       topItemsIndexes,
       topItemCount,
       groupCounts,

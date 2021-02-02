@@ -180,6 +180,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const isSeeking = useEmitterValue('isSeeking')
   const hasGroups = useEmitterValue('groupIndices').length > 0
   const paddingTopAddition = useEmitterValue('paddingTopAddition')
+  const scrolledToInitialItem = useEmitterValue('scrolledToInitialItem')
 
   const containerStyle: CSSProperties = showTopList
     ? {}
@@ -191,7 +192,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
         marginTop: deviation,
       }
 
-  if (!showTopList && listState.items.length === 0 && EmptyPlaceholder) {
+  if (!showTopList && listState.items.length === 0 && EmptyPlaceholder && scrolledToInitialItem) {
     return createElement(EmptyPlaceholder)
   }
 
