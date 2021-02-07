@@ -1,0 +1,34 @@
+---
+name: Bug report
+about: Something went wrong? Please provide a reproduction!
+title: "[BUG]"
+labels: bug
+assignees: ''
+
+---
+
+**Describe the bug**
+A clear and concise description of what the bug is.
+
+**Reproduction**
+Use https://codesandbox.io/ to illustrate the problem so that I can observe the issue on my side and make sure that a potential fix reliably addresses it.
+
+**To Reproduce**
+Steps to reproduce the behavior:
+1. Go to '...'
+2. Click on '....'
+3. Scroll down to '....'
+4. See error
+
+**Expected behavior**
+A clear and concise description of what you expected to happen.
+
+**Screenshots**
+If applicable, add screenshots to help explain your problem.
+
+**Desktop (please complete the following information):**
+ - OS: [e.g. iOS] - Windows can behave unexpectedly.
+ - Browser [e.g. chrome, safari]
+
+**Additional context**
+Add any other context about the problem here.
