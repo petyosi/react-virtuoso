@@ -14,11 +14,11 @@ export const initialScrollTopSystem = u.system(
         u.filter(([, offset]) => offset !== 0),
         u.map(([, offset]) => ({ top: offset }))
       ),
-      location => {
+      (location) => {
         u.handleNext(
           u.pipe(
             totalListHeight,
-            u.filter(val => val !== 0)
+            u.filter((val) => val !== 0)
           ),
           () => {
             setTimeout(() => {

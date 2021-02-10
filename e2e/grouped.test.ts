@@ -8,7 +8,7 @@ describe('jagged grouped list', () => {
   it('renders correct sizing', async () => {
     const [paddingTop, paddingBottom] = await page.evaluate(() => {
       const listContainer = document.querySelector('#test-root > div > div > div:first-child') as HTMLElement
-      return [listContainer!.style.paddingTop, listContainer!.style.paddingBottom]
+      return [listContainer.style.paddingTop, listContainer.style.paddingBottom]
     })
 
     expect(paddingTop).toBe('30px')

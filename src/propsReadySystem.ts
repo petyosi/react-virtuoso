@@ -7,7 +7,7 @@ export const propsReadySystem = u.system(
     const didMount = u.streamFromEmitter(
       u.pipe(
         propsReady,
-        u.filter(ready => ready),
+        u.filter((ready) => ready),
         u.distinctUntilChanged()
       )
     )

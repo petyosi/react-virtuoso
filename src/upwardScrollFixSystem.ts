@@ -28,7 +28,7 @@ export const upwardScrollFixSystem = u.system(
                 for (let index = items.length - 1; index >= 0; index--) {
                   const item = items[index]
 
-                  const prevItem = prevItems.find(pItem => pItem.originalIndex === item.originalIndex)
+                  const prevItem = prevItems.find((pItem) => pItem.originalIndex === item.originalIndex)
 
                   if (!prevItem) {
                     continue
@@ -68,7 +68,7 @@ export const upwardScrollFixSystem = u.system(
         u.filter(([is, deviation]) => !is && deviation !== 0),
         u.map(([_, deviation]) => deviation)
       ),
-      offset => {
+      (offset) => {
         u.publish(scrollBy, { top: -offset, behavior: 'auto' })
         u.publish(deviation, 0)
       }
@@ -77,7 +77,7 @@ export const upwardScrollFixSystem = u.system(
     u.subscribe(
       u.pipe(
         beforeUnshiftWith,
-        u.map(indexOffset => {
+        u.map((indexOffset) => {
           const currentTopIndex = u.getValue(listState).items[0].originalIndex!
 
           return {

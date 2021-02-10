@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
+import { DropResult, DragDropContext, Draggable, Droppable, DraggableProvided } from 'react-beautiful-dnd'
 import { Components, Virtuoso } from '../src'
 
+type Item = { id: string; text: string }
 export default function App() {
   const [items, setItems] = useState(() => {
     return Array.from({ length: 1000 }, (_, k) => ({
@@ -10,7 +11,7 @@ export default function App() {
     }))
   })
 
-  const reorder = React.useCallback((list: any[], startIndex: number, endIndex: number) => {
+  const reorder = React.useCallback((list: Item[], startIndex: number, endIndex: number) => {
     const result = Array.from(list)
     const [removed] = result.splice(startIndex, 1)
     result.splice(endIndex, 0, removed)
@@ -19,7 +20,7 @@ export default function App() {
   }, [])
 
   const onDragEnd = React.useCallback(
-    (result: any) => {
+    (result: DropResult) => {
       if (!result.destination) {
         return
       }
@@ -27,13 +28,13 @@ export default function App() {
         return
       }
 
-      setItems(items => reorder(items, result.source.index, result.destination.index))
+      setItems((items) => reorder(items, result.source.index, result.destination.index))
     },
     [setItems, reorder]
   )
 
   const Item = React.useMemo(() => {
-    return ({ provided, item, isDragging }) => {
+    return ({ provided, item, isDragging }: { provided: DraggableProvided; item: Item; isDragging: boolean }) => {
       // For borders and visual space,
       // use container with padding rather than a margin
       // margins confuse virtuoso rendering
@@ -41,6 +42,7 @@ export default function App() {
         <div
           {...provided.draggableProps}
           {...provided.dragHandleProps}
+          // eslint-disable-next-line @typescript-eslint/unbound-method
           ref={provided.innerRef}
           style={{ ...provided.draggableProps.style, paddingBottom: '8px' }}
         >
@@ -77,19 +79,20 @@ export default function App() {
             <Item provided={provided} isDragging={snapshot.isDragging} item={items[rubric.source.index]} />
           )}
         >
-          {provided => {
+          {(provided) => {
             return (
               <Virtuoso
                 components={{
                   Item: HeightPreservingItem,
                 }}
+                // eslint-disable-next-line @typescript-eslint/unbound-method
                 scrollerRef={provided.innerRef}
                 data={items}
                 style={{ width: 300, height: 500 }}
                 itemContent={(index, item) => {
                   return (
                     <Draggable draggableId={item.id} index={index} key={item.id}>
-                      {provided => <Item provided={provided} item={item} isDragging={false} />}
+                      {(provided) => <Item provided={provided} item={item} isDragging={false} />}
                     </Draggable>
                   )
                 }}

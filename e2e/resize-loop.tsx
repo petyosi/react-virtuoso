@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Virtuoso } from '../src/'
 
-window.addEventListener('error', event => {
+window.addEventListener('error', (event) => {
   // console.log(event)
 })
 
@@ -14,5 +14,5 @@ const ResizingDiv = ({ children }) => {
 }
 
 export default function App() {
-  return <Virtuoso totalCount={100} itemContent={index => <ResizingDiv>Item {index}</ResizingDiv>} style={{ height: 300 }} />
+  return <Virtuoso totalCount={100} itemContent={(index) => <ResizingDiv>Item {index}</ResizingDiv>} style={{ height: 300 }} />
 }

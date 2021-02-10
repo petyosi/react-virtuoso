@@ -30,7 +30,7 @@ export const scrollSeekSystem = system(
     connect(
       pipe(
         isScrolling,
-        filter(value => !value),
+        filter((value) => !value),
         mapTo(0)
       ),
       scrollVelocity
@@ -51,8 +51,8 @@ export const scrollSeekSystem = system(
         scrollVelocity,
         withLatestFrom(scrollSeekConfiguration, isSeeking, rangeChanged),
         filter(([_, config]) => !!config),
-        map(([speed, config, isSeeking, range]: any) => {
-          const { exit, enter } = config!
+        map(([speed, config, isSeeking, range]) => {
+          const { exit, enter } = config as ScrollSeekConfiguration
           if (isSeeking) {
             if (exit(speed, range)) {
               return false
@@ -71,7 +71,7 @@ export const scrollSeekSystem = system(
 
     subscribe(
       pipe(combineLatest(isSeeking, scrollVelocity, rangeChanged), withLatestFrom(scrollSeekConfiguration)),
-      ([[isSeeking, velocity, range], config]) => isSeeking && config && config.change && config!.change(velocity, range)
+      ([[isSeeking, velocity, range], config]) => isSeeking && config && config.change && config.change(velocity, range)
     )
 
     return { isSeeking, scrollSeekConfiguration, scrollVelocity, scrollSeekRangeChanged: rangeChanged }

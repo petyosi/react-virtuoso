@@ -46,7 +46,7 @@ export const groupedListSystem = system(([{ totalCount, groupIndices, sizes }, {
       filter(([_, sizes]) => hasGroups(sizes)),
       map(([scrollTop, state, headerHeight]) => findMaxKeyValue(state.groupOffsetTree, Math.max(scrollTop - headerHeight, 0), 'v')[0]),
       distinctUntilChanged(),
-      map(index => [index])
+      map((index) => [index])
     ),
     topItemsIndexes
   )

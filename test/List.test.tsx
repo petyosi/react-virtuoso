@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import * as React from 'react'
 import { render, unmountComponentAtNode } from 'react-dom'
 import { act } from 'react-dom/test-utils'
@@ -16,7 +19,7 @@ describe('List', () => {
 
   afterEach(() => {
     // cleanup on exiting
-    unmountComponentAtNode(container as any)
+    unmountComponentAtNode(container)
     container.remove()
   })
 

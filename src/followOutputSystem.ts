@@ -39,7 +39,7 @@ export const followOutputSystem = u.system(
 
           return { totalCount, shouldFollow, followOutputBehavior }
         }),
-        u.filter(u.prop('shouldFollow'))
+        u.filter(({ shouldFollow }) => shouldFollow)
       ),
       ({ totalCount, followOutputBehavior }) => {
         u.handleNext(listRefresh, () => {

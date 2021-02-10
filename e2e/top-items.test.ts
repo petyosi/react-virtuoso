@@ -14,7 +14,7 @@ describe('jagged list with 2 top items', () => {
 
     const paddingTop = await page.evaluate(() => {
       const listContainer = document.querySelector('#test-root > div > div > div') as HTMLElement
-      return listContainer!.style.paddingTop
+      return listContainer.style.paddingTop
     })
 
     expect(paddingTop).toBe('70px')
@@ -23,7 +23,7 @@ describe('jagged list with 2 top items', () => {
   it('renders correct amount of items', async () => {
     const childElementCount = await page.evaluate(() => {
       const listContainer = document.querySelectorAll('#test-root > div > div > div')[0]
-      return listContainer!.childElementCount
+      return listContainer.childElementCount
     })
     expect(childElementCount).toBe(9)
   })

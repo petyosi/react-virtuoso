@@ -5,7 +5,7 @@ export default function App() {
   return (
     <Virtuoso
       totalCount={100}
-      itemContent={index => (
+      itemContent={(index) => (
         <div style={{ border: '1px solid black' }}>
           Item {index}
           <div>

@@ -10,7 +10,7 @@ export default function App() {
     <div>
       <button
         onClick={() => {
-          setCount(val => val - 2)
+          setCount((val) => val - 2)
         }}
       >
         Delete last item

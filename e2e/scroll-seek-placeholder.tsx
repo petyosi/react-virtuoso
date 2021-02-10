@@ -4,13 +4,13 @@ import { Virtuoso } from '../src/'
 export default function App() {
   return (
     <Virtuoso
-      computeItemKey={key => `item-${key}`}
+      computeItemKey={(key) => `item-${key}`}
       totalCount={1000}
-      itemContent={index => <div style={{ height: 30 }}>Item {index}</div>}
+      itemContent={(index) => <div style={{ height: 30 }}>Item {index}</div>}
       style={{ height: 300 }}
       scrollSeekConfiguration={{
-        enter: velocity => Math.abs(velocity) > 200,
-        exit: velocity => Math.abs(velocity) < 30,
+        enter: (velocity) => Math.abs(velocity) > 200,
+        exit: (velocity) => Math.abs(velocity) < 30,
         change: (_, range) => console.log({ range }),
       }}
       components={{

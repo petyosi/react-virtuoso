@@ -7,8 +7,8 @@ export const topItemCountSystem = system(([{ topItemsIndexes }]) => {
   connect(
     pipe(
       topItemCount,
-      filter(length => length > 0),
-      map(length => Array.from({ length }).map((_, index) => index))
+      filter((length) => length > 0),
+      map((length) => Array.from({ length }).map((_, index) => index))
     ),
     topItemsIndexes
   )

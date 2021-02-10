@@ -4,7 +4,7 @@ import { Virtuoso } from '../src'
 const FancyScroller = React.forwardRef(({ children, ...props }, ref: React.Ref<HTMLDivElement>) => {
   return (
     <div style={{ border: '1px solid pink' }}>
-      <div {...props} ref={ref as any}>
+      <div {...props} ref={ref}>
         {children}
       </div>
     </div>
@@ -17,9 +17,9 @@ export default function App() {
       components={{
         Scroller: FancyScroller,
       }}
-      computeItemKey={key => `item-${key}`}
+      computeItemKey={(key) => `item-${key}`}
       totalCount={100}
-      itemContent={index => <div style={{ height: 30 }}>Item {index}</div>}
+      itemContent={(index) => <div style={{ height: 30 }}>Item {index}</div>}
       style={{ height: 300 }}
     />
   )

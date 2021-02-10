@@ -11,7 +11,7 @@ import { Data, originalIndexFromItemIndex, SizeState, sizeSystem, hasGroups } fr
 import { stateFlagsSystem } from './stateFlagsSystem'
 import { rangeComparator, tupleComparator } from './comparators'
 
-export type ListItems = ListItem<any>[]
+export type ListItems = ListItem<unknown>[]
 export interface TopListState {
   items: ListItems
   listHeight: number
@@ -56,7 +56,7 @@ function transposeItems(items: Item<any>[], sizes: SizeState, firstItemIndex: nu
   }
 
   if (!hasGroups(sizes)) {
-    return items.map(item => ({ ...item, index: item.index + firstItemIndex, originalIndex: item.index }))
+    return items.map((item) => ({ ...item, index: item.index + firstItemIndex, originalIndex: item.index }))
   }
 
   const startIndex = items[0].index
@@ -96,7 +96,7 @@ function transposeItems(items: Item<any>[], sizes: SizeState, firstItemIndex: nu
     })
   }
 
-  return transposedItems as ListItems
+  return transposedItems
 }
 
 export function buildListState(
@@ -222,7 +222,7 @@ export const listStateSystem = u.system(
             const endIndex = findMaxKeyValue(offsetTree, endOffset, 'v')[0]!
             const maxIndex = totalCount - 1
 
-            const items = u.tap([] as Item<any>[], result => {
+            const items = u.tap([] as Item<any>[], (result) => {
               for (const range of rangesWithin(offsetTree, startIndex, endIndex)) {
                 let offset = range.value
                 let rangeStartIndex = range.start
@@ -262,8 +262,8 @@ export const listStateSystem = u.system(
     u.connect(
       u.pipe(
         data,
-        u.filter(data => data !== undefined),
-        u.map(data => data!.length)
+        u.filter((data) => data !== undefined),
+        u.map((data) => data!.length)
       ),
       totalCount
     )
@@ -275,7 +275,7 @@ export const listStateSystem = u.system(
     u.connect(
       u.pipe(
         listState,
-        u.map(state => [state.top, state.bottom])
+        u.map((state) => [state.top, state.bottom])
       ),
       listBoundary
     )
@@ -283,7 +283,7 @@ export const listStateSystem = u.system(
     u.connect(
       u.pipe(
         listState,
-        u.map(state => state.items)
+        u.map((state) => state.items)
       ),
       itemsRendered
     )
@@ -294,9 +294,9 @@ export const listStateSystem = u.system(
         u.filter(({ items }) => items.length > 0),
         u.withLatestFrom(totalCount, data),
         u.filter(([{ items }, totalCount]) => items[items.length - 1].originalIndex === totalCount - 1),
-        u.map(([, totalCount, data]) => [totalCount - 1, data] as [number, any[]]),
+        u.map(([, totalCount, data]) => [totalCount - 1, data] as [number, unknown[]]),
         u.distinctUntilChanged(tupleComparator),
-        u.map(([count]) => count)
+        u.map(([count]) => count as number)
       )
     )
 

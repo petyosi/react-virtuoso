@@ -24,7 +24,7 @@ export default function App() {
           </span>
         )),
       }}
-      itemContent={index => <div style={{ height: 30 }}>Item {index}</div>}
+      itemContent={(index) => <div style={{ height: 30 }}>Item {index}</div>}
       style={{ height: 300 }}
     />
   )

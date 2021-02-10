@@ -8,7 +8,7 @@ import { ComputeItemKey, GridComponents, GridItemContent, GridRootProps } from '
 import { addDeprecatedAlias, buildScroller, identity, viewportStyle } from './List'
 
 const gridComponentPropsSystem = u.system(() => {
-  const itemContent = u.statefulStream<GridItemContent>(index => `Item ${index}`)
+  const itemContent = u.statefulStream<GridItemContent>((index) => `Item ${index}`)
   const components = u.statefulStream<GridComponents>({})
   const itemClassName = u.statefulStream('virtuoso-grid-item')
   const listClassName = u.statefulStream('virtuoso-grid-list')
@@ -19,7 +19,7 @@ const gridComponentPropsSystem = u.system(() => {
     return u.statefulStreamFromEmitter(
       u.pipe(
         components,
-        u.map(components => components[propName] as GridComponents[K]),
+        u.map((components) => components[propName]),
         u.distinctUntilChanged()
       ),
       defaultValue
@@ -57,6 +57,7 @@ const combinedSystem = u.system(([gridSystem, gridComponentPropsSystem]) => {
         u.withLatestFrom(gridComponentPropsSystem.components),
         u.map(([comp, components]) => {
           console.warn(`react-virtuoso: ${propName} property is deprecated. Pass components.${componentName} instead.`)
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           return { ...components, [componentName]: comp }
         })
       ),
@@ -70,6 +71,7 @@ const combinedSystem = u.system(([gridSystem, gridComponentPropsSystem]) => {
     )
     u.publish(gridComponentPropsSystem.components, {
       ...u.getValue(gridComponentPropsSystem.components),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       ScrollSeekPlaceholder: placeholder,
     })
     u.publish(gridSystem.scrollSeekConfiguration, config)
@@ -95,7 +97,7 @@ const GridItems: FC = React.memo(function GridItems() {
 
   const itemDimensions = usePublisher('itemDimensions')
 
-  const listRef = useSize(el => {
+  const listRef = useSize((el) => {
     const firstItem = el.firstChild as HTMLElement
     if (firstItem) {
       itemDimensions({
@@ -108,7 +110,7 @@ const GridItems: FC = React.memo(function GridItems() {
   return createElement(
     ListComponent,
     { ref: listRef, className: listClassName, style: { paddingTop: gridState.offsetTop, paddingBottom: gridState.offsetBottom } },
-    gridState.items.map(item => {
+    gridState.items.map((item) => {
       const key = computeItemKey(item.index)
       return isSeeking
         ? createElement(ScrollSeekPlaceholder, { key, style: { height: gridState.itemHeight, width: gridState.itemWidth } })
@@ -120,7 +122,7 @@ const GridItems: FC = React.memo(function GridItems() {
 const GridRoot: FC<GridRootProps> = React.memo(function GridRoot({ ...props }) {
   const viewportDimensions = usePublisher('viewportDimensions')
 
-  const viewportRef = useSize(el => {
+  const viewportRef = useSize((el) => {
     viewportDimensions({
       width: el.offsetWidth,
       height: el.offsetHeight,

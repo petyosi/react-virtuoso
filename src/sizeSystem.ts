@@ -7,7 +7,7 @@ export interface SizeRange {
   size: number
 }
 
-export type Data = readonly any[] | undefined
+export type Data = readonly unknown[] | undefined
 
 function rangeIncludes(refRange: SizeRange) {
   const { size, startIndex, endIndex } = refRange
@@ -93,7 +93,7 @@ export function initialSizeState(): SizeState {
 export function sizeStateReducer(state: SizeState, [ranges, groupIndices]: [SizeRange[], number[]]) {
   const sizeTree = state.sizeTree
   let offsetTree = state.offsetTree
-  let newSizeTree: AANode<number> = sizeTree as AANode<number>
+  let newSizeTree: AANode<number> = sizeTree
   let syncStart = 0
 
   // We receive probe item results from a group probe,
@@ -106,7 +106,7 @@ export function sizeStateReducer(state: SizeState, [ranges, groupIndices]: [Size
       return insert(insert(tree, groupIndex, groupSize), groupIndex + 1, itemSize)
     }, newSizeTree)
   } else {
-    ;[newSizeTree, syncStart] = insertRanges(newSizeTree, ranges, index => {
+    ;[newSizeTree, syncStart] = insertRanges(newSizeTree, ranges, (index) => {
       offsetTree = remove(offsetTree, index)
     })
   }
@@ -129,7 +129,7 @@ export function sizeStateReducer(state: SizeState, [ranges, groupIndices]: [Size
   }
 
   for (const { start: startIndex, value } of rangesWithin(newSizeTree, syncStart, Infinity)) {
-    const offset = (startIndex - prevIndex!) * prevSize! + prevOffset
+    const offset = (startIndex - prevIndex) * prevSize + prevOffset
     offsetTree = insert(offsetTree, startIndex, offset)
     prevIndex = startIndex
     prevOffset = offset
@@ -142,9 +142,9 @@ export function sizeStateReducer(state: SizeState, [ranges, groupIndices]: [Size
     groupOffsetTree: groupIndices.reduce((tree, index) => {
       return insert(tree, index, offsetOf(index, { offsetTree, sizeTree: newSizeTree }))
     }, newTree<number>()),
-    lastIndex: prevIndex!,
+    lastIndex: prevIndex,
     lastOffset: prevOffset,
-    lastSize: prevSize!,
+    lastSize: prevSize,
     groupIndices,
   }
 }
@@ -200,7 +200,7 @@ export const sizeSystem = u.system(
     u.connect(
       u.pipe(
         groupIndices,
-        u.filter(indexes => indexes.length > 0),
+        u.filter((indexes) => indexes.length > 0),
         u.withLatestFrom(sizes),
         u.map(([groupIndices, sizes]) => {
           const groupOffsetTree = groupIndices.reduce((tree, index, idx) => {
@@ -244,7 +244,7 @@ export const sizeSystem = u.system(
     const trackItemSizes = u.statefulStreamFromEmitter(
       u.pipe(
         fixedItemSize,
-        u.map(size => size === undefined)
+        u.map((size) => size === undefined)
       ),
       true
     )
@@ -252,8 +252,8 @@ export const sizeSystem = u.system(
     u.connect(
       u.pipe(
         defaultItemSize,
-        u.filter(value => value !== undefined),
-        u.map(size => [{ startIndex: 0, endIndex: 0, size }] as SizeRange[])
+        u.filter((value) => value !== undefined),
+        u.map((size) => [{ startIndex: 0, endIndex: 0, size }] as SizeRange[])
       ),
       sizeRanges
     )
@@ -271,7 +271,7 @@ export const sizeSystem = u.system(
           },
           { changed: false, sizes: initial }
         ),
-        u.map(value => value.changed)
+        u.map((value) => value.changed)
       )
     )
 
@@ -284,8 +284,8 @@ export const sizeSystem = u.system(
           },
           { diff: 0, prev: 0 }
         ),
-        u.map(val => val.diff),
-        u.filter(value => value > 0)
+        u.map((val) => val.diff),
+        u.filter((value) => value > 0)
       ),
       unshiftWith
     )

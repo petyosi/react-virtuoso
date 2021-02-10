@@ -7,28 +7,21 @@ const INITIAL_ITEM_COUNT = 100
 
 export default function App() {
   const [firstItemIndex, setFirstItemIndex] = useState(START_INDEX)
-  const [items, setItems] = useState(() => new Array(INITIAL_ITEM_COUNT).fill(''))
+  const [items, setItems] = useState(() => Array.from({ length: INITIAL_ITEM_COUNT }))
 
-  const prependItems = useCallback(
-    index => {
-      console.log(`prepending items, ${index}`)
+  const prependItems = useCallback(() => {
+    const itemsToPrepend = 20
+    const nextFirstItemIndex = firstItemIndex - itemsToPrepend
 
-      const itemsToPrepend = 20
-      const nextFirstItemIndex = firstItemIndex - itemsToPrepend
+    setTimeout(() => {
+      setFirstItemIndex(() => nextFirstItemIndex)
+      setItems((items) => [...Array.from({ length: itemsToPrepend }), ...items])
+    }, 500)
 
-      setTimeout(() => {
-        setFirstItemIndex(() => nextFirstItemIndex)
+    return false
+  }, [firstItemIndex, setItems])
 
-        const newItems = new Array(itemsToPrepend).fill('')
-        setItems(items => [...newItems, ...items])
-      }, 500)
-
-      return false
-    },
-    [firstItemIndex, setItems]
-  )
-
-  const itemContent = useCallback(index => {
+  const itemContent = useCallback((index: number) => {
     return (
       <div
         style={{

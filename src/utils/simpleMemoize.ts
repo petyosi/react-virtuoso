@@ -1,6 +1,6 @@
 export function simpleMemoize<T extends () => any>(func: T): T {
   let called = false
-  let result: any
+  let result: unknown
 
   return (() => {
     if (!called) {

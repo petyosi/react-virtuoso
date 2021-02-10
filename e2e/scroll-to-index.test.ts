@@ -18,7 +18,7 @@ describe('scroll to index', () => {
 
     const scrollTop = await page.evaluate(() => {
       const listContainer = document.querySelectorAll('#test-root > div')[1]
-      return listContainer!.scrollTop
+      return listContainer.scrollTop
     })
 
     expect(scrollTop).toBe((30 - 7) * 20 + 7 * 30)
@@ -31,7 +31,7 @@ describe('scroll to index', () => {
 
     const scrollTop = await page.evaluate(() => {
       const listContainer = document.querySelectorAll('#test-root > div')[1]
-      return listContainer!.scrollTop
+      return listContainer.scrollTop
     })
     const rendered30s = 11
     expect(scrollTop).toBe((50 - rendered30s) * 20 + rendered30s * 30 - 300 / 2 + 20 / 2)
@@ -44,7 +44,7 @@ describe('scroll to index', () => {
 
     const scrollTop = await page.evaluate(() => {
       const listContainer = document.querySelectorAll('#test-root > div')[1]
-      return listContainer!.scrollTop
+      return listContainer.scrollTop
     })
 
     const rendered30s = 14

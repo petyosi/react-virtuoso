@@ -3,8 +3,8 @@ import { initialSizeState, sizeSystem, sizeStateReducer, offsetOf } from '../src
 
 import { init, publish, subscribe, getValue } from '@virtuoso.dev/urx'
 
-function toKV(tree: AANode<any>) {
-  return walk(tree).map(node => [node.k, node.v])
+function toKV<T>(tree: AANode<T>) {
+  return walk(tree).map((node) => [node.k, node.v] as [number, T])
 }
 
 describe('size state reducer', () => {

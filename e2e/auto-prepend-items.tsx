@@ -2,8 +2,6 @@ import React, { useCallback, useState } from 'react'
 import { Virtuoso } from '../src/'
 import faker from 'faker'
 
-const generated = []
-
 function toggleBg(index: number) {
   return index % 2 ? 'var(--ifm-background-color)' : 'var(--ifm-color-emphasis-200)'
 }
@@ -23,8 +21,10 @@ function user(index = 0) {
   }
 }
 
+const generated: ReturnType<typeof user>[] = []
+
 const generateUsers = (length: number, startIndex = 0) => {
-  return Array.from({ length }).map((_, i) => getUser(i + startIndex))
+  return Array.from({ length }, (_, i) => getUser(i + startIndex))
 }
 
 const getUser = (index: number) => {
@@ -65,7 +65,7 @@ export default function App() {
       initialTopMostItemIndex={INITIAL_ITEM_COUNT - 1}
       data={users}
       startReached={prependItems}
-      itemContent={(index: number, user) => {
+      itemContent={(_, user) => {
         return (
           <div style={{ backgroundColor: user.bgColor, padding: '1rem 0.5rem' }}>
             <h4>

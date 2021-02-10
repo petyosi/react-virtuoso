@@ -28,7 +28,7 @@ function getChangedChildSizes(children: HTMLCollection, field: 'offsetHeight' | 
 
     const index = parseInt(child.dataset.index!)
     const knownSize = parseInt(child.dataset.knownSize!)
-    const size = (child as HTMLElement)[field]
+    const size = child[field]
 
     if (size === 0) {
       throw new Error('Zero-sized element, this should not happen')

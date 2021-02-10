@@ -31,7 +31,7 @@
     "build": "microbundle --strict --jsx React.createElement --format=cjs,esm",
     "test": "jest --passWithNoTests",
     "e2e": "jest --config jest.e2e.config.js --run-in-band --passWithNoTests",
-    "lint": "eslint test src e2e --ext .ts,.tsx",
+    "lint": "eslint src test e2e --ext .ts,.tsx",
     "browse-examples": "node e2e/test-cases.mjs && parcel e2e/__examples.html",
     "prepare": "yarn build",
     "semantic-release": "semantic-release"

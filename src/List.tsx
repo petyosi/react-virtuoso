@@ -24,8 +24,7 @@ import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 import useChangedChildSizes from './hooks/useChangedChildSizes'
 import useScrollTop from './hooks/useScrollTop'
 import useSize from './hooks/useSize'
-import { Components, ComputeItemKey, GroupContent, ListRootProps } from './interfaces'
-import { ListState } from './listStateSystem'
+import { Components, ComputeItemKey, GroupContent, GroupItemContent, ItemContent, ListRootProps } from './interfaces'
 import { listSystem } from './listSystem'
 import { positionStickyCssValue } from './utils/positionStickyCssValue'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
@@ -35,18 +34,18 @@ export function identity<T>(value: T) {
 }
 
 const listComponentPropsSystem = system(() => {
-  const itemContent = statefulStream<any>((index: number) => `Item ${index}`)
+  const itemContent = statefulStream<ItemContent<any> | GroupItemContent<any>>((index: number) => `Item ${index}`)
   const groupContent = statefulStream<GroupContent>((index: number) => `Group ${index}`)
   const components = statefulStream<Components>({})
   const computeItemKey = statefulStream<ComputeItemKey>(identity)
   const headerFooterTag = statefulStream('div')
-  const scrollerRef = statefulStream<(ref: HTMLElement | null) => void>(noop)
+  const scrollerRef = statefulStream<(ref: HTMLElement | Window | null) => void>(noop)
 
   const distinctProp = <K extends keyof Components>(propName: K, defaultValue: Components[K] | null | 'div' = null) => {
     return statefulStreamFromEmitter(
       pipe(
         components,
-        map((components) => components[propName] as Components[K]),
+        map((components) => components[propName]),
         distinctUntilChanged()
       ),
       defaultValue
@@ -133,6 +132,7 @@ const combinedSystem = system(([listSystem, propsSystem]) => {
         withLatestFrom(propsSystem.components),
         map(([comp, components]) => {
           console.warn(`react-virtuoso: ${propName} property is deprecated. Pass components.${componentName} instead.`)
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           return { ...components, [componentName]: comp }
         })
       ),
@@ -144,6 +144,7 @@ const combinedSystem = system(([listSystem, propsSystem]) => {
     console.warn(
       `react-virtuoso: scrollSeek property is deprecated. Pass scrollSeekConfiguration and specify the placeholder in components.ScrollSeekPlaceholder instead.`
     )
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     publish(propsSystem.components, { ...getValue(propsSystem.components), ScrollSeekPlaceholder: placeholder })
     publish(listSystem.scrollSeekConfiguration, config)
   })
@@ -189,7 +190,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
         boxSizing: 'border-box',
         height: listState.offsetBottom + listState.bottom,
         paddingTop: listState.offsetTop + paddingTopAddition,
-        paddingBottom: (listState as ListState).offsetBottom,
+        paddingBottom: listState.offsetBottom,
         marginTop: deviation,
       }
 
@@ -230,7 +231,9 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
             'data-item-index': item.index,
             'data-item-group-index': item.groupIndex,
           } as any,
-          itemContent(...((hasGroups ? [item.index, item.groupIndex, item.data] : [item.index, item.data]) as any))
+          hasGroups
+            ? (itemContent as GroupItemContent<any>)(item.index, item.groupIndex!, item.data)
+            : (itemContent as ItemContent<any>)(item.index, item.data)
         )
       }
     })
@@ -299,7 +302,7 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
     return createElement(
       ScrollerComponent,
       {
-        ref: scrollerRef,
+        ref: scrollerRef as React.MutableRefObject<HTMLDivElement | null>,
         style: { ...scrollerStyle, ...style },
         tabIndex: 0,
         ...props,

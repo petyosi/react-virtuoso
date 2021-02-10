@@ -260,8 +260,3 @@ function skew<T>(node: NonNilAANode<T>): NonNilAANode<T> {
 
   return !empty(l) && l.lvl === node.lvl ? clone(l, { r: clone(node, { l: l.r }) }) : node
 }
-
-// for debugging purposes
-export function toKV(tree: AANode<any>) {
-  return walk(tree).map(node => [node.k, node.v])
-}

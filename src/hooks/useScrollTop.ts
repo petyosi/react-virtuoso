@@ -1,15 +1,15 @@
 import { useRef, useCallback, useEffect } from 'react'
 import * as u from '@virtuoso.dev/urx'
 
-export type CallbackRefParam = HTMLElement | null
+export type ScrollerRef = Window | HTMLElement | null
 
 export default function useScrollTop(
   scrollTopCallback: (scrollTop: number) => void,
   smoothScrollTargetReached: (yes: true) => void,
   scrollerElement: any,
-  scrollerRefCallback: (_ref: HTMLElement | null) => void = u.noop
+  scrollerRefCallback: (ref: ScrollerRef) => void = u.noop
 ) {
-  const scrollerRef = useRef<any>(null)
+  const scrollerRef = useRef<HTMLElement | null | Window>(null)
   const scrollTopTarget = useRef<any>(null)
   const timeoutRef = useRef<any>(null)
 
@@ -36,8 +36,8 @@ export default function useScrollTop(
   useEffect(() => {
     const localRef = scrollerRef.current!
 
-    scrollerRefCallback(scrollerRef.current!)
-    handler({ target: localRef } as Event)
+    scrollerRefCallback(scrollerRef.current)
+    handler(({ target: localRef } as unknown) as Event)
     localRef.addEventListener('scroll', handler, { passive: true })
 
     return () => {
@@ -64,9 +64,9 @@ export default function useScrollTop(
       offsetHeight = window.innerHeight
       scrollTop = document.documentElement.scrollTop
     } else {
-      scrollHeight = scrollerElement.scrollHeight
-      offsetHeight = scrollerElement.offsetHeight
-      scrollTop = scrollerElement.scrollTop
+      scrollHeight = (scrollerElement as HTMLElement).scrollHeight
+      offsetHeight = (scrollerElement as HTMLElement).offsetHeight
+      scrollTop = (scrollerElement as HTMLElement).scrollTop
     }
 
     // avoid system hanging because the DOM never called back
@@ -103,7 +103,7 @@ export default function useScrollTop(
 
   function scrollByCallback(location: ScrollToOptions) {
     if (scrollTopTarget.current === null) {
-      scrollerRef.current.scrollBy(location)
+      scrollerRef.current!.scrollBy(location)
     }
   }
 

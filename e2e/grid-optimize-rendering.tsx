@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { VirtuosoGrid, VirtuosoGridHandle } from '../src'
+import { VirtuosoGrid, GridComponents, VirtuosoGridHandle } from '../src'
 import styled from '@emotion/styled'
 
 const ItemContainer = styled.div`
@@ -35,12 +35,12 @@ const ItemWrapper = styled.div`
   }
 `
 
-const ListContainer = styled.div`
+const ListContainer: GridComponents['List'] = styled.div`
   display: flex;
   flex-wrap: wrap;
 `
 
-const Item = React.memo<any>(({ item }) => {
+const Item = React.memo<any>(({ item }: { item: { index: number; selected: boolean } }) => {
   console.log(`rendering Item ${item.index}`)
   return <div style={{ backgroundColor: item.selected ? 'blue' : 'white' }}>Item {item.index}</div>
 })
@@ -54,10 +54,10 @@ export default function App() {
   })
 
   const itemContent = React.useCallback(
-    index => (
+    (index: number) => (
       <ItemWrapper
         onClick={() => {
-          setItems(items => {
+          setItems((items) => {
             return items.map((item, i) => {
               return i === index ? { index: i, selected: !item.selected } : item
             })
@@ -76,7 +76,7 @@ export default function App() {
         ref={ref}
         components={{
           Item: ItemContainer,
-          List: ListContainer as any,
+          List: ListContainer,
         }}
         totalCount={items.length}
         itemContent={itemContent}

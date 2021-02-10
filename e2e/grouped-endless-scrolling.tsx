@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { GroupedVirtuoso } from '../src'
+import { Components, GroupedVirtuoso } from '../src'
 import { useMemo, useRef, useState, useEffect } from 'react'
 import faker from 'faker'
 import { groupBy } from 'lodash'
@@ -15,7 +15,9 @@ const getUser = () => {
   }
 }
 
-const sortUser = (a: any, b: any) => {
+type User = ReturnType<typeof getUser>
+
+const sortUser = (a: User, b: User) => {
   if (a.name < b.name) {
     return -1
   }
@@ -26,17 +28,10 @@ const sortUser = (a: any, b: any) => {
 }
 
 const useGroupedUsers = (count: number) => {
-  const allUsers = useMemo(
-    () =>
-      new Array(count)
-        .fill(true)
-        .map(getUser)
-        .sort(sortUser),
-    [count]
-  )
+  const allUsers = useMemo(() => new Array(count).fill(true).map(getUser).sort(sortUser), [count])
 
   const loadedCount = useRef(0)
-  const loadedUsers = useRef([])
+  const loadedUsers = useRef<User[]>([])
   const groups = useRef([])
   const [endReached, setEndReached] = useState(false)
   const [groupCounts, setGroupCounts] = useState([])
@@ -53,9 +48,9 @@ const useGroupedUsers = (count: number) => {
         // the code below calculates the group counts
         // for the users loaded so far;
         // this should be performed on the server too
-        const groupedUsers = groupBy(loadedUsers.current, user => user.name[0])
+        const groupedUsers = groupBy(loadedUsers.current, (user) => user.name[0])
         groups.current = Object.keys(groupedUsers)
-        setGroupCounts(Object.values(groupedUsers).map(users => users.length))
+        setGroupCounts(Object.values(groupedUsers).map((users) => users.length))
 
         if (loadedCount.current === 500) {
           setEndReached(true)
@@ -73,11 +68,11 @@ const useGroupedUsers = (count: number) => {
   }
 }
 
-const Components = {
+const components: Partial<Components> = {
   Footer: () => <div>Footer</div>,
 
   // eslint-disable-next-line @typescript-eslint/ban-types
-  List: React.forwardRef<{}, { style: React.CSSProperties }>(({ style, children }, listRef: any) => {
+  List: React.forwardRef(({ style, children }, listRef) => {
     return (
       <div ref={listRef} style={style}>
         {children}
@@ -106,16 +101,16 @@ export default function App() {
 
   return (
     <GroupedVirtuoso
-      components={Components as any}
+      components={components}
       style={Style}
       groupCounts={groupCounts}
-      groupContent={index => <div>Group {groups[index]}</div>}
+      groupContent={(index) => <div>Group {groups[index]}</div>}
       overscan={400}
-      endReached={value => {
+      endReached={(value) => {
         console.log(value)
         loadMore()
       }}
-      itemContent={index => (
+      itemContent={(index) => (
         <div>
           <div>
             <strong>{users[index].name}</strong>

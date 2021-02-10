@@ -11,8 +11,8 @@ export default function App() {
     <div>
       <button
         onClick={() => {
-          setCount(val => val + 2)
-          setFirstItemIndex(val => val - 2)
+          setCount((val) => val + 2)
+          setFirstItemIndex((val) => val - 2)
         }}
       >
         Prepend 5 Items

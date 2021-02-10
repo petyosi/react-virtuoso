@@ -28,7 +28,7 @@ export const domIOSystem = u.system(
           },
           { direction: DOWN, prevScrollTop: 0 } as { direction: ScrollDirection; prevScrollTop: number }
         ),
-        u.map(value => value.direction)
+        u.map((value) => value.direction)
       ),
       scrollDirection
     )

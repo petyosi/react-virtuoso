@@ -5,7 +5,7 @@ export type CallbackRefParam = HTMLElement | null
 
 export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled = true) {
   const ref = useRef<CallbackRefParam>(null)
-  const observer = new ResizeObserver(entries => {
+  const observer = new ResizeObserver((entries) => {
     const element = entries[0].target as HTMLElement
     // Revert the RAF below - it causes a blink in the upward scrolling fix
     // See e2e/chat example

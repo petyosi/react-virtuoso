@@ -17,7 +17,7 @@ describe('jagged list with initial topmost item', () => {
 
     const paddingTop = await page.evaluate(() => {
       const listContainer = document.querySelector('#test-root > div > div > div') as HTMLElement
-      return listContainer!.style.paddingTop
+      return listContainer.style.paddingTop
     })
 
     expect(paddingTop).toBe('1200px')

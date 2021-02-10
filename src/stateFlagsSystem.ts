@@ -42,7 +42,7 @@ export const stateFlagsSystem = system(([{ scrollTop, viewportHeight }]) => {
   connect(
     pipe(
       duc(scrollTop),
-      map(top => top === 0),
+      map((top) => top === 0),
       distinctUntilChanged()
     ),
     isAtTop
@@ -61,7 +61,7 @@ export const stateFlagsSystem = system(([{ scrollTop, viewportHeight }]) => {
     isAtBottom
   )
 
-  subscribe(isAtBottom, value => {
+  subscribe(isAtBottom, (value) => {
     setTimeout(() => publish(atBottomStateChange, value))
   })
 

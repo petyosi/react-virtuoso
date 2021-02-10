@@ -16,7 +16,7 @@ export default function App() {
     <div>
       <button
         onClick={() => {
-          setData(prevData => {
+          setData((prevData) => {
             return generateItems(prevData.length + 20)
           })
         }}

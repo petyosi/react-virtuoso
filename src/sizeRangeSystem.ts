@@ -63,7 +63,7 @@ export const sizeRangeSystem = u.system(
 
           return null
         }),
-        u.filter(value => value != null),
+        u.filter((value) => value != null),
         u.distinctUntilChanged(tupleComparator as any)
       ),
       [0, 0]

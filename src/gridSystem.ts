@@ -114,14 +114,14 @@ export const gridSystem = u.system(
           }
 
           const perRow = hackFloor(viewportWidth / itemWidth)
-          let startIndex = perRow * floor(startOffset / itemHeight!)
-          let endIndex = perRow * ceil(endOffset / itemHeight!) - 1
+          let startIndex = perRow * floor(startOffset / itemHeight)
+          let endIndex = perRow * ceil(endOffset / itemHeight) - 1
           endIndex = min(totalCount - 1, endIndex)
           startIndex = min(endIndex, max(0, startIndex))
 
           const items = buildItems(startIndex, endIndex)
           const { top, bottom } = gridLayout(viewport, item, items)
-          const totalHeight = ceil(totalCount / perRow) * itemHeight!
+          const totalHeight = ceil(totalCount / perRow) * itemHeight
           const offsetBottom = totalHeight - bottom
 
           return { items, offsetTop: top, offsetBottom, top, bottom, itemHeight, itemWidth } as GridState
@@ -267,5 +267,5 @@ function itemTop(viewport: ElementDimensions, item: ElementDimensions, index: nu
 }
 
 function itemsPerRow(viewportWidth: number, itemWidth: number) {
-  return hackFloor(viewportWidth / itemWidth!)
+  return hackFloor(viewportWidth / itemWidth)
 }

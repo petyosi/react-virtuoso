@@ -41,7 +41,7 @@ function numbersToAATree(numbers: number[]): AANode<number> {
 }
 
 function keyMatchesValues(numbers: number[], tree: AANode<number>): void {
-  numbers.forEach(n => {
+  numbers.forEach((n) => {
     expect(AA.find(tree, n)).toStrictEqual(n)
   })
 }
@@ -100,7 +100,7 @@ describe('AATree', () => {
   it('remains invariant after removal', () => {
     const numbers = range(0, RANGE_END)
     const tree = numbersToAATree(shuffle(numbers))
-    const [evens, odds] = partition(numbers, x => x % 2 === 0)
+    const [evens, odds] = partition(numbers, (x) => x % 2 === 0)
 
     const trimmedAATree = odds.reduce((tree, n) => {
       return AA.remove(tree, n)

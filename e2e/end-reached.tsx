@@ -18,15 +18,15 @@ export default function App() {
     <div>
       <button
         onClick={() => {
-          setIter(val => val + 1)
-          setData(prevData => {
+          setIter((val) => val + 1)
+          setData((prevData) => {
             return generateItems(prevData.length, iter + 1)
           })
         }}
       >
         Refresh items
       </button>
-      <Virtuoso data={data} endReached={end => console.log({ end })} itemContent={itemContent} style={{ height: 300 }} />
+      <Virtuoso data={data} endReached={(end) => console.log({ end })} itemContent={itemContent} style={{ height: 300 }} />
     </div>
   )
 }

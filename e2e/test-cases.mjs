@@ -2,8 +2,8 @@ import * as fs from 'fs'
 
 const examples = fs
   .readdirSync('./e2e')
-  .filter(name => name.match(/tsx$/))
-  .filter(name => name !== 'server.tsx')
+  .filter((name) => name.match(/tsx$/))
+  .filter((name) => name !== 'server.tsx')
 
 const code = `import React, { useEffect } from 'react'
 import * as ReactDOM from 'react-dom'
@@ -12,14 +12,14 @@ import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom'
 export default function App() {
   const [exampleComponents, setExampleComponents] = React.useState([])
   useEffect(() => {
-    Promise.all([
+    void Promise.all([
         ${examples
-          .map(path => {
+          .map((path) => {
             const p = path.replace('.tsx', '')
             return `Promise.all([ import("./${p}") , "/${p}" ])\n`
           })
           .join(', ')}
-      ]).then((components: any) => {
+      ]).then((components) => {
         setExampleComponents(() => {
           return components.map(([comp, name]) => {
             return { name, component: comp.default }
@@ -80,10 +80,10 @@ const htmlCode = `
   </head>
   <body>
     <div id="root"></div>
-    <script src="./__examples.tsx"></script>
+    <script src="./__examples.jsx"></script>
   </body>
 </html>
 `
 
-fs.writeFileSync('e2e/__examples.tsx', code)
+fs.writeFileSync('e2e/__examples.jsx', code)
 fs.writeFileSync('e2e/__examples.html', htmlCode)

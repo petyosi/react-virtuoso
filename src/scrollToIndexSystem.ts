@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { connect, system, handleNext, subscribe, map, pipe, publish, statefulStream, stream, tup, withLatestFrom } from '@virtuoso.dev/urx'
 import { findMaxKeyValue } from './AATree'
 import { domIOSystem } from './domIOSystem'
@@ -77,7 +78,7 @@ export const scrollToIndexSystem = system(
 
           if (behavior === 'smooth') {
             let listChanged = false
-            unsubscribeListRefresh = subscribe(listRefresh, changed => {
+            unsubscribeListRefresh = subscribe(listRefresh, (changed) => {
               listChanged = listChanged || changed
             })
 

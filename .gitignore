@@ -3,6 +3,6 @@
 node_modules
 .cache
 dist
-e2e/__examples.tsx
+e2e/__examples.jsx
 e2e/__examples.html
 

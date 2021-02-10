@@ -19,7 +19,7 @@ export default function App() {
       <Virtuoso
         ref={ref}
         totalCount={100}
-        itemContent={index => <div style={{ height: index % 2 ? 30 : 20, background: 'white' }}>Item {index}</div>}
+        itemContent={(index) => <div style={{ height: index % 2 ? 30 : 20, background: 'white' }}>Item {index}</div>}
         style={{ height: 300 }}
       />
     </>

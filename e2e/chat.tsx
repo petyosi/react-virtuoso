@@ -70,7 +70,7 @@ function ChatList({ userId, messages = [], onSend, onReceive, placeholder }: Cha
   }
 
   const row = React.useMemo(
-    () => (i: number, { message, id }: any) => {
+    () => (i: number, { message, id }: { message: string; id: string }) => {
       const fromUser = id === userId
       return <Bubble key={i} fromUser={fromUser} text={message} />
     },
@@ -90,7 +90,7 @@ function ChatList({ userId, messages = [], onSend, onReceive, placeholder }: Cha
         ref={ref}
         style={{ flex: 1 }}
         initialTopMostItemIndex={messages.length - 1}
-        followOutput={isAtBottom => {
+        followOutput={(isAtBottom) => {
           if (isMyOwnMessage.current) {
             // if the user has scrolled away and sends a message, bring him to the bottom instantly
             return isAtBottom ? 'smooth' : 'auto'
@@ -104,7 +104,7 @@ function ChatList({ userId, messages = [], onSend, onReceive, placeholder }: Cha
       />
       <TextWrapper style={{ flex: 0, minHeight: 30 }}>
         <form
-          onSubmit={e => {
+          onSubmit={(e) => {
             e.preventDefault()
             onSendMessage()
           }}
@@ -112,7 +112,7 @@ function ChatList({ userId, messages = [], onSend, onReceive, placeholder }: Cha
           <input
             type="text"
             value={newMessage}
-            onChange={e => setNewMessage((e.target as HTMLInputElement).value)}
+            onChange={(e) => setNewMessage((e.target as HTMLInputElement).value)}
             placeholder={placeholder}
           />
           <button type="submit">send</button> |
@@ -125,7 +125,7 @@ function ChatList({ userId, messages = [], onSend, onReceive, placeholder }: Cha
   )
 }
 
-const data = [...Array(130)].map(_ => ({
+const data = Array.from({ length: 130 }, (_) => ({
   id: faker.random.number({ min: 1, max: 2 }).toString(),
   message: faker.lorem.sentences(),
 }))
@@ -145,9 +145,9 @@ export default function App() {
         messages={messages}
         userId="1"
         placeholder="Say hi!"
-        onSend={message => setMessages(x => [...x, { id: userId, message }])}
+        onSend={(message) => setMessages((x) => [...x, { id: userId, message }])}
         onReceive={() => {
-          setMessages(x => [...x, { id: '2', message: faker.lorem.sentences() }])
+          setMessages((x) => [...x, { id: '2', message: faker.lorem.sentences() }])
         }}
       />
     </div>

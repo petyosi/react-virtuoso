@@ -9,7 +9,7 @@ export default function App() {
   return (
     <>
       <div>
-        <button onClick={() => setCount(count => count + 4)}>Append 10</button>
+        <button onClick={() => setCount((count) => count + 4)}>Append 10</button>
       </div>
       <Virtuoso
         totalCount={count}
@@ -17,11 +17,11 @@ export default function App() {
         followOutput={true}
         itemContent={itemContent}
         style={{ height: 300 }}
-        atBottomStateChange={atBottom => {
+        atBottomStateChange={(atBottom) => {
           clearInterval(appendInterval.current)
           if (atBottom) {
             appendInterval.current = setInterval(() => {
-              setCount(count => count + 3)
+              setCount((count) => count + 3)
             }, 100)
           }
         }}
