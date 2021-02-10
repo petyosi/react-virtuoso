@@ -105,7 +105,7 @@ export const gridSystem = u.system(
           const { height: itemHeight, width: itemWidth } = item
           const { width: viewportWidth } = viewport
 
-          if (totalCount === 0) {
+          if (totalCount === 0 || viewportWidth === 0) {
             return INITIAL_GRID_STATE
           }
 
@@ -141,8 +141,9 @@ export const gridSystem = u.system(
     u.connect(
       u.pipe(
         u.combineLatest(viewportDimensions, itemDimensions, gridState),
-        u.map(([viewport, item, { items }]) => {
-          const { top, bottom } = gridLayout(viewport, item, items)
+        u.map(([viewportDimensions, item, { items }]) => {
+          const { top, bottom } = gridLayout(viewportDimensions, item, items)
+
           return [top, bottom] as [number, number]
         }),
         u.distinctUntilChanged(tupleComparator)

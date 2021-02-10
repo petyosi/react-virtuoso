@@ -2,9 +2,10 @@ import { init, getValue, publish, subscribe } from '@virtuoso.dev/urx'
 import { gridSystem } from '../src/gridSystem'
 describe('grid system', () => {
   it('outputs a single probe item once totalCount is set', () => {
-    const { viewportDimensions, gridState, totalCount } = init(gridSystem)
+    const { scrollTop, viewportDimensions, gridState, totalCount } = init(gridSystem)
     expect(getValue(gridState).items).toHaveLength(0)
     publish(totalCount, 200)
+    publish(scrollTop, 0)
     publish(viewportDimensions, {
       width: 300,
       height: 200,
@@ -22,9 +23,9 @@ describe('grid system', () => {
       height: 500,
     })
 
-    expect(getValue(gridState).items).toHaveLength(1)
-
     publish(scrollTop, 0)
+
+    expect(getValue(gridState).items).toHaveLength(1)
 
     publish(viewportDimensions, {
       width: 1000,
@@ -51,8 +52,9 @@ describe('grid system', () => {
       height: 500,
     })
 
-    expect(getValue(gridState).items).toHaveLength(1)
     publish(scrollTop, 0)
+
+    expect(getValue(gridState).items).toHaveLength(1)
 
     publish(viewportDimensions, {
       width: 1000,
