@@ -18,7 +18,7 @@ type CompProps<T> = T extends React.ForwardRefExoticComponent<infer R> ? R : nev
 type ListProps = CompProps<typeof List>
 type GridProps = CompProps<typeof Grid>
 
-export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'groupContent'> {
+export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'groupContent' | 'itemsRendered'> {
   /**
    * The total amount of items to be rendered.
    */
@@ -189,7 +189,7 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
   /**
    * Provides access to the root DOM element
    */
-  scrollerRef?: (ref: HTMLElement | null) => any
+  scrollerRef?: (ref: HTMLElement | Window | null) => any
 }
 
 export interface GroupedVirtuosoProps<D>
