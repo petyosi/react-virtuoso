@@ -16,7 +16,7 @@ function rangeIncludes(refRange: SizeRange) {
   }
 }
 
-export function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[], onRemove: (index: number) => void = () => {}) {
+export function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[], onRemove: (index: number) => void = u.noop) {
   let syncStart = empty(sizeTree) ? 0 : Infinity
 
   for (const range of ranges) {
@@ -91,9 +91,10 @@ export function initialSizeState(): SizeState {
 }
 
 export function sizeStateReducer(state: SizeState, [ranges, groupIndices]: [SizeRange[], number[]]) {
-  let { sizeTree, offsetTree } = state
+  const sizeTree = state.sizeTree
+  let offsetTree = state.offsetTree
   let newSizeTree: AANode<number> = sizeTree as AANode<number>
-  let syncStart: number = 0
+  let syncStart = 0
 
   // We receive probe item results from a group probe,
   // which should always pass an item and a group

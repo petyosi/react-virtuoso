@@ -19,8 +19,8 @@ function getChangedChildSizes(children: HTMLCollection, field: 'offsetHeight' | 
 
   const results: SizeRange[] = []
 
-  for (var i = 0; i < length; i++) {
-    let child = children.item(i) as HTMLElement
+  for (let i = 0; i < length; i++) {
+    const child = children.item(i) as HTMLElement
 
     if (!child || child.dataset.index === undefined) {
       continue

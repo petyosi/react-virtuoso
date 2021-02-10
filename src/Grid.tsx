@@ -13,7 +13,7 @@ const gridComponentPropsSystem = u.system(() => {
   const itemClassName = u.statefulStream('virtuoso-grid-item')
   const listClassName = u.statefulStream('virtuoso-grid-list')
   const computeItemKey = u.statefulStream<ComputeItemKey>(identity)
-  const scrollerRef = u.statefulStream((_ref: HTMLElement | null) => {})
+  const scrollerRef = u.statefulStream<(ref: HTMLElement | null) => void>(u.noop)
 
   const distinctProp = <K extends keyof GridComponents>(propName: K, defaultValue: GridComponents[K] | null | 'div' = null) => {
     return u.statefulStreamFromEmitter(

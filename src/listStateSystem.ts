@@ -65,7 +65,7 @@ function transposeItems(items: Item<any>[], sizes: SizeState, firstItemIndex: nu
   const transposedItems = [] as ListItems
   const groupRanges = rangesWithin(sizes.groupOffsetTree, startIndex, endIndex)
   let currentRange: Range<number> | undefined = undefined
-  let currentGroupIndex: number = 0
+  let currentGroupIndex = 0
 
   for (const item of items) {
     if (!currentRange || currentRange.end < item.index) {
@@ -184,16 +184,16 @@ export const listStateSystem = u.system(
               return buildListState(probeItemSet(initialTopMostItemIndex, sizesValue, data), [], totalCount, sizesValue, firstItemIndex)
             }
 
-            let topItems = [] as Item<any>[]
+            const topItems = [] as Item<any>[]
 
             if (topItemsIndexes.length > 0) {
-              let startIndex = topItemsIndexes[0]
-              let endIndex = topItemsIndexes[topItemsIndexes.length - 1]
+              const startIndex = topItemsIndexes[0]
+              const endIndex = topItemsIndexes[topItemsIndexes.length - 1]
               let offset = 0
               for (const range of rangesWithin(sizeTree, startIndex, endIndex)) {
-                let size = range.value
-                let rangeStartIndex = Math.max(range.start, startIndex)
-                let rangeEndIndex = Math.min(range.end, endIndex)
+                const size = range.value
+                const rangeStartIndex = Math.max(range.start, startIndex)
+                const rangeEndIndex = Math.min(range.end, endIndex)
                 for (let i = rangeStartIndex; i <= rangeEndIndex; i++) {
                   topItems.push({ index: i, size, offset: offset, data: data && data[i] })
                   offset += size
@@ -217,16 +217,16 @@ export const listStateSystem = u.system(
               topItemsIndexes = [findMaxKeyValue(sizesValue.groupOffsetTree, scrollTop, 'v')[0]]
             }
 
-            let minStartIndex = topItemsIndexes.length > 0 ? topItemsIndexes[topItemsIndexes.length - 1] + 1 : 0
-            let startIndex = Math.max(minStartIndex, findMaxKeyValue(offsetTree, startOffset, 'v')[0]!)
-            let endIndex = findMaxKeyValue(offsetTree, endOffset, 'v')[0]!
+            const minStartIndex = topItemsIndexes.length > 0 ? topItemsIndexes[topItemsIndexes.length - 1] + 1 : 0
+            const startIndex = Math.max(minStartIndex, findMaxKeyValue(offsetTree, startOffset, 'v')[0]!)
+            const endIndex = findMaxKeyValue(offsetTree, endOffset, 'v')[0]!
             const maxIndex = totalCount - 1
 
             const items = u.tap([] as Item<any>[], result => {
               for (const range of rangesWithin(offsetTree, startIndex, endIndex)) {
                 let offset = range.value
                 let rangeStartIndex = range.start
-                let size = find(sizeTree, rangeStartIndex)!
+                const size = find(sizeTree, rangeStartIndex)!
 
                 if (range.value < startOffset) {
                   rangeStartIndex += Math.floor((startOffset - range.value) / size)
@@ -238,7 +238,7 @@ export const listStateSystem = u.system(
                   rangeStartIndex = minStartIndex
                 }
 
-                let endIndex = Math.min(range.end, maxIndex)
+                const endIndex = Math.min(range.end, maxIndex)
 
                 for (let i = rangeStartIndex; i <= endIndex; i++) {
                   if (offset >= endOffset) {

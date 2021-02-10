@@ -205,7 +205,9 @@ export const gridSystem = u.system(
         scrollToIndex,
         u.withLatestFrom(viewportDimensions, itemDimensions, totalCount),
         u.map(([location, viewport, item, totalCount]) => {
-          let { index, align, behavior } = normalizeIndexLocation(location)
+          const normalLocation = normalizeIndexLocation(location)
+          const { align, behavior } = normalLocation
+          let index = normalLocation.index
 
           index = Math.max(0, index, Math.min(totalCount - 1, index))
 

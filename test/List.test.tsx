@@ -83,7 +83,7 @@ describe('List', () => {
     let scroller: any
     let viewport: any
     let listParent: any
-    let data: any = Array.from({ length: 1000 }).map((_, i) => `Item ${i}`)
+    const data: any = Array.from({ length: 1000 }).map((_, i) => `Item ${i}`)
 
     beforeEach(() => {
       act(() => {
@@ -107,10 +107,6 @@ describe('List', () => {
   })
 
   it('updates when data is propagated', () => {
-    let scroller: any
-    let viewport: any
-    let listParent: any
-
     const Case = () => {
       const [data, setData] = React.useState([] as any[])
 
@@ -126,9 +122,9 @@ describe('List', () => {
       render(<Case />, container)
     })
 
-    scroller = container.firstElementChild
-    viewport = scroller.firstElementChild
-    listParent = viewport.firstElementChild
+    const scroller = container.firstElementChild
+    const viewport = scroller.firstElementChild
+    const listParent = viewport.firstElementChild
 
     act(() => {
       scroller.triggerScroll(0)
@@ -141,10 +137,6 @@ describe('List', () => {
   })
 
   it('updates when data is propagated (same length)', () => {
-    let scroller: any
-    let viewport: any
-    let listParent: any
-
     const Case = () => {
       const [data, setData] = React.useState([{ name: 'Item 0' }] as any[])
 
@@ -165,9 +157,9 @@ describe('List', () => {
       render(<Case />, container)
     })
 
-    scroller = container.firstElementChild
-    viewport = scroller.firstElementChild
-    listParent = viewport.firstElementChild
+    const scroller = container.firstElementChild
+    const viewport = scroller.firstElementChild
+    const listParent = viewport.firstElementChild
 
     act(() => {
       scroller.triggerScroll(0)

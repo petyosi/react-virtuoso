@@ -16,7 +16,7 @@ export const initialItemCountSystem = u.system(
         u.map(([[, count], sizes, firstItemIndex]) => {
           let includedGroupsCount = 0
           if (sizes.groupIndices.length > 0) {
-            for (let index of sizes.groupIndices) {
+            for (const index of sizes.groupIndices) {
               if (index - includedGroupsCount >= count) {
                 break
               }

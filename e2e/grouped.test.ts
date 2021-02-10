@@ -5,8 +5,6 @@ describe('jagged grouped list', () => {
     await page.waitForTimeout(100)
   })
 
-  beforeEach(async () => {})
-
   it('renders correct sizing', async () => {
     const [paddingTop, paddingBottom] = await page.evaluate(() => {
       const listContainer = document.querySelector('#test-root > div > div > div:first-child') as HTMLElement

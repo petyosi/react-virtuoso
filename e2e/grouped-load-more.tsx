@@ -5,8 +5,8 @@ import faker from 'faker'
 import { groupBy } from 'lodash'
 
 const getUser = () => {
-  let firstName = faker.name.firstName()
-  let lastName = faker.name.lastName()
+  const firstName = faker.name.firstName()
+  const lastName = faker.name.lastName()
   return {
     name: `${firstName} ${lastName}`,
     initials: `${firstName.substr(0, 1)}${lastName.substr(0, 1)}`,
@@ -76,6 +76,7 @@ const useGroupedUsers = (count: number) => {
 const Components = {
   Footer: () => <div>Footer</div>,
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
   List: React.forwardRef<{}, { style: React.CSSProperties }>(({ style, children }, listRef: any) => {
     return (
       <div ref={listRef} style={style}>
@@ -99,13 +100,13 @@ const Components = {
 const Style = { height: '350px', width: '400px' }
 
 export default function App() {
-  const { loadMore, endReached, groupCounts, users, groups } = useGroupedUsers(500)
+  const { loadMore, groupCounts, users, groups } = useGroupedUsers(500)
 
-  useEffect(loadMore, [])
+  useEffect(loadMore, [loadMore])
 
   return (
     <GroupedVirtuoso
-      components={Components}
+      components={Components as any}
       style={Style}
       groupCounts={groupCounts}
       groupContent={index => <div>Group {groups[index]}</div>}

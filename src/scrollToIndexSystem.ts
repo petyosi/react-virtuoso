@@ -49,7 +49,10 @@ export const scrollToIndexSystem = system(
         scrollToIndex,
         withLatestFrom(sizes, viewportHeight, totalCount, topListHeight, headerHeight),
         map(([location, sizes, viewportHeight, totalCount, topListHeight, headerHeight]) => {
-          let { index, align, behavior } = normalizeIndexLocation(location)
+          const normalLocation = normalizeIndexLocation(location)
+          const { align, behavior } = normalLocation
+          let index = normalLocation.index
+
           index = originalIndexFromItemIndex(index, sizes)
 
           index = Math.max(0, index, Math.min(totalCount - 1, index))
@@ -63,7 +66,7 @@ export const scrollToIndexSystem = system(
             top -= topListHeight
           }
 
-          let retry = (listChanged: boolean) => {
+          const retry = (listChanged: boolean) => {
             cleanup()
             if (listChanged) {
               publish(scrollToIndex, location)

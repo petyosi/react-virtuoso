@@ -220,7 +220,7 @@ describe('size state reducer', () => {
   it('handles subsequent insertions correctly (bug #2)', () => {
     const state = initialSizeState()
 
-    let { sizeTree } = sizeStateReducer(state, [
+    const { sizeTree } = sizeStateReducer(state, [
       [
         { startIndex: 0, endIndex: 0, size: 206 },
         { startIndex: 0, endIndex: 0, size: 230 },
@@ -327,9 +327,9 @@ describe('size state reducer', () => {
 
 describe('size engine', () => {
   it('publishes list refreshes', () => {
-    let { sizeRanges, totalCount, listRefresh } = init(sizeSystem)
+    const { sizeRanges, totalCount, listRefresh } = init(sizeSystem)
     publish(totalCount, 10)
-    let sub = jest.fn()
+    const sub = jest.fn()
     subscribe(listRefresh, sub)
     expect(sub).toHaveBeenCalledTimes(0)
     publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 1 }])
@@ -342,7 +342,7 @@ describe('size engine', () => {
 
   describe('group indices', () => {
     it('starts with dummy valued groupOffsetTree', () => {
-      let { groupIndices, sizes } = init(sizeSystem)
+      const { groupIndices, sizes } = init(sizeSystem)
       publish(groupIndices, [0, 6, 11])
       expect(getValue(sizes).groupIndices).toEqual([0, 6, 11])
 
@@ -354,7 +354,7 @@ describe('size engine', () => {
     })
 
     it('creates correct groupOffsetTree when group and item size is known', () => {
-      let { sizeRanges, groupIndices, sizes } = init(sizeSystem)
+      const { sizeRanges, groupIndices, sizes } = init(sizeSystem)
       publish(groupIndices, [0, 6, 11])
 
       publish(sizeRanges, [
@@ -371,7 +371,7 @@ describe('size engine', () => {
     })
 
     it('extends existing sizes when new groups are pushed', () => {
-      let { sizeRanges, groupIndices, sizes } = init(sizeSystem)
+      const { sizeRanges, groupIndices, sizes } = init(sizeSystem)
       publish(groupIndices, [0, 6, 11])
 
       publish(sizeRanges, [
@@ -397,7 +397,7 @@ describe('size engine', () => {
     })
 
     it('creates correct groupOffsetTree when groups are the same as items', () => {
-      let { sizeRanges, groupIndices, sizes } = init(sizeSystem)
+      const { sizeRanges, groupIndices, sizes } = init(sizeSystem)
       publish(groupIndices, [0, 6, 11])
 
       publish(sizeRanges, [{ startIndex: 0, endIndex: 1, size: 20 }])
@@ -412,7 +412,7 @@ describe('size engine', () => {
   })
   describe('unshifting', () => {
     it('unshifts known sizes and offsets', () => {
-      let { sizes, sizeRanges, unshiftWith } = init(sizeSystem)
+      const { sizes, sizeRanges, unshiftWith } = init(sizeSystem)
 
       publish(sizeRanges, [
         { startIndex: 0, endIndex: 0, size: 30 },
@@ -447,8 +447,8 @@ describe('size engine', () => {
     })
 
     it('decreasing the first item index unshifts items', () => {
-      let { unshiftWith, firstItemIndex } = init(sizeSystem)
-      let sub = jest.fn()
+      const { unshiftWith, firstItemIndex } = init(sizeSystem)
+      const sub = jest.fn()
       subscribe(unshiftWith, sub)
       publish(firstItemIndex, 150)
       publish(firstItemIndex, 100)
@@ -458,7 +458,7 @@ describe('size engine', () => {
   })
 
   it('trims the sizes when total count decreases', () => {
-    let { sizeRanges, totalCount, sizes } = init(sizeSystem)
+    const { sizeRanges, totalCount, sizes } = init(sizeSystem)
     publish(totalCount, 5)
     publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 1 }])
     publish(sizeRanges, [{ startIndex: 3, endIndex: 3, size: 3 }])
@@ -468,7 +468,7 @@ describe('size engine', () => {
   })
 
   it('trims the sizes when total count decreases (case 2)', () => {
-    let { sizeRanges, totalCount, sizes } = init(sizeSystem)
+    const { sizeRanges, totalCount, sizes } = init(sizeSystem)
     publish(totalCount, 9)
     publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 1 }])
     publish(sizeRanges, [{ startIndex: 3, endIndex: 6, size: 3 }])
@@ -477,7 +477,7 @@ describe('size engine', () => {
   })
 
   it('trims the sizes when total count decreases (case 3)', () => {
-    let { sizeRanges, totalCount, sizes } = init(sizeSystem)
+    const { sizeRanges, totalCount, sizes } = init(sizeSystem)
     publish(totalCount, 9)
     publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 1 }])
     publish(sizeRanges, [{ startIndex: 3, endIndex: 6, size: 3 }])

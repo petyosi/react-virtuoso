@@ -9,8 +9,8 @@ function toggleBg(index: number) {
 }
 
 function user(index = 0) {
-  let firstName = faker.name.firstName()
-  let lastName = faker.name.lastName()
+  const firstName = faker.name.firstName()
+  const lastName = faker.name.lastName()
 
   return {
     index: index + 1,

@@ -66,7 +66,7 @@ function isInvariant(node: AANode<any>): boolean {
 
 describe('AATree', () => {
   it('starts with an empty tree', () => {
-    let tree: AANode<number> = AA.newTree()
+    const tree: AANode<number> = AA.newTree()
     expect(AA.keys(tree)).toEqual([])
     expect(AA.find(tree, 0)).toBeUndefined()
   })

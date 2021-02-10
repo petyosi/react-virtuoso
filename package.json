@@ -5,14 +5,10 @@
   "version": "0.0.0-development",
   "homepage": "https://virtuoso.dev/",
   "license": "MIT",
+  "source": "src/index.tsx",
   "main": "dist/index.js",
-  "module": "dist/react-virtuoso.esm.js",
-  "exports": {
-    ".": {
-      "require": "./dist/react-virtuoso.cjs.production.min.js",
-      "import": "./dist/react-virtuoso.esm.js"
-    }
-  },
+  "module": "dist/index.m.js",
+  "types": "dist/index.d.ts",
   "keywords": [
     "react",
     "reactjs",
@@ -27,20 +23,17 @@
     "feed",
     "chat"
   ],
-  "typings": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "start": "tsdx watch",
-    "build": "tsdx build",
-    "test": "tsdx test --passWithNoTests",
-    "e2e": "tsdx test --run-in-band --passWithNoTests --config jest.e2e.config.js",
-    "lint": "tsdx lint",
-    "typecheck": "tsc --noEmit",
-    "prepare": "tsdx build",
-    "preview": "node e2e/preview.js",
+    "start": "microbundle watch --raw --no-sourcemap --strict --no-compress --jsx React.createElement --format=cjs",
+    "build": "microbundle --strict --jsx React.createElement --format=cjs,esm",
+    "test": "jest --passWithNoTests",
+    "e2e": "jest --config jest.e2e.config.js --run-in-band --passWithNoTests",
+    "lint": "eslint test src e2e --ext .ts,.tsx",
     "browse-examples": "node e2e/test-cases.mjs && parcel e2e/__examples.html",
+    "prepare": "yarn build",
     "semantic-release": "semantic-release"
   },
   "dependencies": {
@@ -56,6 +49,7 @@
     "@emotion/core": "^10.1.0",
     "@emotion/styled": "^10.0.27",
     "@types/faker": "^5.1.4",
+    "@types/jest": "^26.0.20",
     "@types/jsdom": "^16.2.3",
     "@types/lodash": "^4.14.165",
     "@types/parcel-bundler": "^1.12.1",
@@ -64,28 +58,41 @@
     "@types/react-dom": "^16.9.8",
     "@types/react-router-dom": "^5.1.7",
     "@types/react-test-renderer": "^16.9.3",
+    "@typescript-eslint/eslint-plugin": "^4.0.0",
+    "@typescript-eslint/parser": "^4.0.0",
+    "babel-eslint": "^10.0.0",
+    "eslint": "^7.5.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-config-react-app": "^6.0.0",
+    "eslint-plugin-flowtype": "^5.2.0",
     "eslint-plugin-html": "^6.0.2",
+    "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-json": "^2.1.1",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-react": "^7.20.3",
+    "eslint-plugin-react-hooks": "^4.0.8",
     "faker": "^5.1.0",
     "husky": "^4.2.5",
-    "jest": "^26.2.2",
+    "jest": "^26.6.3",
     "jest-playwright-preset": "^1.4.4",
     "jsdom": "^16.4.0",
     "lodash": "^4.17.20",
+    "microbundle": "^0.13.0",
     "parcel": "^1.12.4",
     "parcel-bundler": "^1.12.4",
     "playwright": "^1.8.0",
     "playwright-chromium": "^1.8.0",
+    "prettier": "^2.2.1",
     "react": "^16.13.1",
     "react-beautiful-dnd": "^13.0.0",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
     "react-test-renderer": "^16.13.1",
     "semantic-release": "^17.3.0",
-    "ts-jest": "^26.4.4",
-    "tsdx": "^0.13.2",
+    "ts-jest": "^26.5.1",
     "tslib": "^2.0.0",
-    "typescript": "^3.9.5"
+    "typescript": "^4.1.4"
   },
   "resolutions": {
     "@types/react": "^16.14.2"
@@ -95,7 +102,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "tsdx lint"
+      "pre-commit": "yarn lint"
     }
   },
   "prettier": {

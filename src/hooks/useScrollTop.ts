@@ -1,4 +1,5 @@
 import { useRef, useCallback, useEffect } from 'react'
+import * as u from '@virtuoso.dev/urx'
 
 export type CallbackRefParam = HTMLElement | null
 
@@ -6,7 +7,7 @@ export default function useScrollTop(
   scrollTopCallback: (scrollTop: number) => void,
   smoothScrollTargetReached: (yes: true) => void,
   scrollerElement: any,
-  scrollerRefCallback = (_ref: HTMLElement | null) => {}
+  scrollerRefCallback: (_ref: HTMLElement | null) => void = u.noop
 ) {
   const scrollerRef = useRef<any>(null)
   const scrollTopTarget = useRef<any>(null)

@@ -16,6 +16,7 @@ import {
   withLatestFrom,
   statefulStreamFromEmitter,
   distinctUntilChanged,
+  noop,
 } from '@virtuoso.dev/urx'
 import * as React from 'react'
 import { createElement, CSSProperties, FC } from 'react'
@@ -39,13 +40,13 @@ const listComponentPropsSystem = system(() => {
   const components = statefulStream<Components>({})
   const computeItemKey = statefulStream<ComputeItemKey>(identity)
   const headerFooterTag = statefulStream('div')
-  const scrollerRef = statefulStream((_ref: HTMLElement | null) => {})
+  const scrollerRef = statefulStream<(ref: HTMLElement | null) => void>(noop)
 
   const distinctProp = <K extends keyof Components>(propName: K, defaultValue: Components[K] | null | 'div' = null) => {
     return statefulStreamFromEmitter(
       pipe(
         components,
-        map(components => components[propName] as Components[K]),
+        map((components) => components[propName] as Components[K]),
         distinctUntilChanged()
       ),
       defaultValue
@@ -199,7 +200,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   return createElement(
     ListComponent,
     { ref, style: containerStyle },
-    (showTopList ? listState.topItems : listState.items).map(item => {
+    (showTopList ? listState.topItems : listState.items).map((item) => {
       const index = item.originalIndex!
       const key = computeItemKey(index)
 
@@ -229,7 +230,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
             'data-item-index': item.index,
             'data-item-group-index': item.groupIndex,
           } as any,
-          itemContent.apply(null, (hasGroups ? [item.index, item.groupIndex, item.data] : [item.index, item.data]) as any)
+          itemContent(...((hasGroups ? [item.index, item.groupIndex, item.data] : [item.index, item.data]) as any))
         )
       }
     })
@@ -261,7 +262,7 @@ const Header: FC = React.memo(function VirtuosoHeader() {
   const Header = useEmitterValue('HeaderComponent')
   const headerHeight = usePublisher('headerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
-  const ref = useSize(el => headerHeight(el.offsetHeight))
+  const ref = useSize((el) => headerHeight(el.offsetHeight))
   return Header ? createElement(headerFooterTag, { ref }, createElement(Header)) : null
 })
 
@@ -269,7 +270,7 @@ const Footer: FC = React.memo(function VirtuosoFooter() {
   const Footer = useEmitterValue('FooterComponent')
   const footerHeight = usePublisher('footerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
-  const ref = useSize(el => footerHeight(el.offsetHeight))
+  const ref = useSize((el) => footerHeight(el.offsetHeight))
   return Footer ? createElement(headerFooterTag, { ref }, createElement(Footer)) : null
 })
 
@@ -342,7 +343,7 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
   return Scroller
 }
 
-const Viewport: FC<{}> = ({ children }) => {
+const Viewport: FC = ({ children }) => {
   const viewportHeight = usePublisher('viewportHeight')
   const viewportRef = useSize(compose(viewportHeight, prop('offsetHeight')))
 
@@ -353,7 +354,7 @@ const Viewport: FC<{}> = ({ children }) => {
   )
 }
 
-const WindowViewport: FC<{}> = ({ children }) => {
+const WindowViewport: FC = ({ children }) => {
   const windowViewportRect = usePublisher('windowViewportRect')
   const viewportRef = useWindowViewportRectRef(windowViewportRect)
 
@@ -364,7 +365,7 @@ const WindowViewport: FC<{}> = ({ children }) => {
   )
 }
 
-const TopItemListContainer: FC<{}> = ({ children }) => {
+const TopItemListContainer: FC = ({ children }) => {
   const headerHeight = useEmitterValue('headerHeight')
 
   return <div style={{ ...topItemListStyle, marginTop: `${headerHeight}px` }}>{children}</div>

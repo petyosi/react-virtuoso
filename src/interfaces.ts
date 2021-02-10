@@ -32,17 +32,17 @@ export interface GroupProps {
 /**
  * Passed to the Components.List custom component
  */
-export interface ListProps extends Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'ref'> {}
+export type ListProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'ref'>
 
 /**
  * Passed to the Components.List custom component
  */
-export interface GridListProps extends Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'ref' | 'className'> {}
+export type GridListProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'ref' | 'className'>
 
 /**
  * Passed to the Components.Scroller custom component
  */
-export interface ScrollerProps extends Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'tabIndex' | 'ref'> {}
+export type ScrollerProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'tabIndex' | 'ref'>
 
 /**
  * Passed to the Components.ScrollSeekPlaceholder custom component

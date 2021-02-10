@@ -42,7 +42,7 @@ export default function App() {
       </div>
 
       <ul style={{ minWidth: 200 }} id="side-nav">
-        { exampleComponents.map(({ name }, index) => <li key={index}><Link to={name}>{name}</Link></li> }
+        { exampleComponents.map(({ name }, index) => <li key={index}><Link to={name}>{name}</Link></li>) }
       </ul>
 
     </div>

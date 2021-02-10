@@ -221,7 +221,7 @@ export function rangesWithin<T>(node: AANode<T>, startIndex: number, endIndex: n
   if (empty(node)) {
     return []
   }
-  let adjustedStart = findMaxKeyValue(node, startIndex)[0]
+  const adjustedStart = findMaxKeyValue(node, startIndex)[0]
   return toRanges(walkWithin(node, adjustedStart, endIndex))
 }
 
@@ -237,8 +237,8 @@ function toRanges<T>(nodes: NodeData<T>[]): Range<T>[] {
   const result = []
 
   for (let i = 1; i <= nodes.length; i++) {
-    let nextNode = nodes[i]
-    let end = nextNode ? nextNode.k - 1 : Infinity
+    const nextNode = nodes[i]
+    const end = nextNode ? nextNode.k - 1 : Infinity
     result.push({ start, end, value: v })
 
     if (nextNode) {
