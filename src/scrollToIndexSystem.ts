@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import { connect, system, handleNext, subscribe, map, pipe, publish, statefulStream, stream, tup, withLatestFrom } from '@virtuoso.dev/urx'
+import * as u from '@virtuoso.dev/urx'
 import { findMaxKeyValue } from './AATree'
 import { domIOSystem } from './domIOSystem'
 import { offsetOf, originalIndexFromItemIndex, sizeSystem } from './sizeSystem'
@@ -19,10 +19,10 @@ export function normalizeIndexLocation(location: IndexLocation) {
   return result as Required<IndexLocationWithAlign>
 }
 
-export const scrollToIndexSystem = system(
-  ([{ sizes, totalCount, listRefresh }, { viewportHeight, scrollTo, smoothScrollTargetReached, headerHeight }]) => {
-    const scrollToIndex = stream<IndexLocation>()
-    const topListHeight = statefulStream(0)
+export const scrollToIndexSystem = u.system(
+  ([{ sizes, totalCount, listRefresh }, { scrollingInProgress, viewportHeight, scrollTo, smoothScrollTargetReached, headerHeight }]) => {
+    const scrollToIndex = u.stream<IndexLocation>()
+    const topListHeight = u.statefulStream(0)
 
     let unsubscribeNextListRefresh: any = null
     let cleartTimeoutRef: any = null
@@ -43,13 +43,14 @@ export const scrollToIndexSystem = system(
         clearTimeout(cleartTimeoutRef)
         cleartTimeoutRef = null
       }
+      u.publish(scrollingInProgress, false)
     }
 
-    connect(
-      pipe(
+    u.connect(
+      u.pipe(
         scrollToIndex,
-        withLatestFrom(sizes, viewportHeight, totalCount, topListHeight, headerHeight),
-        map(([location, sizes, viewportHeight, totalCount, topListHeight, headerHeight]) => {
+        u.withLatestFrom(sizes, viewportHeight, totalCount, topListHeight, headerHeight),
+        u.map(([location, sizes, viewportHeight, totalCount, topListHeight, headerHeight]) => {
           const normalLocation = normalizeIndexLocation(location)
           const { align, behavior } = normalLocation
           let index = normalLocation.index
@@ -70,7 +71,7 @@ export const scrollToIndexSystem = system(
           const retry = (listChanged: boolean) => {
             cleanup()
             if (listChanged) {
-              publish(scrollToIndex, location)
+              u.publish(scrollToIndex, location)
             }
           }
 
@@ -78,15 +79,15 @@ export const scrollToIndexSystem = system(
 
           if (behavior === 'smooth') {
             let listChanged = false
-            unsubscribeListRefresh = subscribe(listRefresh, (changed) => {
+            unsubscribeListRefresh = u.subscribe(listRefresh, (changed) => {
               listChanged = listChanged || changed
             })
 
-            unsubscribeNextListRefresh = handleNext(smoothScrollTargetReached, () => {
+            unsubscribeNextListRefresh = u.handleNext(smoothScrollTargetReached, () => {
               retry(listChanged)
             })
           } else {
-            unsubscribeNextListRefresh = handleNext(listRefresh, retry)
+            unsubscribeNextListRefresh = u.handleNext(listRefresh, retry)
           }
 
           // if the scroll jump is too small, the list won't get rerendered.
@@ -95,6 +96,7 @@ export const scrollToIndexSystem = system(
             cleanup()
           }, 1200)
 
+          u.publish(scrollingInProgress, true)
           return { top, behavior }
         })
       ),
@@ -106,6 +108,6 @@ export const scrollToIndexSystem = system(
       topListHeight,
     }
   },
-  tup(sizeSystem, domIOSystem),
+  u.tup(sizeSystem, domIOSystem),
   { singleton: true }
 )

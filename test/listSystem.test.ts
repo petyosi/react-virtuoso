@@ -193,7 +193,7 @@ describe('list engine', () => {
   })
 
   describe('scrolling up after a jump', () => {
-    it('readjusts measurements to avoid jump', () => {
+    it.only('readjusts measurements to avoid jump', (done) => {
       const INITIAL_INDEX = 300
       const SIZE = 30
       const {
@@ -232,19 +232,22 @@ describe('list engine', () => {
         behavior: 'auto',
       })
 
-      publish(scrollTop, INITIAL_INDEX * SIZE)
+      setTimeout(() => {
+        publish(scrollTop, INITIAL_INDEX * SIZE)
 
-      publish(scrollTop, INITIAL_INDEX * SIZE - 160)
+        publish(scrollTop, INITIAL_INDEX * SIZE - 2)
 
-      publish(sizeRanges, [
-        {
-          startIndex: INITIAL_INDEX - 3,
-          endIndex: INITIAL_INDEX - 1,
-          size: SIZE + 40,
-        },
-      ])
+        publish(sizeRanges, [
+          {
+            startIndex: INITIAL_INDEX - 1,
+            endIndex: INITIAL_INDEX - 1,
+            size: SIZE + 40,
+          },
+        ])
 
-      expect(scrollBySub).toHaveBeenCalledWith(-40)
+        expect(scrollBySub).toHaveBeenCalledWith(-40)
+        done()
+      }, 2500)
     })
   })
 

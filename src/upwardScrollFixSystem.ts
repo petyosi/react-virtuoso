@@ -9,34 +9,46 @@ import { ListItem } from './interfaces'
  * Fixes upward scrolling by calculating and compensation from changed item heights, using scrollBy.
  */
 export const upwardScrollFixSystem = u.system(
-  ([{ scrollBy, scrollTop, scrollDirection, deviation }, { isScrolling }, { listState }, { beforeUnshiftWith, sizes, listRefresh }]) => {
+  ([
+    { scrollBy, scrollTop, scrollDirection, deviation, scrollingInProgress },
+    { isScrolling },
+    { listState },
+    { beforeUnshiftWith, sizes, listRefresh },
+  ]) => {
     const deviationOffset = u.streamFromEmitter(
       u.pipe(
         listState,
-        u.withLatestFrom(scrollTop, scrollDirection),
-        u.filter(([, scrollTop, scrollDirection]) => {
-          return scrollTop !== 0 && scrollDirection === UP
+        u.withLatestFrom(scrollTop, scrollDirection, scrollingInProgress),
+        u.filter(([, scrollTop, scrollDirection, scrollingInProgress]) => {
+          return !scrollingInProgress && scrollTop !== 0 && scrollDirection === UP
         }),
         u.map(([state]) => state),
         u.scan(
           ([, prevItems], { items }) => {
             let newDev = 0
             if (prevItems.length > 0 && items.length > 0) {
-              const atStart = prevItems[0].originalIndex === 0 && items[0].originalIndex === 0
+              const firstItemIndex = items[0].originalIndex
+              const prevFirstItemIndex = prevItems[0].originalIndex
+              const atStart = firstItemIndex === 0 && prevFirstItemIndex === 0
 
               if (!atStart) {
-                for (let index = items.length - 1; index >= 0; index--) {
-                  const item = items[index]
+                // Handles an item taller than the viewport
+                if (firstItemIndex === prevFirstItemIndex) {
+                  newDev = items[0].size - prevItems[0].size
+                } else {
+                  for (let index = items.length - 1; index >= 0; index--) {
+                    const item = items[index]
 
-                  const prevItem = prevItems.find((pItem) => pItem.originalIndex === item.originalIndex)
+                    const prevItem = prevItems.find((pItem) => pItem.originalIndex === item.originalIndex)
 
-                  if (!prevItem) {
-                    continue
-                  }
+                    if (!prevItem) {
+                      continue
+                    }
 
-                  if (item.offset !== prevItem.offset) {
-                    newDev = item.offset - prevItem.offset
-                    break
+                    if (item.offset !== prevItem.offset) {
+                      newDev = item.offset - prevItem.offset
+                      break
+                    }
                   }
                 }
               }
@@ -69,8 +81,13 @@ export const upwardScrollFixSystem = u.system(
         u.map(([_, deviation]) => deviation)
       ),
       (offset) => {
-        u.publish(scrollBy, { top: -offset, behavior: 'auto' })
-        u.publish(deviation, 0)
+        if (offset > 0) {
+          u.publish(scrollBy, { top: -offset, behavior: 'auto' })
+          u.publish(deviation, 0)
+        } else {
+          u.publish(deviation, 0)
+          u.publish(scrollBy, { top: -offset, behavior: 'auto' })
+        }
       }
     )
 

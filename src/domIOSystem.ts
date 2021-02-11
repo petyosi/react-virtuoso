@@ -15,6 +15,7 @@ export const domIOSystem = u.system(
     const footerHeight = u.statefulStream(0)
     const scrollTo = u.stream<ScrollToOptions>()
     const scrollBy = u.stream<ScrollToOptions>()
+    const scrollingInProgress = u.statefulStream(false)
 
     u.connect(scrollTop, statefulScrollTop)
     const scrollDirection = u.statefulStream<ScrollDirection>(DOWN)
@@ -49,6 +50,7 @@ export const domIOSystem = u.system(
       scrollDirection,
       statefulScrollTop,
       deviation,
+      scrollingInProgress,
     }
   },
   [],
