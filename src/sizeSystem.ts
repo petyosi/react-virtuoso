@@ -290,8 +290,7 @@ export const sizeSystem = u.system(
       unshiftWith
     )
 
-    // hack to capture the current list top item before the sizes get refreshed
-    // :(
+    // Capture the current list top item before the sizes get refreshed
     const beforeUnshiftWith = u.streamFromEmitter(unshiftWith)
 
     u.connect(

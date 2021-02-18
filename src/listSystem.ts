@@ -72,7 +72,7 @@ export const listSystem = system(
       groupCounts,
       fixedItemHeight: fixedItemSize,
       defaultItemHeight: defaultItemSize,
-      followOutput: followOutput.followOutput,
+      ...followOutput,
 
       // output
       listState,

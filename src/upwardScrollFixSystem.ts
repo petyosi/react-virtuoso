@@ -1,7 +1,7 @@
 import * as u from '@virtuoso.dev/urx'
 import { UP, domIOSystem } from './domIOSystem'
 import { listStateSystem } from './listStateSystem'
-import { offsetOf, sizeSystem } from './sizeSystem'
+import { sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
 import { ListItem } from './interfaces'
 
@@ -13,7 +13,7 @@ export const upwardScrollFixSystem = u.system(
     { scrollBy, scrollTop, scrollDirection, deviation, scrollingInProgress },
     { isScrolling },
     { listState },
-    { beforeUnshiftWith, sizes, listRefresh },
+    { beforeUnshiftWith, sizes },
   ]) => {
     const deviationOffset = u.streamFromEmitter(
       u.pipe(
@@ -78,7 +78,8 @@ export const upwardScrollFixSystem = u.system(
       u.pipe(
         u.combineLatest(u.statefulStreamFromEmitter(isScrolling, false), deviation),
         u.filter(([is, deviation]) => !is && deviation !== 0),
-        u.map(([_, deviation]) => deviation)
+        u.map(([_, deviation]) => deviation),
+        u.throttleTime(1)
       ),
       (offset) => {
         if (offset > 0) {
@@ -91,26 +92,13 @@ export const upwardScrollFixSystem = u.system(
       }
     )
 
-    u.subscribe(
+    u.connect(
       u.pipe(
         beforeUnshiftWith,
-        u.map((indexOffset) => {
-          const currentTopIndex = u.getValue(listState).items[0].originalIndex!
-
-          return {
-            index: currentTopIndex + indexOffset,
-            offset: offsetOf(currentTopIndex, u.getValue(sizes)),
-          }
-        })
+        u.withLatestFrom(sizes),
+        u.map(([offset, { lastSize }]) => offset * lastSize)
       ),
-      ({ index, offset }) => {
-        // a list refresh will be triggered immediately from the unshiftWith pushing new items.
-        // Skip it, and handle the one coming from the DOM.
-        u.handleNext(u.pipe(listRefresh, u.skip(1)), () => {
-          const newOffset = offsetOf(index, u.getValue(sizes))
-          u.publish(deviationOffset, newOffset - offset)
-        })
-      }
+      deviationOffset
     )
 
     return { deviation }

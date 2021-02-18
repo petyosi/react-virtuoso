@@ -1,22 +1,4 @@
-import {
-  publish,
-  subscribe,
-  debounceTime,
-  distinctUntilChanged,
-  duc,
-  system,
-  mapTo,
-  merge,
-  pipe,
-  skip,
-  streamFromEmitter,
-  tup,
-  statefulStream,
-  stream,
-  connect,
-  combineLatest,
-  map,
-} from '@virtuoso.dev/urx'
+import * as u from '@virtuoso.dev/urx'
 import { domIOSystem } from './domIOSystem'
 
 export interface ListBottomInfo {
@@ -24,48 +6,127 @@ export interface ListBottomInfo {
   offsetBottom: number
 }
 
-export const stateFlagsSystem = system(([{ scrollTop, viewportHeight }]) => {
-  const isAtBottom = statefulStream(false)
-  const isAtTop = statefulStream(true)
-  const atBottomStateChange = stream<boolean>()
-  const atTopStateChange = stream<boolean>()
-  const listStateListener = stream<ListBottomInfo>()
+export interface AtBottomParams {
+  offsetBottom: number
+  scrollTop: number
+  viewportHeight: number
+  totalHeight: number
+}
+
+export type NotAtBottomReason =
+  | 'SIZE_INCREASED'
+  | 'NOT_SHOWING_LAST_ITEM'
+  | 'VIEWPORT_HEIGHT_DECREASING'
+  | 'SCROLLING_UPWARDS'
+  | 'NOT_FULLY_SCROLLED_TO_LAST_ITEM_BOTTOM'
+
+export type AtBottomState =
+  | {
+      atBottom: false
+      notAtBottomBecause: NotAtBottomReason
+      state: AtBottomParams
+    }
+  | {
+      atBottom: true
+      state: AtBottomParams
+    }
+
+const INITIAL_BOTTOM_STATE = {
+  atBottom: false,
+  notAtBottomBecause: 'NOT_SHOWING_LAST_ITEM',
+  state: {
+    offsetBottom: 0,
+    scrollTop: 0,
+    viewportHeight: 0,
+    totalHeight: 0,
+  },
+} as AtBottomState
+
+export const stateFlagsSystem = u.system(([{ scrollTop, viewportHeight }]) => {
+  const isAtBottom = u.statefulStream(false)
+  const isAtTop = u.statefulStream(true)
+  const atBottomStateChange = u.stream<boolean>()
+  const atTopStateChange = u.stream<boolean>()
+  const listStateListener = u.stream<ListBottomInfo>()
 
   // skip 1 to avoid an initial on/off flick
-  const isScrolling = streamFromEmitter(
-    pipe(
-      merge(pipe(duc(scrollTop), skip(1), mapTo(true)), pipe(duc(scrollTop), skip(1), mapTo(false), debounceTime(100))),
-      distinctUntilChanged()
+  const isScrolling = u.streamFromEmitter(
+    u.pipe(
+      u.merge(u.pipe(u.duc(scrollTop), u.skip(1), u.mapTo(true)), u.pipe(u.duc(scrollTop), u.skip(1), u.mapTo(false), u.debounceTime(100))),
+      u.distinctUntilChanged()
     )
   )
 
-  connect(
-    pipe(
-      duc(scrollTop),
-      map((top) => top === 0),
-      distinctUntilChanged()
+  u.connect(
+    u.pipe(
+      u.duc(scrollTop),
+      u.map((top) => top === 0),
+      u.distinctUntilChanged()
     ),
     isAtTop
   )
 
-  connect(isAtTop, atTopStateChange)
+  u.connect(isAtTop, atTopStateChange)
 
-  connect(
-    pipe(
-      combineLatest(listStateListener, duc(scrollTop), duc(viewportHeight)),
-      map(([{ bottom, offsetBottom }, scrollTop, viewportHeight]) => {
-        return offsetBottom === 0 && scrollTop + viewportHeight - bottom > -4
-      }),
-      distinctUntilChanged()
+  const atBottomState = u.streamFromEmitter(
+    u.pipe(
+      u.combineLatest(listStateListener, u.duc(scrollTop), u.duc(viewportHeight)),
+      u.scan((current, [{ bottom, offsetBottom }, scrollTop, viewportHeight]) => {
+        const isAtBottom = offsetBottom === 0 && scrollTop + viewportHeight - bottom > -4
+        const state = {
+          viewportHeight,
+          scrollTop,
+          offsetBottom,
+          totalHeight: bottom + offsetBottom,
+        }
+
+        if (isAtBottom) {
+          return {
+            atBottom: true,
+            state,
+          } as AtBottomState
+        }
+
+        let notAtBottomBecause: NotAtBottomReason
+
+        if (state.totalHeight > current.state.totalHeight) {
+          notAtBottomBecause = 'SIZE_INCREASED'
+        } else if (offsetBottom !== 0) {
+          notAtBottomBecause = 'NOT_SHOWING_LAST_ITEM'
+        } else if (viewportHeight < current.state.viewportHeight) {
+          notAtBottomBecause = 'VIEWPORT_HEIGHT_DECREASING'
+        } else if (scrollTop < current.state.scrollTop) {
+          notAtBottomBecause = 'SCROLLING_UPWARDS'
+        } else {
+          notAtBottomBecause = 'NOT_FULLY_SCROLLED_TO_LAST_ITEM_BOTTOM'
+        }
+
+        return {
+          atBottom: false,
+          notAtBottomBecause,
+          state,
+        } as AtBottomState
+      }, INITIAL_BOTTOM_STATE),
+      u.distinctUntilChanged((prev, next) => {
+        // prev && console.log(prev.atBottom, next.atBottom)
+        return prev && prev.atBottom === next.atBottom
+      })
+    )
+  )
+
+  u.connect(
+    u.pipe(
+      atBottomState,
+      u.map((state) => state.atBottom)
     ),
     isAtBottom
   )
 
-  subscribe(isAtBottom, (value) => {
-    setTimeout(() => publish(atBottomStateChange, value))
+  u.subscribe(isAtBottom, (value) => {
+    setTimeout(() => u.publish(atBottomStateChange, value))
   })
 
   // connect(isAtBottom, atBottomStateChange)
 
-  return { isScrolling, isAtTop, isAtBottom, atTopStateChange, atBottomStateChange, listStateListener }
-}, tup(domIOSystem))
+  return { isScrolling, isAtTop, isAtBottom, atBottomState, atTopStateChange, atBottomStateChange, listStateListener }
+}, u.tup(domIOSystem))

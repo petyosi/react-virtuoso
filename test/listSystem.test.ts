@@ -193,7 +193,7 @@ describe('list engine', () => {
   })
 
   describe('scrolling up after a jump', () => {
-    it.only('readjusts measurements to avoid jump', (done) => {
+    it('readjusts measurements to avoid jump', (done) => {
       const INITIAL_INDEX = 300
       const SIZE = 30
       const {

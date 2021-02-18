@@ -21,13 +21,21 @@ const behaviorFromFollowOutput = (follow: FollowOutput, isAtBottom: boolean) => 
 }
 
 export const followOutputSystem = u.system(
-  ([{ totalCount, listRefresh }, { isAtBottom }, { scrollToIndex }, { scrolledToInitialItem }, { didMount }]) => {
+  ([{ totalCount, listRefresh }, { isAtBottom, atBottomState }, { scrollToIndex }, { scrolledToInitialItem }, { didMount }]) => {
     const followOutput = u.statefulStream<FollowOutput>(false)
+
+    function scrollToBottom(totalCount: number, followOutputBehavior: FollowOutputScalarType) {
+      u.publish(scrollToIndex, {
+        index: totalCount - 1,
+        align: 'end',
+        behavior: followOutputBehavior,
+      })
+    }
 
     u.subscribe(
       u.pipe(
         u.combineLatest(u.duc(totalCount), didMount),
-        u.withLatestFrom(followOutput, isAtBottom, scrolledToInitialItem),
+        u.withLatestFrom(u.duc(followOutput), isAtBottom, scrolledToInitialItem),
         u.map(([[totalCount, didMount], followOutput, isAtBottom, scrolledToInitialItem]) => {
           let shouldFollow = didMount && scrolledToInitialItem
           let followOutputBehavior: FollowOutputScalarType = 'auto'
@@ -43,12 +51,17 @@ export const followOutputSystem = u.system(
       ),
       ({ totalCount, followOutputBehavior }) => {
         u.handleNext(listRefresh, () => {
-          u.publish(scrollToIndex, {
-            index: totalCount - 1,
-            align: 'end',
-            behavior: followOutputBehavior,
-          })
+          scrollToBottom(totalCount, followOutputBehavior)
         })
+      }
+    )
+
+    u.subscribe(
+      u.pipe(u.combineLatest(u.duc(followOutput), atBottomState), u.withLatestFrom(totalCount)),
+      ([[followOutput, state], totalCount]) => {
+        if (followOutput && !state.atBottom && state.notAtBottomBecause === 'VIEWPORT_HEIGHT_DECREASING') {
+          scrollToBottom(totalCount, behaviorFromFollowOutput(followOutput, true))
+        }
       }
     )
 

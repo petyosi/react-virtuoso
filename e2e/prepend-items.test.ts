@@ -20,12 +20,12 @@ describe('list with prependable items', () => {
       document.querySelector('button')!.click()
     })
 
-    expect(await getScrollTop()).toBe(55 + 20) // 55x2
+    expect(await getScrollTop()).toBe(2 * 55)
 
     await page.evaluate(() => {
       document.querySelector('button')!.click()
     })
 
-    expect(await getScrollTop()).toBe(2 * (55 + 20))
+    expect(await getScrollTop()).toBe(4 * 55)
   })
 })

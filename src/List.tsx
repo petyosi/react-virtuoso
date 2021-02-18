@@ -184,14 +184,15 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const paddingTopAddition = useEmitterValue('paddingTopAddition')
   const scrolledToInitialItem = useEmitterValue('scrolledToInitialItem')
 
+  const calculatedHeight = listState.offsetBottom + listState.bottom
   const containerStyle: CSSProperties = showTopList
     ? {}
     : {
         boxSizing: 'border-box',
-        height: listState.offsetBottom + listState.bottom,
         paddingTop: listState.offsetTop + paddingTopAddition,
         paddingBottom: listState.offsetBottom,
         marginTop: deviation,
+        height: calculatedHeight,
       }
 
   if (!showTopList && listState.items.length === 0 && EmptyPlaceholder && scrolledToInitialItem) {
@@ -399,6 +400,7 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
   {
     required: {},
     optional: {
+      followOutput: 'followOutput',
       firstItemIndex: 'firstItemIndex',
       itemContent: 'itemContent',
       groupContent: 'groupContent',
@@ -412,7 +414,6 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
       defaultItemHeight: 'defaultItemHeight',
       fixedItemHeight: 'fixedItemHeight',
       scrollSeekConfiguration: 'scrollSeekConfiguration',
-      followOutput: 'followOutput',
       headerFooterTag: 'headerFooterTag',
       data: 'data',
       initialItemCount: 'initialItemCount',
