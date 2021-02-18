@@ -15,7 +15,7 @@ Out of the box, Virtuoso:
 - Supports headers and footers.
 - Can **pin the first `N` items** to the top of the list.
 
-To start, install `rect-virtuoso` in your React project. The package exports the `Virtuoso`, `GroupedVirtuoso`, and `VirtuosoGrid` components.
+To start, install `react-virtuoso` in your React project. The package exports the `Virtuoso`, `GroupedVirtuoso`, and `VirtuosoGrid` components.
 
 ```bash
 npm install react-virtuoso
