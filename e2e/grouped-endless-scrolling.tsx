@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Components, GroupedVirtuoso } from '../src'
-import { useMemo, useRef, useState, useEffect } from 'react'
+import { useMemo, useRef, useState, useEffect, useCallback } from 'react'
 import faker from 'faker'
 import { groupBy } from 'lodash'
 
@@ -28,7 +28,7 @@ const sortUser = (a: User, b: User) => {
 }
 
 const useGroupedUsers = (count: number) => {
-  const allUsers = useMemo(() => new Array(count).fill(true).map(getUser).sort(sortUser), [count])
+  const allUsers = useMemo(() => Array.from({ length: count }, getUser).sort(sortUser), [count])
 
   const loadedCount = useRef(0)
   const loadedUsers = useRef<User[]>([])
@@ -36,7 +36,7 @@ const useGroupedUsers = (count: number) => {
   const [endReached, setEndReached] = useState(false)
   const [groupCounts, setGroupCounts] = useState([])
 
-  const loadMore = () => {
+  const loadMore = useCallback(() => {
     if (!endReached) {
       setTimeout(() => {
         loadedCount.current += 50
@@ -52,12 +52,12 @@ const useGroupedUsers = (count: number) => {
         groups.current = Object.keys(groupedUsers)
         setGroupCounts(Object.values(groupedUsers).map((users) => users.length))
 
-        if (loadedCount.current === 500) {
+        if (loadedCount.current === count) {
           setEndReached(true)
         }
-      }, 300)
+      }, 30)
     }
-  }
+  }, [allUsers, endReached, count])
 
   return {
     loadMore,
@@ -95,7 +95,8 @@ const components: Partial<Components> = {
 const Style = { height: '350px', width: '300px' }
 
 export default function App() {
-  const { loadMore, groupCounts, users, groups } = useGroupedUsers(500)
+  const { loadMore, groupCounts, users, groups } = useGroupedUsers(12500)
+  console.log(groupCounts)
 
   useEffect(loadMore, [loadMore])
 
@@ -106,8 +107,7 @@ export default function App() {
       groupCounts={groupCounts}
       groupContent={(index) => <div>Group {groups[index]}</div>}
       overscan={400}
-      endReached={(value) => {
-        console.log(value)
+      endReached={(_) => {
         loadMore()
       }}
       itemContent={(index) => (
