@@ -71,7 +71,6 @@ const useGroupedUsers = (count: number) => {
 const components: Partial<Components> = {
   Footer: () => <div>Footer</div>,
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
   List: React.forwardRef(({ style, children }, listRef) => {
     return (
       <div ref={listRef} style={style}>
