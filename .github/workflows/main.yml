@@ -40,8 +40,8 @@ jobs:
       - name: run lint and tests
         run: |
           yarn lint
-          yarn test -- --ci 
-          yarn e2e -- --ci
+          yarn test --ci 
+          yarn e2e --ci
 
       - name: build site
         run: |
