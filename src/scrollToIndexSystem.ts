@@ -20,7 +20,10 @@ export function normalizeIndexLocation(location: IndexLocation) {
 }
 
 export const scrollToIndexSystem = u.system(
-  ([{ sizes, totalCount, listRefresh }, { scrollingInProgress, viewportHeight, scrollTo, smoothScrollTargetReached, headerHeight }]) => {
+  ([
+    { sizes, totalCount, listRefresh },
+    { scrollingInProgress, viewportHeight, scrollTo, smoothScrollTargetReached, headerHeight, footerHeight },
+  ]) => {
     const scrollToIndex = u.stream<IndexLocation>()
     const topListHeight = u.statefulStream(0)
 
@@ -49,19 +52,23 @@ export const scrollToIndexSystem = u.system(
     u.connect(
       u.pipe(
         scrollToIndex,
-        u.withLatestFrom(sizes, viewportHeight, totalCount, topListHeight, headerHeight),
-        u.map(([location, sizes, viewportHeight, totalCount, topListHeight, headerHeight]) => {
+        u.withLatestFrom(sizes, viewportHeight, totalCount, topListHeight, headerHeight, footerHeight),
+        u.map(([location, sizes, viewportHeight, totalCount, topListHeight, headerHeight, footerHeight]) => {
           const normalLocation = normalizeIndexLocation(location)
           const { align, behavior } = normalLocation
+          const lastIndex = totalCount - 1
           let index = normalLocation.index
 
           index = originalIndexFromItemIndex(index, sizes)
 
-          index = Math.max(0, index, Math.min(totalCount - 1, index))
+          index = Math.max(0, index, Math.min(lastIndex, index))
 
           let top = offsetOf(index, sizes) + headerHeight
           if (align === 'end') {
             top = Math.round(top - viewportHeight + findMaxKeyValue(sizes.sizeTree, index)[1]!)
+            if (index === lastIndex) {
+              top += footerHeight
+            }
           } else if (align === 'center') {
             top = Math.round(top - viewportHeight / 2 + findMaxKeyValue(sizes.sizeTree, index)[1]! / 2)
           } else {
