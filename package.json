@@ -27,7 +27,7 @@
     "dist"
   ],
   "scripts": {
-    "start": "microbundle watch --raw --no-sourcemap --strict --no-compress --jsx React.createElement --format=cjs",
+    "start": "microbundle watch --raw --no-sourcemap --strict --no-compress --jsx React.createElement --format=cjs,esm",
     "build": "microbundle --strict --jsx React.createElement --format=cjs,esm",
     "test": "jest --passWithNoTests",
     "e2e": "jest --config jest.e2e.config.js --run-in-band --passWithNoTests",

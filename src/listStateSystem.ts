@@ -25,6 +25,7 @@ export interface ListState {
   offsetBottom: number
   top: number
   bottom: number
+  totalCount: number
 }
 
 function probeItemSet(index: number, sizes: SizeState, data: Data) {
@@ -48,6 +49,7 @@ const EMPTY_LIST_STATE: ListState = {
   top: 0,
   bottom: 0,
   topListHeight: 0,
+  totalCount: 0,
 }
 
 function transposeItems(items: Item<any>[], sizes: SizeState, firstItemIndex: number): ListItems {
@@ -128,6 +130,7 @@ export function buildListState(
     offsetBottom,
     top,
     bottom,
+    totalCount,
   }
 }
 
