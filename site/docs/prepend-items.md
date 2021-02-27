@@ -32,9 +32,6 @@ This example shows how to increase the item count and instruct the component tha
 
   return (
     <Virtuoso
-      components={{
-        Header: () => <div style={{ textAlign: 'center', padding: '1rem' }}>Loading...</div>,
-      }}
       firstItemIndex={firstItemIndex}
       initialTopMostItemIndex={INITIAL_ITEM_COUNT - 1}
       data={users}
