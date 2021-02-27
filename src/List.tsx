@@ -377,6 +377,7 @@ const TopItemListContainer: FC = ({ children }) => {
 
 const ListRoot: FC<ListRootProps> = React.memo(function VirtuosoRoot(props) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
+  const showTopList = useEmitterValue('topItemsIndexes').length > 0
   const TheScroller = useWindowScroll ? WindowScroller : Scroller
   const TheViewport = useWindowScroll ? WindowViewport : Viewport
   return (
@@ -386,9 +387,11 @@ const ListRoot: FC<ListRootProps> = React.memo(function VirtuosoRoot(props) {
         <Items />
         <Footer />
       </TheViewport>
-      <TopItemListContainer>
-        <Items showTopList={true} />
-      </TopItemListContainer>
+      {showTopList && (
+        <TopItemListContainer>
+          <Items showTopList={true} />
+        </TopItemListContainer>
+      )}
     </TheScroller>
   )
 })
