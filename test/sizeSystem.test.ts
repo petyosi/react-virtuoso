@@ -485,3 +485,43 @@ describe('size engine', () => {
     expect(getValue(sizes)).toMatchObject({ lastIndex: 0, lastOffset: 0, lastSize: 1 })
   })
 })
+
+/**
+ 
+describe.only('benchmarks', () => {
+  const COUNT = 10000
+  const JAGGED = 2
+  it('handles jagged list', () => {
+    const t0 = performance.now()
+    const { sizeRanges, totalCount } = init(sizeSystem)
+    publish(totalCount, COUNT)
+    publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 2 }])
+
+    for (let index = 1; index < COUNT; index += JAGGED) {
+      publish(sizeRanges, [{ startIndex: index, endIndex: index, size: 1 }])
+    }
+
+    const t1 = performance.now()
+
+    console.log('Took', (t1 - t0).toFixed(4), 'milliseconds to build jagged list:')
+
+    expect(true).toBeTruthy()
+  })
+
+  it('handles jagged reverse list', () => {
+    const t0 = performance.now()
+    const { sizeRanges, totalCount } = init(sizeSystem)
+    publish(totalCount, COUNT)
+    publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 2 }])
+    let count = 0
+    for (let index = COUNT - 1; index > 0; index -= JAGGED) {
+      count++
+      publish(sizeRanges, [{ startIndex: index, endIndex: index, size: 1 }])
+    }
+    const t1 = performance.now()
+    console.log('Took', (t1 - t0).toFixed(4), 'milliseconds to build reverse jagged list, average', ((t1 - t0) / count).toFixed(5))
+
+    expect(true).toBeTruthy()
+  })
+})
+*/
