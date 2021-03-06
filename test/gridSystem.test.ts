@@ -1,5 +1,6 @@
 import { init, getValue, publish, subscribe } from '@virtuoso.dev/urx'
 import { gridSystem } from '../src/gridSystem'
+
 describe('grid system', () => {
   it('outputs a single probe item once totalCount is set', () => {
     const { scrollTop, viewportDimensions, gridState, totalCount } = init(gridSystem)

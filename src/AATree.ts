@@ -225,28 +225,33 @@ export function rangesWithin<T>(node: AANode<T>, startIndex: number, endIndex: n
   return toRanges(walkWithin(node, adjustedStart, endIndex))
 }
 
-function toRanges<T>(nodes: NodeData<T>[]): Range<T>[] {
-  if (nodes.length === 0) {
+export function arrayToRanges<T, V>(
+  items: T[],
+  parser: (item: T) => { index: number; value: V }
+): Array<{ start: number; end: number; value: V }> {
+  const length = items.length
+  if (length === 0) {
     return []
   }
 
-  const first = nodes[0]
-
-  let { k: start, v } = first
+  let { index: start, value } = parser(items[0])
 
   const result = []
 
-  for (let i = 1; i <= nodes.length; i++) {
-    const nextNode = nodes[i]
-    const end = nextNode ? nextNode.k - 1 : Infinity
-    result.push({ start, end, value: v })
+  for (let i = 1; i < length; i++) {
+    const { index: nextIndex, value: nextValue } = parser(items[i])
+    result.push({ start, end: nextIndex - 1, value })
 
-    if (nextNode) {
-      start = nextNode.k
-      v = nextNode.v
-    }
+    start = nextIndex
+    value = nextValue
   }
+
+  result.push({ start, end: Infinity, value })
   return result
+}
+
+function toRanges<T>(nodes: NodeData<T>[]): Range<T>[] {
+  return arrayToRanges(nodes, ({ k: index, v: value }) => ({ index, value }))
 }
 
 function split<T>(node: NonNilAANode<T>): NonNilAANode<T> {

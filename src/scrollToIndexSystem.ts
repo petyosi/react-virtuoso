@@ -65,7 +65,7 @@ export const scrollToIndexSystem = u.system(
 
           index = Math.max(0, index, Math.min(lastIndex, index))
 
-          let top = offsetOf(index, sizes) + headerHeight
+          let top = offsetOf(index, sizes.offsetTree) + headerHeight
           if (align === 'end') {
             top = Math.round(top - viewportHeight + findMaxKeyValue(sizes.sizeTree, index)[1]!)
             if (index === lastIndex) {

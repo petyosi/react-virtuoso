@@ -1,7 +1,6 @@
+import { getValue, init, publish, subscribe } from '@virtuoso.dev/urx'
 import { AANode, ranges, walk } from '../src/AATree'
-import { initialSizeState, sizeSystem, sizeStateReducer, offsetOf } from '../src/sizeSystem'
-
-import { init, publish, subscribe, getValue } from '@virtuoso.dev/urx'
+import { initialSizeState, offsetOf, rangesWithinOffsets, sizeStateReducer, sizeSystem } from '../src/sizeSystem'
 
 function toKV<T>(tree: AANode<T>) {
   return walk(tree).map((node) => [node.k, node.v] as [number, T])
@@ -13,7 +12,7 @@ describe('size state reducer', () => {
       const state = initialSizeState()
       const { sizeTree, offsetTree } = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 0, size: 1 }], []])
       expect(toKV(sizeTree)).toEqual([[0, 1]])
-      expect(toKV(offsetTree)).toEqual([[0, 0]])
+      expect(offsetTree).toEqual([{ offset: 0, index: 0, size: 1 }])
     })
 
     it('punches the initial range', () => {
@@ -33,18 +32,19 @@ describe('size state reducer', () => {
         [9, 2],
         [11, 1],
       ])
-      expect(toKV(offsetTree)).toEqual([
-        [0, 0],
-        [3, 3],
-        [8, 13],
-        [9, 14],
-        [11, 18],
+
+      expect(offsetTree).toEqual([
+        { offset: 0, index: 0, size: 1 },
+        { offset: 3, index: 3, size: 2 },
+        { offset: 13, index: 8, size: 1 },
+        { offset: 14, index: 9, size: 2 },
+        { offset: 18, index: 11, size: 1 },
       ])
     })
 
     it('does not change the ranges if size is the same', () => {
       const state = initialSizeState()
-      const { sizeTree, offsetTree } = sizeStateReducer(state, [
+      const { offsetTree, sizeTree } = sizeStateReducer(state, [
         [
           { startIndex: 0, endIndex: 0, size: 1 },
           { startIndex: 3, endIndex: 8, size: 1 },
@@ -53,12 +53,12 @@ describe('size state reducer', () => {
       ])
 
       expect(toKV(sizeTree)).toEqual([[0, 1]])
-      expect(toKV(offsetTree)).toEqual([[0, 0]])
+      expect(offsetTree).toEqual([{ offset: 0, index: 0, size: 1 }])
     })
 
     it('keeps default size if reinserted in the beginning', () => {
       const state = initialSizeState()
-      const { sizeTree, offsetTree } = sizeStateReducer(state, [
+      const { offsetTree, sizeTree } = sizeStateReducer(state, [
         [
           { startIndex: 0, endIndex: 0, size: 1 },
           { startIndex: 0, endIndex: 0, size: 2 },
@@ -70,9 +70,10 @@ describe('size state reducer', () => {
         [0, 2],
         [1, 1],
       ])
-      expect(toKV(offsetTree)).toEqual([
-        [0, 0],
-        [1, 2],
+
+      expect(offsetTree).toEqual([
+        { offset: 0, index: 0, size: 2 },
+        { offset: 2, index: 1, size: 1 },
       ])
     })
 
@@ -96,10 +97,11 @@ describe('size state reducer', () => {
         [2, 2],
         [10, 1],
       ])
-      expect(toKV(offsetTree)).toEqual([
-        [0, 0],
-        [2, 2],
-        [10, 18],
+
+      expect(offsetTree).toEqual([
+        { offset: 0, index: 0, size: 1 },
+        { offset: 2, index: 2, size: 2 },
+        { offset: 18, index: 10, size: 1 },
       ])
     })
 
@@ -120,10 +122,11 @@ describe('size state reducer', () => {
         [2, 2],
         [10, 1],
       ])
-      expect(toKV(offsetTree)).toEqual([
-        [0, 0],
-        [2, 2],
-        [10, 18],
+
+      expect(offsetTree).toEqual([
+        { offset: 0, index: 0, size: 1 },
+        { offset: 2, index: 2, size: 2 },
+        { offset: 18, index: 10, size: 1 },
       ])
     })
   })
@@ -146,11 +149,12 @@ describe('size state reducer', () => {
       [7, 3],
       [12, 1],
     ])
-    expect(toKV(offsetTree)).toEqual([
-      [0, 0],
-      [5, 5],
-      [7, 9],
-      [12, 24],
+
+    expect(offsetTree).toEqual([
+      { offset: 0, index: 0, size: 1 },
+      { offset: 5, index: 5, size: 2 },
+      { offset: 9, index: 7, size: 3 },
+      { offset: 24, index: 12, size: 1 },
     ])
   })
 
@@ -168,7 +172,7 @@ describe('size state reducer', () => {
     ])
 
     expect(toKV(sizeTree)).toEqual([[0, 1]])
-    expect(toKV(offsetTree)).toEqual([[0, 0]])
+    expect(offsetTree).toEqual([{ index: 0, size: 1, offset: 0 }])
   })
 
   it('handles subsequent insertions correctly (bug)', () => {
@@ -249,7 +253,7 @@ describe('size state reducer', () => {
 
     state = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 0, size: 30 }], []])
 
-    expect(offsetOf(10, state)).toBe(300)
+    expect(offsetOf(10, state.offsetTree)).toBe(300)
   })
 
   it('finds the offset of a given index (complex tree)', () => {
@@ -258,7 +262,7 @@ describe('size state reducer', () => {
     state = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 0, size: 30 }], []])
     state = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 4, size: 20 }], []])
 
-    expect(offsetOf(10, state)).toBe(250)
+    expect(offsetOf(10, state.offsetTree)).toBe(250)
   })
 
   it('builds correct index tree', () => {
@@ -271,7 +275,7 @@ describe('size state reducer', () => {
     const { sizeTree, offsetTree } = state
 
     expect(toKV(sizeTree)).toHaveLength(5)
-    expect(toKV(offsetTree)).toHaveLength(5)
+    expect(offsetTree).toHaveLength(5)
   })
 
   it('builds correct index tree (reverse)', () => {
@@ -281,18 +285,19 @@ describe('size state reducer', () => {
       state = sizeStateReducer(state, [[{ startIndex: index, endIndex: index, size: index % 2 ? 50 : 30 }], []])
     }
 
-    const { sizeTree, offsetTree } = state
+    const { offsetTree, sizeTree } = state
 
     expect(toKV(sizeTree)).toHaveLength(5)
-    expect(toKV(offsetTree)).toHaveLength(5)
+    expect(offsetTree).toHaveLength(5)
   })
+
   describe('group indices', () => {
     it('merges groups and items if a single size is reported', () => {
       let state = initialSizeState()
       state = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 1, size: 30 }], [0, 6, 11]])
       expect(toKV(state.sizeTree)).toEqual([[0, 30]])
 
-      expect(toKV(state.offsetTree)).toEqual([[0, 0]])
+      expect(state.offsetTree).toEqual([{ index: 0, size: 30, offset: 0 }])
     })
 
     it('fills in the group sizes when 2 item sizes is reported', () => {
@@ -313,13 +318,13 @@ describe('size state reducer', () => {
         [12, 20],
       ])
 
-      expect(toKV(state.offsetTree)).toEqual([
-        [0, 0],
-        [1, 30],
-        [6, 130],
-        [7, 160],
-        [11, 240],
-        [12, 270],
+      expect(state.offsetTree).toEqual([
+        { offset: 0, index: 0, size: 30 },
+        { offset: 30, index: 1, size: 20 },
+        { offset: 130, index: 6, size: 30 },
+        { offset: 160, index: 7, size: 20 },
+        { offset: 240, index: 11, size: 30 },
+        { offset: 270, index: 12, size: 20 },
       ])
     })
   })
@@ -410,6 +415,7 @@ describe('size engine', () => {
       ])
     })
   })
+
   describe('unshifting', () => {
     it('unshifts known sizes and offsets', () => {
       const { sizes, sizeRanges, unshiftWith } = init(sizeSystem)
@@ -425,10 +431,10 @@ describe('size engine', () => {
         [6, 30],
       ])
 
-      expect(toKV(getValue(sizes).offsetTree)).toEqual([
-        [0, 0],
-        [1, 30],
-        [6, 130],
+      expect(getValue(sizes).offsetTree).toEqual([
+        { offset: 0, index: 0, size: 30 },
+        { offset: 30, index: 1, size: 20 },
+        { offset: 130, index: 6, size: 30 },
       ])
 
       publish(unshiftWith, 5)
@@ -439,10 +445,10 @@ describe('size engine', () => {
         [11, 30],
       ])
 
-      expect(toKV(getValue(sizes).offsetTree)).toEqual([
-        [0, 0],
-        [6, 180],
-        [11, 280],
+      expect(getValue(sizes).offsetTree).toEqual([
+        { offset: 0, index: 0, size: 30 },
+        { offset: 180, index: 6, size: 20 },
+        { offset: 280, index: 11, size: 30 },
       ])
     })
 
@@ -486,11 +492,35 @@ describe('size engine', () => {
   })
 })
 
-/**
- 
+describe('ranges within offsets', () => {
+  const offsetTree = [
+    { offset: 0, index: 0, size: 1 },
+    { offset: 3, index: 3, size: 2 },
+    { offset: 13, index: 8, size: 1 },
+    { offset: 14, index: 9, size: 2 },
+    { offset: 18, index: 11, size: 1 },
+  ]
+
+  it('gets the items in the given offset', () => {
+    expect(rangesWithinOffsets(offsetTree, 8, 15)).toEqual([
+      { start: 3, end: 7, value: { offset: 3, index: 3, size: 2 } },
+      { start: 8, end: 8, value: { offset: 13, index: 8, size: 1 } },
+      { start: 9, end: Infinity, value: { offset: 14, index: 9, size: 2 } },
+    ])
+  })
+
+  it('gets the items in the given offset with minimum index constraint', () => {
+    expect(rangesWithinOffsets(offsetTree, 8, 15, 8)).toEqual([
+      { start: 8, end: 8, value: { offset: 13, index: 8, size: 1 } },
+      { start: 9, end: Infinity, value: { offset: 14, index: 9, size: 2 } },
+    ])
+  })
+})
+
+/*
 describe.only('benchmarks', () => {
-  const COUNT = 10000
-  const JAGGED = 2
+  const COUNT = 20000
+  const JAGGED = 4
   it('handles jagged list', () => {
     const t0 = performance.now()
     const { sizeRanges, totalCount } = init(sizeSystem)
@@ -524,4 +554,4 @@ describe.only('benchmarks', () => {
     expect(true).toBeTruthy()
   })
 })
-*/
+   */

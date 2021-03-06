@@ -1,5 +1,5 @@
 import * as u from '@virtuoso.dev/urx'
-import { empty, find, findMaxKeyValue, Range, rangesWithin } from './AATree'
+import { empty, findMaxKeyValue, Range, rangesWithin } from './AATree'
 import { domIOSystem } from './domIOSystem'
 import { groupedListSystem } from './groupedListSystem'
 import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
@@ -7,7 +7,7 @@ import { Item, ListItem, ListRange } from './interfaces'
 import { propsReadySystem } from './propsReadySystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
-import { Data, originalIndexFromItemIndex, SizeState, sizeSystem, hasGroups } from './sizeSystem'
+import { Data, originalIndexFromItemIndex, SizeState, sizeSystem, hasGroups, rangesWithinOffsets } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
 import { rangeComparator, tupleComparator } from './comparators'
 
@@ -221,18 +221,19 @@ export const listStateSystem = u.system(
             }
 
             const minStartIndex = topItemsIndexes.length > 0 ? topItemsIndexes[topItemsIndexes.length - 1] + 1 : 0
-            const startIndex = Math.max(minStartIndex, findMaxKeyValue(offsetTree, startOffset, 'v')[0]!)
-            const endIndex = findMaxKeyValue(offsetTree, endOffset, 'v')[0]!
+
+            const offsetPointRanges = rangesWithinOffsets(offsetTree, startOffset, endOffset, minStartIndex)
             const maxIndex = totalCount - 1
 
             const items = u.tap([] as Item<any>[], (result) => {
-              for (const range of rangesWithin(offsetTree, startIndex, endIndex)) {
-                let offset = range.value
+              for (const range of offsetPointRanges) {
+                const point = range.value
+                let offset = point.offset
                 let rangeStartIndex = range.start
-                const size = find(sizeTree, rangeStartIndex)!
+                const size = point.size
 
-                if (range.value < startOffset) {
-                  rangeStartIndex += Math.floor((startOffset - range.value) / size)
+                if (point.offset < startOffset) {
+                  rangeStartIndex += Math.floor((startOffset - point.offset) / size)
                   offset += (rangeStartIndex - range.start) * size
                 }
 

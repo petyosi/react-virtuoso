@@ -1,5 +1,6 @@
 import * as u from '@virtuoso.dev/urx'
-import { AANode, empty, find, findMaxKeyValue, insert, newTree, Range, rangesWithin, remove, walk } from './AATree'
+import { arrayToRanges, AANode, empty, find, findMaxKeyValue, insert, newTree, Range, rangesWithin, remove, walk } from './AATree'
+import * as arrayBinarySearch from './utils/binaryArraySearch'
 
 export interface SizeRange {
   startIndex: number
@@ -16,7 +17,7 @@ function rangeIncludes(refRange: SizeRange) {
   }
 }
 
-export function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[], onRemove: (index: number) => void = u.noop) {
+export function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[]) {
   let syncStart = empty(sizeTree) ? 0 : Infinity
 
   for (const range of ranges) {
@@ -49,7 +50,6 @@ export function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[], onRe
         // it has the same value as it, in order to perform a merge
         if (endIndex >= rangeStart || size === rangeValue) {
           sizeTree = remove(sizeTree, rangeStart)
-          onRemove(rangeStart)
         }
       }
 
@@ -68,9 +68,15 @@ export function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[], onRe
   return [sizeTree, syncStart] as const
 }
 
+export interface OffsetPoint {
+  offset: number
+  size: number
+  index: number
+}
+
 export interface SizeState {
   sizeTree: AANode<number>
-  offsetTree: AANode<number>
+  offsetTree: Array<OffsetPoint>
   groupOffsetTree: AANode<number>
   lastIndex: number
   lastOffset: number
@@ -80,7 +86,7 @@ export interface SizeState {
 
 export function initialSizeState(): SizeState {
   return {
-    offsetTree: newTree<number>(),
+    offsetTree: [],
     sizeTree: newTree<number>(),
     groupOffsetTree: newTree<number>(),
     lastIndex: 0,
@@ -88,6 +94,39 @@ export function initialSizeState(): SizeState {
     lastSize: 0,
     groupIndices: [],
   }
+}
+
+export function indexComparator({ index: itemIndex }: OffsetPoint, index: number) {
+  return index === itemIndex ? 0 : index < itemIndex ? -1 : 1
+}
+
+export function offsetComparator({ offset: itemOffset }: OffsetPoint, offset: number) {
+  return offset === itemOffset ? 0 : offset < itemOffset ? -1 : 1
+}
+
+function offsetPointParser(point: OffsetPoint) {
+  return { index: point.index, value: point }
+}
+
+export function rangesWithinOffsets(
+  tree: Array<OffsetPoint>,
+  startOffset: number,
+  endOffset: number,
+  minStartIndex = 0
+): Array<{
+  start: number
+  end: number
+  value: {
+    size: number
+    offset: number
+    index: number
+  }
+}> {
+  if (minStartIndex > 0) {
+    startOffset = Math.max(startOffset, arrayBinarySearch.findClosestSmallerOrEqual(tree, minStartIndex, indexComparator).offset)
+  }
+
+  return arrayToRanges(arrayBinarySearch.findRange(tree, startOffset, endOffset, offsetComparator), offsetPointParser)
 }
 
 export function sizeStateReducer(state: SizeState, [ranges, groupIndices]: [SizeRange[], number[]]) {
@@ -106,21 +145,23 @@ export function sizeStateReducer(state: SizeState, [ranges, groupIndices]: [Size
       return insert(insert(tree, groupIndex, groupSize), groupIndex + 1, itemSize)
     }, newSizeTree)
   } else {
-    ;[newSizeTree, syncStart] = insertRanges(newSizeTree, ranges, (index) => {
-      offsetTree = remove(offsetTree, index)
-    })
+    ;[newSizeTree, syncStart] = insertRanges(newSizeTree, ranges)
   }
 
   if (newSizeTree === sizeTree) {
     return state
   }
 
-  let prevOffset = 0
   let prevIndex = 0
   let prevSize = 0
 
+  let prevAOffset = 0
+  let startAIndex = 0
+
   if (syncStart !== 0) {
-    prevOffset = findMaxKeyValue(offsetTree, syncStart - 1)[1]!
+    startAIndex = arrayBinarySearch.findIndexOfClosestSmallerOrEqual(offsetTree, syncStart - 1, indexComparator)
+    const offsetInfo = offsetTree[startAIndex]
+    prevAOffset = offsetInfo.offset
     const kv = findMaxKeyValue(newSizeTree, syncStart - 1)
     prevIndex = kv[0]
     prevSize = kv[1]!
@@ -128,38 +169,44 @@ export function sizeStateReducer(state: SizeState, [ranges, groupIndices]: [Size
     prevSize = find(newSizeTree, 0)!
   }
 
+  if (offsetTree.length && offsetTree[startAIndex].size === findMaxKeyValue(newSizeTree, syncStart)[1]) {
+    startAIndex -= 1
+  }
+
+  offsetTree = offsetTree.slice(0, startAIndex + 1)
+
   for (const { start: startIndex, value } of rangesWithin(newSizeTree, syncStart, Infinity)) {
-    const offset = (startIndex - prevIndex) * prevSize + prevOffset
-    offsetTree = insert(offsetTree, startIndex, offset)
+    const aOffset = (startIndex - prevIndex) * prevSize + prevAOffset
+    offsetTree.push({
+      offset: aOffset,
+      size: value,
+      index: startIndex,
+    })
     prevIndex = startIndex
-    prevOffset = offset
+    prevAOffset = aOffset
     prevSize = value
   }
 
   return {
-    offsetTree: offsetTree,
     sizeTree: newSizeTree,
+    offsetTree,
     groupOffsetTree: groupIndices.reduce((tree, index) => {
-      return insert(tree, index, offsetOf(index, { offsetTree, sizeTree: newSizeTree }))
+      return insert(tree, index, offsetOf(index, offsetTree))
     }, newTree<number>()),
     lastIndex: prevIndex,
-    lastOffset: prevOffset,
+    lastOffset: prevAOffset,
     lastSize: prevSize,
     groupIndices,
   }
 }
 
-export function offsetOf(index: number, state: Pick<SizeState, 'sizeTree' | 'offsetTree'>) {
-  void index
-  void state
-
-  if (empty(state.offsetTree)) {
+export function offsetOf(index: number, tree: Array<OffsetPoint>) {
+  if (tree.length === 0) {
     return 0
   }
 
-  const [startIndex, startOffset] = findMaxKeyValue(state.offsetTree, index)
-  const size = findMaxKeyValue(state.sizeTree, index)[1]
-  return size! * (index - startIndex) + startOffset!
+  const { offset, index: startIndex, size } = arrayBinarySearch.findClosestSmallerOrEqual(tree, index, indexComparator)
+  return size * (index - startIndex) + offset
 }
 
 export function originalIndexFromItemIndex(itemIndex: number, sizes: SizeState) {
@@ -204,7 +251,7 @@ export const sizeSystem = u.system(
         u.withLatestFrom(sizes),
         u.map(([groupIndices, sizes]) => {
           const groupOffsetTree = groupIndices.reduce((tree, index, idx) => {
-            return insert(tree, index, offsetOf(index, sizes) || idx)
+            return insert(tree, index, offsetOf(index, sizes.offsetTree) || idx)
           }, newTree<number>())
 
           return {
