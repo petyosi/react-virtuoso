@@ -7,13 +7,15 @@ import { IndexLocationWithAlign } from './interfaces'
 
 export type IndexLocation = number | IndexLocationWithAlign
 
+const SUPPORTS_SCROLL_TO_OPTIONS = typeof navigator !== 'undefined' && !navigator.userAgent.includes('Safari')
+
 export function normalizeIndexLocation(location: IndexLocation) {
   const result: IndexLocationWithAlign = typeof location === 'number' ? { index: location } : location
 
   if (!result.align) {
     result.align = 'start'
   }
-  if (!result.behavior) {
+  if (!result.behavior || !SUPPORTS_SCROLL_TO_OPTIONS) {
     result.behavior = 'auto'
   }
   return result as Required<IndexLocationWithAlign>

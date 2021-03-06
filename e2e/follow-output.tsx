@@ -41,9 +41,7 @@ export default function App() {
       <Virtuoso
         totalCount={count}
         initialTopMostItemIndex={99}
-        followOutput={(isAtBottom) => {
-          return isAtBottom
-        }}
+        followOutput={'smooth'}
         itemContent={itemContent}
         style={{ height: listHeight }}
         atBottomStateChange={(atBottom) => {
