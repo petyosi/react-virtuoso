@@ -7,7 +7,7 @@ import { IndexLocationWithAlign } from './interfaces'
 
 export type IndexLocation = number | IndexLocationWithAlign
 
-const SUPPORTS_SCROLL_TO_OPTIONS = typeof navigator !== 'undefined' && !navigator.userAgent.includes('Safari')
+const SUPPORTS_SCROLL_TO_OPTIONS = typeof document !== 'undefined' && 'scrollBehavior' in document.documentElement.style
 
 export function normalizeIndexLocation(location: IndexLocation) {
   const result: IndexLocationWithAlign = typeof location === 'number' ? { index: location } : location
