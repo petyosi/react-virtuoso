@@ -24,6 +24,19 @@ describe('scroll to index', () => {
     expect(scrollTop).toBe((30 - 7) * 20 + 7 * 30)
   })
 
+  it('scrolls to the 30 item with 5 offset', async () => {
+    await page.click('#offset-30')
+
+    await page.waitForTimeout(100)
+
+    const scrollTop = await page.evaluate(() => {
+      const listContainer = document.querySelectorAll('#test-root > div')[1]
+      return listContainer.scrollTop
+    })
+
+    expect(scrollTop).toBe((30 - 7) * 20 + 7 * 30 + 5)
+  })
+
   it('scrolls to the mid 50 item', async () => {
     await page.click('#center-50')
 

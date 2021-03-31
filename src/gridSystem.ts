@@ -206,7 +206,7 @@ export const gridSystem = u.system(
         u.withLatestFrom(viewportDimensions, itemDimensions, totalCount),
         u.map(([location, viewport, item, totalCount]) => {
           const normalLocation = normalizeIndexLocation(location)
-          const { align, behavior } = normalLocation
+          const { align, behavior, offset } = normalLocation
           let index = normalLocation.index
 
           index = Math.max(0, index, Math.min(totalCount - 1, index))
@@ -217,6 +217,10 @@ export const gridSystem = u.system(
             top = Math.round(top - viewport.height + item.height)
           } else if (align === 'center') {
             top = Math.round(top - viewport.height / 2 + item.height / 2)
+          }
+
+          if (offset) {
+            top += offset
           }
 
           return { top, behavior }

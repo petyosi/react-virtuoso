@@ -157,6 +157,10 @@ export interface IndexLocationWithAlign {
    * Set 'smooth' to have an animated transition to the specified location.
    */
   behavior?: 'smooth' | 'auto'
+  /**
+   * The offset to scroll.
+   */
+  offset?: number
 }
 
 export type ListRootProps = Omit<React.HTMLProps<'div'>, 'ref' | 'data'>
