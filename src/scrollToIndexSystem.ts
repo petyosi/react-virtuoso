@@ -18,6 +18,9 @@ export function normalizeIndexLocation(location: IndexLocation) {
   if (!result.behavior || !SUPPORTS_SCROLL_TO_OPTIONS) {
     result.behavior = 'auto'
   }
+  if (!result.offset) {
+    result.offset = 0
+  }
   return result as Required<IndexLocationWithAlign>
 }
 
@@ -57,7 +60,7 @@ export const scrollToIndexSystem = u.system(
         u.withLatestFrom(sizes, viewportHeight, totalCount, topListHeight, headerHeight, footerHeight),
         u.map(([location, sizes, viewportHeight, totalCount, topListHeight, headerHeight, footerHeight]) => {
           const normalLocation = normalizeIndexLocation(location)
-          const { align, behavior } = normalLocation
+          const { align, behavior, offset } = normalLocation
           const lastIndex = totalCount - 1
           let index = normalLocation.index
 
@@ -75,6 +78,10 @@ export const scrollToIndexSystem = u.system(
             top = Math.round(top - viewportHeight / 2 + findMaxKeyValue(sizes.sizeTree, index)[1]! / 2)
           } else {
             top -= topListHeight
+          }
+
+          if (offset) {
+            top += offset
           }
 
           const retry = (listChanged: boolean) => {
