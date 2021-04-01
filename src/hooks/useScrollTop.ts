@@ -16,7 +16,7 @@ export default function useScrollTop(
   const handler = useCallback(
     (ev: Event) => {
       const el = ev.target as HTMLElement
-      const scrollTop = (el as any) === window || (el as any) === document ? document.documentElement.scrollTop : el.scrollTop
+      const scrollTop = (el as any) === window || (el as any) === document ? window.pageYOffset || document.documentElement.scrollTop : el.scrollTop
       scrollTopCallback(Math.max(scrollTop, 0))
 
       if (scrollTopTarget.current !== null) {
