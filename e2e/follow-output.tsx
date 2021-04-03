@@ -4,12 +4,12 @@ import { Virtuoso } from '../src'
 
 export default function App() {
   const [count, setCount] = useState(100)
-  const appendInterval = useRef(null)
+  const appendInterval = useRef<NodeJS.Timeout>()
   const [listHeight, setListHeight] = useState(300)
-  const [itemHeights, setItemHeights] = useState({})
+  const [itemHeights, setItemHeights] = useState<Record<number, number>>({})
   const itemContent = useCallback(
     (index: number) => {
-      const height = (itemHeights[index] as number) ?? (index % 2 ? 30 : 40)
+      const height = itemHeights[index] ?? (index % 2 ? 30 : 40)
       return (
         <div style={{ height, background: 'white' }}>
           Item {index}
@@ -45,7 +45,7 @@ export default function App() {
         itemContent={itemContent}
         style={{ height: listHeight }}
         atBottomStateChange={(atBottom) => {
-          clearInterval(appendInterval.current)
+          clearInterval(appendInterval.current!)
           if (atBottom) {
             appendInterval.current = setInterval(() => {
               // setCount((count) => count + 3)

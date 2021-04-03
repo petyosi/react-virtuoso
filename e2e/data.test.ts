@@ -7,16 +7,16 @@ describe('list with hundred items', () => {
 
   it('renders 10 items', async () => {
     const itemCount = await page.evaluate(() => {
-      const listContainer = document.querySelector('#test-root > div > div > div > div')
-      return listContainer!.childElementCount
+      const listContainer = document.querySelector('#test-root > div > div > div > div')!
+      return listContainer.childElementCount
     })
     expect(itemCount).toBe(10)
   })
 
   it('fills in the scroller', async () => {
     const scrollHeight = await page.evaluate(() => {
-      const scroller = document.querySelector('#test-root > div > div')
-      return scroller!.scrollHeight
+      const scroller = document.querySelector('#test-root > div > div')!
+      return scroller.scrollHeight
     })
     expect(scrollHeight).toBe(100 * 30)
   })
@@ -27,8 +27,8 @@ describe('list with hundred items', () => {
     })
 
     const scrollHeight = await page.evaluate(() => {
-      const scroller = document.querySelector('#test-root > div > div')
-      return scroller!.scrollHeight
+      const scroller = document.querySelector('#test-root > div > div')!
+      return scroller.scrollHeight
     })
 
     expect(scrollHeight).toBe(120 * 30)

@@ -40,6 +40,7 @@ jobs:
       - name: run lint and tests
         run: |
           yarn lint
+          yarn typecheck
           yarn test --ci 
           yarn e2e --ci
 

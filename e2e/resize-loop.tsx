@@ -1,11 +1,11 @@
-import * as React from 'react'
+import React, { FC } from 'react'
 import { Virtuoso } from '../src/'
 
-window.addEventListener('error', (event) => {
-  // console.log(event)
-})
+// window.addEventListener('error', (event) => {
+//   console.log(event)
+// })
 
-const ResizingDiv = ({ children }) => {
+const ResizingDiv: FC = ({ children }) => {
   const [height, setHeight] = React.useState(60)
   React.useEffect(() => {
     setHeight(() => 120)

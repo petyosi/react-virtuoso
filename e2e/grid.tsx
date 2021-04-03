@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { VirtuosoGrid, VirtuosoGridHandle } from '../src'
+import { VirtuosoGrid, VirtuosoGridHandle, GridComponents } from '../src'
 import styled from '@emotion/styled'
 
 const ItemContainer = styled.div`
@@ -35,7 +35,7 @@ const ItemWrapper = styled.div`
   }
 `
 
-const ListContainer = styled.div`
+const ListContainer: GridComponents['List'] = styled.div`
   display: flex;
   flex-wrap: wrap;
 `
@@ -69,13 +69,13 @@ export default function App() {
         style={{ height: 300, width: 1200 }}
       />
 
-      <button id="start-30" onClick={() => ref.current.scrollToIndex({ index: 30, align: 'start' })}>
+      <button id="start-30" onClick={() => ref.current!.scrollToIndex({ index: 30, align: 'start' })}>
         Start 30
       </button>
-      <button id="center-50" onClick={() => ref.current.scrollToIndex({ index: 50, align: 'center' })}>
+      <button id="center-50" onClick={() => ref.current!.scrollToIndex({ index: 50, align: 'center' })}>
         Center 50
       </button>
-      <button id="end-99" onClick={() => ref.current.scrollToIndex({ index: 99, align: 'end' })}>
+      <button id="end-99" onClick={() => ref.current!.scrollToIndex({ index: 99, align: 'end' })}>
         End 99
       </button>
     </>

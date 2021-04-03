@@ -32,6 +32,7 @@
     "test": "jest --passWithNoTests",
     "e2e": "jest --config jest.e2e.config.js --run-in-band --passWithNoTests",
     "lint": "eslint src test e2e --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p e2e/tsconfig.json && tsc --noEmit -p test/tsconfig.json",
     "browse-examples": "node e2e/test-cases.mjs && parcel e2e/__examples.html",
     "prepare": "yarn build",
     "semantic-release": "semantic-release"
@@ -102,7 +103,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn lint"
+      "pre-commit": "yarn lint && yarn typecheck"
     }
   },
   "prettier": {

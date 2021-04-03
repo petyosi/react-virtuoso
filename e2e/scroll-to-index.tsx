@@ -2,20 +2,20 @@ import * as React from 'react'
 import { Virtuoso, VirtuosoHandle } from '../src'
 
 export default function App() {
-  const ref = React.createRef<VirtuosoHandle>()
+  const ref = React.useRef<VirtuosoHandle>(null)
   return (
     <>
       <div>
-        <button id="start-30" onClick={() => ref.current.scrollToIndex({ index: 30, align: 'start' })}>
+        <button id="start-30" onClick={() => ref.current!.scrollToIndex({ index: 30, align: 'start' })}>
           Start 30
         </button>
-        <button id="offset-30" onClick={() => ref.current.scrollToIndex({ index: 30, offset: 5 })}>
+        <button id="offset-30" onClick={() => ref.current!.scrollToIndex({ index: 30, offset: 5 })}>
           Offset 30 by 5px
         </button>
-        <button id="center-50" onClick={() => ref.current.scrollToIndex({ index: 50, align: 'center' })}>
+        <button id="center-50" onClick={() => ref.current!.scrollToIndex({ index: 50, align: 'center' })}>
           Center 50
         </button>
-        <button id="end-99" onClick={() => ref.current.scrollToIndex({ index: 99, align: 'end' })}>
+        <button id="end-99" onClick={() => ref.current!.scrollToIndex({ index: 99, align: 'end' })}>
           End 99
         </button>
       </div>

@@ -7,7 +7,7 @@ describe('list with scroll seek placeholders', () => {
 
   it('renders placeholders when scrolled', async () => {
     await page.evaluate(() => {
-      const scroller = document.querySelector('#test-root > div') as HTMLElement
+      const scroller = document.querySelector('#test-root > div')!
       setInterval(() => {
         scroller.scrollBy({ top: 30 })
       }, 10)

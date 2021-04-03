@@ -5,7 +5,7 @@ export default function App() {
   const ref = React.useRef<VirtuosoHandle>(null)
   return (
     <div style={{ padding: '100px' }}>
-      <button onClick={() => ref.current.scrollToIndex(20)}>Scroll</button>
+      <button onClick={() => ref.current!.scrollToIndex(20)}>Scroll</button>
       <Virtuoso
         ref={ref}
         totalCount={100}

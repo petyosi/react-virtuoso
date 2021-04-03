@@ -7,7 +7,9 @@ const CONTENT = {
   2: 'Cras vel augue at lorem congue tempus. Donec convallis leo neque, eu convallis mauris pulvinar et. ',
 }
 
-const itemContent = (index: number) => <div style={{ borderBottom: '1px solid black', padding: '1rem' }}>{CONTENT[index % 3]}</div>
+const itemContent = (index: number) => (
+  <div style={{ borderBottom: '1px solid black', padding: '1rem' }}>{CONTENT[(index % 3) as 0 | 1 | 2]}</div>
+)
 
 export default function App() {
   return <Virtuoso totalCount={100000} initialTopMostItemIndex={99999} itemContent={itemContent} style={{ height: '500px' }} />

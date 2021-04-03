@@ -32,9 +32,9 @@ const useGroupedUsers = (count: number) => {
 
   const loadedCount = useRef(0)
   const loadedUsers = useRef<User[]>([])
-  const groups = useRef([])
+  const groups = useRef<string[]>([])
   const [endReached, setEndReached] = useState(false)
-  const [groupCounts, setGroupCounts] = useState([])
+  const [groupCounts, setGroupCounts] = useState<number[]>([])
 
   const loadMore = useCallback(() => {
     if (!endReached) {

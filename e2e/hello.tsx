@@ -4,7 +4,7 @@ import { Virtuoso } from '../src/'
 export default function App() {
   return (
     <Virtuoso
-      computeItemKey={(key) => `item-${key}`}
+      computeItemKey={(key: number) => `item-${key.toString()}`}
       initialItemCount={30}
       totalCount={100}
       itemContent={(index) => <div style={{ height: 30 }}>Item {index}</div>}

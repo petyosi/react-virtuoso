@@ -28,7 +28,7 @@ export default function App() {
         return
       }
 
-      setItems((items) => reorder(items, result.source.index, result.destination.index))
+      setItems((items) => reorder(items, result.source.index, result.destination!.index))
     },
     [setItems, reorder]
   )
@@ -85,8 +85,8 @@ export default function App() {
                 components={{
                   Item: HeightPreservingItem,
                 }}
-                // eslint-disable-next-line @typescript-eslint/unbound-method
-                scrollerRef={provided.innerRef}
+                // eslint-disable-next-line
+                scrollerRef={provided.innerRef as any}
                 data={items}
                 style={{ width: 300, height: 500 }}
                 itemContent={(index, item) => {
