@@ -202,4 +202,5 @@ export interface GridItemContent {
 export interface WindowViewportInfo {
   offsetTop: number
   visibleHeight: number
+  visibleWidth: number
 }

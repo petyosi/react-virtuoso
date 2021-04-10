@@ -9,10 +9,12 @@ export default function useWindowViewportRectRef(callback: (info: WindowViewport
     (element: HTMLElement) => {
       const rect = element.getBoundingClientRect()
       const visibleHeight = Math.min(window.innerHeight - Math.max(0, rect.top), rect.bottom)
+      const visibleWidth = rect.width
       const offsetTop = rect.top + window.pageYOffset
       viewportInfo.current = {
         offsetTop,
         visibleHeight,
+        visibleWidth,
       }
       callback(viewportInfo.current)
     },

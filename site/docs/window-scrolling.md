@@ -5,7 +5,7 @@ sidebar_label: Window Scrolling
 slug: /window-scrolling/
 ---
 
-The Virtuoso component can use the document level scroller. 
+The Virtuoso and the VirtuosoGrid components can use the document scroller. 
 This feature is a recent addition and may not work as expected in certain scenarios. 
 If you encounter such case, please open an issue with a reproduction of it.
 

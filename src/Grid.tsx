@@ -5,8 +5,9 @@ import * as React from 'react'
 import { createElement, FC } from 'react'
 import { gridSystem } from './gridSystem'
 import useSize from './hooks/useSize'
+import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { ComputeItemKey, GridComponents, GridItemContent, GridRootProps } from './interfaces'
-import { addDeprecatedAlias, buildScroller, identity, viewportStyle } from './List'
+import { addDeprecatedAlias, buildScroller, buildWindowScroller, identity, viewportStyle } from './List'
 
 const gridComponentPropsSystem = u.system(() => {
   const itemContent = u.statefulStream<GridItemContent>((index) => `Item ${index}`)
@@ -120,7 +121,7 @@ const GridItems: FC = React.memo(function GridItems() {
   )
 })
 
-const GridRoot: FC<GridRootProps> = React.memo(function GridRoot({ ...props }) {
+const Viewport: FC = ({ children }) => {
   const viewportDimensions = usePublisher('viewportDimensions')
 
   const viewportRef = useSize((el) => {
@@ -131,11 +132,34 @@ const GridRoot: FC<GridRootProps> = React.memo(function GridRoot({ ...props }) {
   })
 
   return (
-    <Scroller {...props}>
-      <div style={viewportStyle} ref={viewportRef}>
+    <div style={viewportStyle} ref={viewportRef}>
+      {children}
+    </div>
+  )
+}
+
+const WindowViewport: FC = ({ children }) => {
+  const windowViewportRect = usePublisher('windowViewportRect')
+  const viewportRef = useWindowViewportRectRef(windowViewportRect)
+
+  return (
+    <div ref={viewportRef} style={viewportStyle}>
+      {children}
+    </div>
+  )
+}
+
+const GridRoot: FC<GridRootProps> = React.memo(function GridRoot({ ...props }) {
+  const useWindowScroll = useEmitterValue('useWindowScroll')
+  const TheScroller = useWindowScroll ? WindowScroller : Scroller
+  const TheViewport = useWindowScroll ? WindowViewport : Viewport
+
+  return (
+    <TheScroller {...props}>
+      <TheViewport>
         <GridItems />
-      </div>
-    </Scroller>
+      </TheViewport>
+    </TheScroller>
   )
 })
 
@@ -152,6 +176,7 @@ const { Component: Grid, usePublisher, useEmitterValue, useEmitter } = systemToC
       scrollSeekConfiguration: 'scrollSeekConfiguration',
       listClassName: 'listClassName',
       itemClassName: 'itemClassName',
+      useWindowScroll: 'useWindowScroll',
 
       // deprecated
       item: 'item',
@@ -183,3 +208,4 @@ export type GridHandle = RefHandle<typeof Grid>
 export { Grid }
 
 const Scroller = buildScroller({ usePublisher, useEmitterValue, useEmitter })
+const WindowScroller = buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })

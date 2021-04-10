@@ -1,4 +1,4 @@
-import { system, tup, connect } from '@virtuoso.dev/urx'
+import * as u from '@virtuoso.dev/urx'
 import { domIOSystem } from './domIOSystem'
 import { followOutputSystem } from './followOutputSystem'
 import { groupedListSystem } from './groupedListSystem'
@@ -19,7 +19,7 @@ import { windowScrollerSystem } from './windowScrollerSystem'
 
 // workaround the growing list of systems below
 // fix this with 4.1 recursive conditional types
-const featureGroup1System = system(
+const featureGroup1System = u.system(
   ([sizeRange, initialItemCount, propsReady, scrollSeek, totalListHeight, initialScrollTopSystem, alignToBottom, windowScroller]) => {
     return {
       ...sizeRange,
@@ -32,7 +32,7 @@ const featureGroup1System = system(
       ...windowScroller,
     }
   },
-  tup(
+  u.tup(
     sizeRangeSystem,
     initialItemCountSystem,
     propsReadySystem,
@@ -44,7 +44,7 @@ const featureGroup1System = system(
   )
 )
 
-export const listSystem = system(
+export const listSystem = u.system(
   ([
     { totalCount, sizeRanges, fixedItemSize, defaultItemSize, trackItemSizes, data, firstItemIndex, groupIndices },
     { initialTopMostItemIndex, scrolledToInitialItem },
@@ -57,7 +57,8 @@ export const listSystem = system(
     { groupCounts },
     featureGroup1,
   ]) => {
-    connect(flags.rangeChanged, featureGroup1.scrollSeekRangeChanged)
+    u.connect(flags.rangeChanged, featureGroup1.scrollSeekRangeChanged)
+    u.connect(u.pipe(featureGroup1.windowViewportRect, u.map(u.prop('visibleHeight'))), domIO.viewportHeight)
 
     return {
       // input
@@ -87,7 +88,7 @@ export const listSystem = system(
       ...domIO,
     }
   },
-  tup(
+  u.tup(
     sizeSystem,
     initialTopMostItemIndexSystem,
     domIOSystem,

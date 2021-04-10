@@ -6,6 +6,7 @@ import { scrollSeekSystem } from './scrollSeekSystem'
 import { IndexLocation, normalizeIndexLocation } from './scrollToIndexSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
+import { windowScrollerSystem } from './windowScrollerSystem'
 
 export interface ElementDimensions {
   width: number
@@ -65,6 +66,7 @@ export const gridSystem = u.system(
     stateFlags,
     scrollSeek,
     { propsReady, didMount },
+    { windowViewportRect, windowScrollTo, useWindowScroll, windowScrollTop },
   ]) => {
     const totalCount = u.statefulStream(0)
     const initialItemCount = u.statefulStream(0)
@@ -229,6 +231,24 @@ export const gridSystem = u.system(
       scrollTo
     )
 
+    const totalListHeight = u.statefulStreamFromEmitter(
+      u.pipe(
+        gridState,
+        u.map((gridState) => {
+          return gridState.offsetBottom + gridState.bottom
+        })
+      ),
+      0
+    )
+
+    u.connect(
+      u.pipe(
+        windowViewportRect,
+        u.map((viewportInfo) => ({ width: viewportInfo.visibleWidth, height: viewportInfo.visibleHeight }))
+      ),
+      viewportDimensions
+    )
+
     return {
       // input
       totalCount,
@@ -239,11 +259,16 @@ export const gridSystem = u.system(
       scrollBy,
       scrollTo,
       scrollToIndex,
+      windowViewportRect,
+      windowScrollTo,
+      useWindowScroll,
+      windowScrollTop,
       initialItemCount,
       ...scrollSeek,
 
       // output
       gridState,
+      totalListHeight,
       ...stateFlags,
       startReached,
       endReached,
@@ -251,7 +276,7 @@ export const gridSystem = u.system(
       propsReady,
     }
   },
-  u.tup(sizeRangeSystem, domIOSystem, stateFlagsSystem, scrollSeekSystem, propsReadySystem)
+  u.tup(sizeRangeSystem, domIOSystem, stateFlagsSystem, scrollSeekSystem, propsReadySystem, windowScrollerSystem)
 )
 
 function gridLayout(viewport: ElementDimensions, item: ElementDimensions, items: GridItem[]): GridLayout {

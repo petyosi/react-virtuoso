@@ -182,7 +182,7 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
   alignToBottom?: boolean
 
   /**
-   * Experimental - uses the document scroller rather than wrapping the list in its own.
+   * Uses the document scroller rather than wrapping the list in its own.
    */
   useWindowScroll?: boolean
 
@@ -293,6 +293,11 @@ export interface VirtuosoGridProps extends GridProps {
    * Sets the grid items' className
    */
   itemClassName?: string
+
+  /**
+   * Uses the document scroller rather than wrapping the grid in its own.
+   */
+  useWindowScroll?: boolean
 }
 
 export interface VirtuosoHandle extends ListHandle {
