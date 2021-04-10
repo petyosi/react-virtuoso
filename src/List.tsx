@@ -61,6 +61,7 @@ const listComponentPropsSystem = system(() => {
     scrollerRef,
     FooterComponent: distinctProp('Footer'),
     HeaderComponent: distinctProp('Header'),
+    TopItemListComponent: distinctProp('TopItemList'),
     ListComponent: distinctProp('List', 'div'),
     ItemComponent: distinctProp('Item', 'div'),
     GroupComponent: distinctProp('Group', 'div'),
@@ -370,9 +371,10 @@ const WindowViewport: FC = ({ children }) => {
 }
 
 const TopItemListContainer: FC = ({ children }) => {
+  const TopItemList = useEmitterValue('TopItemListComponent')
   const headerHeight = useEmitterValue('headerHeight')
-
-  return <div style={{ ...topItemListStyle, marginTop: `${headerHeight}px` }}>{children}</div>
+  const style = { ...topItemListStyle, marginTop: `${headerHeight}px` }
+  return createElement(TopItemList || 'div', { style }, children)
 }
 
 const ListRoot: FC<ListRootProps> = React.memo(function VirtuosoRoot(props) {

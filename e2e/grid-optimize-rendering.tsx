@@ -35,10 +35,10 @@ const ItemWrapper = styled.div`
   }
 `
 
-const ListContainer: GridComponents['List'] = styled.div`
+const ListContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
-`
+` as GridComponents['List']
 
 const Item = React.memo<any>(({ item }: { item: { index: number; selected: boolean } }) => {
   console.log(`rendering Item ${item.index}`)
