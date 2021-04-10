@@ -6,7 +6,10 @@ export default function useWindowViewportRectRef(callback: (info: WindowViewport
   const viewportInfo = useRef<WindowViewportInfo | null>(null)
 
   const calculateInfo = useCallback(
-    (element: HTMLElement) => {
+    (element: HTMLElement | null) => {
+      if (element === null) {
+        return
+      }
       const rect = element.getBoundingClientRect()
       const visibleHeight = Math.min(window.innerHeight - Math.max(0, rect.top), rect.bottom)
       const visibleWidth = rect.width
@@ -24,7 +27,7 @@ export default function useWindowViewportRectRef(callback: (info: WindowViewport
   const { callbackRef, ref } = useSizeWithElRef(calculateInfo)
 
   const windowEH = useCallback(() => {
-    calculateInfo(ref.current!)
+    calculateInfo(ref.current)
   }, [calculateInfo, ref])
 
   useEffect(() => {
