@@ -29,6 +29,8 @@ export interface GroupProps {
   'data-known-size': number
 }
 
+export type TopItemListProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children'>
+
 /**
  * Passed to the Components.List custom component
  */
@@ -74,6 +76,12 @@ export interface Components {
    * Set to customize the group item wrapping element. Use only if you would like to render list from elements different than a `div`.
    */
   Group?: ComponentType<GroupProps>
+
+  /**
+   * Set to customize the top list item wrapping element. Use if you would like to render list from elements different than a `div`
+   * or you want to set a custom z-index for the sticky position.
+   */
+  TopItemList?: ComponentType<TopItemListProps>
 
   /**
    * Set to customize the outermost scrollable element. This should not be necessary in general,
