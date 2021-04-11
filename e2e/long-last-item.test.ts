@@ -1,4 +1,4 @@
-describe('list with hundred items', () => {
+describe('list with a long last item', () => {
   beforeEach(async () => {
     await page.goto('http://localhost:1234/long-last-item')
     await page.waitForSelector('#test-root')
@@ -19,7 +19,7 @@ describe('list with hundred items', () => {
       scroller.scrollBy({ top: -2 })
     })
 
-    await page.waitForTimeout(100)
+    await page.waitForTimeout(200)
 
     const scrollTop = await page.evaluate(() => {
       return document.querySelector('#test-root > div')!.scrollTop
