@@ -339,7 +339,7 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
     return createElement(
       ScrollerComponent,
       {
-        style: { position: 'relative', ...style, height: totalListHeight },
+        style: { position: 'relative', ...style, ...(totalListHeight !== 0 ? { height: totalListHeight } : {}) },
         ...props,
       },
       children
