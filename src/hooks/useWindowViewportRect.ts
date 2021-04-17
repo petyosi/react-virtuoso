@@ -11,7 +11,8 @@ export default function useWindowViewportRectRef(callback: (info: WindowViewport
         return
       }
       const rect = element.getBoundingClientRect()
-      const visibleHeight = Math.min(window.innerHeight - Math.max(0, rect.top), rect.bottom)
+      const visibleHeight = window.innerHeight - Math.max(0, rect.top)
+
       const visibleWidth = rect.width
       const offsetTop = rect.top + window.pageYOffset
       viewportInfo.current = {
