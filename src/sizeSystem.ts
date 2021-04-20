@@ -1,5 +1,5 @@
 import * as u from '@virtuoso.dev/urx'
-import { arrayToRanges, AANode, empty, find, findMaxKeyValue, insert, newTree, Range, rangesWithin, remove, walk } from './AATree'
+import { arrayToRanges, AANode, empty, findMaxKeyValue, insert, newTree, Range, rangesWithin, remove, walk } from './AATree'
 import * as arrayBinarySearch from './utils/binaryArraySearch'
 
 export interface SizeRange {
@@ -165,15 +165,15 @@ export function sizeStateReducer(state: SizeState, [ranges, groupIndices]: [Size
     const kv = findMaxKeyValue(newSizeTree, syncStart - 1)
     prevIndex = kv[0]
     prevSize = kv[1]!
+
+    if (offsetTree.length && offsetTree[startAIndex].size === findMaxKeyValue(newSizeTree, syncStart)[1]) {
+      startAIndex -= 1
+    }
+
+    offsetTree = offsetTree.slice(0, startAIndex + 1)
   } else {
-    prevSize = find(newSizeTree, 0)!
+    offsetTree = []
   }
-
-  if (offsetTree.length && offsetTree[startAIndex].size === findMaxKeyValue(newSizeTree, syncStart)[1]) {
-    startAIndex -= 1
-  }
-
-  offsetTree = offsetTree.slice(0, startAIndex + 1)
 
   for (const { start: startIndex, value } of rangesWithin(newSizeTree, syncStart, Infinity)) {
     const aOffset = (startIndex - prevIndex) * prevSize + prevAOffset

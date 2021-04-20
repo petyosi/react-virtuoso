@@ -185,7 +185,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const paddingTopAddition = useEmitterValue('paddingTopAddition')
   const scrolledToInitialItem = useEmitterValue('scrolledToInitialItem')
 
-  const calculatedHeight = listState.offsetBottom + listState.bottom
+  // const calculatedHeight = listState.offsetBottom + listState.bottom
   const containerStyle: CSSProperties = showTopList
     ? {}
     : {
@@ -193,7 +193,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
         paddingTop: listState.offsetTop + paddingTopAddition,
         paddingBottom: listState.offsetBottom,
         marginTop: deviation,
-        height: calculatedHeight,
+        // height: calculatedHeight,
       }
 
   if (!showTopList && listState.items.length === 0 && EmptyPlaceholder && scrolledToInitialItem) {
