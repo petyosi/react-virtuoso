@@ -177,6 +177,7 @@ const { Component: Grid, usePublisher, useEmitterValue, useEmitter } = systemToC
       listClassName: 'listClassName',
       itemClassName: 'itemClassName',
       useWindowScroll: 'useWindowScroll',
+      scrollerRef: 'scrollerRef',
 
       // deprecated
       item: 'item',
