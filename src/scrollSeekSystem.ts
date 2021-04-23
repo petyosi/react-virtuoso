@@ -40,7 +40,9 @@ export const scrollSeekSystem = system(
       pipe(
         scrollTop,
         throttleTime(100),
-        scan(([_, prev], next) => [prev, next], [0, 0]),
+        withLatestFrom(isScrolling),
+        filter(([_, isScrolling]) => !!isScrolling),
+        scan(([_, prev], [next]) => [prev, next], [0, 0]),
         map(([prev, next]) => next - prev)
       ),
       scrollVelocity
