@@ -72,7 +72,7 @@ export default function App() {
       <button id="start-30" onClick={() => ref.current!.scrollToIndex({ index: 30, align: 'start' })}>
         Start 30
       </button>
-      <button id="center-50" onClick={() => ref.current!.scrollToIndex({ index: 50, align: 'center' })}>
+      <button id="center-50" onClick={() => ref.current!.scrollToIndex({ index: 50, align: 'center', behavior: 'smooth' })}>
         Center 50
       </button>
       <button id="end-99" onClick={() => ref.current!.scrollToIndex({ index: 99, align: 'end' })}>
