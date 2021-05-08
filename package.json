@@ -78,7 +78,7 @@
     "jest": "^26.6.3",
     "jest-playwright-preset": "^1.4.4",
     "jsdom": "^16.4.0",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "microbundle": "^0.13.0",
     "parcel": "^1.12.4",
     "parcel-bundler": "^1.12.4",
