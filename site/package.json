@@ -25,7 +25,7 @@
     "@types/react": "link:../node_modules/@types/react",
     "clsx": "^1.1.1",
     "faker": "^5.1.0",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "react-sortable-hoc": "^1.11.0"
   },
   "devDependencies": {
