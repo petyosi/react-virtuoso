@@ -1,0 +1,8 @@
+blank_issues_enabled: false # force the usage of a template
+contact_links:
+  - name: Support and consulting
+    url: mailto:petyo.ivanov@icloud.com
+    about: I have troubles integrating React Virtuoso in my project and I need dedicated assistance with it.
+  - name: Feature Request
+    url: mailto:petyo.ivanov@icloud.com
+    about: I need to implement something which React Virtuoso does not support currently.
