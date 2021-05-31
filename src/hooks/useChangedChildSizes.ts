@@ -1,11 +1,7 @@
-import { SizeRange } from '../sizeSystem'
+import { SizeFunction, SizeRange } from '../sizeSystem'
 import useSize from './useSize'
 
-export default function useChangedChildSizes(
-  callback: (ranges: SizeRange[]) => void,
-  itemSize: (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number,
-  enabled: boolean
-) {
+export default function useChangedChildSizes(callback: (ranges: SizeRange[]) => void, itemSize: SizeFunction, enabled: boolean) {
   return useSize((el: HTMLElement) => {
     const ranges = getChangedChildSizes(el.children, itemSize, 'offsetHeight')
     if (ranges !== null) {
@@ -14,11 +10,7 @@ export default function useChangedChildSizes(
   }, enabled)
 }
 
-function getChangedChildSizes(
-  children: HTMLCollection,
-  itemSize: (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number,
-  field: 'offsetHeight' | 'offsetWidth'
-) {
+function getChangedChildSizes(children: HTMLCollection, itemSize: SizeFunction, field: 'offsetHeight' | 'offsetWidth') {
   const length = children.length
 
   if (length === 0) {

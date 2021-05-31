@@ -227,7 +227,7 @@ export function hasGroups(sizes: SizeState) {
 }
 
 type OptionalNumber = number | undefined
-type SizeFunction = (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number
+export type SizeFunction = (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number
 
 export const sizeSystem = u.system(
   () => {
