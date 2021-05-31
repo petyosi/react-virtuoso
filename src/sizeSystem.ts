@@ -227,6 +227,8 @@ export function hasGroups(sizes: SizeState) {
 }
 
 type OptionalNumber = number | undefined
+
+/** Calculates the height of `el`, which will be the `Item` element in the DOM. */
 export type SizeFunction = (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number
 
 export const sizeSystem = u.system(
