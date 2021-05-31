@@ -1,16 +1,24 @@
 import { SizeRange } from '../sizeSystem'
 import useSize from './useSize'
 
-export default function useChangedChildSizes(callback: (ranges: SizeRange[]) => void, enabled: boolean) {
+export default function useChangedChildSizes(
+  callback: (ranges: SizeRange[]) => void,
+  itemSize: (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number,
+  enabled: boolean
+) {
   return useSize((el: HTMLElement) => {
-    const ranges = getChangedChildSizes(el.children, 'offsetHeight')
+    const ranges = getChangedChildSizes(el.children, itemSize, 'offsetHeight')
     if (ranges !== null) {
       callback(ranges)
     }
   }, enabled)
 }
 
-function getChangedChildSizes(children: HTMLCollection, field: 'offsetHeight' | 'offsetWidth') {
+function getChangedChildSizes(
+  children: HTMLCollection,
+  itemSize: (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number,
+  field: 'offsetHeight' | 'offsetWidth'
+) {
   const length = children.length
 
   if (length === 0) {
@@ -28,7 +36,12 @@ function getChangedChildSizes(children: HTMLCollection, field: 'offsetHeight' | 
 
     const index = parseInt(child.dataset.index!)
     const knownSize = parseInt(child.dataset.knownSize!)
-    const size = child[field]
+    const size = itemSize(child, field)
+    // If size is zero, we might be in a CSS Grid that's using `display: contents`
+    // on the Item and/or itemContent or both, so look up to 2 levels down for the 1st cell.
+    // for (let i = 0, current = child.firstElementChild; i < 2 && size === 0 && current; i++, current = current.firstElementChild) {
+    //   size = (current as HTMLElement)[field]
+    // }
 
     if (size === 0) {
       throw new Error('Zero-sized element, this should not happen')
