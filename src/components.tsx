@@ -88,6 +88,13 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
   defaultItemHeight?: number
 
   /**
+   * Allows customizing the height/width calculation of `Item` elements.
+   *
+   * The default implementation reads `el.offsetHeight` and `el.offsetWidth`.
+   */
+  itemSize?: (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number
+
+  /**
    * Can be used to improve performance if the rendered items are of known size.
    * Setting it causes the component to skip item measurements.
    */

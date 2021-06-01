@@ -1,16 +1,16 @@
-import { SizeRange } from '../sizeSystem'
+import { SizeFunction, SizeRange } from '../sizeSystem'
 import useSize from './useSize'
 
-export default function useChangedChildSizes(callback: (ranges: SizeRange[]) => void, enabled: boolean) {
+export default function useChangedChildSizes(callback: (ranges: SizeRange[]) => void, itemSize: SizeFunction, enabled: boolean) {
   return useSize((el: HTMLElement) => {
-    const ranges = getChangedChildSizes(el.children, 'offsetHeight')
+    const ranges = getChangedChildSizes(el.children, itemSize, 'offsetHeight')
     if (ranges !== null) {
       callback(ranges)
     }
   }, enabled)
 }
 
-function getChangedChildSizes(children: HTMLCollection, field: 'offsetHeight' | 'offsetWidth') {
+function getChangedChildSizes(children: HTMLCollection, itemSize: SizeFunction, field: 'offsetHeight' | 'offsetWidth') {
   const length = children.length
 
   if (length === 0) {
@@ -28,7 +28,7 @@ function getChangedChildSizes(children: HTMLCollection, field: 'offsetHeight' | 
 
     const index = parseInt(child.dataset.index!)
     const knownSize = parseInt(child.dataset.knownSize!)
-    const size = child[field]
+    const size = itemSize(child, field)
 
     if (size === 0) {
       throw new Error('Zero-sized element, this should not happen')

@@ -172,8 +172,9 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const itemContent = useEmitterValue('itemContent')
   const groupContent = useEmitterValue('groupContent')
   const trackItemSizes = useEmitterValue('trackItemSizes')
+  const itemSize = useEmitterValue('itemSize')
 
-  const ref = useChangedChildSizes(sizeRanges, trackItemSizes)
+  const ref = useChangedChildSizes(sizeRanges, itemSize, trackItemSizes)
   const EmptyPlaceholder = useEmitterValue('EmptyPlaceholder')
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder') || DefaultScrollSeekPlaceholder
   const ListComponent = useEmitterValue('ListComponent')!
@@ -418,6 +419,7 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
       computeItemKey: 'computeItemKey',
       defaultItemHeight: 'defaultItemHeight',
       fixedItemHeight: 'fixedItemHeight',
+      itemSize: 'itemSize',
       scrollSeekConfiguration: 'scrollSeekConfiguration',
       headerFooterTag: 'headerFooterTag',
       data: 'data',

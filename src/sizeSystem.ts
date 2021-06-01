@@ -227,6 +227,10 @@ export function hasGroups(sizes: SizeState) {
 }
 
 type OptionalNumber = number | undefined
+
+/** Calculates the height of `el`, which will be the `Item` element in the DOM. */
+export type SizeFunction = (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number
+
 export const sizeSystem = u.system(
   () => {
     const sizeRanges = u.stream<SizeRange[]>()
@@ -236,6 +240,7 @@ export const sizeSystem = u.system(
     const groupIndices = u.statefulStream([] as number[])
     const fixedItemSize = u.statefulStream<OptionalNumber>(undefined)
     const defaultItemSize = u.statefulStream<OptionalNumber>(undefined)
+    const itemSize = u.statefulStream<SizeFunction>((el, field) => el[field])
     const data = u.statefulStream<Data>(undefined)
     const initial = initialSizeState()
 
@@ -384,6 +389,7 @@ export const sizeSystem = u.system(
       sizes,
       listRefresh,
       trackItemSizes,
+      itemSize,
     }
   },
   [],
