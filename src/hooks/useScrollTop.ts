@@ -61,7 +61,7 @@ export default function useScrollTop(
 
     if (scrollerElement === window) {
       // this is not a mistake
-      scrollHeight = document.documentElement.offsetHeight
+      scrollHeight = Math.max(document.documentElement.offsetHeight, document.documentElement.scrollHeight)
       offsetHeight = window.innerHeight
       scrollTop = document.documentElement.scrollTop
     } else {
