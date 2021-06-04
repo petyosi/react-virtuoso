@@ -185,6 +185,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const hasGroups = useEmitterValue('groupIndices').length > 0
   const paddingTopAddition = useEmitterValue('paddingTopAddition')
   const scrolledToInitialItem = useEmitterValue('scrolledToInitialItem')
+  const firstItemIndex = useEmitterValue('firstItemIndex')
 
   // const calculatedHeight = listState.offsetBottom + listState.bottom
   const containerStyle: CSSProperties = showTopList
@@ -206,7 +207,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
     { ref, style: containerStyle },
     (showTopList ? listState.topItems : listState.items).map((item) => {
       const index = item.originalIndex!
-      const key = computeItemKey(index)
+      const key = computeItemKey(index + firstItemIndex || 0)
 
       if (isSeeking) {
         return createElement(ScrollSeekPlaceholder, { key, index: item.index, height: item.size })
