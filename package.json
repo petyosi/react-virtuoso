@@ -28,7 +28,7 @@
   ],
   "scripts": {
     "start": "microbundle watch --raw --no-sourcemap --strict --no-compress --jsx React.createElement --format=cjs,esm",
-    "build": "microbundle --strict --jsx React.createElement --format=cjs,esm",
+    "build": "microbundle --strict --jsx React.createElement --format=cjs,esm src/index.tsx",
     "test": "jest --passWithNoTests",
     "e2e": "jest --config jest.e2e.config.js --run-in-band --passWithNoTests",
     "lint": "eslint src test e2e --ext .ts,.tsx",
