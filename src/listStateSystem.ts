@@ -1,6 +1,5 @@
 import * as u from '@virtuoso.dev/urx'
 import { empty, findMaxKeyValue, Range, rangesWithin } from './AATree'
-import { domIOSystem } from './domIOSystem'
 import { groupedListSystem } from './groupedListSystem'
 import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
 import { Item, ListItem, ListRange } from './interfaces'
@@ -136,7 +135,6 @@ export function buildListState(
 
 export const listStateSystem = u.system(
   ([
-    { statefulScrollTop, headerHeight },
     { sizes, totalCount, data, firstItemIndex },
     groupedListSystem,
     { visibleRange, listBoundary, topListHeight: rangeTopListHeight },
@@ -213,16 +211,13 @@ export const listStateSystem = u.system(
               return buildListState([], topItems, totalCount, sizesValue, firstItemIndex)
             }
 
-            // pull a fresh top group, avoids a bug where
-            // scrolling up too fast causes stack overflow
-            if (hasGroups(sizesValue)) {
-              const scrollTop = Math.max(u.getValue(statefulScrollTop) - u.getValue(headerHeight), 0)
-              topItemsIndexes = [findMaxKeyValue(sizesValue.groupOffsetTree, scrollTop, 'v')[0]]
-            }
-
             const minStartIndex = topItemsIndexes.length > 0 ? topItemsIndexes[topItemsIndexes.length - 1] + 1 : 0
 
             const offsetPointRanges = rangesWithinOffsets(offsetTree, startOffset, endOffset, minStartIndex)
+            if (offsetPointRanges.length === 0) {
+              return null
+            }
+
             const maxIndex = totalCount - 1
 
             const items = u.tap([] as Item<any>[], (result) => {
@@ -258,6 +253,8 @@ export const listStateSystem = u.system(
             return buildListState(items, topItems, totalCount, sizesValue, firstItemIndex)
           }
         ),
+        //@ts-expect-error filter needs to be fixed
+        u.filter((value) => value !== null),
         u.distinctUntilChanged()
       ),
       EMPTY_LIST_STATE
@@ -333,7 +330,6 @@ export const listStateSystem = u.system(
     return { listState, topItemsIndexes, endReached, startReached, rangeChanged, itemsRendered, ...stateFlags }
   },
   u.tup(
-    domIOSystem,
     sizeSystem,
     groupedListSystem,
     sizeRangeSystem,
