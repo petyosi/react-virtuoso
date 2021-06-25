@@ -22,12 +22,13 @@ module.exports = {
       'react-sortable-hoc',
       'react-beautiful-dnd',
       'window-scrolling',
+      'react-beautiful-dnd-window-scroller',
     ],
     'Customize Markup': ['custom-scroll-container', 'customize-structure'],
     Grid: ['grid-responsive-columns'],
     'API Reference': ['virtuoso-api-reference', 'virtuoso-grid-api-reference'],
     Interfaces: require('./typedoc-sidebar.js')[3].items.filter(
-      item => !/handle|virtuosoprops|virtuosogridprops|groupedvirtuosoprops/.test(item)
+      (item) => !/handle|virtuosoprops|virtuosogridprops|groupedvirtuosoprops/.test(item)
     ),
   },
 }
