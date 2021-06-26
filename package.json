@@ -34,7 +34,7 @@
     "lint": "eslint src test e2e --ext .ts,.tsx",
     "typecheck": "tsc --noEmit && tsc --noEmit -p e2e/tsconfig.json && tsc --noEmit -p test/tsconfig.json",
     "browse-examples": "node e2e/test-cases.mjs && parcel e2e/__examples.html",
-    "prepare": "yarn build",
+    "prepare": "yarn build && husky install",
     "semantic-release": "semantic-release"
   },
   "dependencies": {
@@ -47,6 +47,8 @@
     "react": ">=16"
   },
   "devDependencies": {
+    "@commitlint/cli": "^12.1.4",
+    "@commitlint/config-conventional": "^12.1.4",
     "@emotion/core": "^10.1.0",
     "@emotion/styled": "^10.0.27",
     "@types/faker": "^5.1.4",
@@ -74,7 +76,7 @@
     "eslint-plugin-react": "^7.20.3",
     "eslint-plugin-react-hooks": "^4.0.8",
     "faker": "^5.1.0",
-    "husky": "^4.2.5",
+    "husky": "^6.0.0",
     "jest": "^26.6.3",
     "jest-playwright-preset": "^1.4.4",
     "jsdom": "^16.4.0",
@@ -100,11 +102,6 @@
   },
   "engines": {
     "node": ">=10"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn lint && yarn typecheck"
-    }
   },
   "prettier": {
     "printWidth": 140,
