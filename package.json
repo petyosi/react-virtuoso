@@ -40,7 +40,6 @@
   "dependencies": {
     "@virtuoso.dev/react-urx": "^0.2.5",
     "@virtuoso.dev/urx": "^0.2.5",
-    "react-app-polyfill": "^1.0.6",
     "resize-observer-polyfill": "^1.5.1"
   },
   "peerDependencies": {
