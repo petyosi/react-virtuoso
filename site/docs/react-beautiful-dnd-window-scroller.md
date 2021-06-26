@@ -10,7 +10,7 @@ The example below integrates React Virtuoso with [React Beautiful DND](https://g
 ## List attached to RB DND + Window Scroller
 
 ```jsx live
-;() => {
+() => {
   const [items, setItems] = useState(() => {
     return Array.from({ length: 1000 }, (_, k) => ({
       id: `id:${k}`,
