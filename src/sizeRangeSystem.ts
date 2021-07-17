@@ -44,6 +44,7 @@ export const sizeRangeSystem = u.system(
           let direction: ChangeDirection = NONE
 
           listTop -= deviation
+          listTop += headerHeight
           listBottom -= deviation
 
           if (listTop > scrollTop + topListHeight) {
