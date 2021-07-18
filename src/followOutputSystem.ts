@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import * as u from '@virtuoso.dev/urx'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeSystem } from './sizeSystem'
@@ -29,6 +30,7 @@ export const followOutputSystem = u.system(
     { propsReady, didMount },
   ]) => {
     const followOutput = u.statefulStream<FollowOutput>(false)
+    let pendingScrollHandle: any = null
 
     function scrollToBottom(totalCount: number, followOutputBehavior: FollowOutputScalarType) {
       u.publish(scrollToIndex, {
@@ -40,7 +42,7 @@ export const followOutputSystem = u.system(
 
     u.subscribe(
       u.pipe(
-        u.combineLatest(u.duc(totalCount), didMount),
+        u.combineLatest(u.pipe(u.duc(totalCount), u.skip(1)), didMount),
         u.withLatestFrom(u.duc(followOutput), isAtBottom, scrolledToInitialItem),
         u.map(([[totalCount, didMount], followOutput, isAtBottom, scrolledToInitialItem]) => {
           let shouldFollow = didMount && scrolledToInitialItem
@@ -56,8 +58,14 @@ export const followOutputSystem = u.system(
         u.filter(({ shouldFollow }) => shouldFollow)
       ),
       ({ totalCount, followOutputBehavior }) => {
-        u.handleNext(listRefresh, () => {
+        if (pendingScrollHandle) {
+          pendingScrollHandle()
+          pendingScrollHandle = null
+        }
+
+        pendingScrollHandle = u.handleNext(listRefresh, () => {
           scrollToBottom(totalCount, followOutputBehavior)
+          pendingScrollHandle = null
         })
       }
     )
@@ -77,7 +85,7 @@ export const followOutputSystem = u.system(
       ),
       ([, followOutput, totalCount]) => {
         const cancel = u.handleNext(atBottomState, (state) => {
-          if (followOutput && !state.atBottom && state.notAtBottomBecause === 'SIZE_INCREASED') {
+          if (followOutput && !state.atBottom && state.notAtBottomBecause === 'SIZE_INCREASED' && !pendingScrollHandle) {
             scrollToBottom(totalCount, 'auto')
           }
         })
