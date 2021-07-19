@@ -47,11 +47,11 @@ export const sizeRangeSystem = u.system(
           listTop += headerHeight
           listBottom -= deviation
 
-          if (listTop > scrollTop + topListHeight) {
+          if (listTop > scrollTop + headerHeight + topListHeight) {
             direction = UP
           }
 
-          if (listBottom < scrollTop + viewportHeight) {
+          if (listBottom < scrollTop + headerHeight + viewportHeight) {
             direction = DOWN
           }
 
