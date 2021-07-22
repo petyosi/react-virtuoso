@@ -6,7 +6,7 @@ import { createElement, FC } from 'react'
 import { gridSystem } from './gridSystem'
 import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
-import { ComputeItemKey, GridComponents, GridItemContent, GridRootProps } from './interfaces'
+import { GridComponents, GridComputeItemKey, GridItemContent, GridRootProps } from './interfaces'
 import { addDeprecatedAlias, buildScroller, buildWindowScroller, identity, viewportStyle } from './List'
 
 const gridComponentPropsSystem = u.system(() => {
@@ -14,7 +14,7 @@ const gridComponentPropsSystem = u.system(() => {
   const components = u.statefulStream<GridComponents>({})
   const itemClassName = u.statefulStream('virtuoso-grid-item')
   const listClassName = u.statefulStream('virtuoso-grid-list')
-  const computeItemKey = u.statefulStream<ComputeItemKey>(identity)
+  const computeItemKey = u.statefulStream<GridComputeItemKey>(identity)
   const scrollerRef = u.statefulStream<(ref: HTMLElement | null) => void>(u.noop)
 
   const distinctProp = <K extends keyof GridComponents>(propName: K, defaultValue: GridComponents[K] | null | 'div' = null) => {
