@@ -37,7 +37,7 @@ const listComponentPropsSystem = system(() => {
   const itemContent = statefulStream<ItemContent<any> | GroupItemContent<any>>((index: number) => `Item ${index}`)
   const groupContent = statefulStream<GroupContent>((index: number) => `Group ${index}`)
   const components = statefulStream<Components>({})
-  const computeItemKey = statefulStream<ComputeItemKey>(identity)
+  const computeItemKey = statefulStream<ComputeItemKey<any>>(identity)
   const headerFooterTag = statefulStream('div')
   const scrollerRef = statefulStream<(ref: HTMLElement | Window | null) => void>(noop)
 
@@ -206,7 +206,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
     { ref, style: containerStyle },
     (showTopList ? listState.topItems : listState.items).map((item) => {
       const index = item.originalIndex!
-      const key = computeItemKey(index)
+      const key = computeItemKey(index, item.data)
 
       if (isSeeking) {
         return createElement(ScrollSeekPlaceholder, { key, index: item.index, height: item.size })

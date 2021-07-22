@@ -74,7 +74,7 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.
    */
-  computeItemKey?: ComputeItemKey
+  computeItemKey?: ComputeItemKey<D>
 
   /**
    * By default, the component assumes the default item height from the first rendered item (rendering it as a "probe").
@@ -245,7 +245,7 @@ export interface VirtuosoGridProps extends GridProps {
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.
    */
-  computeItemKey?: ComputeItemKey
+  computeItemKey?: GridProps['computeItemKey']
 
   /**
    * Use to display placeholders if the user scrolls fast through the list.

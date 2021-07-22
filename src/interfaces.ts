@@ -105,8 +105,8 @@ export interface Components {
   ScrollSeekPlaceholder?: ComponentType<ScrollSeekPlaceholderProps>
 }
 
-export interface ComputeItemKey {
-  (index: number): Key
+export interface ComputeItemKey<D> {
+  (index: number, item: D): Key
 }
 
 export interface ScrollSeekToggle {
@@ -201,6 +201,10 @@ export interface GridComponents {
    * See the `scrollSeekConfiguration` property for more details.
    */
   ScrollSeekPlaceholder?: ComponentType<{ style: CSSProperties }>
+}
+
+export interface GridComputeItemKey {
+  (index: number): Key
 }
 
 export interface GridItemContent {
