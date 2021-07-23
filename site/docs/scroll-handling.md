@@ -5,7 +5,7 @@ sidebar_label: Scroll Handling
 slug: /scroll-handling/
 ---
 
-Loading and rendering complext content while scrolling affects the scrolling performance.
+Loading and rendering complex content while scrolling affects the scrolling performance.
 
 To address that, the Virtuoso component exposes a `scrollingStateChange` event property which gets called when the user starts / stops scrolling.
 The callback receives true when the user starts scrolling and false shortly after the last scroll event.
