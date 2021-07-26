@@ -40,25 +40,27 @@ export const sizeRangeSystem = u.system(
           u.duc(deviation)
         ),
         u.map(([scrollTop, viewportHeight, headerHeight, [listTop, listBottom], overscan, topListHeight, deviation]) => {
-          const top = scrollTop - headerHeight - deviation
+          const top = scrollTop - deviation
+          const headerVisible = Math.max(headerHeight - top, 0)
           let direction: ChangeDirection = NONE
 
           listTop -= deviation
           listTop += headerHeight
+          listBottom += headerHeight
           listBottom -= deviation
 
-          if (listTop > scrollTop + headerHeight + topListHeight) {
+          if (listTop > scrollTop + topListHeight) {
             direction = UP
           }
 
-          if (listBottom < scrollTop + headerHeight + viewportHeight) {
+          if (listBottom < scrollTop - headerVisible + viewportHeight) {
             direction = DOWN
           }
 
           if (direction !== NONE) {
             return [
-              Math.max(top - getOverscan(overscan, TOP, direction), 0),
-              top + viewportHeight + getOverscan(overscan, BOTTOM, direction),
+              Math.max(top - headerVisible - getOverscan(overscan, TOP, direction), 0),
+              top - headerVisible + viewportHeight + getOverscan(overscan, BOTTOM, direction),
             ] as NumberTuple
           }
 
