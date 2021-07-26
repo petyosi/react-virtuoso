@@ -59,7 +59,7 @@ export const sizeRangeSystem = u.system(
 
           if (direction !== NONE) {
             return [
-              Math.max(top - headerVisible - getOverscan(overscan, TOP, direction), 0),
+              Math.max(top - headerHeight - getOverscan(overscan, TOP, direction), 0),
               top - headerVisible + viewportHeight + getOverscan(overscan, BOTTOM, direction),
             ] as NumberTuple
           }
