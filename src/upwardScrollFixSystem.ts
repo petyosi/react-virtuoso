@@ -45,7 +45,7 @@ export const upwardScrollFixSystem = u.system(
                       continue
                     }
 
-                    if (item.offset !== prevItem.offset) {
+                    if (item.offset !== prevItem.offset) { // && prevItem.offset < scrollTop or maybe item.offset < scrollTop ?
                       newDev = item.offset - prevItem.offset
                       break
                     }
@@ -53,13 +53,15 @@ export const upwardScrollFixSystem = u.system(
                 }
               }
             }
-
             return [newDev, items] as [number, ListItem<any>[]]
           },
           [0, []] as [number, ListItem<any>[]]
         ),
         u.filter(([amount]) => amount !== 0),
-        u.map(([amount]) => amount)
+        u.map(([amount]) => {
+          console.log('deviationOffset', amount)
+          return amount
+        })
       )
     )
 
@@ -82,6 +84,7 @@ export const upwardScrollFixSystem = u.system(
         u.throttleTime(1)
       ),
       (offset) => {
+        console.log('want to scroll by offset', offset)
         if (offset > 0) {
           u.publish(scrollBy, { top: -offset, behavior: 'auto' })
           u.publish(deviation, 0)
