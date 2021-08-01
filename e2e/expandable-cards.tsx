@@ -22,7 +22,7 @@ const Row = (props: any) => {
         }}
       >
         This is row #{rowIndex} rendered at {Date.now()}
-        <div style={{ height: ex ? '100%' : '2px', overflow: 'hidden' }}>
+        <div style={{ height: ex ? '100%' : rowIndex % 2 === 0 ? '2px' : '35px', overflow: 'hidden' }}>
           <div
             style={{
               background: `#${color}`,
@@ -53,5 +53,13 @@ export default function App() {
       }}
     />
   )
-  return <Virtuoso style={{ height: 900 }} itemsRendered={itemsRendered} totalCount={50} itemContent={itemContent} />
+  return (
+    <Virtuoso
+      style={{ height: 900 }}
+      itemsRendered={itemsRendered}
+      totalCount={500}
+      itemContent={itemContent}
+      initialTopMostItemIndex={100}
+    />
+  )
 }
