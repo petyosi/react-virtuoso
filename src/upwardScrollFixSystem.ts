@@ -18,11 +18,6 @@ export const upwardScrollFixSystem = u.system(
     const deviationOffset = u.streamFromEmitter(
       u.pipe(
         listState,
-        u.withLatestFrom(scrollTop, scrollDirection, scrollingInProgress),
-        u.filter(([, scrollTop, scrollDirection, scrollingInProgress]) => {
-          return !scrollingInProgress && scrollTop !== 0 && scrollDirection === UP
-        }),
-        u.map(([state]) => state),
         u.scan(
           ([, prevItems], { items }) => {
             let newDev = 0
@@ -53,13 +48,18 @@ export const upwardScrollFixSystem = u.system(
                 }
               }
             }
-
             return [newDev, items] as [number, ListItem<any>[]]
           },
           [0, []] as [number, ListItem<any>[]]
         ),
         u.filter(([amount]) => amount !== 0),
-        u.map(([amount]) => amount)
+        u.withLatestFrom(scrollTop, scrollDirection, scrollingInProgress),
+        u.filter(([, scrollTop, scrollDirection, scrollingInProgress]) => {
+          return !scrollingInProgress && scrollTop !== 0 && scrollDirection === UP
+        }),
+        u.map(([[amount]]) => {
+          return amount
+        })
       )
     )
 
