@@ -174,7 +174,7 @@ describe('list engine', () => {
       })
     })
 
-    it('readjusts once when new sizes are reported', () => {
+    it('readjusts once when new sizes are reported', (done) => {
       const DEVIATION = 20
       publish(sti, { index: INDEX, align: 'end' })
 
@@ -185,10 +185,13 @@ describe('list engine', () => {
 
       publish(sr, [{ startIndex: INDEX - 1, endIndex: INDEX - 1, size: SIZE + DEVIATION }])
 
-      expect(sub).toHaveBeenCalledWith({
-        top: INDEX * SIZE - VIEWPORT + SIZE + DEVIATION,
-        behavior: 'auto',
-      })
+      setTimeout(() => {
+        expect(sub).toHaveBeenCalledWith({
+          top: INDEX * SIZE - VIEWPORT + SIZE + DEVIATION,
+          behavior: 'auto',
+        })
+        done()
+      }, 20)
     })
   })
 
