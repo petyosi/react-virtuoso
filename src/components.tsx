@@ -1,4 +1,4 @@
-import React, { ForwardRefExoticComponent, ReactElement, Ref } from 'react'
+import { ForwardRefExoticComponent, ReactElement, Ref } from 'react'
 import { Grid, GridHandle } from './Grid'
 
 import {
@@ -14,7 +14,7 @@ import {
   ScrollSeekConfiguration,
 } from './interfaces'
 import { List, ListHandle } from './List'
-type CompProps<T> = T extends React.ForwardRefExoticComponent<infer R> ? R : never
+type CompProps<T> = T extends ForwardRefExoticComponent<infer R> ? R : never
 type ListProps = CompProps<typeof List>
 type GridProps = CompProps<typeof Grid>
 
