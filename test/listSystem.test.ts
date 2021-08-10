@@ -83,7 +83,7 @@ describe('list engine', () => {
   })
 
   describe('initial index', () => {
-    it('starts from a specified location', () => {
+    it('starts from a specified location', (done) => {
       const INITIAL_INDEX = 300
       const SIZE = 30
       const { propsReady, initialTopMostItemIndex, listState, scrollTop, scrollTo, viewportHeight, totalCount, sizeRanges } = init(
@@ -106,14 +106,17 @@ describe('list engine', () => {
 
       expect(getValue(listState).items).toHaveLength(0)
 
-      expect(sub).toHaveBeenCalledWith({
-        top: INITIAL_INDEX * SIZE,
-        behavior: 'auto',
-      })
+      setTimeout(() => {
+        expect(sub).toHaveBeenCalledWith({
+          top: INITIAL_INDEX * SIZE,
+          behavior: 'auto',
+        })
 
-      // the UI responds by publishing back through the scrollTop stream
-      publish(scrollTop, INITIAL_INDEX * SIZE)
-      expect(getValue(listState).items).toHaveLength(7)
+        // the UI responds by publishing back through the scrollTop stream
+        publish(scrollTop, INITIAL_INDEX * SIZE)
+        expect(getValue(listState).items).toHaveLength(7)
+        done()
+      })
     })
   })
 
@@ -230,27 +233,29 @@ describe('list engine', () => {
 
       expect(getValue(listState).items).toHaveLength(0)
 
-      expect(sub).toHaveBeenCalledWith({
-        top: INITIAL_INDEX * SIZE,
-        behavior: 'auto',
-      })
-
       setTimeout(() => {
-        publish(scrollTop, INITIAL_INDEX * SIZE)
+        expect(sub).toHaveBeenCalledWith({
+          top: INITIAL_INDEX * SIZE,
+          behavior: 'auto',
+        })
 
-        publish(scrollTop, INITIAL_INDEX * SIZE - 2)
+        setTimeout(() => {
+          publish(scrollTop, INITIAL_INDEX * SIZE)
 
-        publish(sizeRanges, [
-          {
-            startIndex: INITIAL_INDEX - 1,
-            endIndex: INITIAL_INDEX - 1,
-            size: SIZE + 40,
-          },
-        ])
+          publish(scrollTop, INITIAL_INDEX * SIZE - 2)
 
-        expect(scrollBySub).toHaveBeenCalledWith(-40)
-        done()
-      }, 2500)
+          publish(sizeRanges, [
+            {
+              startIndex: INITIAL_INDEX - 1,
+              endIndex: INITIAL_INDEX - 1,
+              size: SIZE + 40,
+            },
+          ])
+
+          expect(scrollBySub).toHaveBeenCalledWith(-40)
+          done()
+        }, 2500)
+      })
     })
   })
 
