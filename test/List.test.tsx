@@ -34,7 +34,7 @@ describe('List', () => {
 
     act(() => {
       scroller.triggerScroll(0)
-      viewport.triggerResize({ offsetHeight: 700 })
+      viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
     })
 
     expect(listParent.children).toHaveLength(1)
@@ -57,7 +57,7 @@ describe('List', () => {
 
       act(() => {
         scroller.triggerScroll(0)
-        viewport.triggerResize({ offsetHeight: 700 })
+        viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
         listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 30 }])
       })
     })
@@ -99,7 +99,7 @@ describe('List', () => {
 
       act(() => {
         scroller.triggerScroll(0)
-        viewport.triggerResize({ offsetHeight: 100 })
+        viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
         listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
       })
     })
@@ -131,7 +131,7 @@ describe('List', () => {
 
     act(() => {
       scroller.triggerScroll(0)
-      viewport.triggerResize({ offsetHeight: 100 })
+      viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
       listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
       container.querySelector('button').dispatchEvent(new MouseEvent('click', { bubbles: true }))
     })
@@ -166,7 +166,7 @@ describe('List', () => {
 
     act(() => {
       scroller.triggerScroll(0)
-      viewport.triggerResize({ offsetHeight: 100 })
+      viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
       listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
       container.querySelector('button').dispatchEvent(new MouseEvent('click', { bubbles: true }))
     })

@@ -5,7 +5,6 @@ import {
   getValue,
   map,
   pipe,
-  prop,
   publish,
   statefulStream,
   stream,
@@ -28,6 +27,7 @@ import { Components, ComputeItemKey, GroupContent, GroupItemContent, ItemContent
 import { listSystem } from './listSystem'
 import { positionStickyCssValue } from './utils/positionStickyCssValue'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
+import { correctItemSize } from './utils/correctItemSize'
 
 export function identity<T>(value: T) {
   return value
@@ -268,7 +268,7 @@ const Header: FC = React.memo(function VirtuosoHeader() {
   const Header = useEmitterValue('HeaderComponent')
   const headerHeight = usePublisher('headerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
-  const ref = useSize((el) => headerHeight(el.offsetHeight))
+  const ref = useSize((el) => headerHeight(correctItemSize(el, 'height')))
   return Header ? createElement(headerFooterTag, { ref }, createElement(Header)) : null
 })
 
@@ -276,7 +276,7 @@ const Footer: FC = React.memo(function VirtuosoFooter() {
   const Footer = useEmitterValue('FooterComponent')
   const footerHeight = usePublisher('footerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
-  const ref = useSize((el) => footerHeight(el.offsetHeight))
+  const ref = useSize((el) => footerHeight(correctItemSize(el, 'height')))
   return Footer ? createElement(headerFooterTag, { ref }, createElement(Footer)) : null
 })
 
@@ -351,7 +351,7 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
 
 const Viewport: FC = ({ children }) => {
   const viewportHeight = usePublisher('viewportHeight')
-  const viewportRef = useSize(compose(viewportHeight, prop('offsetHeight')))
+  const viewportRef = useSize(compose(viewportHeight, (el) => correctItemSize(el, 'height')))
 
   return (
     <div style={viewportStyle} ref={viewportRef}>

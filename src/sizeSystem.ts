@@ -1,6 +1,7 @@
 import * as u from '@virtuoso.dev/urx'
 import { arrayToRanges, AANode, empty, findMaxKeyValue, insert, newTree, Range, rangesWithin, remove, walk } from './AATree'
 import * as arrayBinarySearch from './utils/binaryArraySearch'
+import { correctItemSize } from './utils/correctItemSize'
 
 export interface SizeRange {
   startIndex: number
@@ -245,7 +246,7 @@ export const sizeSystem = u.system(
     const groupIndices = u.statefulStream([] as number[])
     const fixedItemSize = u.statefulStream<OptionalNumber>(undefined)
     const defaultItemSize = u.statefulStream<OptionalNumber>(undefined)
-    const itemSize = u.statefulStream<SizeFunction>((el, field) => el.getBoundingClientRect()[SIZE_MAP[field]])
+    const itemSize = u.statefulStream<SizeFunction>((el, field) => correctItemSize(el, SIZE_MAP[field]))
     const data = u.statefulStream<Data>(undefined)
     const initial = initialSizeState()
 

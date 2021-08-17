@@ -102,10 +102,7 @@ const GridItems: FC = React.memo(function GridItems() {
   const listRef = useSize((el) => {
     const firstItem = el.firstChild as HTMLElement
     if (firstItem) {
-      itemDimensions({
-        width: firstItem.offsetWidth,
-        height: firstItem.offsetHeight,
-      })
+      itemDimensions(firstItem.getBoundingClientRect())
     }
   })
 
@@ -125,10 +122,7 @@ const Viewport: FC = ({ children }) => {
   const viewportDimensions = usePublisher('viewportDimensions')
 
   const viewportRef = useSize((el) => {
-    viewportDimensions({
-      width: el.offsetWidth,
-      height: el.offsetHeight,
-    })
+    viewportDimensions(el.getBoundingClientRect())
   })
 
   return (

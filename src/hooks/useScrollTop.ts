@@ -1,5 +1,6 @@
 import { useRef, useCallback, useEffect } from 'react'
 import * as u from '@virtuoso.dev/urx'
+import { correctItemSize } from '../utils/correctItemSize'
 
 export type ScrollerRef = Window | HTMLElement | null
 
@@ -21,7 +22,7 @@ export default function useScrollTop(
       scrollTopCallback(Math.max(scrollTop, 0))
 
       if (scrollTopTarget.current !== null) {
-        if (scrollTop === scrollTopTarget.current || scrollTop <= 0 || scrollTop === el.scrollHeight - el.offsetHeight) {
+        if (scrollTop === scrollTopTarget.current || scrollTop <= 0 || scrollTop === el.scrollHeight - correctItemSize(el, 'height')) {
           scrollTopTarget.current = null
           smoothScrollTargetReached(true)
           if (timeoutRef.current) {
@@ -61,12 +62,12 @@ export default function useScrollTop(
 
     if (scrollerElement === window) {
       // this is not a mistake
-      scrollHeight = Math.max(document.documentElement.offsetHeight, document.documentElement.scrollHeight)
+      scrollHeight = Math.max(correctItemSize(document.documentElement, 'height'), document.documentElement.scrollHeight)
       offsetHeight = window.innerHeight
       scrollTop = document.documentElement.scrollTop
     } else {
       scrollHeight = (scrollerElement as HTMLElement).scrollHeight
-      offsetHeight = (scrollerElement as HTMLElement).offsetHeight
+      offsetHeight = correctItemSize(scrollerElement as HTMLElement, 'height')
       scrollTop = (scrollerElement as HTMLElement).scrollTop
     }
 
