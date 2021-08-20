@@ -53,7 +53,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release
+        run: |
+          rm -rf dist
+          npx semantic-release
 
       - name: Configure GH Access
         if: github.ref == 'refs/heads/master'
