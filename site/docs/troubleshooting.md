@@ -8,6 +8,14 @@ slug: /troubleshooting
 React Virtuoso tries to hide as much complexity as possible, while maintaining sensible behavior with any kind of configuration. 
 The magic has certain limits though, so please check this section if something does not work as you expect.
 
+## List is jumping around or misbehaving
+
+The list relies on measuring the item sizes and dynamically updating its position based on the received data. This is more of an art than science in some use cases, especially when it comes to reverse scrolling. 
+Certain content factors like dynamic content (images, iframes, etc) can cause trouble. 
+
+To get a better sense if this is your case, you can enable debug logging either by setting the `logLevel` property to `LogLevel.DEBUG` or by setting a `globalThis.VIRTUOSO_LOG_LEVEL` to `LogLevel.DEBUG`. Import `LogLevel` from the `react-virtuoso` package.
+Afterwards, set the logging level in your browser to `"all levels"` and observe the messages for unexpected item sizes being reported outside of the normal render cycle. 
+
 ## List does not scroll to the bottom / items jump around
 
 This is the most common setup error. It happens because the DOM elements inside the items (or the items themselves) have margins. 

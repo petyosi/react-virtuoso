@@ -2,6 +2,7 @@ import * as u from '@virtuoso.dev/urx'
 import { arrayToRanges, AANode, empty, findMaxKeyValue, insert, newTree, Range, rangesWithin, remove, walk } from './AATree'
 import * as arrayBinarySearch from './utils/binaryArraySearch'
 import { correctItemSize } from './utils/correctItemSize'
+import { loggerSystem, Log, LogLevel } from './loggerSystem'
 
 export interface SizeRange {
   startIndex: number
@@ -130,7 +131,8 @@ export function rangesWithinOffsets(
   return arrayToRanges(arrayBinarySearch.findRange(tree, startOffset, endOffset, offsetComparator), offsetPointParser)
 }
 
-export function sizeStateReducer(state: SizeState, [ranges, groupIndices]: [SizeRange[], number[]]) {
+export function sizeStateReducer(state: SizeState, [ranges, groupIndices, log]: [SizeRange[], number[], Log]) {
+  log('received item sizes', ranges, LogLevel.DEBUG)
   const sizeTree = state.sizeTree
   let offsetTree = state.offsetTree
   let newSizeTree: AANode<number> = sizeTree
@@ -238,7 +240,7 @@ const SIZE_MAP = {
 export type SizeFunction = (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number
 
 export const sizeSystem = u.system(
-  () => {
+  ([{ log }]) => {
     const sizeRanges = u.stream<SizeRange[]>()
     const totalCount = u.stream<number>()
     const unshiftWith = u.stream<number>()
@@ -251,7 +253,7 @@ export const sizeSystem = u.system(
     const initial = initialSizeState()
 
     const sizes = u.statefulStreamFromEmitter(
-      u.pipe(sizeRanges, u.withLatestFrom(groupIndices), u.scan(sizeStateReducer, initial), u.distinctUntilChanged()),
+      u.pipe(sizeRanges, u.withLatestFrom(groupIndices, log), u.scan(sizeStateReducer, initial), u.distinctUntilChanged()),
       initial
     )
 
@@ -348,6 +350,16 @@ export const sizeSystem = u.system(
       unshiftWith
     )
 
+    u.subscribe(u.pipe(firstItemIndex, u.withLatestFrom(log)), ([index, log]) => {
+      if (index < 0) {
+        log(
+          "`firstItemIndex` prop should not be set to less than zero. If you don't know the total count, just use a very high value",
+          { firstItemIndex },
+          LogLevel.ERROR
+        )
+      }
+    })
+
     // Capture the current list top item before the sizes get refreshed
     const beforeUnshiftWith = u.streamFromEmitter(unshiftWith)
 
@@ -398,6 +410,6 @@ export const sizeSystem = u.system(
       itemSize,
     }
   },
-  [],
+  u.tup(loggerSystem),
   { singleton: true }
 )

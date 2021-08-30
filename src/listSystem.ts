@@ -16,6 +16,7 @@ import { upwardScrollFixSystem } from './upwardScrollFixSystem'
 import { initialScrollTopSystem } from './initialScrollTopSystem'
 import { alignToBottomSystem } from './alignToBottomSystem'
 import { windowScrollerSystem } from './windowScrollerSystem'
+import { loggerSystem } from './loggerSystem'
 
 // workaround the growing list of systems below
 // fix this with 4.1 recursive conditional types
@@ -56,6 +57,7 @@ export const listSystem = u.system(
     { topItemCount },
     { groupCounts },
     featureGroup1,
+    log,
   ]) => {
     u.connect(flags.rangeChanged, featureGroup1.scrollSeekRangeChanged)
     u.connect(u.pipe(featureGroup1.windowViewportRect, u.map(u.prop('visibleHeight'))), domIO.viewportHeight)
@@ -87,6 +89,7 @@ export const listSystem = u.system(
       // the bag of IO from featureGroup1System
       ...featureGroup1,
       ...domIO,
+      ...log,
     }
   },
   u.tup(
@@ -99,6 +102,7 @@ export const listSystem = u.system(
     upwardScrollFixSystem,
     topItemCountSystem,
     groupedListSystem,
-    featureGroup1System
+    featureGroup1System,
+    loggerSystem
   )
 )

@@ -1,16 +1,17 @@
+import { Log, LogLevel } from '../loggerSystem'
 import { SizeFunction, SizeRange } from '../sizeSystem'
 import useSize from './useSize'
 
-export default function useChangedChildSizes(callback: (ranges: SizeRange[]) => void, itemSize: SizeFunction, enabled: boolean) {
+export default function useChangedChildSizes(callback: (ranges: SizeRange[]) => void, itemSize: SizeFunction, enabled: boolean, log: Log) {
   return useSize((el: HTMLElement) => {
-    const ranges = getChangedChildSizes(el.children, itemSize, 'offsetHeight')
+    const ranges = getChangedChildSizes(el.children, itemSize, 'offsetHeight', log)
     if (ranges !== null) {
       callback(ranges)
     }
   }, enabled)
 }
 
-function getChangedChildSizes(children: HTMLCollection, itemSize: SizeFunction, field: 'offsetHeight' | 'offsetWidth') {
+function getChangedChildSizes(children: HTMLCollection, itemSize: SizeFunction, field: 'offsetHeight' | 'offsetWidth', log: Log) {
   const length = children.length
 
   if (length === 0) {
@@ -31,7 +32,7 @@ function getChangedChildSizes(children: HTMLCollection, itemSize: SizeFunction, 
     const size = itemSize(child, field)
 
     if (size === 0) {
-      throw new Error('Zero-sized element, this should not happen')
+      log('Zero-sized element, this should not happen', { child }, LogLevel.ERROR)
     }
 
     if (size === knownSize) {
