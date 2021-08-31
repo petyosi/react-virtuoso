@@ -39,8 +39,7 @@
   },
   "dependencies": {
     "@virtuoso.dev/react-urx": "^0.2.5",
-    "@virtuoso.dev/urx": "^0.2.5",
-    "resize-observer-polyfill": "^1.5.1"
+    "@virtuoso.dev/urx": "^0.2.5"
   },
   "peerDependencies": {
     "react": ">=16"
@@ -91,6 +90,7 @@
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
     "react-test-renderer": "^16.13.1",
+    "resize-observer-polyfill": "^1.5.1",
     "semantic-release": "^17.3.0",
     "ts-jest": "^26.5.1",
     "tslib": "^2.0.0",

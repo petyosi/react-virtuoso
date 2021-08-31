@@ -1,5 +1,7 @@
 import { useRef } from 'react'
-import ResizeObserver from 'resize-observer-polyfill'
+
+// TypeScript 4.1 does not yet include typings for ResizeObserver (4.2 does)
+declare const ResizeObserver: typeof import('resize-observer-polyfill').default
 
 export type CallbackRefParam = HTMLElement | null
 
