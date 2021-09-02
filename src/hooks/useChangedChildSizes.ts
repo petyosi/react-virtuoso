@@ -28,7 +28,7 @@ function getChangedChildSizes(children: HTMLCollection, itemSize: SizeFunction, 
     }
 
     const index = parseInt(child.dataset.index!)
-    const knownSize = parseInt(child.dataset.knownSize!)
+    const knownSize = parseFloat(child.dataset.knownSize!)
     const size = itemSize(child, field)
 
     if (size === 0) {

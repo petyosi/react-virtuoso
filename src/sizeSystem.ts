@@ -132,7 +132,9 @@ export function rangesWithinOffsets(
 }
 
 export function sizeStateReducer(state: SizeState, [ranges, groupIndices, log]: [SizeRange[], number[], Log]) {
-  log('received item sizes', ranges, LogLevel.DEBUG)
+  if (ranges.length > 0) {
+    log('received item sizes', ranges, LogLevel.DEBUG)
+  }
   const sizeTree = state.sizeTree
   let offsetTree = state.offsetTree
   let newSizeTree: AANode<number> = sizeTree
@@ -312,7 +314,9 @@ export const sizeSystem = u.system(
     u.connect(
       u.pipe(
         defaultItemSize,
-        u.filter((value) => value !== undefined),
+        u.filter((value) => {
+          return value !== undefined && empty(u.getValue(sizes).sizeTree)
+        }),
         u.map((size) => [{ startIndex: 0, endIndex: 0, size }] as SizeRange[])
       ),
       sizeRanges

@@ -6,7 +6,7 @@ import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { propsReadySystem } from './propsReadySystem'
 
 export const initialTopMostItemIndexSystem = u.system(
-  ([{ sizes, listRefresh }, { scrollTop }, { scrollToIndex }, { didMount }]) => {
+  ([{ sizes, listRefresh, defaultItemSize }, { scrollTop }, { scrollToIndex }, { didMount }]) => {
     const scrolledToInitialItem = u.statefulStream(true)
     const initialTopMostItemIndex = u.statefulStream(0)
 
@@ -22,10 +22,10 @@ export const initialTopMostItemIndexSystem = u.system(
 
     u.subscribe(
       u.pipe(
-        listRefresh,
-        u.withLatestFrom(scrolledToInitialItem, sizes),
-        u.filter(([, scrolledToInitialItem, { sizeTree }]) => {
-          return !empty(sizeTree) && !scrolledToInitialItem
+        u.combineLatest(listRefresh, didMount),
+        u.withLatestFrom(scrolledToInitialItem, sizes, defaultItemSize),
+        u.filter(([[, didMount], scrolledToInitialItem, { sizeTree }, defaultItemSize]) => {
+          return didMount && (!empty(sizeTree) || defaultItemSize !== undefined) && !scrolledToInitialItem
         }),
         u.withLatestFrom(initialTopMostItemIndex)
       ),
