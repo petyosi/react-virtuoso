@@ -66,6 +66,16 @@ If you need to support reordering, [check the React Sortable HOC example](//virt
 
 For in-depth documentation and live examples of the supported features and live demos, check the [documentation website](//virtuoso.dev).
 
+## Browser support
+
+To support [legacy browsers](https://caniuse.com/resizeobserver), you might have to load a [ResizeObserver Polyfill](https://www.npmjs.com/package/resize-observer-polyfill) before using `react-virtuoso`:
+
+```
+import ResizeObserver from 'resize-observer-polyfill'
+if (!window.ResizeObserver)
+  window.ResizeObserver = ResizeObserver
+```
+
 ## Author
 
 Petyo Ivanov [@petyosi](//twitter.com/petyosi).
