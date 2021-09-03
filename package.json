@@ -32,7 +32,7 @@
     "test": "jest --passWithNoTests",
     "e2e": "jest --config jest.e2e.config.js --run-in-band --passWithNoTests",
     "lint": "eslint src test e2e --ext .ts,.tsx",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p e2e/tsconfig.json && tsc --noEmit -p test/tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "browse-examples": "node e2e/test-cases.mjs && parcel e2e/__examples.html",
     "prepare": "yarn build && husky install",
     "semantic-release": "semantic-release"
@@ -94,7 +94,7 @@
     "semantic-release": "^17.3.0",
     "ts-jest": "^26.5.1",
     "tslib": "^2.0.0",
-    "typescript": "^4.1.4"
+    "typescript": "^4.4.2"
   },
   "resolutions": {
     "@types/react": "^16.14.2"
