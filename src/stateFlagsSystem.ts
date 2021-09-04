@@ -42,7 +42,9 @@ const INITIAL_BOTTOM_STATE = {
   },
 } as AtBottomState
 
-export const stateFlagsSystem = u.system(([{ scrollTop, viewportHeight }]) => {
+const BOTTOM_THRESHOLD_TOLERANCE = 4
+
+export const stateFlagsSystem = u.system(([{ scrollTop, viewportHeight, headerHeight, footerHeight }]) => {
   const isAtBottom = u.statefulStream(false)
   const isAtTop = u.statefulStream(true)
   const atBottomStateChange = u.stream<boolean>()
@@ -70,9 +72,10 @@ export const stateFlagsSystem = u.system(([{ scrollTop, viewportHeight }]) => {
 
   const atBottomState = u.streamFromEmitter(
     u.pipe(
-      u.combineLatest(listStateListener, u.duc(scrollTop), u.duc(viewportHeight)),
-      u.scan((current, [{ bottom, offsetBottom }, scrollTop, viewportHeight]) => {
-        const isAtBottom = offsetBottom === 0 && scrollTop + viewportHeight - bottom > -4
+      u.combineLatest(listStateListener, u.duc(scrollTop), u.duc(viewportHeight), u.duc(headerHeight), u.duc(footerHeight)),
+      u.scan((current, [{ bottom, offsetBottom }, scrollTop, viewportHeight, headerHeight, footerHeight]) => {
+        const viewportContentsHeight = bottom + headerHeight + footerHeight
+        const isAtBottom = offsetBottom === 0 && scrollTop + viewportHeight - viewportContentsHeight > -BOTTOM_THRESHOLD_TOLERANCE
         const state = {
           viewportHeight,
           scrollTop,
