@@ -4,6 +4,10 @@ import { correctItemSize } from '../utils/correctItemSize'
 
 export type ScrollerRef = Window | HTMLElement | null
 
+function approximatelyEqual(num1: number, num2: number) {
+  return Math.abs(num1 - num2) < 1
+}
+
 export default function useScrollTop(
   scrollTopCallback: (scrollTop: number) => void,
   smoothScrollTargetReached: (yes: true) => void,
@@ -74,7 +78,7 @@ export default function useScrollTop(
     // avoid system hanging because the DOM never called back
     // with the scrollTop
     // scroller is already at this location
-    if (offsetHeight === scrollHeight || location.top === scrollTop) {
+    if (approximatelyEqual(offsetHeight, scrollHeight) || location.top === scrollTop) {
       scrollTopCallback(scrollTop)
       if (isSmooth) {
         smoothScrollTargetReached(true)
