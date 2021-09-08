@@ -4,6 +4,7 @@ import { listStateSystem } from './listStateSystem'
 import { sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
 import { ListItem } from './interfaces'
+import { loggerSystem, LogLevel } from './loggerSystem'
 
 /**
  * Fixes upward scrolling by calculating and compensation from changed item heights, using scrollBy.
@@ -14,6 +15,7 @@ export const upwardScrollFixSystem = u.system(
     { isScrolling },
     { listState },
     { beforeUnshiftWith, sizes },
+    { log },
   ]) => {
     const deviationOffset = u.streamFromEmitter(
       u.pipe(
@@ -53,11 +55,12 @@ export const upwardScrollFixSystem = u.system(
           [0, []] as [number, ListItem<any>[]]
         ),
         u.filter(([amount]) => amount !== 0),
-        u.withLatestFrom(scrollTop, scrollDirection, scrollingInProgress),
+        u.withLatestFrom(scrollTop, scrollDirection, scrollingInProgress, log),
         u.filter(([, scrollTop, scrollDirection, scrollingInProgress]) => {
           return !scrollingInProgress && scrollTop !== 0 && scrollDirection === UP
         }),
-        u.map(([[amount]]) => {
+        u.map(([[amount], , , , log]) => {
+          log('Upwards crolling compensation', { amount }, LogLevel.DEBUG)
           return amount
         })
       )
@@ -103,5 +106,5 @@ export const upwardScrollFixSystem = u.system(
 
     return { deviation }
   },
-  u.tup(domIOSystem, stateFlagsSystem, listStateSystem, sizeSystem)
+  u.tup(domIOSystem, stateFlagsSystem, listStateSystem, sizeSystem, loggerSystem)
 )

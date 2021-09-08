@@ -34,7 +34,7 @@ export type TopItemListProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'chi
 /**
  * Passed to the Components.List custom component
  */
-export type ListProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'ref'>
+export type ListProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'ref'> & { 'data-test-id': string }
 
 /**
  * Passed to the Components.List custom component
