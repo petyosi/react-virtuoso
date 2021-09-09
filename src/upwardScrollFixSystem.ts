@@ -60,7 +60,7 @@ export const upwardScrollFixSystem = u.system(
           return !scrollingInProgress && scrollTop !== 0 && scrollDirection === UP
         }),
         u.map(([[amount], , , , log]) => {
-          log('Upwards crolling compensation', { amount }, LogLevel.DEBUG)
+          log('Upward scrolling compensation', { amount }, LogLevel.DEBUG)
           return amount
         })
       )

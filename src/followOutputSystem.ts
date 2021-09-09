@@ -6,6 +6,7 @@ import { stateFlagsSystem } from './stateFlagsSystem'
 import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
 import { FollowOutput, FollowOutputScalarType } from './interfaces'
 import { propsReadySystem } from './propsReadySystem'
+import { loggerSystem, LogLevel } from './loggerSystem'
 
 function normalizeFollowOutput(follow: FollowOutputScalarType): FollowOutputScalarType {
   if (!follow) {
@@ -28,6 +29,7 @@ export const followOutputSystem = u.system(
     { scrollToIndex },
     { scrolledToInitialItem },
     { propsReady, didMount },
+    { log },
   ]) => {
     const followOutput = u.statefulStream<FollowOutput>(false)
     let pendingScrollHandle: any = null
@@ -86,6 +88,7 @@ export const followOutputSystem = u.system(
       ([, followOutput, totalCount]) => {
         const cancel = u.handleNext(atBottomState, (state) => {
           if (followOutput && !state.atBottom && state.notAtBottomBecause === 'SIZE_INCREASED' && !pendingScrollHandle) {
+            u.getValue(log)('scrolling to bottom due to increased size', { totalCount }, LogLevel.DEBUG)
             scrollToBottom(totalCount, 'auto')
           }
         })
@@ -104,5 +107,5 @@ export const followOutputSystem = u.system(
 
     return { followOutput }
   },
-  u.tup(sizeSystem, stateFlagsSystem, scrollToIndexSystem, initialTopMostItemIndexSystem, propsReadySystem)
+  u.tup(sizeSystem, stateFlagsSystem, scrollToIndexSystem, initialTopMostItemIndexSystem, propsReadySystem, loggerSystem)
 )

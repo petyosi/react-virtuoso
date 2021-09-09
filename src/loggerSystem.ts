@@ -24,7 +24,7 @@ const CONSOLE_METHOD_MAP = {
   [LogLevel.INFO]: 'log',
   [LogLevel.WARN]: 'warn',
   [LogLevel.ERROR]: 'error',
-}
+} as const
 
 export const loggerSystem = u.system(
   () => {
@@ -32,9 +32,7 @@ export const loggerSystem = u.system(
     const log = u.statefulStream<Log>((label: string, message: any, level: LogLevel = LogLevel.INFO) => {
       const currentLevel = globalThis['VIRTUOSO_LOG_LEVEL'] ?? u.getValue(logLevel)
       if (level >= currentLevel) {
-        // @ts-expect-error we can call console the way we want
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        console[CONSOLE_METHOD_MAP[level]]('%creact-virutoso: %c%s %o', 'color: #0253b3; font-weight: bold', 'color: black', label, message)
+        console[CONSOLE_METHOD_MAP[level]]('%creact-virtuoso: %c%s %o', 'color: #0253b3; font-weight: bold', 'color: black', label, message)
       }
     })
 

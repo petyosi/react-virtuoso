@@ -4,6 +4,7 @@ import { findMaxKeyValue } from './AATree'
 import { domIOSystem } from './domIOSystem'
 import { offsetOf, originalIndexFromItemIndex, sizeSystem } from './sizeSystem'
 import { IndexLocationWithAlign } from './interfaces'
+import { loggerSystem, LogLevel } from './loggerSystem'
 
 export type IndexLocation = number | IndexLocationWithAlign
 
@@ -28,6 +29,7 @@ export const scrollToIndexSystem = u.system(
   ([
     { sizes, totalCount, listRefresh },
     { scrollingInProgress, viewportHeight, scrollTo, smoothScrollTargetReached, headerHeight, footerHeight },
+    { log },
   ]) => {
     const scrollToIndex = u.stream<IndexLocation>()
     const topListHeight = u.statefulStream(0)
@@ -37,6 +39,7 @@ export const scrollToIndexSystem = u.system(
     let unsubscribeListRefresh: any = null
 
     const cleanup = () => {
+      // u.getValue(log)('cleanup scroll', {}, LogLevel.DEBUG)
       if (unsubscribeNextListRefresh) {
         unsubscribeNextListRefresh()
         unsubscribeNextListRefresh = null
@@ -57,8 +60,8 @@ export const scrollToIndexSystem = u.system(
     u.connect(
       u.pipe(
         scrollToIndex,
-        u.withLatestFrom(sizes, viewportHeight, totalCount, topListHeight, headerHeight, footerHeight),
-        u.map(([location, sizes, viewportHeight, totalCount, topListHeight, headerHeight, footerHeight]) => {
+        u.withLatestFrom(sizes, viewportHeight, totalCount, topListHeight, headerHeight, footerHeight, log),
+        u.map(([location, sizes, viewportHeight, totalCount, topListHeight, headerHeight, footerHeight, log]) => {
           const normalLocation = normalizeIndexLocation(location)
           const { align, behavior, offset } = normalLocation
           const lastIndex = totalCount - 1
@@ -87,6 +90,7 @@ export const scrollToIndexSystem = u.system(
           const retry = (listChanged: boolean) => {
             cleanup()
             if (listChanged) {
+              log('retrying to scroll to', { location }, LogLevel.DEBUG)
               u.publish(scrollToIndex, location)
             } else {
             }
@@ -114,6 +118,7 @@ export const scrollToIndexSystem = u.system(
           }, 1200)
 
           u.publish(scrollingInProgress, true)
+          log('scrolling from index to', { index, top, behavior }, LogLevel.DEBUG)
           return { top, behavior }
         })
       ),
@@ -125,7 +130,7 @@ export const scrollToIndexSystem = u.system(
       topListHeight,
     }
   },
-  u.tup(sizeSystem, domIOSystem),
+  u.tup(sizeSystem, domIOSystem, loggerSystem),
   { singleton: true }
 )
 
