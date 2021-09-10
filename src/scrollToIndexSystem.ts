@@ -93,6 +93,7 @@ export const scrollToIndexSystem = u.system(
               log('retrying to scroll to', { location }, LogLevel.DEBUG)
               u.publish(scrollToIndex, location)
             } else {
+              log('list did not change, scroll successful', {}, LogLevel.DEBUG)
             }
           }
 
