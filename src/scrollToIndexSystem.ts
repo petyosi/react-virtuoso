@@ -109,7 +109,7 @@ export const scrollToIndexSystem = u.system(
               retry(listChanged)
             })
           } else {
-            unsubscribeNextListRefresh = u.handleNext(u.pipe(listRefresh, accumulateChange(0)), retry)
+            unsubscribeNextListRefresh = u.handleNext(u.pipe(listRefresh, watchChangesFor(50)), retry)
           }
 
           // if the scroll jump is too small, the list won't get rerendered.
@@ -135,20 +135,16 @@ export const scrollToIndexSystem = u.system(
   { singleton: true }
 )
 
-function accumulateChange<T>(interval: number): u.Operator<T> {
-  let currentValue: T | undefined
-  let timeout: any
-
-  return (done) => (value) => {
-    currentValue = currentValue || value
-
-    if (timeout) {
-      return
+function watchChangesFor(limit: number): u.Operator<boolean> {
+  return (done) => {
+    const timeoutRef = setTimeout(() => {
+      done(false)
+    }, limit)
+    return (value) => {
+      if (value) {
+        done(true)
+        clearTimeout(timeoutRef)
+      }
     }
-
-    timeout = setTimeout(() => {
-      timeout = undefined
-      done(currentValue!)
-    }, interval)
   }
 }
