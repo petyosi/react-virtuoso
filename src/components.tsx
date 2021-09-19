@@ -14,6 +14,7 @@ import {
   ScrollSeekConfiguration,
 } from './interfaces'
 import { List, ListHandle } from './List'
+import { ScrollIntoViewLocation } from './scrollIntoViewSystem'
 type CompProps<T> = T extends ForwardRefExoticComponent<infer R> ? R : never
 type ListProps = CompProps<typeof List>
 type GridProps = CompProps<typeof Grid>
@@ -320,6 +321,10 @@ export interface VirtuosoHandle extends ListHandle {
    * Scrolls the component to the specified item index. See {{IndexLocationWithAlign}} for more options.
    */
   scrollToIndex(location: number | IndexLocationWithAlign): void
+  /**
+   * Scrolls the item into view if necessary. See [the website example](http://virtuoso.dev/keyboard-navigation/) for an implementation.
+   */
+  scrollIntoView(location: ScrollIntoViewLocation): void
   /**
    * Scrolls the component to the specified location. See [ScrollToOptions (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/ScrollToOptions)
    */

@@ -38,8 +38,7 @@ export const scrollToIndexSystem = u.system(
     let cleartTimeoutRef: any = null
     let unsubscribeListRefresh: any = null
 
-    const cleanup = () => {
-      // u.getValue(log)('cleanup scroll', {}, LogLevel.DEBUG)
+    function cleanup() {
       if (unsubscribeNextListRefresh) {
         unsubscribeNextListRefresh()
         unsubscribeNextListRefresh = null

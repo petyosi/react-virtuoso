@@ -453,6 +453,7 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
     },
     methods: {
       scrollToIndex: 'scrollToIndex',
+      scrollIntoView: 'scrollIntoView',
       scrollTo: 'scrollTo',
       scrollBy: 'scrollBy',
       adjustForPrependedItems: 'adjustForPrependedItems',

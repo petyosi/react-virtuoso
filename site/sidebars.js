@@ -22,6 +22,7 @@ module.exports = {
       'react-sortable-hoc',
       'react-beautiful-dnd',
       'window-scrolling',
+      'keyboard-navigation',
       'react-beautiful-dnd-window-scroller',
     ],
     'Customize Markup': ['custom-scroll-container', 'customize-structure'],
