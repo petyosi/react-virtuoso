@@ -413,6 +413,7 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
       itemContent: 'itemContent',
       groupContent: 'groupContent',
       overscan: 'overscan',
+      increaseViewportBy: 'increaseViewportBy',
       totalCount: 'totalCount',
       topItemCount: 'topItemCount',
       initialTopMostItemIndex: 'initialTopMostItemIndex',

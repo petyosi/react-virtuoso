@@ -8,9 +8,10 @@ export const TOP = 'top' as const
 export const BOTTOM = 'bottom' as const
 export const NONE = 'none' as const
 export type ListEnd = typeof TOP | typeof BOTTOM
+export type ViewportIncrease = number | { [k in ListEnd]?: number }
 export type ChangeDirection = typeof UP | typeof DOWN | typeof NONE
 
-export const getOverscan = (overscan: Overscan, end: ListEnd, direction: ScrollDirection) => {
+export function getOverscan(overscan: Overscan, end: ListEnd, direction: ScrollDirection) {
   if (typeof overscan === 'number') {
     return (direction === UP && end === TOP) || (direction === DOWN && end === BOTTOM) ? overscan : 0
   } else {
@@ -22,10 +23,15 @@ export const getOverscan = (overscan: Overscan, end: ListEnd, direction: ScrollD
   }
 }
 
+function getViewportIncrease(value: ViewportIncrease, end: ListEnd) {
+  return typeof value === 'number' ? value : value[end] || 0
+}
+
 export const sizeRangeSystem = u.system(
   ([{ scrollTop, viewportHeight, deviation, headerHeight }]) => {
     const listBoundary = u.stream<NumberTuple>()
     const topListHeight = u.statefulStream(0)
+    const increaseViewportBy = u.statefulStream<ViewportIncrease>(0)
     const overscan = u.statefulStream<Overscan>(0)
 
     const visibleRange = (u.statefulStreamFromEmitter(
@@ -37,35 +43,40 @@ export const sizeRangeSystem = u.system(
           u.duc(listBoundary, tupleComparator),
           u.duc(overscan),
           u.duc(topListHeight),
-          u.duc(deviation)
+          u.duc(deviation),
+          u.duc(increaseViewportBy)
         ),
-        u.map(([scrollTop, viewportHeight, headerHeight, [listTop, listBottom], overscan, topListHeight, deviation]) => {
-          const top = scrollTop - deviation
-          const headerVisible = Math.max(headerHeight - top, 0)
-          let direction: ChangeDirection = NONE
+        u.map(
+          ([scrollTop, viewportHeight, headerHeight, [listTop, listBottom], overscan, topListHeight, deviation, increaseViewportBy]) => {
+            const top = scrollTop - deviation
+            const headerVisible = Math.max(headerHeight - top, 0)
+            let direction: ChangeDirection = NONE
+            const topViewportAddition = getViewportIncrease(increaseViewportBy, TOP)
+            const bottomViewportAddition = getViewportIncrease(increaseViewportBy, BOTTOM)
 
-          listTop -= deviation
-          listTop += headerHeight
-          listBottom += headerHeight
-          listBottom -= deviation
+            listTop -= deviation
+            listTop += headerHeight
+            listBottom += headerHeight
+            listBottom -= deviation
 
-          if (listTop > scrollTop + topListHeight) {
-            direction = UP
+            if (listTop > scrollTop + topListHeight - topViewportAddition) {
+              direction = UP
+            }
+
+            if (listBottom < scrollTop - headerVisible + viewportHeight + bottomViewportAddition) {
+              direction = DOWN
+            }
+
+            if (direction !== NONE) {
+              return [
+                Math.max(top - headerHeight - getOverscan(overscan, TOP, direction) - topViewportAddition, 0),
+                top - headerVisible + viewportHeight + getOverscan(overscan, BOTTOM, direction) + bottomViewportAddition,
+              ] as NumberTuple
+            }
+
+            return null
           }
-
-          if (listBottom < scrollTop - headerVisible + viewportHeight) {
-            direction = DOWN
-          }
-
-          if (direction !== NONE) {
-            return [
-              Math.max(top - headerHeight - getOverscan(overscan, TOP, direction), 0),
-              top - headerVisible + viewportHeight + getOverscan(overscan, BOTTOM, direction),
-            ] as NumberTuple
-          }
-
-          return null
-        }),
+        ),
         u.filter((value) => value != null),
         u.distinctUntilChanged(tupleComparator as any)
       ),
@@ -77,6 +88,7 @@ export const sizeRangeSystem = u.system(
       listBoundary,
       overscan,
       topListHeight,
+      increaseViewportBy,
 
       // output
       visibleRange,
