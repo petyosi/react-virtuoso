@@ -5,7 +5,7 @@ import { correctItemSize } from '../utils/correctItemSize'
 export type ScrollerRef = Window | HTMLElement | null
 
 function approximatelyEqual(num1: number, num2: number) {
-  return Math.abs(num1 - num2) < 1
+  return Math.abs(num1 - num2) < 1.01
 }
 
 export default function useScrollTop(
