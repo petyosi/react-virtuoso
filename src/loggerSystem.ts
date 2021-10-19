@@ -30,7 +30,7 @@ export const loggerSystem = u.system(
   () => {
     const logLevel = u.statefulStream<LogLevel>(LogLevel.ERROR)
     const log = u.statefulStream<Log>((label: string, message: any, level: LogLevel = LogLevel.INFO) => {
-      const currentLevel = globalThis['VIRTUOSO_LOG_LEVEL'] ?? u.getValue(logLevel)
+      const currentLevel = (globalThis || window)['VIRTUOSO_LOG_LEVEL'] ?? u.getValue(logLevel)
       if (level >= currentLevel) {
         console[CONSOLE_METHOD_MAP[level]]('%creact-virtuoso: %c%s %o', 'color: #0253b3; font-weight: bold', 'color: black', label, message)
       }
