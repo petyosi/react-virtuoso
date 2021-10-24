@@ -54,7 +54,7 @@ export default function useScrollTop(
 
   function scrollToCallback(location: ScrollToOptions) {
     const scrollerElement = scrollerRef.current
-    if (!scrollerElement) {
+    if (!scrollerElement || ('offsetHeight' in scrollerElement && scrollerElement.offsetHeight === 0)) {
       return
     }
 
