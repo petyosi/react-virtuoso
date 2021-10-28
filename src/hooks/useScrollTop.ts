@@ -75,6 +75,9 @@ export default function useScrollTop(
       scrollTop = (scrollerElement as HTMLElement).scrollTop
     }
 
+    const maxScrollTop = scrollHeight - offsetHeight
+    location.top = Math.max(Math.min(maxScrollTop, location.top!), 0)
+
     // avoid system hanging because the DOM never called back
     // with the scrollTop
     // scroller is already at this location
@@ -85,9 +88,6 @@ export default function useScrollTop(
       }
       return
     }
-
-    const maxScrollTop = scrollHeight - offsetHeight
-    location.top = Math.max(Math.min(maxScrollTop, location.top!), 0)
 
     if (isSmooth) {
       scrollTopTarget.current = location.top

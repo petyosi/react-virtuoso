@@ -6,11 +6,11 @@ describe('list with a long last item', () => {
   })
 
   it('starts from the last item', async () => {
-    const itemCount = await page.evaluate(() => {
+    const paddingTop = await page.evaluate(() => {
       const listContainer = document.querySelector('#test-root > div > div > div')
       return (listContainer as HTMLElement).style.paddingTop
     })
-    expect(itemCount).toBe('7200px')
+    expect(paddingTop).toBe('7200px')
   })
 
   it.skip('compensates on upwards scrolling correctly', async () => {
