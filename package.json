@@ -2,7 +2,7 @@
   "name": "react-virtuoso",
   "author": "Petyo Ivanov",
   "sideEffects": false,
-  "version": "0.0.0-development",
+  "version": "2.2.6-beta.2",
   "homepage": "https://virtuoso.dev/",
   "license": "MIT",
   "source": "src/index.tsx",
@@ -38,8 +38,8 @@
     "semantic-release": "semantic-release"
   },
   "dependencies": {
-    "@virtuoso.dev/react-urx": "^0.2.5",
-    "@virtuoso.dev/urx": "^0.2.5"
+    "@virtuoso.dev/react-urx": "^0.2.8",
+    "@virtuoso.dev/urx": "^0.2.8"
   },
   "peerDependencies": {
     "react": ">=16"
