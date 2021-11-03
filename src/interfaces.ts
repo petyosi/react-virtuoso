@@ -1,4 +1,4 @@
-import { ComponentPropsWithRef, ComponentType, Key, ReactNode, CSSProperties } from 'react'
+import { ComponentPropsWithRef, ComponentType, Key, ReactNode } from 'react'
 export interface ListRange {
   startIndex: number
   endIndex: number
@@ -52,6 +52,15 @@ export type ScrollerProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'childr
 export interface ScrollSeekPlaceholderProps {
   index: number
   height: number
+}
+
+/**
+ * Passed to the GridComponents.ScrollSeekPlaceholder custom component
+ */
+export interface GridScrollSeekPlaceholderProps {
+  index: number
+  height: number
+  width: number
 }
 
 /**
@@ -200,7 +209,7 @@ export interface GridComponents {
    * Set to render an item placeholder when the user scrolls fast.
    * See the `scrollSeekConfiguration` property for more details.
    */
-  ScrollSeekPlaceholder?: ComponentType<{ style: CSSProperties }>
+  ScrollSeekPlaceholder?: ComponentType<GridScrollSeekPlaceholderProps>
 }
 
 export interface GridComputeItemKey {

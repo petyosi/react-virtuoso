@@ -57,7 +57,7 @@ Resize your browser and scroll around - the items reposition correctly.
       components={{
         Item: ItemContainer,
         List: ListContainer,
-        ScrollSeekPlaceholder: ({ height, index }) => (
+        ScrollSeekPlaceholder: ({ height, width, index }) => (
           <ItemContainer>
             <ItemWrapper>{'--'}</ItemWrapper>
           </ItemContainer>
