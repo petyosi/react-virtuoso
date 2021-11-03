@@ -112,7 +112,7 @@ const GridItems: FC = React.memo(function GridItems() {
     gridState.items.map((item) => {
       const key = computeItemKey(item.index)
       return isSeeking
-        ? createElement(ScrollSeekPlaceholder, { key, style: { height: gridState.itemHeight, width: gridState.itemWidth } })
+        ? createElement(ScrollSeekPlaceholder, { key, index: item.index, height: gridState.itemHeight, width: gridState.itemWidth })
         : createElement(ItemComponent, { className: itemClassName, 'data-index': item.index, key }, itemContent(item.index))
     })
   )
