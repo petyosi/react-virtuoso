@@ -5,6 +5,9 @@ import {
   Components,
   ComputeItemKey,
   FollowOutput,
+  GridComponents,
+  GridComputeItemKey,
+  GridItemContent,
   GroupContent,
   GroupItemContent,
   IndexLocationWithAlign,
@@ -232,17 +235,17 @@ export interface VirtuosoGridProps extends GridProps {
   /**
    * The total amount of items to be rendered.
    */
-  totalCount: GridProps['totalCount']
+  totalCount: number
 
   /**
    * Set the callback to specify the contents of the item.
    */
-  itemContent?: GridProps['itemContent']
+  itemContent?: GridItemContent
 
   /**
    * Use the `components` property for advanced customization of the elements rendered by the list.
    */
-  components?: GridProps['components']
+  components?: GridComponents
 
   /**
    * Set the overscan property to make the component "chunk" the rendering of new items on scroll.
@@ -254,7 +257,7 @@ export interface VirtuosoGridProps extends GridProps {
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.
    */
-  computeItemKey?: GridProps['computeItemKey']
+  computeItemKey?: GridComputeItemKey
 
   /**
    * Use to display placeholders if the user scrolls fast through the list.
@@ -351,4 +354,4 @@ export const Virtuoso = List as <D extends unknown = any>(props: VirtuosoProps<D
 export const GroupedVirtuoso = List as <D extends unknown = any>(
   props: GroupedVirtuosoProps<D> & { ref?: Ref<GroupedVirtuosoHandle> }
 ) => ReactElement
-export const VirtuosoGrid: ForwardRefExoticComponent<VirtuosoGridProps> = Grid
+export const VirtuosoGrid = Grid as (props: VirtuosoGridProps & { ref?: Ref<VirtuosoGridHandle> }) => ReactElement
