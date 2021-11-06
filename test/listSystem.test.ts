@@ -118,6 +118,41 @@ describe('list engine', () => {
         done()
       })
     })
+
+    it('starts from a specified location with fixed item size', (done) => {
+      const INITIAL_INDEX = 300
+      const SIZE = 30
+      const { fixedItemHeight, propsReady, initialTopMostItemIndex, listState, scrollTop, scrollTo, viewportHeight, totalCount } = init(
+        listSystem
+      )
+
+      publish(initialTopMostItemIndex, INITIAL_INDEX)
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(totalCount, 1000)
+      publish(propsReady, true)
+      publish(fixedItemHeight, SIZE)
+      expect(getValue(listState)).toMatchObject({
+        items: [],
+      })
+
+      const sub = jest.fn()
+      subscribe(scrollTo, sub)
+
+      expect(getValue(listState).items).toHaveLength(0)
+
+      setTimeout(() => {
+        expect(sub).toHaveBeenCalledWith({
+          top: INITIAL_INDEX * SIZE,
+          behavior: 'auto',
+        })
+
+        // the UI responds by publishing back through the scrollTop stream
+        publish(scrollTop, INITIAL_INDEX * SIZE)
+        expect(getValue(listState).items).toHaveLength(7)
+        done()
+      })
+    })
   })
 
   describe('scroll to index', () => {

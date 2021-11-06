@@ -30,11 +30,10 @@ export const initialTopMostItemIndexSystem = u.system(
         u.withLatestFrom(initialTopMostItemIndex)
       ),
       ([, initialTopMostItemIndex]) => {
-        u.handleNext(scrollTop, () => {
-          u.publish(scrolledToInitialItem, true)
-        })
-
         setTimeout(() => {
+          u.handleNext(scrollTop, () => {
+            u.publish(scrolledToInitialItem, true)
+          })
           u.publish(scrollToIndex, initialTopMostItemIndex)
         })
       }
