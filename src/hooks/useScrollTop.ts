@@ -5,7 +5,7 @@ import { correctItemSize } from '../utils/correctItemSize'
 export type ScrollerRef = Window | HTMLElement | null
 
 function approximatelyEqual(num1: number, num2: number) {
-  return Math.abs(num1 - num2) < 1
+  return Math.abs(num1 - num2) < 1.01
 }
 
 export default function useScrollTop(
@@ -54,7 +54,7 @@ export default function useScrollTop(
 
   function scrollToCallback(location: ScrollToOptions) {
     const scrollerElement = scrollerRef.current
-    if (!scrollerElement) {
+    if (!scrollerElement || ('offsetHeight' in scrollerElement && scrollerElement.offsetHeight === 0)) {
       return
     }
 
@@ -75,6 +75,9 @@ export default function useScrollTop(
       scrollTop = (scrollerElement as HTMLElement).scrollTop
     }
 
+    const maxScrollTop = scrollHeight - offsetHeight
+    location.top = Math.max(Math.min(maxScrollTop, location.top!), 0)
+
     // avoid system hanging because the DOM never called back
     // with the scrollTop
     // scroller is already at this location
@@ -85,9 +88,6 @@ export default function useScrollTop(
       }
       return
     }
-
-    const maxScrollTop = scrollHeight - offsetHeight
-    location.top = Math.max(Math.min(maxScrollTop, location.top!), 0)
 
     if (isSmooth) {
       scrollTopTarget.current = location.top

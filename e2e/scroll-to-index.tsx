@@ -3,6 +3,7 @@ import { Virtuoso, VirtuosoHandle } from '../src'
 
 export default function App() {
   const ref = React.useRef<VirtuosoHandle>(null)
+  const [visible, setVisible] = React.useState(true)
   return (
     <>
       <div>
@@ -18,12 +19,14 @@ export default function App() {
         <button id="end-99" onClick={() => ref.current!.scrollToIndex({ index: 99, align: 'end' })}>
           End 99
         </button>
+        <button onClick={() => setVisible(!visible)}>Toggle</button>
       </div>
       <Virtuoso
         ref={ref}
+        startReached={() => console.log('start')}
         totalCount={100}
         itemContent={(index) => <div style={{ height: index % 2 ? 30 : 20, background: 'white' }}>Item {index}</div>}
-        style={{ height: 300 }}
+        style={{ height: 300, display: visible ? 'block' : 'none' }}
       />
     </>
   )
