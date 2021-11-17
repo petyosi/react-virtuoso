@@ -2,33 +2,17 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import * as React from 'react'
-import { render, unmountComponentAtNode } from 'react-dom'
-import { act } from 'react-dom/test-utils'
+import { act, render } from '@testing-library/react'
 import { List } from '../src/List'
 jest.mock('../src/hooks/useSize')
 jest.mock('../src/hooks/useChangedChildSizes')
 jest.mock('../src/hooks/useScrollTop')
 
 describe('List', () => {
-  let container: any
-  beforeEach(() => {
-    // setup a DOM element as a render target
-    container = document.createElement('div')
-    document.body.appendChild(container)
-  })
-
-  afterEach(() => {
-    // cleanup on exiting
-    unmountComponentAtNode(container)
-    container.remove()
-  })
-
   it('renders a probe item initially', () => {
-    act(() => {
-      render(<List totalCount={20000} />, container)
-    })
+    const { container } = render(<List totalCount={20000} />)
 
-    const scroller = container.firstElementChild
+    const scroller: any = container.firstElementChild
     const viewport = scroller.firstElementChild
     const listParent = viewport.firstElementChild
 
@@ -42,14 +26,13 @@ describe('List', () => {
   })
 
   describe('rendered list', () => {
+    let container: any
     let scroller: any
     let viewport: any
     let listParent: any
 
     beforeEach(() => {
-      act(() => {
-        render(<List totalCount={20000} />, container)
-      })
+      container = render(<List totalCount={20000} />, container).container
 
       scroller = container.firstElementChild
       viewport = scroller.firstElementChild
@@ -83,15 +66,14 @@ describe('List', () => {
   })
 
   describe('data list', () => {
+    let container: any
     let scroller: any
     let viewport: any
     let listParent: any
     const data: any = Array.from({ length: 1000 }).map((_, i) => `Item ${i}`)
 
     beforeEach(() => {
-      act(() => {
-        render(<List data={data} itemContent={(_: number, data: string) => data} />, container)
-      })
+      container = render(<List data={data} itemContent={(_: number, data: string) => data} />).container
 
       scroller = container.firstElementChild
       viewport = scroller.firstElementChild
@@ -121,11 +103,9 @@ describe('List', () => {
       )
     }
 
-    act(() => {
-      render(<Case />, container)
-    })
+    const { container } = render(<Case />)
 
-    const scroller = container.firstElementChild
+    const scroller: any = container.firstElementChild
     const viewport = scroller.firstElementChild
     const listParent = viewport.firstElementChild
 
@@ -133,7 +113,7 @@ describe('List', () => {
       scroller.triggerScroll(0)
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
       listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
-      container.querySelector('button').dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      container.querySelector('button')!.click()
     })
 
     expect(listParent.firstElementChild.textContent).toBe('Item 0')
@@ -156,11 +136,9 @@ describe('List', () => {
       )
     }
 
-    act(() => {
-      render(<Case />, container)
-    })
+    const { container } = render(<Case />)
 
-    const scroller = container.firstElementChild
+    const scroller: any = container.firstElementChild
     const viewport = scroller.firstElementChild
     const listParent = viewport.firstElementChild
 
@@ -168,7 +146,7 @@ describe('List', () => {
       scroller.triggerScroll(0)
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
       listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
-      container.querySelector('button').dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      container.querySelector('button')!.click()
     })
 
     expect(listParent.firstElementChild.textContent).toBe('Item 1')
