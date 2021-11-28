@@ -8,7 +8,7 @@ description: The React Virtuoso component makes it trivial to implement infinite
 
 The `endReached` callback property can be used to automatically load more items when the user scrolls to the bottom of the list, creating endless scrolling. 
 If you would like to load items more aggressively, you can increase the `overscan` value. 
-For reverse endless scrolling implementation, check [/prepend-items/](the prepend items) example.
+For reverse endless scrolling implementation, check [the prepend items](/prepend-items/) example.
 
 Scroll fast to the bottom of the list to load additional items.
 
