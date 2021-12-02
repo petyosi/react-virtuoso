@@ -165,7 +165,7 @@ export interface IndexLocationWithAlign {
   /**
    * The index of the item to scroll to.
    */
-  index: number
+  index: number | 'LAST'
   /**
    * How to position the item in the viewport.
    */

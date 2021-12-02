@@ -2,9 +2,17 @@ import { Log, LogLevel } from '../loggerSystem'
 import { SizeFunction, SizeRange } from '../sizeSystem'
 import useSize from './useSize'
 
-export default function useChangedChildSizes(callback: (ranges: SizeRange[]) => void, itemSize: SizeFunction, enabled: boolean, log: Log) {
+export default function useChangedListContentsSizes(
+  callback: (ranges: SizeRange[]) => void,
+  itemSize: SizeFunction,
+  enabled: boolean,
+  scrollHeightCallback: (height: number) => void,
+  log: Log
+) {
   return useSize((el: HTMLElement) => {
     const ranges = getChangedChildSizes(el.children, itemSize, 'offsetHeight', log)
+    const scrollableElement = el.parentElement!.parentElement!
+    scrollHeightCallback(scrollableElement.scrollHeight)
     if (ranges !== null) {
       callback(ranges)
     }

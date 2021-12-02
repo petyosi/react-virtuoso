@@ -1,6 +1,7 @@
 import { BOTTOM, getOverscan, TOP, sizeRangeSystem } from '../src/sizeRangeSystem'
 import { init, getValue, publish, subscribe, system, tup } from '@virtuoso.dev/urx'
-import { domIOSystem, DOWN, UP } from '../src/domIOSystem'
+import { domIOSystem } from '../src/domIOSystem'
+import { DOWN, UP } from '../src/stateFlagsSystem'
 
 void getValue
 void publish

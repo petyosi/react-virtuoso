@@ -1,8 +1,8 @@
 import * as u from '@virtuoso.dev/urx'
-import { UP, domIOSystem } from './domIOSystem'
+import { domIOSystem } from './domIOSystem'
 import { listStateSystem } from './listStateSystem'
 import { sizeSystem } from './sizeSystem'
-import { stateFlagsSystem } from './stateFlagsSystem'
+import { UP, stateFlagsSystem } from './stateFlagsSystem'
 import { ListItem } from './interfaces'
 import { loggerSystem, LogLevel } from './loggerSystem'
 
@@ -11,8 +11,8 @@ import { loggerSystem, LogLevel } from './loggerSystem'
  */
 export const upwardScrollFixSystem = u.system(
   ([
-    { scrollBy, scrollTop, scrollDirection, deviation, scrollingInProgress },
-    { isScrolling },
+    { scrollBy, scrollTop, deviation, scrollingInProgress },
+    { isScrolling, isAtBottom, scrollDirection },
     { listState },
     { beforeUnshiftWith, sizes },
     { log },
@@ -55,9 +55,9 @@ export const upwardScrollFixSystem = u.system(
           [0, []] as [number, ListItem<any>[]]
         ),
         u.filter(([amount]) => amount !== 0),
-        u.withLatestFrom(scrollTop, scrollDirection, scrollingInProgress, log),
-        u.filter(([, scrollTop, scrollDirection, scrollingInProgress]) => {
-          return !scrollingInProgress && scrollTop !== 0 && scrollDirection === UP
+        u.withLatestFrom(scrollTop, scrollDirection, scrollingInProgress, log, isAtBottom),
+        u.filter(([[amount], scrollTop, scrollDirection, scrollingInProgress, , isAtBottom]) => {
+          return !scrollingInProgress && scrollTop !== 0 && scrollDirection === UP && (isAtBottom ? amount > 0 : true)
         }),
         u.map(([[amount], , , , log]) => {
           log('Upward scrolling compensation', { amount }, LogLevel.DEBUG)

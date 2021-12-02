@@ -93,6 +93,7 @@ const GridItems: FC = React.memo(function GridItems() {
   const itemContent = useEmitterValue('itemContent')
   const computeItemKey = useEmitterValue('computeItemKey')
   const isSeeking = useEmitterValue('isSeeking')
+  const scrollHeightCallback = usePublisher('scrollHeight')
   const ItemComponent = useEmitterValue('ItemComponent')!
   const ListComponent = useEmitterValue('ListComponent')!
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder')!
@@ -100,6 +101,8 @@ const GridItems: FC = React.memo(function GridItems() {
   const itemDimensions = usePublisher('itemDimensions')
 
   const listRef = useSize((el) => {
+    const scrollHeight = el.parentElement!.parentElement!.scrollHeight
+    scrollHeightCallback(scrollHeight)
     const firstItem = el.firstChild as HTMLElement
     if (firstItem) {
       itemDimensions(firstItem.getBoundingClientRect())
