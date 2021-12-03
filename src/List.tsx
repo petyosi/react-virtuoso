@@ -426,6 +426,7 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
       initialTopMostItemIndex: 'initialTopMostItemIndex',
       components: 'components',
       groupCounts: 'groupCounts',
+      atBottomThreshold: 'atBottomThreshold',
       computeItemKey: 'computeItemKey',
       defaultItemHeight: 'defaultItemHeight',
       fixedItemHeight: 'fixedItemHeight',

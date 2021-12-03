@@ -46,13 +46,12 @@ const INITIAL_BOTTOM_STATE = {
   },
 } as AtBottomState
 
-const BOTTOM_THRESHOLD_TOLERANCE = 4
-
 export const stateFlagsSystem = u.system(([{ scrollTop, viewportHeight, headerHeight, footerHeight, scrollHeight }]) => {
   const isAtBottom = u.statefulStream(false)
   const isAtTop = u.statefulStream(true)
   const atBottomStateChange = u.stream<boolean>()
   const atTopStateChange = u.stream<boolean>()
+  const atBottomThreshold = u.statefulStream(4)
 
   // skip 1 to avoid an initial on/off flick
   const isScrolling = u.streamFromEmitter(
@@ -75,9 +74,16 @@ export const stateFlagsSystem = u.system(([{ scrollTop, viewportHeight, headerHe
 
   const atBottomState = u.streamFromEmitter(
     u.pipe(
-      u.combineLatest(scrollHeight, u.duc(scrollTop), u.duc(viewportHeight), u.duc(headerHeight), u.duc(footerHeight)),
-      u.scan((current, [scrollHeight, scrollTop, viewportHeight, _headerHeight, _footerHeight]) => {
-        const isAtBottom = scrollTop + viewportHeight - scrollHeight > -BOTTOM_THRESHOLD_TOLERANCE
+      u.combineLatest(
+        scrollHeight,
+        u.duc(scrollTop),
+        u.duc(viewportHeight),
+        u.duc(headerHeight),
+        u.duc(footerHeight),
+        u.duc(atBottomThreshold)
+      ),
+      u.scan((current, [scrollHeight, scrollTop, viewportHeight, _headerHeight, _footerHeight, atBottomThreshold]) => {
+        const isAtBottom = scrollTop + viewportHeight - scrollHeight > -atBottomThreshold
         const state = {
           viewportHeight,
           scrollTop,
@@ -145,5 +151,5 @@ export const stateFlagsSystem = u.system(([{ scrollTop, viewportHeight, headerHe
 
   // connect(isAtBottom, atBottomStateChange)
 
-  return { isScrolling, isAtTop, isAtBottom, atBottomState, atTopStateChange, atBottomStateChange, scrollDirection }
+  return { isScrolling, isAtTop, isAtBottom, atBottomState, atTopStateChange, atBottomStateChange, scrollDirection, atBottomThreshold }
 }, u.tup(domIOSystem))
