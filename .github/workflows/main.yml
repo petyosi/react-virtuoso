@@ -49,4 +49,4 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           rm -rf dist
-          npx semantic-release
+          npm publish --access=public
