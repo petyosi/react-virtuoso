@@ -43,11 +43,6 @@ jobs:
           yarn test --ci
           yarn e2e --ci
 
-      - name: build site
-        run: |
-          cd site
-          yarn build
-
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
