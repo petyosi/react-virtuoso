@@ -32,7 +32,7 @@ function getChangedChildSizes(children: HTMLCollection, itemSize: SizeFunction, 
     const size = itemSize(child, field)
 
     if (size === 0) {
-      log('Zero-sized element, this should not happen', { child }, LogLevel.ERROR)
+      log('Zero-sized element, this should not happen', { child }, LogLevel.DEBUG)
     }
 
     if (size === knownSize) {
