@@ -98,3 +98,4 @@ The API reference is generated from the doc comments in `src/components.tsx`.
 ## License
 
 MIT License.
+
