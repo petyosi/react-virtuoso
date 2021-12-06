@@ -8,7 +8,6 @@ jobs:
       CI: true
       SSH_AUTH_SOCK: /tmp/ssh_agent.sock
       USE_SSH: true
-      GIT_USER: petyosi
       NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
     steps:
