@@ -38,8 +38,8 @@
     "semantic-release": "semantic-release"
   },
   "dependencies": {
-    "@virtuoso.dev/react-urx": "^0.2.8",
-    "@virtuoso.dev/urx": "^0.2.8"
+    "@virtuoso.dev/react-urx": "^0.2.11",
+    "@virtuoso.dev/urx": "^0.2.11"
   },
   "peerDependencies": {
     "react": ">=16"
