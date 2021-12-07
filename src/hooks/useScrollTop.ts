@@ -12,7 +12,8 @@ export default function useScrollTop(
   scrollTopCallback: (scrollTop: number) => void,
   smoothScrollTargetReached: (yes: true) => void,
   scrollerElement: any,
-  scrollerRefCallback: (ref: ScrollerRef) => void = u.noop
+  scrollerRefCallback: (ref: ScrollerRef) => void = u.noop,
+  scrollHeightCallback: (height: number) => void = u.noop
 ) {
   const scrollerRef = useRef<HTMLElement | null | Window>(null)
   const scrollTopTarget = useRef<any>(null)
@@ -23,6 +24,9 @@ export default function useScrollTop(
       const el = ev.target as HTMLElement
       const scrollTop =
         (el as any) === window || (el as any) === document ? window.pageYOffset || document.documentElement.scrollTop : el.scrollTop
+      const scrollHeight = (el as any) === window ? document.documentElement.scrollHeight : el.scrollHeight
+
+      scrollHeightCallback(scrollHeight)
       scrollTopCallback(Math.max(scrollTop, 0))
 
       if (scrollTopTarget.current !== null) {
@@ -36,7 +40,7 @@ export default function useScrollTop(
         }
       }
     },
-    [scrollTopCallback, smoothScrollTargetReached]
+    [scrollTopCallback, smoothScrollTargetReached, scrollHeightCallback]
   )
 
   useEffect(() => {

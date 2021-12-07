@@ -20,7 +20,7 @@ import {
 import * as React from 'react'
 import { createElement, CSSProperties, FC } from 'react'
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
-import useChangedChildSizes from './hooks/useChangedChildSizes'
+import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import useScrollTop from './hooks/useScrollTop'
 import useSize from './hooks/useSize'
 import { Components, ComputeItemKey, GroupContent, GroupItemContent, ItemContent, ListRootProps } from './interfaces'
@@ -169,13 +169,14 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const listState = useEmitterValue('listState')
   const deviation = useEmitterValue('deviation')
   const sizeRanges = usePublisher('sizeRanges')
+  const scrollHeightCallback = usePublisher('scrollHeight')
   const itemContent = useEmitterValue('itemContent')
   const groupContent = useEmitterValue('groupContent')
   const trackItemSizes = useEmitterValue('trackItemSizes')
   const itemSize = useEmitterValue('itemSize')
   const log = useEmitterValue('log')
 
-  const ref = useChangedChildSizes(sizeRanges, itemSize, trackItemSizes, log)
+  const ref = useChangedListContentsSizes(sizeRanges, itemSize, trackItemSizes, showTopList ? noop : scrollHeightCallback, log)
   const EmptyPlaceholder = useEmitterValue('EmptyPlaceholder')
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder') || DefaultScrollSeekPlaceholder
   const ListComponent = useEmitterValue('ListComponent')!
@@ -235,6 +236,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
             'data-known-size': item.size,
             'data-item-index': item.index,
             'data-item-group-index': item.groupIndex,
+            style: { overflowAnchor: 'none' },
           } as any,
           hasGroups
             ? (itemContent as GroupItemContent<any>)(item.index, item.groupIndex!, item.data)
@@ -291,6 +293,7 @@ export interface Hooks {
 export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hooks) {
   const Scroller: Components['Scroller'] = React.memo(function VirtuosoScroller({ style, children, ...props }) {
     const scrollTopCallback = usePublisher('scrollTop')
+    const scrollHeightCallback = usePublisher('scrollHeight')
     const ScrollerComponent = useEmitterValue('ScrollerComponent')!
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
     const scrollerRefCallback = useEmitterValue('scrollerRef')
@@ -299,7 +302,8 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
       scrollTopCallback,
       smoothScrollTargetReached,
       ScrollerComponent,
-      scrollerRefCallback
+      scrollerRefCallback,
+      scrollHeightCallback
     )
 
     useEmitter('scrollTo', scrollToCallback)
@@ -321,13 +325,16 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
 export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue }: Hooks) {
   const Scroller: Components['Scroller'] = React.memo(function VirtuosoWindowScroller({ style, children, ...props }) {
     const scrollTopCallback = usePublisher('windowScrollTop')
+    const scrollHeightCallback = usePublisher('scrollHeight')
     const ScrollerComponent = useEmitterValue('ScrollerComponent')!
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
     const totalListHeight = useEmitterValue('totalListHeight')
     const { scrollerRef, scrollByCallback, scrollToCallback } = useScrollTop(
       scrollTopCallback,
       smoothScrollTargetReached,
-      ScrollerComponent
+      ScrollerComponent,
+      noop,
+      scrollHeightCallback
     )
 
     useIsomorphicLayoutEffect(() => {
@@ -419,6 +426,7 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
       initialTopMostItemIndex: 'initialTopMostItemIndex',
       components: 'components',
       groupCounts: 'groupCounts',
+      atBottomThreshold: 'atBottomThreshold',
       computeItemKey: 'computeItemKey',
       defaultItemHeight: 'defaultItemHeight',
       fixedItemHeight: 'fixedItemHeight',

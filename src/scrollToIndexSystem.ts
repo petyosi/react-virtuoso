@@ -65,6 +65,9 @@ export const scrollToIndexSystem = u.system(
           const { align, behavior, offset } = normalLocation
           const lastIndex = totalCount - 1
           let index = normalLocation.index
+          if (index === 'LAST') {
+            index = lastIndex
+          }
 
           index = originalIndexFromItemIndex(index, sizes)
 

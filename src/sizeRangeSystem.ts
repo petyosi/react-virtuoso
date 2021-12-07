@@ -1,5 +1,6 @@
 import * as u from '@virtuoso.dev/urx'
-import { domIOSystem, DOWN, ScrollDirection, UP } from './domIOSystem'
+import { domIOSystem } from './domIOSystem'
+import { UP, DOWN, ScrollDirection } from './stateFlagsSystem'
 import { tupleComparator } from './comparators'
 
 export type NumberTuple = [number, number]

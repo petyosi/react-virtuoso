@@ -74,6 +74,7 @@ export const gridSystem = u.system(
     const viewportDimensions = u.statefulStream<ElementDimensions>({ height: 0, width: 0 })
     const itemDimensions = u.statefulStream<ElementDimensions>({ height: 0, width: 0 })
     const scrollToIndex = u.stream<IndexLocation>()
+    const scrollHeight = u.stream<number>()
 
     u.connect(
       u.pipe(
@@ -153,17 +154,6 @@ export const gridSystem = u.system(
       listBoundary
     )
 
-    u.connect(
-      u.pipe(
-        listBoundary,
-        u.withLatestFrom(gridState),
-        u.map(([[, bottom], { offsetBottom }]) => {
-          return { bottom, offsetBottom }
-        })
-      ),
-      stateFlags.listStateListener
-    )
-
     const endReached = u.streamFromEmitter(
       u.pipe(
         u.duc(gridState),
@@ -210,6 +200,9 @@ export const gridSystem = u.system(
           const normalLocation = normalizeIndexLocation(location)
           const { align, behavior, offset } = normalLocation
           let index = normalLocation.index
+          if (index === 'LAST') {
+            index = totalCount - 1
+          }
 
           index = Math.max(0, index, Math.min(totalCount - 1, index))
 
@@ -255,6 +248,7 @@ export const gridSystem = u.system(
       viewportDimensions,
       itemDimensions,
       scrollTop,
+      scrollHeight,
       overscan,
       scrollBy,
       scrollTo,
