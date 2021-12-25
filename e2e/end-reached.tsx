@@ -26,7 +26,7 @@ export default function App() {
       >
         Refresh items
       </button>
-      <Virtuoso data={data} endReached={(end) => console.log({ end })} itemContent={itemContent} style={{ height: 300 }} />
+      <Virtuoso data={data} itemContent={itemContent} style={{ height: 300 }} />
     </div>
   )
 }

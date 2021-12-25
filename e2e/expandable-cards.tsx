@@ -40,26 +40,14 @@ interface IExpanded {
 export default function App() {
   const [expanded, setExpanded] = useState<IExpanded>({})
 
-  const itemsRendered = (x: any[]) =>
-    console.log(x.map((y: { originalIndex: number; offset: number }) => `${y.originalIndex}: ${y.offset}`))
-
   const itemContent = (rowIndex: number) => (
     <Row
       rowIndex={rowIndex}
       expanded={!!expanded[rowIndex]}
       setExpanded={(expanded: boolean) => {
-        console.log('set expanded', expanded, 'row Index:', rowIndex)
         setExpanded((old) => Object.assign(old, { [rowIndex]: expanded }))
       }}
     />
   )
-  return (
-    <Virtuoso
-      style={{ height: 900 }}
-      itemsRendered={itemsRendered}
-      totalCount={500}
-      itemContent={itemContent}
-      initialTopMostItemIndex={100}
-    />
-  )
+  return <Virtuoso style={{ height: 900 }} totalCount={500} itemContent={itemContent} initialTopMostItemIndex={100} />
 }

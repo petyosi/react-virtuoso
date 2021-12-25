@@ -41,7 +41,6 @@ const ListContainer = styled.div`
 ` as GridComponents['List']
 
 const Item = React.memo<any>(({ item }: { item: { index: number; selected: boolean } }) => {
-  console.log(`rendering Item ${item.index}`)
   return <div style={{ backgroundColor: item.selected ? 'blue' : 'white' }}>Item {item.index}</div>
 })
 

@@ -106,7 +106,6 @@ export default function App() {
       groupContent={(index) => <div>Group {groups[index]}</div>}
       overscan={400}
       endReached={(value) => {
-        console.log(value)
         loadMore()
       }}
       itemContent={(index) => (

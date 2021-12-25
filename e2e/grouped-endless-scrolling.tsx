@@ -95,7 +95,6 @@ const Style = { height: '350px', width: '300px' }
 
 export default function App() {
   const { loadMore, groupCounts, users, groups } = useGroupedUsers(12500)
-  console.log(groupCounts)
 
   useEffect(loadMore, [loadMore])
 

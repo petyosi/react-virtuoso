@@ -65,8 +65,6 @@ export default function App() {
           ),
         }}
         totalCount={1000}
-        startReached={() => console.log('start reached')}
-        endReached={() => console.log('end reached')}
         itemContent={(index) => <ItemWrapper>Item {index}</ItemWrapper>}
         style={{ height: 300, width: '100%' }}
       />

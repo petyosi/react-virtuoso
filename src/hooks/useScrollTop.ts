@@ -106,13 +106,11 @@ export default function useScrollTop(
       scrollTopTarget.current = null
     }
 
-    console.log('scrolling to', location)
     scrollerElement.scrollTo(location)
   }
 
   function scrollByCallback(location: ScrollToOptions) {
     if (scrollTopTarget.current === null) {
-      console.log('scrolling by', location)
       scrollerRef.current!.scrollBy(location)
     }
   }

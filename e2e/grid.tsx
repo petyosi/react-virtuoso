@@ -57,13 +57,9 @@ export default function App() {
           ),
         }}
         totalCount={100}
-        startReached={() => console.log('start reached')}
-        endReached={() => console.log('end reached')}
-        // rangeChanged={({ startIndex, endIndex }) => console.log({ startIndex, endIndex })}
         scrollSeekConfiguration={{
           enter: (velocity) => Math.abs(velocity) > 200,
           exit: (velocity) => Math.abs(velocity) < 30,
-          change: (_, range) => console.log({ range }),
         }}
         itemContent={(index) => <ItemWrapper>Item {index}</ItemWrapper>}
         style={{ height: 300, width: 1200 }}

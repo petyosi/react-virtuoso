@@ -11,7 +11,6 @@ export default function App() {
       scrollSeekConfiguration={{
         enter: (velocity) => Math.abs(velocity) > 200,
         exit: (velocity) => Math.abs(velocity) < 30,
-        change: (_, range) => console.log({ range }),
       }}
       components={{
         ScrollSeekPlaceholder: ({ height, index }) => <div style={{ height, color: 'red' }}>Placeholder {index}</div>,

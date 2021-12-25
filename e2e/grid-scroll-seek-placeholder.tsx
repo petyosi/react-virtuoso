@@ -28,7 +28,6 @@ export default function App() {
       scrollSeekConfiguration={{
         enter: (velocity) => Math.abs(velocity) > 200,
         exit: (velocity) => Math.abs(velocity) < 30,
-        change: (_, range) => console.log({ range }),
       }}
       components={{
         Item: ItemContainer,

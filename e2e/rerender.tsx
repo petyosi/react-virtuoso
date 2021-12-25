@@ -2,9 +2,8 @@ import React from 'react'
 import { Virtuoso, VirtuosoGrid } from '../src/'
 
 export default function App() {
-  const [foo, setFoo] = React.useState(Symbol())
+  const [, setFoo] = React.useState(Symbol())
   const [bar, setBar] = React.useState<Array<{ name: string }>>([])
-  console.log(foo)
 
   return (
     <>

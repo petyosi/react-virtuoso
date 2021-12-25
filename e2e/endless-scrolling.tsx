@@ -14,10 +14,7 @@ export default function App() {
   const [items, setItems] = useState<string[]>(() => [])
 
   const loadMore = useCallback(() => {
-    console.log('loading...')
     return setTimeout(() => {
-      console.log('loaded')
-
       setItems((items) => [...items, ...generateItems(100, items.length)])
     }, 0)
   }, [setItems])

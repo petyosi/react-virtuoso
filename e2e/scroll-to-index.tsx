@@ -23,7 +23,6 @@ export default function App() {
       </div>
       <Virtuoso
         ref={ref}
-        startReached={() => console.log('start')}
         totalCount={100}
         itemContent={(index) => <div style={{ height: index % 2 ? 30 : 20, background: 'white' }}>Item {index}</div>}
         style={{ height: 300, display: visible ? 'block' : 'none' }}

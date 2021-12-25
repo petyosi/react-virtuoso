@@ -13,7 +13,6 @@ export default function App() {
           EmptyPlaceholder: () => <div>Nothing to See here!</div>,
         }}
         totalCount={totalCount}
-        isScrolling={(isScrolling) => console.log({ isScrolling })}
         itemContent={(index) => <div style={{ height: 30 }}>Item {index}</div>}
         style={{ height: 300 }}
       />

@@ -44,7 +44,6 @@ export default function App() {
   const [users, setUsers] = useState(() => generateUsers(INITIAL_ITEM_COUNT, START_INDEX))
 
   const prependItems = useCallback(() => {
-    console.log('prependItems()')
     const usersToPrepend = 20
     const nextFirstItemIndex = firstItemIndex - usersToPrepend
 
