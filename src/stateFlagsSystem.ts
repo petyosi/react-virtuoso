@@ -3,7 +3,8 @@ import { domIOSystem } from './domIOSystem'
 
 export const UP = 'up' as const
 export const DOWN = 'down' as const
-export type ScrollDirection = typeof UP | typeof DOWN
+export const NONE = 'none' as const
+export type ScrollDirection = typeof UP | typeof DOWN | typeof NONE
 
 export interface ListBottomInfo {
   bottom: number
@@ -24,6 +25,8 @@ export type NotAtBottomReason =
   | 'SCROLLING_UPWARDS'
   | 'NOT_FULLY_SCROLLED_TO_LAST_ITEM_BOTTOM'
 
+export type AtBottomReason = 'SIZE_DECREASED' | 'SCROLLED_DOWN'
+
 export type AtBottomState =
   | {
       atBottom: false
@@ -33,6 +36,8 @@ export type AtBottomState =
   | {
       atBottom: true
       state: AtBottomParams
+      atBottomBecause: AtBottomReason
+      scrollTopDelta: number
     }
 
 const INITIAL_BOTTOM_STATE = {
@@ -46,7 +51,7 @@ const INITIAL_BOTTOM_STATE = {
   },
 } as AtBottomState
 
-export const stateFlagsSystem = u.system(([{ scrollTop, viewportHeight, headerHeight, footerHeight, scrollHeight }]) => {
+export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, viewportHeight, headerHeight, footerHeight, scrollBy }]) => {
   const isAtBottom = u.statefulStream(false)
   const isAtTop = u.statefulStream(true)
   const atBottomStateChange = u.stream<boolean>()
@@ -61,6 +66,13 @@ export const stateFlagsSystem = u.system(([{ scrollTop, viewportHeight, headerHe
     )
   )
 
+  const isScrollingBy = u.statefulStreamFromEmitter(
+    u.pipe(u.merge(u.pipe(scrollBy, u.mapTo(true)), u.pipe(scrollBy, u.mapTo(false), u.debounceTime(200))), u.distinctUntilChanged()),
+    false
+  )
+
+  // u.subscribe(isScrollingBy, (isScrollingBy) => console.log({ isScrollingBy }))
+
   u.connect(
     u.pipe(
       u.duc(scrollTop),
@@ -74,15 +86,8 @@ export const stateFlagsSystem = u.system(([{ scrollTop, viewportHeight, headerHe
 
   const atBottomState = u.streamFromEmitter(
     u.pipe(
-      u.combineLatest(
-        scrollHeight,
-        u.duc(scrollTop),
-        u.duc(viewportHeight),
-        u.duc(headerHeight),
-        u.duc(footerHeight),
-        u.duc(atBottomThreshold)
-      ),
-      u.scan((current, [scrollHeight, scrollTop, viewportHeight, _headerHeight, _footerHeight, atBottomThreshold]) => {
+      u.combineLatest(scrollContainerState, u.duc(viewportHeight), u.duc(headerHeight), u.duc(footerHeight), u.duc(atBottomThreshold)),
+      u.scan((current, [[scrollTop, scrollHeight], viewportHeight, _headerHeight, _footerHeight, atBottomThreshold]) => {
         const isAtBottom = scrollTop + viewportHeight - scrollHeight > -atBottomThreshold
         const state = {
           viewportHeight,
@@ -91,9 +96,20 @@ export const stateFlagsSystem = u.system(([{ scrollTop, viewportHeight, headerHe
         }
 
         if (isAtBottom) {
+          let atBottomBecause: 'SIZE_DECREASED' | 'SCROLLED_DOWN'
+          let scrollTopDelta: number
+          if (scrollTop > current.state.scrollTop) {
+            atBottomBecause = 'SCROLLED_DOWN'
+            scrollTopDelta = current.state.scrollTop - scrollTop
+          } else {
+            atBottomBecause = 'SIZE_DECREASED'
+            scrollTopDelta = current.state.scrollTop - scrollTop || (current as { scrollTopDelta: number }).scrollTopDelta
+          }
           return {
             atBottom: true,
             state,
+            atBottomBecause,
+            scrollTopDelta,
           } as AtBottomState
         }
 
@@ -121,6 +137,44 @@ export const stateFlagsSystem = u.system(([{ scrollTop, viewportHeight, headerHe
     )
   )
 
+  const lastJumpDueToItemResize = u.statefulStreamFromEmitter(
+    u.pipe(
+      scrollContainerState,
+      u.scan(
+        (current, [scrollTop, scrollHeight]) => {
+          if (current.scrollHeight !== scrollHeight) {
+            if (current.scrollTop !== scrollTop) {
+              return {
+                scrollHeight,
+                scrollTop,
+                jump: current.scrollTop - scrollTop,
+                changed: true,
+              }
+            } else {
+              return {
+                scrollHeight,
+                scrollTop,
+                jump: 0,
+                changed: true,
+              }
+            }
+          } else {
+            return {
+              scrollTop,
+              scrollHeight,
+              jump: 0,
+              changed: false,
+            }
+          }
+        },
+        { scrollHeight: 0, jump: 0, scrollTop: 0, changed: false }
+      ),
+      u.filter((value) => value.changed),
+      u.map((value) => value.jump)
+    ),
+    0
+  )
+
   u.connect(
     u.pipe(
       atBottomState,
@@ -135,12 +189,26 @@ export const stateFlagsSystem = u.system(([{ scrollTop, viewportHeight, headerHe
 
   const scrollDirection = u.statefulStream<ScrollDirection>(DOWN)
 
+  u.subscribe(isAtBottom, (value) => {
+    setTimeout(() => {
+      u.publish(atBottomStateChange, value)
+    })
+  })
+
   u.connect(
     u.pipe(
-      scrollTop,
+      scrollContainerState,
+      u.map(([scrollTop]) => scrollTop),
+      u.distinctUntilChanged(),
       u.scan(
         (acc, scrollTop) => {
-          return { direction: scrollTop < acc.prevScrollTop && !u.getValue(isAtBottom) ? UP : DOWN, prevScrollTop: scrollTop }
+          // if things change while compensating for items, ignore,
+          // but store the new scrollTop
+          if (u.getValue(isScrollingBy)) {
+            return { direction: acc.direction, prevScrollTop: scrollTop }
+          }
+
+          return { direction: scrollTop < acc.prevScrollTop ? UP : DOWN, prevScrollTop: scrollTop }
         },
         { direction: DOWN, prevScrollTop: 0 } as { direction: ScrollDirection; prevScrollTop: number }
       ),
@@ -149,7 +217,43 @@ export const stateFlagsSystem = u.system(([{ scrollTop, viewportHeight, headerHe
     scrollDirection
   )
 
-  // connect(isAtBottom, atBottomStateChange)
+  u.connect(u.pipe(scrollContainerState, u.throttleTime(50), u.mapTo(NONE)), scrollDirection)
 
-  return { isScrolling, isAtTop, isAtBottom, atBottomState, atTopStateChange, atBottomStateChange, scrollDirection, atBottomThreshold }
+  u.connect(isAtBottom, atBottomStateChange)
+
+  const scrollVelocity = u.statefulStream(0)
+
+  u.connect(
+    u.pipe(
+      isScrolling,
+      u.filter((value) => !value),
+      u.mapTo(0)
+    ),
+    scrollVelocity
+  )
+
+  u.connect(
+    u.pipe(
+      scrollTop,
+      u.throttleTime(100),
+      u.withLatestFrom(isScrolling),
+      u.filter(([_, isScrolling]) => !!isScrolling),
+      u.scan(([_, prev], [next]) => [prev, next], [0, 0]),
+      u.map(([prev, next]) => next - prev)
+    ),
+    scrollVelocity
+  )
+
+  return {
+    isScrolling,
+    isAtTop,
+    isAtBottom,
+    atBottomState,
+    atTopStateChange,
+    atBottomStateChange,
+    scrollDirection,
+    atBottomThreshold,
+    scrollVelocity,
+    lastJumpDueToItemResize,
+  }
 }, u.tup(domIOSystem))

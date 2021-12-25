@@ -93,7 +93,7 @@ export const followOutputSystem = u.system(
       ([, followOutput]) => {
         const cancel = u.handleNext(atBottomState, (state) => {
           if (followOutput && !state.atBottom && state.notAtBottomBecause === 'SIZE_INCREASED' && !pendingScrollHandle) {
-            u.getValue(log)('scrolling to bottom due to increased size', LogLevel.DEBUG)
+            u.getValue(log)('scrolling to bottom due to increased size', {}, LogLevel.DEBUG)
             scrollToBottom('auto')
           }
         })

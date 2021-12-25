@@ -17,40 +17,44 @@ export default function App() {
     },
     [toggle, setToggle]
   )
+
+  const toggleSize = React.useCallback(
+    (index: number) => {
+      setToggle((toggle) => ({ ...toggle, [index]: !toggle[index] }))
+    },
+    [setToggle]
+  )
+
   return (
     <div>
       <button
         onClick={() => {
-          setToggle((toggle) => ({ ...toggle, 88: !toggle[88] }))
-          setToggle((toggle) => ({ ...toggle, 99: !toggle[99] }))
-
-          setTimeout(() => {
-            setToggle((toggle) => ({ ...toggle, 99: !toggle[99] }))
-            setTimeout(() => {
-              setToggle((toggle) => ({ ...toggle, 88: !toggle[88] }))
-              setCount((count) => count + 1)
-            })
-          }, 500)
-          // setTimeout(() => {})
-          /*
-          setTimeout(() => {
-            setCount((count) => count + 1)
-          })*/
+          toggleSize(99)
+          toggleSize(98)
         }}
       >
         Add + shrink
       </button>
+
       <button
         onClick={() => {
-          // setToggle((toggle) => ({ ...toggle, 92: !toggle[92] }))
-          setCount((count) => count + 1)
-          setTimeout(() => {
-            setCount((count) => count + 1)
-          })
+          toggleSize(99)
+          toggleSize(98)
+          toggleSize(90)
         }}
       >
-        Add two quickly
+        Add + shrink
       </button>
+
+      <button
+        onClick={() => {
+          setCount((count) => count + 2)
+          toggleSize(90)
+        }}
+      >
+        Add + shrink
+      </button>
+
       <Virtuoso
         computeItemKey={(key: number) => `item-${key.toString()}`}
         totalCount={count}

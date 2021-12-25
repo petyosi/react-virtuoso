@@ -9,11 +9,10 @@ function approximatelyEqual(num1: number, num2: number) {
 }
 
 export default function useScrollTop(
-  scrollTopCallback: (scrollTop: number) => void,
+  scrollContainerStateCallback: (state: [number, number]) => void,
   smoothScrollTargetReached: (yes: true) => void,
   scrollerElement: any,
-  scrollerRefCallback: (ref: ScrollerRef) => void = u.noop,
-  scrollHeightCallback: (height: number) => void = u.noop
+  scrollerRefCallback: (ref: ScrollerRef) => void = u.noop
 ) {
   const scrollerRef = useRef<HTMLElement | null | Window>(null)
   const scrollTopTarget = useRef<any>(null)
@@ -26,8 +25,7 @@ export default function useScrollTop(
         (el as any) === window || (el as any) === document ? window.pageYOffset || document.documentElement.scrollTop : el.scrollTop
       const scrollHeight = (el as any) === window ? document.documentElement.scrollHeight : el.scrollHeight
 
-      scrollHeightCallback(scrollHeight)
-      scrollTopCallback(Math.max(scrollTop, 0))
+      scrollContainerStateCallback([Math.max(scrollTop, 0), scrollHeight])
 
       if (scrollTopTarget.current !== null) {
         if (scrollTop === scrollTopTarget.current || scrollTop <= 0 || scrollTop === el.scrollHeight - correctItemSize(el, 'height')) {
@@ -40,7 +38,7 @@ export default function useScrollTop(
         }
       }
     },
-    [scrollTopCallback, smoothScrollTargetReached, scrollHeightCallback]
+    [scrollContainerStateCallback, smoothScrollTargetReached]
   )
 
   useEffect(() => {
@@ -86,7 +84,7 @@ export default function useScrollTop(
     // with the scrollTop
     // scroller is already at this location
     if (approximatelyEqual(offsetHeight, scrollHeight) || location.top === scrollTop) {
-      scrollTopCallback(scrollTop)
+      scrollContainerStateCallback([scrollTop, scrollHeight])
       if (isSmooth) {
         smoothScrollTargetReached(true)
       }
@@ -108,11 +106,13 @@ export default function useScrollTop(
       scrollTopTarget.current = null
     }
 
+    console.log('scrolling to', location)
     scrollerElement.scrollTo(location)
   }
 
   function scrollByCallback(location: ScrollToOptions) {
     if (scrollTopTarget.current === null) {
+      console.log('scrolling by', location)
       scrollerRef.current!.scrollBy(location)
     }
   }

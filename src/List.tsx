@@ -169,14 +169,14 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const listState = useEmitterValue('listState')
   const deviation = useEmitterValue('deviation')
   const sizeRanges = usePublisher('sizeRanges')
-  const scrollHeightCallback = usePublisher('scrollHeight')
+  const scrollContainerStateCallback = usePublisher('scrollContainerState')
   const itemContent = useEmitterValue('itemContent')
   const groupContent = useEmitterValue('groupContent')
   const trackItemSizes = useEmitterValue('trackItemSizes')
   const itemSize = useEmitterValue('itemSize')
   const log = useEmitterValue('log')
 
-  const ref = useChangedListContentsSizes(sizeRanges, itemSize, trackItemSizes, showTopList ? noop : scrollHeightCallback, log)
+  const ref = useChangedListContentsSizes(sizeRanges, itemSize, trackItemSizes, showTopList ? noop : scrollContainerStateCallback, log)
   const EmptyPlaceholder = useEmitterValue('EmptyPlaceholder')
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder') || DefaultScrollSeekPlaceholder
   const ListComponent = useEmitterValue('ListComponent')!
@@ -292,18 +292,16 @@ export interface Hooks {
 
 export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hooks) {
   const Scroller: Components['Scroller'] = React.memo(function VirtuosoScroller({ style, children, ...props }) {
-    const scrollTopCallback = usePublisher('scrollTop')
-    const scrollHeightCallback = usePublisher('scrollHeight')
+    const scrollContainerStateCallback = usePublisher('scrollContainerState')
     const ScrollerComponent = useEmitterValue('ScrollerComponent')!
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
     const scrollerRefCallback = useEmitterValue('scrollerRef')
 
     const { scrollerRef, scrollByCallback, scrollToCallback } = useScrollTop(
-      scrollTopCallback,
+      scrollContainerStateCallback,
       smoothScrollTargetReached,
       ScrollerComponent,
-      scrollerRefCallback,
-      scrollHeightCallback
+      scrollerRefCallback
     )
 
     useEmitter('scrollTo', scrollToCallback)
@@ -324,17 +322,15 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
 
 export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue }: Hooks) {
   const Scroller: Components['Scroller'] = React.memo(function VirtuosoWindowScroller({ style, children, ...props }) {
-    const scrollTopCallback = usePublisher('windowScrollTop')
-    const scrollHeightCallback = usePublisher('scrollHeight')
+    const scrollContainerStateCallback = usePublisher('scrollContainerState')
     const ScrollerComponent = useEmitterValue('ScrollerComponent')!
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
     const totalListHeight = useEmitterValue('totalListHeight')
     const { scrollerRef, scrollByCallback, scrollToCallback } = useScrollTop(
-      scrollTopCallback,
+      scrollContainerStateCallback,
       smoothScrollTargetReached,
       ScrollerComponent,
-      noop,
-      scrollHeightCallback
+      noop
     )
 
     useIsomorphicLayoutEffect(() => {

@@ -33,7 +33,7 @@ describe('List', () => {
     const listParent = viewport.firstElementChild
 
     act(() => {
-      scroller.triggerScroll(0)
+      scroller.triggerScroll([0, 700])
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
     })
 
@@ -56,7 +56,7 @@ describe('List', () => {
       listParent = viewport.firstElementChild
 
       act(() => {
-        scroller.triggerScroll(0)
+        scroller.triggerScroll([0, 700])
         viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
         listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 30 }])
       })
@@ -76,7 +76,7 @@ describe('List', () => {
 
     it('renders new items when scrolling', () => {
       act(() => {
-        scroller.triggerScroll(600)
+        scroller.triggerScroll([600, 1000])
       })
       expect(listParent.firstElementChild.dataset.index).toBe('20')
     })
@@ -98,7 +98,7 @@ describe('List', () => {
       listParent = viewport.firstElementChild
 
       act(() => {
-        scroller.triggerScroll(0)
+        scroller.triggerScroll([0, 700])
         viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
         listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
       })
@@ -130,7 +130,7 @@ describe('List', () => {
     const listParent = viewport.firstElementChild
 
     act(() => {
-      scroller.triggerScroll(0)
+      scroller.triggerScroll([0, 700])
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
       listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
       container.querySelector('button').dispatchEvent(new MouseEvent('click', { bubbles: true }))
@@ -165,7 +165,7 @@ describe('List', () => {
     const listParent = viewport.firstElementChild
 
     act(() => {
-      scroller.triggerScroll(0)
+      scroller.triggerScroll([0, 700])
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
       listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
       container.querySelector('button').dispatchEvent(new MouseEvent('click', { bubbles: true }))

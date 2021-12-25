@@ -241,7 +241,7 @@ describe('list engine', () => {
         propsReady,
         initialTopMostItemIndex,
         listState,
-        scrollTop,
+        scrollContainerState,
         scrollTo,
         viewportHeight,
         totalCount,
@@ -250,7 +250,7 @@ describe('list engine', () => {
       } = init(listSystem)
 
       publish(initialTopMostItemIndex, INITIAL_INDEX)
-      publish(scrollTop, 0)
+      publish(scrollContainerState, [0, 1000 * 30])
       publish(viewportHeight, 200)
       publish(totalCount, 1000)
       publish(propsReady, true)
@@ -275,9 +275,9 @@ describe('list engine', () => {
         })
 
         setTimeout(() => {
-          publish(scrollTop, INITIAL_INDEX * SIZE)
+          publish(scrollContainerState, [INITIAL_INDEX * SIZE, 1000 * 30])
 
-          publish(scrollTop, INITIAL_INDEX * SIZE - 2)
+          publish(scrollContainerState, [INITIAL_INDEX * SIZE - 2, 1000 * 30])
 
           publish(sizeRanges, [
             {

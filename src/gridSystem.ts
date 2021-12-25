@@ -62,7 +62,7 @@ function buildItems(startIndex: number, endIndex: number) {
 export const gridSystem = u.system(
   ([
     { overscan, visibleRange, listBoundary },
-    { scrollTop, viewportHeight, scrollBy, scrollTo, smoothScrollTargetReached },
+    { scrollTop, viewportHeight, scrollBy, scrollTo, smoothScrollTargetReached, scrollContainerState },
     stateFlags,
     scrollSeek,
     { propsReady, didMount },
@@ -258,6 +258,7 @@ export const gridSystem = u.system(
       windowScrollTo,
       useWindowScroll,
       windowScrollTop,
+      scrollContainerState,
       initialItemCount,
       ...scrollSeek,
 
