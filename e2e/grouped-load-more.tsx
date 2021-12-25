@@ -105,9 +105,7 @@ export default function App() {
       groupCounts={groupCounts}
       groupContent={(index) => <div>Group {groups[index]}</div>}
       overscan={400}
-      endReached={(value) => {
-        loadMore()
-      }}
+      endReached={loadMore}
       itemContent={(index) => (
         <div>
           <div>{users[index].initials}</div>
