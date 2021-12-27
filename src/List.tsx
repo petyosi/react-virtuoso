@@ -169,7 +169,10 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const listState = useEmitterValue('listState')
   const deviation = useEmitterValue('deviation')
   const sizeRanges = usePublisher('sizeRanges')
-  const scrollContainerStateCallback = usePublisher('scrollContainerState')
+  const useWindowScroll = useEmitterValue('useWindowScroll')
+  const windowScrollContainerStateCallback = usePublisher('windowScrollContainerState')
+  const _scrollContainerStateCallback = usePublisher('scrollContainerState')
+  const scrollContainerStateCallback = useWindowScroll ? windowScrollContainerStateCallback : _scrollContainerStateCallback
   const itemContent = useEmitterValue('itemContent')
   const groupContent = useEmitterValue('groupContent')
   const trackItemSizes = useEmitterValue('trackItemSizes')
@@ -322,7 +325,7 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
 
 export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue }: Hooks) {
   const Scroller: Components['Scroller'] = React.memo(function VirtuosoWindowScroller({ style, children, ...props }) {
-    const scrollContainerStateCallback = usePublisher('scrollContainerState')
+    const scrollContainerStateCallback = usePublisher('windowScrollContainerState')
     const ScrollerComponent = useEmitterValue('ScrollerComponent')!
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
     const totalListHeight = useEmitterValue('totalListHeight')
@@ -359,7 +362,7 @@ const Viewport: FC = ({ children }) => {
   const viewportRef = useSize(compose(viewportHeight, (el) => correctItemSize(el, 'height')))
 
   return (
-    <div style={viewportStyle} ref={viewportRef}>
+    <div style={viewportStyle} ref={viewportRef} data-viewport-type="element">
       {children}
     </div>
   )
@@ -370,7 +373,7 @@ const WindowViewport: FC = ({ children }) => {
   const viewportRef = useWindowViewportRectRef(windowViewportRect)
 
   return (
-    <div ref={viewportRef} style={viewportStyle}>
+    <div ref={viewportRef} style={viewportStyle} data-viewport-type="window">
       {children}
     </div>
   )

@@ -12,7 +12,13 @@ export default function useChangedListContentsSizes(
   return useSize((el: HTMLElement) => {
     const ranges = getChangedChildSizes(el.children, itemSize, 'offsetHeight', log)
     const scrollableElement = el.parentElement!.parentElement!
-    scrollContainerStateCallback([Math.max(scrollableElement.scrollTop, 0), scrollableElement.scrollHeight])
+
+    const scrollTop =
+      el.parentElement!.dataset['viewportType'] === 'window'
+        ? window.pageYOffset || document.documentElement.scrollTop
+        : scrollableElement.scrollTop
+
+    scrollContainerStateCallback([Math.max(scrollTop, 0), scrollableElement.scrollHeight])
     if (ranges !== null) {
       callback(ranges)
     }
