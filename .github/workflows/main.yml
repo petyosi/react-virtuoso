@@ -36,13 +36,14 @@ jobs:
         run: |
           yarn install --frozen-lockfile
           yarn install --frozen-lockfile --cwd site
+          npx playwright install-deps
 
       - name: run lint and tests
         run: |
           yarn lint
           yarn typecheck
           yarn test --ci 
-          yarn e2e --ci
+          yarn e2e 
 
       - name: build site
         run: |
