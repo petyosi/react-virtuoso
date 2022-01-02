@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Virtuoso } from '../src/'
+import { Virtuoso } from '../src'
 
 function itemContent(index: number) {
   const height = index === 1099 ? 120 : 30

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Virtuoso, VirtuosoHandle } from '../src/'
+import { Virtuoso, VirtuosoHandle } from '../src'
 
 export default function App() {
   const ref = React.useRef<VirtuosoHandle>(null)

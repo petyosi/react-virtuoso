@@ -17,6 +17,6 @@
     "jsx": "react",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["@types/jest", "jest-playwright-preset", "expect-playwright"]
+    "types": ["@types/jest"]
   }
 }

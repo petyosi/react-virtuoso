@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Virtuoso } from '../src/'
+import { Virtuoso } from '../src'
 
 export default function App() {
   const [items, setItems] = React.useState(Array.from({ length: 0 }).map(() => 'item'))

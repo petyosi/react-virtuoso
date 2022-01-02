@@ -28,9 +28,8 @@ const ItemContainer = styled.div`
 const ItemWrapper = styled.div`
     flex: 1;
     text-align: center;
-    font-size: 80%;
+    height: 30px;
     padding: 20px;
-    box-shadow: 0 5px 6px -6px #777;
     background: white;
   }
 `

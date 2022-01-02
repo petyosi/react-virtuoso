@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Virtuoso } from '../src/'
+import { Virtuoso } from '../src'
 import { useState, useCallback } from 'react'
 
 const START_INDEX = 10000

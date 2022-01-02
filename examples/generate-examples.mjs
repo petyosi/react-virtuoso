@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 
 const examples = fs
-  .readdirSync('./e2e')
+  .readdirSync('./examples')
   .filter((name) => name.match(/tsx$/))
   .filter((name) => name !== 'server.tsx')
 
@@ -85,5 +85,5 @@ const htmlCode = `
 </html>
 `
 
-fs.writeFileSync('e2e/__examples.jsx', code)
-fs.writeFileSync('e2e/__examples.html', htmlCode)
+fs.writeFileSync('examples/__examples.jsx', code)
+fs.writeFileSync('examples/__examples.html', htmlCode)

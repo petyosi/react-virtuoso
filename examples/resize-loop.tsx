@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import { Virtuoso } from '../src/'
+import { Virtuoso } from '../src'
 
 // window.addEventListener('error', (event) => {
 //   console.log(event)

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useState, useEffect } from 'react'
-import { Virtuoso } from '../src/'
+import { Virtuoso } from '../src'
 
 const Item = (props: { index: number }) => {
   const [loaded, setLoaded] = useState(false)

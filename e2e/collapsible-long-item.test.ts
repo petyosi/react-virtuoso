@@ -1,13 +1,15 @@
-describe('list with scroll seek placeholders', () => {
-  beforeEach(async () => {
-    await page.goto('http://localhost:1234/collapsible-long-item')
-    await page.waitForSelector('#test-root div')
+import { test, expect } from '@playwright/test'
+
+test.describe('list with scroll seek placeholders', () => {
+  test.beforeEach(async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/collapsible-long-item`)
+    await page.waitForSelector('[data-test-id=virtuoso-scroller]')
     await page.waitForTimeout(100)
   })
 
-  it('compensates correctly when collapsing an item', async () => {
+  test('compensates correctly when collapsing an item', async ({ page }) => {
     await page.evaluate(() => {
-      const scroller = document.querySelector('#test-root > div')!
+      const scroller = document.querySelector('[data-test-id=virtuoso-scroller]')!
       scroller.scrollBy({ top: -400 })
     })
 
@@ -21,7 +23,7 @@ describe('list with scroll seek placeholders', () => {
     await page.waitForTimeout(200)
 
     const scrollTop = await page.evaluate(() => {
-      const scroller = document.querySelector('#test-root > div')!
+      const scroller = document.querySelector('[data-test-id=virtuoso-scroller]')!
       return scroller.scrollTop
     })
 

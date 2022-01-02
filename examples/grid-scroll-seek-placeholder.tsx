@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { GridComponents, VirtuosoGrid } from '../src/'
+import { GridComponents, VirtuosoGrid } from '../src'
 import styled from '@emotion/styled'
 
 const ItemContainer = styled.div`
