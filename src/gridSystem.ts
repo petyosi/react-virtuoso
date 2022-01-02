@@ -66,7 +66,7 @@ export const gridSystem = u.system(
     stateFlags,
     scrollSeek,
     { propsReady, didMount },
-    { windowViewportRect, windowScrollTo, useWindowScroll, windowScrollTop },
+    { windowViewportRect, windowScrollTo, useWindowScroll, windowScrollContainerState },
   ]) => {
     const totalCount = u.statefulStream(0)
     const initialItemCount = u.statefulStream(0)
@@ -75,6 +75,7 @@ export const gridSystem = u.system(
     const itemDimensions = u.statefulStream<ElementDimensions>({ height: 0, width: 0 })
     const scrollToIndex = u.stream<IndexLocation>()
     const scrollHeight = u.stream<number>()
+    const deviation = u.statefulStream(0)
 
     u.connect(
       u.pipe(
@@ -257,7 +258,8 @@ export const gridSystem = u.system(
       windowViewportRect,
       windowScrollTo,
       useWindowScroll,
-      windowScrollTop,
+      windowScrollContainerState,
+      deviation,
       scrollContainerState,
       initialItemCount,
       ...scrollSeek,

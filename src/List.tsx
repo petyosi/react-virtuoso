@@ -192,7 +192,6 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const scrolledToInitialItem = useEmitterValue('scrolledToInitialItem')
   const firstItemIndex = useEmitterValue('firstItemIndex')
 
-  // const calculatedHeight = listState.offsetBottom + listState.bottom
   const containerStyle: CSSProperties = showTopList
     ? {}
     : {
@@ -200,7 +199,6 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
         paddingTop: listState.offsetTop + paddingTopAddition,
         paddingBottom: listState.offsetBottom,
         marginTop: deviation,
-        // height: calculatedHeight,
       }
 
   if (!showTopList && listState.items.length === 0 && EmptyPlaceholder && scrolledToInitialItem) {
@@ -330,6 +328,7 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
     const ScrollerComponent = useEmitterValue('ScrollerComponent')!
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
     const totalListHeight = useEmitterValue('totalListHeight')
+    const deviation = useEmitterValue('deviation')
     const { scrollerRef, scrollByCallback, scrollToCallback } = useScrollTop(
       scrollContainerStateCallback,
       smoothScrollTargetReached,
@@ -349,7 +348,7 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
     return createElement(
       ScrollerComponent,
       {
-        style: { position: 'relative', ...style, ...(totalListHeight !== 0 ? { height: totalListHeight } : {}) },
+        style: { position: 'relative', ...style, ...(totalListHeight !== 0 ? { height: totalListHeight + deviation } : {}) },
         ...props,
       },
       children

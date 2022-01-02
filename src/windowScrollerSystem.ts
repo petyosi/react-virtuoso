@@ -2,37 +2,20 @@ import * as u from '@virtuoso.dev/urx'
 import { domIOSystem } from './domIOSystem'
 import { WindowViewportInfo } from './interfaces'
 
-export const windowScrollerSystem = u.system(([{ scrollTop, scrollTo, scrollHeight }]) => {
+export const windowScrollerSystem = u.system(([{ scrollTo, scrollContainerState }]) => {
   const windowScrollContainerState = u.stream<[number, number]>()
   const windowViewportRect = u.stream<WindowViewportInfo>()
-  const windowScrollTop = u.stream<number>()
   const windowScrollTo = u.stream<ScrollToOptions>()
   const useWindowScroll = u.statefulStream(false)
 
   u.connect(
     u.pipe(
-      windowScrollContainerState,
-      u.map(([scrollTop]) => scrollTop)
-    ),
-    windowScrollTop
-  )
-
-  u.connect(
-    u.pipe(
-      windowScrollContainerState,
-      u.map(([, scrollHeight]) => scrollHeight)
-    ),
-    scrollHeight
-  )
-
-  u.connect(
-    u.pipe(
-      u.combineLatest(windowScrollTop, windowViewportRect),
-      u.map(([windowScrollTop, { offsetTop }]) => {
-        return Math.max(0, windowScrollTop - offsetTop)
+      u.combineLatest(windowScrollContainerState, windowViewportRect),
+      u.map(([[windowScrollTop, scrollHeight], { offsetTop }]) => {
+        return [Math.max(0, windowScrollTop - offsetTop), scrollHeight]
       })
     ),
-    scrollTop
+    scrollContainerState
   )
 
   u.connect(
@@ -55,7 +38,6 @@ export const windowScrollerSystem = u.system(([{ scrollTop, scrollTo, scrollHeig
 
     // input
     windowScrollContainerState,
-    windowScrollTop,
     windowViewportRect,
 
     // signals

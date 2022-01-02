@@ -3,13 +3,13 @@ import { listSystem } from '../src/listSystem'
 
 describe('window scroller system', () => {
   it('offsets the window scroll top with the element offset top', () => {
-    const { windowViewportRect, scrollTop, windowScrollTop } = u.init(listSystem)
+    const { windowViewportRect, scrollTop, windowScrollContainerState } = u.init(listSystem)
     const sub = jest.fn()
     u.subscribe(scrollTop, sub)
     u.publish(windowViewportRect, { offsetTop: 100, visibleHeight: 1000 })
-    u.publish(windowScrollTop, 0)
+    u.publish(windowScrollContainerState, [0, 1000])
     expect(sub).toHaveBeenCalledWith(0)
-    u.publish(windowScrollTop, 200)
+    u.publish(windowScrollContainerState, [200, 1000])
     expect(sub).toHaveBeenCalledWith(100)
   })
   it('offsets the scrollTo calls with offsetTop', () => {
