@@ -52,6 +52,8 @@ export type ScrollerProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'childr
 export interface ScrollSeekPlaceholderProps {
   index: number
   height: number
+  groupIndex?: number
+  type: 'group' | 'item'
 }
 
 /**
