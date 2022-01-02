@@ -40,7 +40,13 @@ export const loggerSystem = u.system(
       const currentLevel = getGlobalThis()['VIRTUOSO_LOG_LEVEL'] ?? u.getValue(logLevel)
       if (level >= currentLevel) {
         // eslint-disable-next-line no-console
-        console[CONSOLE_METHOD_MAP[level]]('%creact-virtuoso: %c%s %o', 'color: #0253b3; font-weight: bold', 'color: black', label, message)
+        console[CONSOLE_METHOD_MAP[level]](
+          '%creact-virtuoso: %c%s %o',
+          'color: #0253b3; font-weight: bold',
+          'color: initial',
+          label,
+          message
+        )
       }
     })
 
