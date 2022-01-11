@@ -19,9 +19,9 @@ For live examples and documentation, check the [documentation website](//virtuos
 
 ## Sponsors
 
-[![Stream](https://i.imgur.com/oU7XYkk.png)](https://getstream.io/chat/react-chat/tutorial/?utm_source=https://github.com/petyosi/react-virtuoso&utm_medium=github&utm_content=developer&utm_term=react)
+[![Stream](https://i.imgur.com/oU7XYkk.png)](https://getstream.io/chat/react-chat/tutorial/?utm_source=Github&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Github_Jan2022_ReactChat&utm_term=react-virtuoso)
 
-React Virtuoso is proudly sponsored by [Stream](https://getstream.io/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship), the leading provider in enterprise grade [Feed](https://getstream.io/activity-feeds/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship) & [Chat](https://getstream.io/chat/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship) APIs. To learn more about Stream, [click here](https://getstream.io/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship).
+React Virtuoso is proudly sponsored by [Stream](https://getstream.io/chat/react-chat/tutorial/?utm_source=Github&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Github_Jan2022_ReactChat&utm_term=react-virtuoso), the leading provider in enterprise grade [Feed](https://getstream.io/activity-feeds/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship) & [Chat](https://getstream.io/chat/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship) APIs. To learn more about Stream, [click here](https://getstream.io/chat/react-chat/tutorial/?utm_source=Github&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Github_Jan2022_ReactChat&utm_term=react-virtuoso).
 
 If you are using Virtuoso for work, [sponsor it](https://www.patreon.com/react_virtuoso). Any donation helps a lot with the project development and maintenance.
 
