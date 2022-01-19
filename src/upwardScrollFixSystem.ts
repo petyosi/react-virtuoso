@@ -29,6 +29,7 @@ export const upwardScrollFixSystem = u.system(
                 const firstItemIndex = items[0].originalIndex
                 const prevFirstItemIndex = prevItems[0].originalIndex
                 const atStart = firstItemIndex === 0 && prevFirstItemIndex === 0
+                const onlyItem = items.length === 1
 
                 if (!atStart) {
                   for (let index = items.length - 1; index >= 0; index--) {
@@ -40,7 +41,7 @@ export const upwardScrollFixSystem = u.system(
                       continue
                     }
 
-                    if (item.offset !== prevItem.offset) {
+                    if (item.offset !== prevItem.offset || onlyItem) {
                       newDev = item.offset - prevItem.offset + item.size - prevItem.size
                       break
                     }
