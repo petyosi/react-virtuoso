@@ -1,0 +1,1 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[25],{86:function(t){t.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"Why I wrote my own state management for react virtuoso","permalink":"/blog/why-i-wrote-my-own-state-management-for-react-virtuoso"}]}')}}]);
