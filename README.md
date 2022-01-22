@@ -2,12 +2,13 @@
 
 [![npm version](https://img.shields.io/npm/v/react-virtuoso.svg?style=flat)](//badge.fury.io/js/react-virtuoso)
 
-**React Virtuoso** is the most powerful React virtual list component, full stop. Here's why:
+**React Virtuoso** is the most powerful React virtual list/table component, full stop. Here's why:
 
 - Variable sized items out of the box; no manual measurements or hard-coding item heights is necessary;
 - Support for [reverse (bottom up) scrolling and prepending items](//virtuoso.dev/prepend-items/) (chat, feeds, etc);
 - [Grouped mode with sticky headers](//virtuoso.dev/grouped-by-first-letter/);
 - [Responsive grid layout](//virtuoso.dev/grid-responsive-columns/);
+- [Table Support](//virtuoso.dev/hello-table/);
 - [Automatic handling of content resize](//virtuoso.dev/auto-resizing/);
 - [Custom Header, Footer, and empty list components](//virtuoso.dev/customize-structure/);
 - [Pinned top items](//virtuoso.dev/top-items/);
@@ -56,6 +57,11 @@ The `GroupedVirtuoso` component is a variant of the "flat" `Virtuoso`, with the 
 
 The `VirtuosoGrid` component displays **same sized items** in multiple columns.
 The layout and item sizing is controlled through CSS class properties, which allows you to use media queries, min-width, percentage, etc.
+
+## [Table](//virtuoso.dev/hello-table/)
+
+The `TableVirtuoso` component works just like `Virtuoso`, but with HTML tables.
+It supports window scrolling, sticky headers, sticky columns, and works with React Table and MUI Table.
 
 ## Works With Your UI Library of Choice
 

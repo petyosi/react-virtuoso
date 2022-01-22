@@ -8,6 +8,8 @@ export interface ItemContent<D> {
   (index: number, data: D): ReactNode
 }
 
+export type FixedHeaderContent = (() => React.ReactChildren | React.ReactNode) | null
+
 export interface GroupItemContent<D> {
   (index: number, groupIndex: number, data: D): ReactNode
 }
@@ -30,6 +32,7 @@ export interface GroupProps {
 }
 
 export type TopItemListProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children'>
+export type TableProps = Pick<ComponentPropsWithRef<'table'>, 'style'>
 
 /**
  * Passed to the Components.List custom component
@@ -44,7 +47,10 @@ export type GridListProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'childr
 /**
  * Passed to the Components.Scroller custom component
  */
-export type ScrollerProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'tabIndex' | 'ref'> & { 'data-test-id'?: string }
+export type ScrollerProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'tabIndex' | 'ref'> & {
+  'data-test-id'?: string
+  'data-virtuoso-scroller'?: boolean
+}
 
 /**
  * Passed to the Components.ScrollSeekPlaceholder custom component
@@ -104,6 +110,49 @@ export interface Components {
    * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
    */
   List?: ComponentType<ListProps>
+
+  /**
+   * Set to render a custom UI when the list is empty.
+   */
+  EmptyPlaceholder?: ComponentType
+
+  /**
+   * Set to render an item placeholder when the user scrolls fast.  See the `scrollSeek` property for more details.
+   */
+  ScrollSeekPlaceholder?: ComponentType<ScrollSeekPlaceholderProps>
+}
+
+/**
+ * Customize the TableVirtuoso rendering by passing a set of custom components.
+ */
+export interface TableComponents {
+  /**
+   * Set to customize the wrapping `table` element.
+   *
+   */
+  Table?: ComponentType<TableProps>
+
+  /**
+   * Set to render a fixed header at the top of the table (`thead`). use [[fixedHeaderHeight]] to set the contents
+   *
+   */
+  TableHead?: ComponentType
+
+  /**
+   * Set to customize the item wrapping element. Default is `tr`.
+   */
+  TableRow?: ComponentType<ItemProps>
+
+  /**
+   * Set to customize the outermost scrollable element. This should not be necessary in general,
+   * as the component passes its HTML attribute props to it.
+   */
+  Scroller?: ComponentType<ScrollerProps>
+
+  /**
+   * Set to customize the items wrapper. Default is `tbody`.
+   */
+  TableBody?: ComponentType<ListProps>
 
   /**
    * Set to render a custom UI when the list is empty.
@@ -183,6 +232,7 @@ export interface IndexLocationWithAlign {
 }
 
 export type ListRootProps = Omit<React.HTMLProps<'div'>, 'ref' | 'data'>
+export type TableRootProps = Omit<React.HTMLProps<'table'>, 'ref' | 'data'>
 export type GridRootProps = Omit<React.HTMLProps<'div'>, 'ref' | 'data'>
 
 export interface GridItem {

@@ -319,6 +319,8 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
         ref: scrollerRef as React.MutableRefObject<HTMLDivElement | null>,
         style: { ...scrollerStyle, ...style },
         'data-test-id': 'virtuoso-scroller',
+        //@ts-expect-error what?
+        'data-virtuoso-scroller': 'true',
         tabIndex: 0,
         ...props,
       },
@@ -355,6 +357,8 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
       ScrollerComponent,
       {
         style: { position: 'relative', ...style, ...(totalListHeight !== 0 ? { height: totalListHeight + deviation } : {}) },
+        //@ts-expect-error what?
+        'data-virtuoso-scroller': 'true',
         ...props,
       },
       children

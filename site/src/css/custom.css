@@ -4,7 +4,6 @@
  * bundles Infima by default. Infima is a CSS framework designed to
  * work well for content-centric websites.
  */
-
 /* You can override the default Infima variables here. */
 :root {
   --ifm-color-primary: #0253b3;
@@ -65,4 +64,15 @@
   border: 0;
   height: 1px;
   background-color: var(--ifm-toc-border-color);
+}
+
+table {
+  display: table;
+  overflow: visible;
+  border-collapse: separate;
+  table-layout: fixed;
+}
+
+table tr:nth-child(2n) {
+  background-color: inherit;
 }

@@ -6,23 +6,32 @@
  */
 
 import React from 'react'
-import { GroupedVirtuoso, Virtuoso, VirtuosoGrid } from '../../../../dist/'
+import { TableVirtuoso, GroupedVirtuoso, Virtuoso, VirtuosoGrid } from '../../../../dist/'
 import faker from 'faker'
 import styled from '@emotion/styled'
 import { groupBy } from 'lodash'
 import { makeStyles } from '@material-ui/core/styles'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemText from '@material-ui/core/ListItemText'
-import ListSubheader from '@material-ui/core/ListSubheader'
-import ListItemAvatar from '@material-ui/core/ListItemAvatar'
-import Avatar from '@material-ui/core/Avatar'
+import List from '@mui/material/List'
+import ListItem from '@mui/material/ListItem'
+import ListItemText from '@mui/material/ListItemText'
+import ListSubheader from '@mui/material/ListSubheader'
+import ListItemAvatar from '@mui/material/ListItemAvatar'
+import Avatar from '@mui/material/Avatar'
 import * as ReactSortableHOC from 'react-sortable-hoc'
 import * as ReactBeautifulDnd from 'react-beautiful-dnd'
+import Table from '@mui/material/Table'
+import TableBody from '@mui/material/TableBody'
+import TableCell from '@mui/material/TableCell'
+import TableContainer from '@mui/material/TableContainer'
+import TableHead from '@mui/material/TableHead'
+import TableRow from '@mui/material/TableRow'
+import Paper from '@mui/material/Paper'
+import makeData from './makeData'
+import { useTable } from 'react-table'
 
 const randomHeight = () => Math.floor(Math.random() * 30 + 24)
 
-const generateRandomItems = count => {
+const generateRandomItems = (count) => {
   return Array.from({ length: count }).map((_, i) => ({
     text: `Item ${i + 1}`,
     height: randomHeight(),
@@ -71,7 +80,7 @@ function user(index = 0) {
   }
 }
 
-export const getUser = index => {
+export const getUser = (index) => {
   if (!generated[index]) {
     generated[index] = user(index)
   }
@@ -93,12 +102,12 @@ const generateUsers = (length, startIndex = 0) => {
   return Array.from({ length }).map((_, i) => getUser(i + startIndex))
 }
 
-const generateGroupedUsers = length => {
+const generateGroupedUsers = (length) => {
   const users = Array.from({ length })
     .map((_, i) => getUser(i))
     .sort(userSorter)
-  const groupedUsers = groupBy(users, user => user.name[0])
-  const groupCounts = Object.values(groupedUsers).map(users => users.length)
+  const groupedUsers = groupBy(users, (user) => user.name[0])
+  const groupCounts = Object.values(groupedUsers).map((users) => users.length)
   const groups = Object.keys(groupedUsers)
 
   return { users, groupCounts, groups }
@@ -113,6 +122,7 @@ const ReactLiveScope = {
   Virtuoso,
   GroupedVirtuoso,
   VirtuosoGrid,
+  TableVirtuoso,
   generateRandomItems,
   avatar,
   toggleBg,
@@ -122,6 +132,8 @@ const ReactLiveScope = {
   generateGroupedUsers,
   generateUsers,
   styled,
+  useTable,
+  makeData,
   MaterialUI: {
     Avatar,
     List,
@@ -130,6 +142,16 @@ const ReactLiveScope = {
     ListItemText,
     ListSubheader,
     makeStyles,
+  },
+  MUI: {
+    Table,
+    TableRow,
+    TableHead,
+    TableBody,
+    TableRow,
+    TableCell,
+    TableContainer,
+    Paper,
   },
 }
 

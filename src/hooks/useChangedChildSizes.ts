@@ -11,10 +11,15 @@ export default function useChangedListContentsSizes(
 ) {
   return useSize((el: HTMLElement) => {
     const ranges = getChangedChildSizes(el.children, itemSize, 'offsetHeight', log)
-    const scrollableElement = el.parentElement!.parentElement!
+    let scrollableElement = el.parentElement!
+
+    while (!scrollableElement.dataset['virtuosoScroller']) {
+      scrollableElement = scrollableElement.parentElement!
+    }
 
     const scrollTop =
-      el.parentElement!.dataset['viewportType'] === 'window'
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      (scrollableElement.firstElementChild! as HTMLDivElement).dataset['viewportType']! === 'window'
         ? window.pageYOffset || document.documentElement.scrollTop
         : scrollableElement.scrollTop
 

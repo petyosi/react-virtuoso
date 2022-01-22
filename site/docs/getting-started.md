@@ -15,7 +15,7 @@ Out of the box, Virtuoso:
 - Supports headers and footers.
 - Can **pin the first `N` items** to the top of the list.
 
-To start, install `react-virtuoso` in your React project. The package exports the `Virtuoso`, `GroupedVirtuoso`, and `VirtuosoGrid` components.
+To start, install `react-virtuoso` in your React project. The package exports the `Virtuoso`,  `TableVirtuoso`, `GroupedVirtuoso`, and `VirtuosoGrid` components.
 
 ```bash
 npm install react-virtuoso
@@ -91,6 +91,13 @@ Check the
 [grouped by first letter](/grouped-by-first-letter) and
 [groups with load on demand](/grouped-with-load-on-demand)
 examples.
+
+
+### Table
+
+The `TableVirtuoso` component works like `Virtuoso`, but with tables. It supports window scrolling, sticky headers and fixed columns.
+
+Check the [Basic Table](/hello-table) example for a sample implementation.
 
 ### Grid
 

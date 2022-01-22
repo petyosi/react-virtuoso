@@ -32,6 +32,7 @@ export const sizeRangeSystem = u.system(
   ([{ scrollTop, viewportHeight, deviation, headerHeight }]) => {
     const listBoundary = u.stream<NumberTuple>()
     const topListHeight = u.statefulStream(0)
+    const fixedHeaderHeight = u.statefulStream(0)
     const increaseViewportBy = u.statefulStream<ViewportIncrease>(0)
     const overscan = u.statefulStream<Overscan>(0)
 
@@ -44,12 +45,24 @@ export const sizeRangeSystem = u.system(
           u.duc(listBoundary, tupleComparator),
           u.duc(overscan),
           u.duc(topListHeight),
+          u.duc(fixedHeaderHeight),
           u.duc(deviation),
           u.duc(increaseViewportBy)
         ),
         u.map(
-          ([scrollTop, viewportHeight, headerHeight, [listTop, listBottom], overscan, topListHeight, deviation, increaseViewportBy]) => {
+          ([
+            scrollTop,
+            viewportHeight,
+            headerHeight,
+            [listTop, listBottom],
+            overscan,
+            topListHeight,
+            fixedHeaderHeight,
+            deviation,
+            increaseViewportBy,
+          ]) => {
             const top = scrollTop - deviation
+            const stickyHeaderHeight = topListHeight + fixedHeaderHeight
             const headerVisible = Math.max(headerHeight - top, 0)
             let direction: ChangeDirection = NONE
             const topViewportAddition = getViewportIncrease(increaseViewportBy, TOP)
@@ -60,7 +73,7 @@ export const sizeRangeSystem = u.system(
             listBottom += headerHeight
             listBottom -= deviation
 
-            if (listTop > scrollTop + topListHeight - topViewportAddition) {
+            if (listTop > scrollTop + stickyHeaderHeight - topViewportAddition) {
               direction = UP
             }
 
@@ -71,7 +84,12 @@ export const sizeRangeSystem = u.system(
             if (direction !== NONE) {
               return [
                 Math.max(top - headerHeight - getOverscan(overscan, TOP, direction) - topViewportAddition, 0),
-                top - headerVisible + viewportHeight + getOverscan(overscan, BOTTOM, direction) + bottomViewportAddition,
+                top -
+                  headerVisible -
+                  fixedHeaderHeight +
+                  viewportHeight +
+                  getOverscan(overscan, BOTTOM, direction) +
+                  bottomViewportAddition,
               ] as NumberTuple
             }
 
@@ -89,6 +107,7 @@ export const sizeRangeSystem = u.system(
       listBoundary,
       overscan,
       topListHeight,
+      fixedHeaderHeight,
       increaseViewportBy,
 
       // output

@@ -1,13 +1,13 @@
 ---
 id: material-ui-endless-scrolling
-title: Material UI
-sidebar_label: Material UI
+title: MUI List 
+sidebar_label: MUI List
 slug: /material-ui-endless-scrolling/
 ---
 
-The React Virtuoso component supports customization of its internal components to accomodate styled components from frameworks like Material-UI. 
+The React Virtuoso component supports customization of its internal components to accomodate styled components from frameworks like MUI. 
 
-The example below displayes 500 records grouped by name, using the [the List components from Material-UI](https://material-ui.com/components/lists/).
+The example below displayes 500 records grouped by name, using the [the List components from MUI](https://mui.com/components/lists/).
 
 ```jsx live
 () => {

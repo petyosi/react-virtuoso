@@ -12,6 +12,8 @@ module.exports = {
       'range-change-callback',
     ],
     'Grouped Mode': ['grouped-numbers', 'grouped-by-first-letter', 'grouped-with-load-on-demand', 'scroll-to-group'],
+    Table: ['hello-table', 'table-fixed-headers', 'mui-table-virtual-scroll', 'table-fixed-columns', 'react-table-integration'],
+    Grid: ['grid-responsive-columns'],
     Scenarios: [
       'press-to-load-more',
       'endless-scrolling',
@@ -26,10 +28,9 @@ module.exports = {
       'react-beautiful-dnd-window-scroller',
     ],
     'Customize Markup': ['custom-scroll-container', 'customize-structure'],
-    Grid: ['grid-responsive-columns'],
-    'API Reference': ['virtuoso-api-reference', 'virtuoso-grid-api-reference'],
+    'API Reference': ['virtuoso-api-reference', 'virtuoso-grid-api-reference', 'table-virtuoso-api-reference'],
     Interfaces: require('./typedoc-sidebar.js')[3].items.filter(
-      (item) => !/handle|virtuosoprops|virtuosogridprops|groupedvirtuosoprops/.test(item)
+      (item) => !/handle|virtuosoprops|virtuosogridprops|groupedvirtuosoprops|virtuosotableprops/.test(item)
     ),
   },
 }
