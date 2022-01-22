@@ -10,7 +10,6 @@ import { TableVirtuoso, GroupedVirtuoso, Virtuoso, VirtuosoGrid } from '../../..
 import faker from 'faker'
 import styled from '@emotion/styled'
 import { groupBy } from 'lodash'
-import { makeStyles } from '@material-ui/core/styles'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
 import ListItemText from '@mui/material/ListItemText'
@@ -141,7 +140,6 @@ const ReactLiveScope = {
     ListItemAvatar,
     ListItemText,
     ListSubheader,
-    makeStyles,
   },
   MUI: {
     Table,
