@@ -34,13 +34,11 @@ The example above changes the scroller element with a custom component. This app
   totalCount={1000}
   itemContent={idx => `Item ${idx}`}
   components={{
-    Scroller: React.forwardRef(({ style, children }, ref) => {
+    Scroller: React.forwardRef(({ style, ...props }, ref) => {
       // an alternative option to assign the ref is
       // <div ref={(r) => ref.current = r}>
       return (
-        <div style={{...style, border: '5px solid gray'}} ref={ref}>
-          {children}
-        </div>
+        <div style={{...style, border: '5px solid gray'}} ref={ref} {...props} />
       )
     }),
   }}
