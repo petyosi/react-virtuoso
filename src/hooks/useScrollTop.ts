@@ -78,7 +78,7 @@ export default function useScrollTop(
     }
 
     const maxScrollTop = scrollHeight - offsetHeight
-    location.top = Math.max(Math.min(maxScrollTop, location.top!), 0)
+    location.top = Math.ceil(Math.max(Math.min(maxScrollTop, location.top!), 0))
 
     // avoid system hanging because the DOM never called back
     // with the scrollTop

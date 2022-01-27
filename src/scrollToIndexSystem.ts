@@ -75,12 +75,12 @@ export const scrollToIndexSystem = u.system(
 
           let top = offsetOf(index, sizes.offsetTree) + headerHeight
           if (align === 'end') {
-            top = Math.round(top - viewportHeight + findMaxKeyValue(sizes.sizeTree, index)[1]!)
+            top = top - viewportHeight + findMaxKeyValue(sizes.sizeTree, index)[1]!
             if (index === lastIndex) {
               top += footerHeight
             }
           } else if (align === 'center') {
-            top = Math.round(top - viewportHeight / 2 + findMaxKeyValue(sizes.sizeTree, index)[1]! / 2)
+            top = top - viewportHeight / 2 + findMaxKeyValue(sizes.sizeTree, index)[1]! / 2
           } else {
             top -= topListHeight
           }
