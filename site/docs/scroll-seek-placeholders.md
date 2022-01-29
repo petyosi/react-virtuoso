@@ -7,10 +7,14 @@ slug: /scroll-seek-placeholders/
 
 The `scrollSeekConfiguration` property allows you to render a placeholder element instead of the actual item if the user scrolls too fast. 
 
-This can improve scrolling performance and delay the actual load of data from the server.
+This improves scrolling performance and delays the actual load of data from the server.
 
-```jsx live
-() => {
+```jsx live include-data
+import { Virtuoso } from 'react-virtuoso'
+import { user, generateUsers, toggleBg } from './data'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+
+export default function App() {
   const randomHeights = useMemo(
     () =>
       Array(10)
@@ -38,6 +42,7 @@ This can improve scrolling performance and delay the actual load of data from th
 
       <div style={{ flex: 1 }}>
         <Virtuoso
+          style={{ height: 400 }}
           data={users}
           itemContent={(index, user) => <div style={{ backgroundColor: toggleBg(index) }}>{user.name}</div>}
           components={{
@@ -56,7 +61,7 @@ This can improve scrolling performance and delay the actual load of data from th
               >
                 <div
                   style={{
-                    background: index % 2 ? "var(--ifm-color-emphasis-100)": "var(--ifm-color-emphasis-200)",
+                    background: index % 2 ? "blue": "green",
                     height: randomHeights[index % 10],
                   }}
                 ></div>

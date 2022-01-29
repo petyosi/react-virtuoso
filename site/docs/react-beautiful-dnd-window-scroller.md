@@ -5,12 +5,29 @@ sidebar_label: RB DND + Window Scroller
 slug: /react-beautiful-dnd-window-scroller/
 ---
 
-The example below integrates React Virtuoso with [React Beautiful DND](https://github.com/atlassian/react-beautiful-dnd) and document scroller.
+The example below integrates React Virtuoso with [React Beautiful DND](https://github.com/atlassian/react-beautiful-dnd) and the document scroller.
 
 ## List attached to RB DND + Window Scroller
 
-```jsx live
-() => {
+```jsx live import=react-beautiful-dnd
+import React, { useEffect, useState } from "react";
+import ReactDOM from "react-dom";
+import { Virtuoso } from "react-virtuoso";
+import * as ReactBeautifulDnd from "react-beautiful-dnd";
+
+// Virtuoso's resize observer can this error,
+// which is caught by DnD and aborts dragging.
+window.addEventListener("error", (e) => {
+  if (
+    e.message ===
+      "ResizeObserver loop completed with undelivered notifications." ||
+    e.message === "ResizeObserver loop limit exceeded"
+  ) {
+    e.stopImmediatePropagation();
+  }
+});
+
+export default function App(){  
   const [items, setItems] = useState(() => {
     return Array.from({ length: 1000 }, (_, k) => ({
       id: `id:${k}`,

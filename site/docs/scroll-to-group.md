@@ -7,8 +7,12 @@ slug: /scroll-to-group/
 
 This example re-creates the UI of the iOS contacts listview. 
 
-```jsx live
-() => {
+```jsx live include-data
+import { GroupedVirtuoso } from 'react-virtuoso'
+import { useCallback, useState, useRef, useEffect, useMemo } from 'react'
+import { generateGroupedUsers, toggleBg } from './data'
+
+export default function App() {
   const { users, groups, groupCounts } = generateGroupedUsers(500)
   const virtuoso = useRef(null)
 
@@ -20,7 +24,7 @@ This example re-creates the UI of the iOS contacts listview.
           groupCounts={groupCounts}
           groupContent={index => {
           return <div style={{ 
-            backgroundColor: 'var(--ifm-background-color)', 
+            backgroundColor: 'white', 
             padding: '0.3rem 1rem'
           }}>{groups[index]}</div>
           }}

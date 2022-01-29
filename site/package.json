@@ -11,6 +11,7 @@
     "serve": "docusaurus serve --host 0.0.0.0"
   },
   "dependencies": {
+    "@codesandbox/sandpack-react": "^0.13.8",
     "@docusaurus/core": "2.0.0-alpha.66",
     "@docusaurus/plugin-google-analytics": "2.0.0-alpha.66",
     "@docusaurus/preset-classic": "2.0.0-alpha.66",
@@ -27,7 +28,8 @@
     "faker": "^5.1.0",
     "lodash": "^4.17.21",
     "react-sortable-hoc": "^1.11.0",
-    "react-table": "^7.7.0"
+    "react-table": "^7.7.0",
+    "unist-util-map": "^3.0.0"
   },
   "devDependencies": {
     "docusaurus-plugin-typedoc": "^0.4.0",

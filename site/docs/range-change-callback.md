@@ -5,20 +5,24 @@ sidebar_label: Range Change Callback
 slug: /range-change-callback/
 ---
 
-The `rangeChanged` callback property gets called with the start / end indexes of the visible range.
+The `rangeChanged` callback property gets called with the start/end indexes of the visible range.
 
 Note: the `rangeChanged` reports the rendered items, which are affected by the `overscan` property - not the ones visible in the viewport.
 If you must track only the visible items, you can try the workaround from [this Github issue](https://github.com/petyosi/react-virtuoso/issues/118#issuecomment-642156138).
 
-```jsx live
-() => {
+```jsx live include-data
+import { Virtuoso } from 'react-virtuoso'
+import { generateUsers } from './data'
+import { useState, useMemo, useRef } from 'react'
+
+export default function App() {
   const [visibleRange, setVisibleRange] = useState({
     startIndex: 0,
     endIndex: 0,
   })
   const users = useMemo(() => generateUsers(100), [])
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: 400, display: 'flex', flexDirection: 'column' }}>
       <p>
         current visible range: {visibleRange.startIndex} - {visibleRange.endIndex}{' '}
       </p>

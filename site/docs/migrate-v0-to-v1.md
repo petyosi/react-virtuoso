@@ -5,12 +5,12 @@ sidebar_label: Migrate from v0 to v1
 slug: /migrate-v0-to-v1/
 ---
 
-Version `1.*` of Virtuoso is a complete rewrite from `v0.*`, addressing the architecutral limitations of the first version and enabling a smooth path to introducing new features. 
+Version `1.*` of Virtuoso is a complete rewrite from `v0.*`, addressing the architectural limitations of the first version and enabling a smooth path to introduce new features. 
 
 ## v1 Primary Benefits
 
-The biggest unresolved challenge in v0 was the so called *reverse* (bottom to top) scrolling mode, which is typical for **chat** and **feed** interfaces. 
-Prepending items with unknown height to the top of the list was not part of the original design and not handled well, causing visual glitches and "jumps". This should work fine in v1.
+The biggest unresolved challenge in v0 was the so-called *reverse* (bottom to top) scrolling mode, which is typical for **chat** and **feed** interfaces. 
+Prepending items with unknown height to the top of the list was not part of the original design and was not handled well, causing visual glitches and "jumps". This should work fine in v1.
 
 ## What's New in V1
 
@@ -24,7 +24,7 @@ Prepending items with unknown height to the top of the list was not part of the 
 
 ## Breaking changes
 
-v1 comes with some property renames, new properties, changed DOM structure, and some behavior tweaks. 
+V1 comes with some property renames, new properties, changed DOM structure, and some behavior tweaks. 
 Most of the old properties have been kept for making the migration easier, with warnings in the console pointing to the new names. 
 The new DOM structure (and the way to customize it) are documented in the [Customize Structure](./customize-structure.md)
 

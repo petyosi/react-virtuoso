@@ -8,10 +8,15 @@ slug: /scroll-to-index/
 The Virtuoso component exposes an imperative `scrollToIndex` method, which scrolls the item at the specified index into view.
 As an optional configuration, the method accepts `align: 'start' | 'center' | 'end'` and `behavior: 'smooth'`.
 
-Warning: Using smooth scrolling over large amount of items can kill performance and potentially clash with loading strategies.
+Warning: Using smooth scrolling over many items can kill performance and potentially clash with loading strategies.
 
-```jsx live
-() => {
+
+```jsx live include-data
+import { Virtuoso } from 'react-virtuoso'
+import { generateUsers, avatar, avatarPlaceholder } from './data'
+import { useState, useMemo, useRef } from 'react'
+
+export default function App() {
   const [align, setAlign] = useState("start");
   const [behavior, setBehavior] = useState("auto");
   const virtuoso = useRef(null);

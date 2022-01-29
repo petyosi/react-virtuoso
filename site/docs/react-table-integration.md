@@ -9,8 +9,13 @@ The following example virtualizes the [basic example of React Table](https://rea
 
 ## Virtualized React Table with Table Virtuoso
 
-```jsx live
-() => {
+```jsx live include-data import=react-table
+import { TableVirtuoso } from 'react-virtuoso'
+import { useTable } from 'react-table'
+import { makeData } from './data'
+import React, { useMemo } from 'react'
+
+export default function App() {
   const data = useMemo(() => makeData(200), [])
   const columns = useMemo(
     () => [
@@ -58,9 +63,10 @@ The following example virtualizes the [basic example of React Table](https://rea
 
   return (
     <TableVirtuoso
+      style={{ height: 400 }}
       totalCount={rows.length}
       components={{
-        Table: ({ style, ...props }) => <table {...getTableProps()} {...props} style={{ ...style, width: 800 }} />,
+        Table: ({ style, ...props }) => <table {...getTableProps()} {...props} style={{ ...style, width: 800, tableLayout: 'fixed' }} />,
         TableBody: React.forwardRef(({ style, ...props }, ref) => <tbody {...getTableBodyProps()} {...props} ref={ref} />),
         TableRow: (props) => {
           const index = props['data-index']
@@ -70,7 +76,7 @@ The following example virtualizes the [basic example of React Table](https://rea
       }}
       fixedHeaderContent={() => {
         return headerGroups.map((headerGroup) => (
-          <tr {...headerGroup.getHeaderGroupProps()} style={{ background: 'var(--ifm-color-emphasis-100)' }}>
+          <tr {...headerGroup.getHeaderGroupProps()} style={{ background: 'white' }}>
             {headerGroup.headers.map((column) => (
               <th {...column.getHeaderProps()}>{column.render('Header')}</th>
             ))}

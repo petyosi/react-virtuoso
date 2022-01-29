@@ -28,25 +28,32 @@ components.Scroller (div)
 
 ```
 
-To change what's rendered, pass your component to the specified key in `components`. Notice that the `List` component needs to accept and pass its `ref` to the actual DOM element.
+Pass a custom component to the specified key in `components` to change rendering. 
+Notice that the `List` component must accept and pass its `ref` to the actual DOM element.
 The example below adds borders to each customizable element.
 
-```jsx live
-() => {
-  const Item = styled.div`
-    border: 2px solid red;
-  `
-  const ListEl = styled.div`
-    border: 1px solid blue;
-  `
-  const Header = () => 'Header'
-  const Footer = () => 'Footer'
+```jsx live import=@emotion/styled
+import styled from '@emotion/styled'
+import React from 'react'
+import { Virtuoso } from 'react-virtuoso'
 
-  const List = React.forwardRef((props, ref) => {
-    return <ListEl {...props} ref={ref} />
-  })
+const Item = styled.div`
+  border: 2px solid red;
+`
+const ListEl = styled.div`
+  border: 1px solid blue;
+`
+const Header = () => 'Header'
+const Footer = () => 'Footer'
 
-  return <Virtuoso components={{ Item, List, Header, Footer }} totalCount={30} itemContent={idx => `Item ${idx}`} />
+const List = React.forwardRef((props, ref) => {
+  return <ListEl {...props} ref={ref} />
+})
+
+export default function App() {
+  return (
+    <Virtuoso style={{ height: 400 }} components={{ Item, List, Header, Footer }} totalCount={30} itemContent={(idx) => `Item ${idx}`} />
+  )
 }
 ```
 

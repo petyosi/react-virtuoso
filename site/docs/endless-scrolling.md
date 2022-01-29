@@ -6,14 +6,19 @@ slug: /endless-scrolling/
 description: The React Virtuoso component makes it trivial to implement infinite scrolling lists in both directions with variably sized items.
 ---
 
-The `endReached` callback property can be used to automatically load more items when the user scrolls to the bottom of the list, creating endless scrolling. 
-If you would like to load items more aggressively, you can increase the `overscan` value. 
+Use the `endReached` callback to automatically load more items when the user scrolls to the bottom of the list, creating endless scrolling. 
+If you want to load items more aggressively, set the `overscan` or the `increaseViewportBy` property. 
+
 For reverse endless scrolling implementation, check [the prepend items](/prepend-items/) example.
 
 Scroll fast to the bottom of the list to load additional items.
 
-```jsx live
-() => {
+```jsx live include-data
+import { Virtuoso } from 'react-virtuoso'
+import { generateUsers } from './data'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+
+export default function App() {
   const [users, setUsers] = useState(() => [])
 
   const loadMore = useCallback(() => {
