@@ -170,12 +170,18 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
   const TheTHead = useEmitterValue('TableHeadComponent')
 
   const theHead = fixedHeaderContent
-    ? React.createElement(TheTHead!, { style: { zIndex: 1, position: 'sticky', top: 0 }, ref: theadRef } as any, fixedHeaderContent())
+    ? React.createElement(
+        TheTHead!,
+        { key: 'TableHead', style: { zIndex: 1, position: 'sticky', top: 0 }, ref: theadRef } as any,
+        fixedHeaderContent()
+      )
     : null
 
   return (
     <TheScroller {...props}>
-      <TheViewport>{React.createElement(TheTable!, { style: { borderSpacing: 0 } } as any, [theHead, <Items />])}</TheViewport>
+      <TheViewport>
+        {React.createElement(TheTable!, { style: { borderSpacing: 0 } } as any, [theHead, <Items key="TableBody" />])}
+      </TheViewport>
     </TheScroller>
   )
 })
