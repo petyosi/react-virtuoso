@@ -2,7 +2,18 @@ import { useEffect, useRef, useCallback } from 'react'
 import { useSizeWithElRef } from './useSize'
 import { WindowViewportInfo } from '../interfaces'
 
-export default function useWindowViewportRectRef(callback: (info: WindowViewportInfo) => void) {
+const getScrollElementInfo = (element: HTMLElement, scrollElement: HTMLElement) => {
+  const rect = element.getBoundingClientRect()
+  const seRect = scrollElement.getBoundingClientRect()
+  var deltaTop = rect.top - seRect.top  
+  return {
+    offsetTop: deltaTop + scrollElement.scrollTop,
+    visibleHeight: seRect.height - Math.max(0, deltaTop),
+    visibleWidth: rect.width
+  }
+} 
+
+export default function useWindowViewportRectRef(callback: (info: WindowViewportInfo) => void, scrollElement?: HTMLElement) {
   const viewportInfo = useRef<WindowViewportInfo | null>(null)
 
   const calculateInfo = useCallback(
@@ -15,14 +26,14 @@ export default function useWindowViewportRectRef(callback: (info: WindowViewport
 
       const visibleWidth = rect.width
       const offsetTop = rect.top + window.pageYOffset
-      viewportInfo.current = {
+      viewportInfo.current = scrollElement ? getScrollElementInfo(element, scrollElement) : {
         offsetTop,
         visibleHeight,
         visibleWidth,
       }
       callback(viewportInfo.current)
     },
-    [callback]
+    [callback, scrollElement]
   )
 
   const { callbackRef, ref } = useSizeWithElRef(calculateInfo)
@@ -32,13 +43,15 @@ export default function useWindowViewportRectRef(callback: (info: WindowViewport
   }, [calculateInfo, ref])
 
   useEffect(() => {
-    window.addEventListener('scroll', windowEH)
-    window.addEventListener('resize', windowEH)
+    var element = scrollElement ? scrollElement : window
+
+    element?.addEventListener('scroll', windowEH)
+    element?.addEventListener('resize', windowEH)
     return () => {
-      window.removeEventListener('scroll', windowEH)
-      window.removeEventListener('resize', windowEH)
+      element?.removeEventListener('scroll', windowEH)
+      element?.removeEventListener('resize', windowEH)
     }
-  }, [windowEH])
+  }, [windowEH, scrollElement])
 
   return callbackRef
 }

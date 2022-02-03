@@ -170,16 +170,17 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const deviation = useEmitterValue('deviation')
   const sizeRanges = usePublisher('sizeRanges')
   const useWindowScroll = useEmitterValue('useWindowScroll')
+  const scrollElement = useEmitterValue('scrollElement')
   const windowScrollContainerStateCallback = usePublisher('windowScrollContainerState')
   const _scrollContainerStateCallback = usePublisher('scrollContainerState')
-  const scrollContainerStateCallback = useWindowScroll ? windowScrollContainerStateCallback : _scrollContainerStateCallback
+  const scrollContainerStateCallback = (scrollElement || useWindowScroll) ? windowScrollContainerStateCallback : _scrollContainerStateCallback
   const itemContent = useEmitterValue('itemContent')
   const groupContent = useEmitterValue('groupContent')
   const trackItemSizes = useEmitterValue('trackItemSizes')
   const itemSize = useEmitterValue('itemSize')
   const log = useEmitterValue('log')
 
-  const ref = useChangedListContentsSizes(sizeRanges, itemSize, trackItemSizes, showTopList ? noop : scrollContainerStateCallback, log)
+  const ref = useChangedListContentsSizes(sizeRanges, itemSize, trackItemSizes, showTopList ? noop : scrollContainerStateCallback, log, scrollElement)
   const EmptyPlaceholder = useEmitterValue('EmptyPlaceholder')
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder') || DefaultScrollSeekPlaceholder
   const ListComponent = useEmitterValue('ListComponent')!
@@ -337,19 +338,21 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
     const totalListHeight = useEmitterValue('totalListHeight')
     const deviation = useEmitterValue('deviation')
+    const scrollElement = useEmitterValue('scrollElement')
     const { scrollerRef, scrollByCallback, scrollToCallback } = useScrollTop(
       scrollContainerStateCallback,
       smoothScrollTargetReached,
       ScrollerComponent,
-      noop
+      noop,
+      scrollElement
     )
 
     useIsomorphicLayoutEffect(() => {
-      scrollerRef.current = window
+      scrollerRef.current = scrollElement ? scrollElement : window
       return () => {
         scrollerRef.current = null
       }
-    }, [scrollerRef])
+    }, [scrollerRef, scrollElement])
 
     useEmitter('windowScrollTo', scrollToCallback)
     useEmitter('scrollBy', scrollByCallback)
@@ -380,7 +383,8 @@ const Viewport: FC = ({ children }) => {
 
 const WindowViewport: FC = ({ children }) => {
   const windowViewportRect = usePublisher('windowViewportRect')
-  const viewportRef = useWindowViewportRectRef(windowViewportRect)
+  const scrollElement = useEmitterValue('scrollElement')
+  const viewportRef = useWindowViewportRectRef(windowViewportRect, scrollElement)
 
   return (
     <div ref={viewportRef} style={viewportStyle} data-viewport-type="window">
@@ -399,8 +403,9 @@ const TopItemListContainer: FC = ({ children }) => {
 const ListRoot: FC<ListRootProps> = React.memo(function VirtuosoRoot(props) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const showTopList = useEmitterValue('topItemsIndexes').length > 0
-  const TheScroller = useWindowScroll ? WindowScroller : Scroller
-  const TheViewport = useWindowScroll ? WindowViewport : Viewport
+  const scrollElement = useEmitterValue('scrollElement')
+  const TheScroller = (scrollElement || useWindowScroll) ? WindowScroller : Scroller
+  const TheViewport = (scrollElement || useWindowScroll) ? WindowViewport : Viewport
   return (
     <TheScroller {...props}>
       <TheViewport>
@@ -447,6 +452,7 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
       initialScrollTop: 'initialScrollTop',
       alignToBottom: 'alignToBottom',
       useWindowScroll: 'useWindowScroll',
+      scrollElement: 'scrollElement',
       scrollerRef: 'scrollerRef',
       logLevel: 'logLevel',
 

@@ -137,7 +137,8 @@ const Viewport: FC = ({ children }) => {
 
 const WindowViewport: FC = ({ children }) => {
   const windowViewportRect = usePublisher('windowViewportRect')
-  const viewportRef = useWindowViewportRectRef(windowViewportRect)
+  const scrollElement = useEmitterValue('scrollElement')
+  const viewportRef = useWindowViewportRectRef(windowViewportRect, scrollElement)
 
   return (
     <div ref={viewportRef} style={viewportStyle}>
@@ -148,8 +149,9 @@ const WindowViewport: FC = ({ children }) => {
 
 const GridRoot: FC<GridRootProps> = React.memo(function GridRoot({ ...props }) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
-  const TheScroller = useWindowScroll ? WindowScroller : Scroller
-  const TheViewport = useWindowScroll ? WindowViewport : Viewport
+  const scrollElement = useEmitterValue('scrollElement')
+  const TheScroller = (scrollElement || useWindowScroll) ? WindowScroller : Scroller
+  const TheViewport = (scrollElement || useWindowScroll) ? WindowViewport : Viewport
 
   return (
     <TheScroller {...props}>
@@ -174,6 +176,7 @@ const { Component: Grid, usePublisher, useEmitterValue, useEmitter } = systemToC
       listClassName: 'listClassName',
       itemClassName: 'itemClassName',
       useWindowScroll: 'useWindowScroll',
+      scrollElement: 'scrollElement',
       scrollerRef: 'scrollerRef',
 
       // deprecated

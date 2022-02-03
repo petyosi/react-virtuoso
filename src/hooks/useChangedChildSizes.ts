@@ -7,7 +7,8 @@ export default function useChangedListContentsSizes(
   itemSize: SizeFunction,
   enabled: boolean,
   scrollContainerStateCallback: (state: [number, number]) => void,
-  log: Log
+  log: Log,
+  scrollElement?: HTMLElement
 ) {
   return useSize((el: HTMLElement) => {
     const ranges = getChangedChildSizes(el.children, itemSize, 'offsetHeight', log)
@@ -17,12 +18,13 @@ export default function useChangedListContentsSizes(
       scrollableElement = scrollableElement.parentElement!
     }
 
-    const scrollTop =
+    const scrollTop = scrollElement ? scrollElement.scrollTop :
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       (scrollableElement.firstElementChild! as HTMLDivElement).dataset['viewportType']! === 'window'
         ? window.pageYOffset || document.documentElement.scrollTop
         : scrollableElement.scrollTop
 
+    scrollElement ? scrollContainerStateCallback([Math.max(scrollTop, 0), scrollElement.scrollHeight]) :
     scrollContainerStateCallback([Math.max(scrollTop, 0), scrollableElement.scrollHeight])
     if (ranges !== null) {
       callback(ranges)

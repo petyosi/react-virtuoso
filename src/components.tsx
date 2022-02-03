@@ -209,6 +209,11 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
   useWindowScroll?: boolean
 
   /**
+   * Uses an external scroll element rather than wrapping the list in its own.
+   */
+   scrollElement?: HTMLElement
+
+  /**
    * Provides access to the root DOM element
    */
   scrollerRef?: (ref: HTMLElement | Window | null) => any
@@ -415,6 +420,11 @@ export interface TableVirtuosoProps<D> extends Omit<VirtuosoProps<D>, 'component
   useWindowScroll?: boolean
 
   /**
+   * Uses an external scroll element rather than wrapping the list in its own.
+   */
+   scrollElement?: HTMLElement
+
+  /**
    * Provides access to the root DOM element
    */
   scrollerRef?: (ref: HTMLElement | Window | null) => any
@@ -511,6 +521,11 @@ export interface VirtuosoGridProps extends GridProps {
    * Uses the document scroller rather than wrapping the grid in its own.
    */
   useWindowScroll?: boolean
+  
+  /**
+   * Uses an external scroll element rather than wrapping the grid in its own.
+   */
+  scrollElement?: HTMLElement
 }
 
 export interface VirtuosoHandle extends ListHandle {
