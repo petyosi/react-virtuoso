@@ -150,8 +150,8 @@ const WindowViewport: FC = ({ children }) => {
 const GridRoot: FC<GridRootProps> = React.memo(function GridRoot({ ...props }) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const scrollElement = useEmitterValue('scrollElement')
-  const TheScroller = (scrollElement || useWindowScroll) ? WindowScroller : Scroller
-  const TheViewport = (scrollElement || useWindowScroll) ? WindowViewport : Viewport
+  const TheScroller = scrollElement || useWindowScroll ? WindowScroller : Scroller
+  const TheViewport = scrollElement || useWindowScroll ? WindowViewport : Viewport
 
   return (
     <TheScroller {...props}>

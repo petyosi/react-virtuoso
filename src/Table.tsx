@@ -68,10 +68,10 @@ export const Items = React.memo(function VirtuosoItems() {
   const deviation = useEmitterValue('deviation')
   const sizeRanges = usePublisher('sizeRanges')
   const useWindowScroll = useEmitterValue('useWindowScroll')
-  const scrollElement = useEmitterValue('scrollElement');
+  const scrollElement = useEmitterValue('scrollElement')
   const windowScrollContainerStateCallback = usePublisher('windowScrollContainerState')
   const _scrollContainerStateCallback = usePublisher('scrollContainerState')
-  const scrollContainerStateCallback = (scrollElement || useWindowScroll) ? windowScrollContainerStateCallback : _scrollContainerStateCallback
+  const scrollContainerStateCallback = scrollElement || useWindowScroll ? windowScrollContainerStateCallback : _scrollContainerStateCallback
   const itemContent = useEmitterValue('itemContent')
   const trackItemSizes = useEmitterValue('trackItemSizes')
   const itemSize = useEmitterValue('itemSize')
@@ -167,8 +167,8 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
   const fixedHeaderHeight = usePublisher('fixedHeaderHeight')
   const fixedHeaderContent = useEmitterValue('fixedHeaderContent')
   const theadRef = useSize(compose(fixedHeaderHeight, (el) => correctItemSize(el, 'height')))
-  const TheScroller = (scrollElement || useWindowScroll) ? WindowScroller : Scroller
-  const TheViewport = (scrollElement || useWindowScroll) ? WindowViewport : Viewport
+  const TheScroller = scrollElement || useWindowScroll ? WindowScroller : Scroller
+  const TheViewport = scrollElement || useWindowScroll ? WindowViewport : Viewport
   const TheTable = useEmitterValue('TableComponent')
   const TheTHead = useEmitterValue('TableHeadComponent')
 

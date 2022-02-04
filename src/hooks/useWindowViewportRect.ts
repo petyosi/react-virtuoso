@@ -5,13 +5,13 @@ import { WindowViewportInfo } from '../interfaces'
 const getScrollElementInfo = (element: HTMLElement, scrollElement: HTMLElement) => {
   const rect = element.getBoundingClientRect()
   const seRect = scrollElement.getBoundingClientRect()
-  var deltaTop = rect.top - seRect.top  
+  const deltaTop = rect.top - seRect.top
   return {
     offsetTop: deltaTop + scrollElement.scrollTop,
     visibleHeight: seRect.height - Math.max(0, deltaTop),
-    visibleWidth: rect.width
+    visibleWidth: rect.width,
   }
-} 
+}
 
 export default function useWindowViewportRectRef(callback: (info: WindowViewportInfo) => void, scrollElement?: HTMLElement) {
   const viewportInfo = useRef<WindowViewportInfo | null>(null)
@@ -26,11 +26,13 @@ export default function useWindowViewportRectRef(callback: (info: WindowViewport
 
       const visibleWidth = rect.width
       const offsetTop = rect.top + window.pageYOffset
-      viewportInfo.current = scrollElement ? getScrollElementInfo(element, scrollElement) : {
-        offsetTop,
-        visibleHeight,
-        visibleWidth,
-      }
+      viewportInfo.current = scrollElement
+        ? getScrollElementInfo(element, scrollElement)
+        : {
+            offsetTop,
+            visibleHeight,
+            visibleWidth,
+          }
       callback(viewportInfo.current)
     },
     [callback, scrollElement]
@@ -43,7 +45,7 @@ export default function useWindowViewportRectRef(callback: (info: WindowViewport
   }, [calculateInfo, ref])
 
   useEffect(() => {
-    var element = scrollElement ? scrollElement : window
+    const element = scrollElement ? scrollElement : window
 
     element?.addEventListener('scroll', windowEH)
     element?.addEventListener('resize', windowEH)

@@ -173,14 +173,21 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const scrollElement = useEmitterValue('scrollElement')
   const windowScrollContainerStateCallback = usePublisher('windowScrollContainerState')
   const _scrollContainerStateCallback = usePublisher('scrollContainerState')
-  const scrollContainerStateCallback = (scrollElement || useWindowScroll) ? windowScrollContainerStateCallback : _scrollContainerStateCallback
+  const scrollContainerStateCallback = scrollElement || useWindowScroll ? windowScrollContainerStateCallback : _scrollContainerStateCallback
   const itemContent = useEmitterValue('itemContent')
   const groupContent = useEmitterValue('groupContent')
   const trackItemSizes = useEmitterValue('trackItemSizes')
   const itemSize = useEmitterValue('itemSize')
   const log = useEmitterValue('log')
 
-  const ref = useChangedListContentsSizes(sizeRanges, itemSize, trackItemSizes, showTopList ? noop : scrollContainerStateCallback, log, scrollElement)
+  const ref = useChangedListContentsSizes(
+    sizeRanges,
+    itemSize,
+    trackItemSizes,
+    showTopList ? noop : scrollContainerStateCallback,
+    log,
+    scrollElement
+  )
   const EmptyPlaceholder = useEmitterValue('EmptyPlaceholder')
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder') || DefaultScrollSeekPlaceholder
   const ListComponent = useEmitterValue('ListComponent')!
@@ -404,8 +411,8 @@ const ListRoot: FC<ListRootProps> = React.memo(function VirtuosoRoot(props) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const showTopList = useEmitterValue('topItemsIndexes').length > 0
   const scrollElement = useEmitterValue('scrollElement')
-  const TheScroller = (scrollElement || useWindowScroll) ? WindowScroller : Scroller
-  const TheViewport = (scrollElement || useWindowScroll) ? WindowViewport : Viewport
+  const TheScroller = scrollElement || useWindowScroll ? WindowScroller : Scroller
+  const TheViewport = scrollElement || useWindowScroll ? WindowViewport : Viewport
   return (
     <TheScroller {...props}>
       <TheViewport>
