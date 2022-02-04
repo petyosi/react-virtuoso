@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useSizeWithElRef } from './useSize'
 import { WindowViewportInfo } from '../interfaces'
+import useResizeObserver from './useResizeObserver'
 
 const getScrollElementInfo = (element: HTMLElement, scrollElement: HTMLElement) => {
   const rect = element.getBoundingClientRect()
@@ -44,14 +45,15 @@ export default function useWindowViewportRectRef(callback: (info: WindowViewport
     calculateInfo(ref.current)
   }, [calculateInfo, ref])
 
+  useResizeObserver(scrollElement, windowEH) // resize events do not trigger on elements so use an observer
   useEffect(() => {
     const element = scrollElement ? scrollElement : window
 
     element?.addEventListener('scroll', windowEH)
-    element?.addEventListener('resize', windowEH)
+    !scrollElement && window.addEventListener('resize', windowEH)
     return () => {
       element?.removeEventListener('scroll', windowEH)
-      element?.removeEventListener('resize', windowEH)
+      !scrollElement && window.removeEventListener('resize', windowEH)
     }
   }, [windowEH, scrollElement])
 

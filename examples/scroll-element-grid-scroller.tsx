@@ -39,18 +39,25 @@ const ListContainer = styled.div`
 
 export default function App() {
   const [scrollElement, setScrollElement] = React.useState(null)
+  const [height, setHeight] = React.useState('25vh')
+  const toggleHeight = () => (height === '50vh' ? setHeight('25vh') : setHeight('50vh'))
+
   return (
-    <div style={{ overflow: 'auto', background: 'lightgreen', height: '80vh' }}>
+    <div style={{ overflow: 'auto', background: 'lightgreen', height: '80vh', marginTop: '0vh' }}>
+      <button onClick={toggleHeight}>Change Height</button>
       <div
         ref={setScrollElement}
         style={{
           overflow: 'auto',
-          marginTop: 400,
+          marginTop: 300,
           background: 'lightgrey',
-          height: '50vh',
+          height,
         }}
       >
         <ol>
+          <li>
+            Click the change height button in the upper left corner to toggle the height. Items should appear when the height changes.
+          </li>
           <li>Scroll down manually, new items should appear.</li>
           <li>Scroll halfway down manually, then scroll the outer green container down, new items should appear.</li>
           <li>
