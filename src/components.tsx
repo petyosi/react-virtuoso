@@ -209,7 +209,7 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
   useWindowScroll?: boolean
 
   /**
-   * Uses an external scroll element rather than wrapping the list in its own.
+   * Pass a reference to a scrollable parent element, so that the list won't wrap in its own.
    */
   scrollElement?: HTMLElement
 
