@@ -420,7 +420,7 @@ export interface TableVirtuosoProps<D> extends Omit<VirtuosoProps<D>, 'component
   useWindowScroll?: boolean
 
   /**
-   * Uses an external scroll element rather than wrapping the list in its own.
+   * Pass a reference to a scrollable parent element, so that the table won't wrap in its own.
    */
   customScrollParent?: HTMLElement
 
@@ -523,7 +523,7 @@ export interface VirtuosoGridProps extends GridProps {
   useWindowScroll?: boolean
 
   /**
-   * Uses an external scroll element rather than wrapping the grid in its own.
+   * Pass a reference to a scrollable parent element, so that the grid won't wrap in its own.
    */
   customScrollParent?: HTMLElement
 }
