@@ -84,10 +84,10 @@ export const Items = React.memo(function VirtuosoItems() {
   const computeItemKey = useEmitterValue('computeItemKey')
   const isSeeking = useEmitterValue('isSeeking')
   const paddingTopAddition = useEmitterValue('paddingTopAddition')
-  const scrolledToInitialItem = useEmitterValue('scrolledToInitialItem')
   const firstItemIndex = useEmitterValue('firstItemIndex')
+  const statefulTotalCount = useEmitterValue('statefulTotalCount')
 
-  if (listState.items.length === 0 && EmptyPlaceholder && scrolledToInitialItem) {
+  if (statefulTotalCount === 0 && EmptyPlaceholder) {
     return createElement(EmptyPlaceholder)
   }
 

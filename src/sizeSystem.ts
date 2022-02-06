@@ -245,6 +245,7 @@ export const sizeSystem = u.system(
   ([{ log }]) => {
     const sizeRanges = u.stream<SizeRange[]>()
     const totalCount = u.stream<number>()
+    const statefulTotalCount = u.statefulStreamFromEmitter(totalCount, 0)
     const unshiftWith = u.stream<number>()
     const firstItemIndex = u.statefulStream(0)
     const groupIndices = u.statefulStream([] as number[])
@@ -410,6 +411,7 @@ export const sizeSystem = u.system(
       // output
       sizes,
       listRefresh,
+      statefulTotalCount,
       trackItemSizes,
       itemSize,
     }

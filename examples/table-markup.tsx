@@ -7,6 +7,17 @@ export default function App() {
       <div style={{ height: 200 }}>Top content</div>
       <TableVirtuoso
         totalCount={1000}
+        components={{
+          EmptyPlaceholder: () => {
+            return (
+              <tbody>
+                <tr>
+                  <td>Empty</td>
+                </tr>
+              </tbody>
+            )
+          },
+        }}
         style={{ height: 700 }}
         fixedHeaderContent={() => {
           return (
