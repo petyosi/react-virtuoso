@@ -38,7 +38,7 @@ const ListContainer = styled.div`
 ` as GridComponents['List']
 
 export default function App() {
-  const [scrollElement, setScrollElement] = React.useState(null)
+  const [customScrollParent, setCustomScrollParent] = React.useState(null)
   const [height, setHeight] = React.useState('25vh')
   const toggleHeight = () => (height === '50vh' ? setHeight('25vh') : setHeight('50vh'))
 
@@ -46,7 +46,7 @@ export default function App() {
     <div style={{ overflow: 'auto', background: 'lightgreen', height: '80vh', marginTop: '0vh' }}>
       <button onClick={toggleHeight}>Change Height</button>
       <div
-        ref={setScrollElement}
+        ref={setCustomScrollParent}
         style={{
           overflow: 'auto',
           marginTop: 300,
@@ -67,7 +67,7 @@ export default function App() {
         </ol>
         <div>
           <VirtuosoGrid
-            scrollElement={scrollElement}
+            customScrollParent={customScrollParent}
             components={{
               Item: ItemContainer,
               List: ListContainer,

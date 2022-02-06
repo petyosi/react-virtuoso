@@ -2,10 +2,10 @@ import * as React from 'react'
 import { Virtuoso } from '../src'
 
 export default function App() {
-  const [scrollElement, setScrollElement] = React.useState(null)
+  const [customScrollParent, setCustomScrollParent] = React.useState(null)
   return (
     <div style={{ overflow: 'auto', background: 'lightgreen', height: '80vh' }}>
-      <div ref={setScrollElement} style={{ overflow: 'auto', marginTop: 400, background: 'lightgrey', height: '50vh', padding: '50px' }}>
+      <div ref={setCustomScrollParent} style={{ overflow: 'auto', marginTop: 400, background: 'lightgrey', height: '50vh', padding: '50px' }}>
         <ol>
           <li>Scroll down manually, new items should appear.</li>
           <li>Scroll halfway down manually, then scroll the outer green container down, new items should appear.</li>
@@ -17,7 +17,7 @@ export default function App() {
         </ol>
         <a href="#foo">Go to foo</a>
         <Virtuoso
-          scrollElement={scrollElement}
+          customScrollParent={customScrollParent}
           totalCount={100}
           itemContent={(index) => <div style={{ height: index % 2 ? 50 : 20 }}>Item {index}</div>}
           style={{ border: '1px solid red' }}
