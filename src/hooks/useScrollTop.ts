@@ -12,7 +12,8 @@ export default function useScrollTop(
   scrollContainerStateCallback: (state: [number, number]) => void,
   smoothScrollTargetReached: (yes: true) => void,
   scrollerElement: any,
-  scrollerRefCallback: (ref: ScrollerRef) => void = u.noop
+  scrollerRefCallback: (ref: ScrollerRef) => void = u.noop,
+  customScrollParent?: HTMLElement
 ) {
   const scrollerRef = useRef<HTMLElement | null | Window>(null)
   const scrollTopTarget = useRef<any>(null)
@@ -42,9 +43,9 @@ export default function useScrollTop(
   )
 
   useEffect(() => {
-    const localRef = scrollerRef.current!
+    const localRef = customScrollParent ? customScrollParent : scrollerRef.current!
 
-    scrollerRefCallback(scrollerRef.current)
+    scrollerRefCallback(customScrollParent ? customScrollParent : scrollerRef.current)
     handler(({ target: localRef } as unknown) as Event)
     localRef.addEventListener('scroll', handler, { passive: true })
 
@@ -52,7 +53,7 @@ export default function useScrollTop(
       scrollerRefCallback(null)
       localRef.removeEventListener('scroll', handler)
     }
-  }, [scrollerRef, handler, scrollerElement, scrollerRefCallback])
+  }, [scrollerRef, handler, scrollerElement, scrollerRefCallback, customScrollParent])
 
   function scrollToCallback(location: ScrollToOptions) {
     const scrollerElement = scrollerRef.current

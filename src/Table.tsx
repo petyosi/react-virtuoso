@@ -68,15 +68,17 @@ export const Items = React.memo(function VirtuosoItems() {
   const deviation = useEmitterValue('deviation')
   const sizeRanges = usePublisher('sizeRanges')
   const useWindowScroll = useEmitterValue('useWindowScroll')
+  const customScrollParent = useEmitterValue('customScrollParent')
   const windowScrollContainerStateCallback = usePublisher('windowScrollContainerState')
   const _scrollContainerStateCallback = usePublisher('scrollContainerState')
-  const scrollContainerStateCallback = useWindowScroll ? windowScrollContainerStateCallback : _scrollContainerStateCallback
+  const scrollContainerStateCallback =
+    customScrollParent || useWindowScroll ? windowScrollContainerStateCallback : _scrollContainerStateCallback
   const itemContent = useEmitterValue('itemContent')
   const trackItemSizes = useEmitterValue('trackItemSizes')
   const itemSize = useEmitterValue('itemSize')
   const log = useEmitterValue('log')
 
-  const ref = useChangedListContentsSizes(sizeRanges, itemSize, trackItemSizes, scrollContainerStateCallback, log)
+  const ref = useChangedListContentsSizes(sizeRanges, itemSize, trackItemSizes, scrollContainerStateCallback, log, customScrollParent)
   const EmptyPlaceholder = useEmitterValue('EmptyPlaceholder')
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder') || DefaultScrollSeekPlaceholder
   const TableBodyComponent = useEmitterValue('TableBodyComponent')!
@@ -150,7 +152,8 @@ const Viewport: FC = ({ children }) => {
 
 const WindowViewport: FC = ({ children }) => {
   const windowViewportRect = usePublisher('windowViewportRect')
-  const viewportRef = useWindowViewportRectRef(windowViewportRect)
+  const customScrollParent = useEmitterValue('customScrollParent')
+  const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent)
 
   return (
     <div ref={viewportRef} style={viewportStyle} data-viewport-type="window">
@@ -161,11 +164,12 @@ const WindowViewport: FC = ({ children }) => {
 
 const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(props) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
+  const customScrollParent = useEmitterValue('customScrollParent')
   const fixedHeaderHeight = usePublisher('fixedHeaderHeight')
   const fixedHeaderContent = useEmitterValue('fixedHeaderContent')
   const theadRef = useSize(compose(fixedHeaderHeight, (el) => correctItemSize(el, 'height')))
-  const TheScroller = useWindowScroll ? WindowScroller : Scroller
-  const TheViewport = useWindowScroll ? WindowViewport : Viewport
+  const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
+  const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
   const TheTable = useEmitterValue('TableComponent')
   const TheTHead = useEmitterValue('TableHeadComponent')
 
@@ -215,6 +219,7 @@ export const { Component: Table, usePublisher, useEmitterValue, useEmitter } = s
       initialScrollTop: 'initialScrollTop',
       alignToBottom: 'alignToBottom',
       useWindowScroll: 'useWindowScroll',
+      customScrollParent: 'customScrollParent',
       scrollerRef: 'scrollerRef',
       logLevel: 'logLevel',
     },
