@@ -3,18 +3,18 @@ import { useSizeWithElRef } from './useSize'
 import { WindowViewportInfo } from '../interfaces'
 import useResizeObserver from './useResizeObserver'
 
-const getScrollElementInfo = (element: HTMLElement, scrollElement: HTMLElement) => {
+const getScrollElementInfo = (element: HTMLElement, customScrollParent: HTMLElement) => {
   const rect = element.getBoundingClientRect()
-  const seRect = scrollElement.getBoundingClientRect()
+  const seRect = customScrollParent.getBoundingClientRect()
   const deltaTop = rect.top - seRect.top
   return {
-    offsetTop: deltaTop + scrollElement.scrollTop,
+    offsetTop: deltaTop + customScrollParent.scrollTop,
     visibleHeight: seRect.height - Math.max(0, deltaTop),
     visibleWidth: rect.width,
   }
 }
 
-export default function useWindowViewportRectRef(callback: (info: WindowViewportInfo) => void, scrollElement?: HTMLElement) {
+export default function useWindowViewportRectRef(callback: (info: WindowViewportInfo) => void, customScrollParent?: HTMLElement) {
   const viewportInfo = useRef<WindowViewportInfo | null>(null)
 
   const calculateInfo = useCallback(
@@ -27,8 +27,8 @@ export default function useWindowViewportRectRef(callback: (info: WindowViewport
 
       const visibleWidth = rect.width
       const offsetTop = rect.top + window.pageYOffset
-      viewportInfo.current = scrollElement
-        ? getScrollElementInfo(element, scrollElement)
+      viewportInfo.current = customScrollParent
+        ? getScrollElementInfo(element, customScrollParent)
         : {
             offsetTop,
             visibleHeight,
@@ -36,7 +36,7 @@ export default function useWindowViewportRectRef(callback: (info: WindowViewport
           }
       callback(viewportInfo.current)
     },
-    [callback, scrollElement]
+    [callback, customScrollParent]
   )
 
   const { callbackRef, ref } = useSizeWithElRef(calculateInfo)
@@ -45,17 +45,17 @@ export default function useWindowViewportRectRef(callback: (info: WindowViewport
     calculateInfo(ref.current)
   }, [calculateInfo, ref])
 
-  useResizeObserver(scrollElement, windowEH) // resize events do not trigger on elements so use an observer
+  useResizeObserver(customScrollParent, windowEH) // resize events do not trigger on elements so use an observer
   useEffect(() => {
-    const element = scrollElement ? scrollElement : window
+    const element = customScrollParent ? customScrollParent : window
 
     element?.addEventListener('scroll', windowEH)
-    !scrollElement && window.addEventListener('resize', windowEH)
+    !customScrollParent && window.addEventListener('resize', windowEH)
     return () => {
       element?.removeEventListener('scroll', windowEH)
-      !scrollElement && window.removeEventListener('resize', windowEH)
+      !customScrollParent && window.removeEventListener('resize', windowEH)
     }
-  }, [windowEH, scrollElement])
+  }, [windowEH, customScrollParent])
 
   return callbackRef
 }

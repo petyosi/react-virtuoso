@@ -2,12 +2,12 @@ import { useEffect } from 'react'
 
 const isAvailable = typeof ResizeObserver !== 'undefined'
 
-export default function useResizeObserver(scrollElement: HTMLElement | undefined, callback: () => void) {
+export default function useResizeObserver(customScrollParent: HTMLElement | undefined, callback: () => void) {
   useEffect(() => {
-    const observer = isAvailable && scrollElement ? new ResizeObserver(() => callback()) : undefined
-    isAvailable && scrollElement && observer?.observe(scrollElement)
+    const observer = isAvailable && customScrollParent ? new ResizeObserver(() => callback()) : undefined
+    isAvailable && customScrollParent && observer?.observe(customScrollParent)
     return () => {
-      isAvailable && scrollElement && observer?.unobserve(scrollElement)
+      isAvailable && customScrollParent && observer?.unobserve(customScrollParent)
     }
-  }, [callback, scrollElement])
+  }, [callback, customScrollParent])
 }
