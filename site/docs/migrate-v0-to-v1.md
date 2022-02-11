@@ -16,7 +16,7 @@ Prepending items with unknown height to the top of the list was not part of the 
 
 - `scrollToIndex` method now works supports `"smooth"` behavior. Previously, this was undocumented and "use at your own risk". Check the [source code in the example](./scroll-to-index)
 - `followOutput` now accepts `"smooth"`, which means that new items will gradually push the existing content upwards. 
-- As an alternative to `totalCount`, the component now accepts `data: any[]`, which is then used to infer the total count of the items. Each item is passed as a second argument in the `itemContent` callback.
+- As an alternative to `totalCount`, the component now accepts `data: any[]`, which is then used to infer the total count of the items. Each item is passed as a second argument in the `itemContent` callback. **Note:** VirtuosoGrid does not support `data`.
 - Prepending items is now much easier, using `firstItemIndex` rather than the `adjustForPrependedItems` method. Check the [prepend items example](./prepend-items.md)
 - Starting the list from the bottom and scrolling up with unknown item sizes should no longer cause glitches and jumps.
 - A `Header` component is introduced, works in both grouped and flat mode.
