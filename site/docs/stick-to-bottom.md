@@ -63,7 +63,7 @@ export default function App() {
             </div>
           )
         }}
-        followOutput={'smooth'}
+        followOutput={'auto'}
       />
       {showButton && (
         <button

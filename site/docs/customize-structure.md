@@ -32,6 +32,16 @@ Pass a custom component to the specified key in `components` to change rendering
 Notice that the `List` component must accept and pass its `ref` to the actual DOM element.
 The example below adds borders to each customizable element.
 
+
+:::note
+If you pass the components inline and combine that with `useState`, each re-render will pass a fresh instance component, causing unnecessary unmounting and remounting. 
+Don't do
+```tsx
+<Virtuoso components={{ Header:() => <div></div> }} />
+```
+Move the components outside. If you need to capture a certain state in them, use the `context` prop.
+:::
+
 ```jsx live import=@emotion/styled
 import styled from '@emotion/styled'
 import React from 'react'

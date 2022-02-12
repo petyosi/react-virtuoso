@@ -5,7 +5,7 @@ sidebar_label: Scroll Seek Placeholders
 slug: /scroll-seek-placeholders/
 ---
 
-The `scrollSeekConfiguration` property allows you to render a placeholder element instead of the actual item if the user scrolls too fast. 
+The `scrollSeekConfiguration` property allows you to render a placeholder element instead of the actual item if the user scrolls too fast.
 
 This improves scrolling performance and delays the actual load of data from the server.
 
@@ -42,32 +42,11 @@ export default function App() {
 
       <div style={{ flex: 1 }}>
         <Virtuoso
+          context={{ randomHeights }}
           style={{ height: 400 }}
           data={users}
           itemContent={(index, user) => <div style={{ backgroundColor: toggleBg(index) }}>{user.name}</div>}
-          components={{
-            // You can use index to randomize
-            // and make the placeholder list more organic.
-            // the height passed is the one measured for the real item. 
-            // the placeholder should be the same size.
-            ScrollSeekPlaceholder: ({ height, index }) => (
-              <div
-                style={{
-                  height,
-                  padding: "8px",
-                  boxSizing: "border-box",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    background: index % 2 ? "blue": "green",
-                    height: randomHeights[index % 10],
-                  }}
-                ></div>
-              </div>
-            ),
-          }}
+          components={{ ScrollSeekPlaceholder }}
           scrollSeekConfiguration={{
             enter: (velocity) => Math.abs(velocity) > 50,
             exit: (velocity) => {
@@ -84,4 +63,27 @@ export default function App() {
     </div>
   )
 }
+
+// You can use index to randomize
+// and make the placeholder list more organic.
+// the height passed is the one measured for the real item.
+// the placeholder should be the same size.
+const ScrollSeekPlaceholder =  ({ height, index, context: { randomHeights }}) => (
+  <div
+    style={{
+      height,
+      padding: "8px",
+      boxSizing: "border-box",
+      overflow: "hidden",
+    }}
+  >
+    <div
+      style={{
+        background: index % 2 ? "blue": "green",
+        height: randomHeights[index % 10],
+      }}
+    ></div>
+  </div>
+)
+
 ```

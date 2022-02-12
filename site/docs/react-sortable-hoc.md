@@ -16,24 +16,25 @@ import { Virtuoso } from 'react-virtuoso'
 import { generateUsers } from './data'
 import React from 'react'
 
+const ItemContainerSortable = ReactSortableHOC.sortableElement((props) => <div {...props} />)
+const ListContainerSortable = ReactSortableHOC.sortableContainer(({ listRef, ...props }) => <div ref={listRef} {...props} />)
+
+const components = {
+  List: React.forwardRef((props, ref) => {
+    return <ListContainerSortable {...props} listRef={ref} onSortEnd={(...args) => console.log(args)} />
+  }),
+  Item: (props) => {
+    const { ['data-index']: index } = props
+    return <ItemContainerSortable index={index} {...props} />
+  },
+}
+
 export default function App() {
-  const ItemContainerSortable = ReactSortableHOC.sortableElement((props) => <div {...props} />)
-
-  const ListContainerSortable = ReactSortableHOC.sortableContainer(({ listRef, ...props }) => <div ref={listRef} {...props} />)
-
   return (
     <Virtuoso
       style={{ height: 400 }}
       data={generateUsers(100)}
-      components={{
-        List: React.forwardRef((props, ref) => {
-          return <ListContainerSortable {...props} listRef={ref} onSortEnd={(...args) => console.log(args)} />
-        }),
-        Item: (props) => {
-          const { ['data-index']: index } = props
-          return <ItemContainerSortable index={index} {...props} />
-        },
-      }}
+      components={components}
       itemContent={(index, user) => {
         return (
           <div style={{ backgroundColor: user.bgColor, padding: '1rem 0.5rem' }}>

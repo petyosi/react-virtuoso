@@ -23,47 +23,11 @@ import React, { useMemo } from 'react'
 export default function App() {
   const { users, groups, groupCounts } = generateGroupedUsers(500)
 
-  const Components = useMemo(() => {
-    return {
-      List: React.forwardRef(({ style, children }, listRef) => {
-        return (
-          <List style={{ padding: 0, ...style, margin: 0 }} component="div" ref={listRef}>
-            {children}
-          </List>
-        )
-      }),
-
-      Item: ({ children, ...props }) => {
-        return (
-          <ListItem component="div" {...props} style={{ margin: 0 }}>
-            {children}
-          </ListItem>
-        )
-      },
-
-      Group: ({ children, style, ...props }) => {
-        return (
-          <ListSubheader
-            component="div"
-            {...props}
-            style={{
-              ...style,
-              backgroundColor: 'white',
-              margin: 0,
-            }}
-          >
-            {children}
-          </ListSubheader>
-        )
-      },
-    }
-  }, [])
-
   return (
     <GroupedVirtuoso
       style={{ height: 400 }}
       groupCounts={groupCounts}
-      components={Components}
+      components={MUIComponents}
       groupContent={(index) => {
         return <div>{groups[index]}</div>
       }}
@@ -81,5 +45,40 @@ export default function App() {
       }}
     />
   )
+}
+
+
+const MUIComponents = {
+  List: React.forwardRef(({ style, children }, listRef) => {
+    return (
+      <List style={{ padding: 0, ...style, margin: 0 }} component="div" ref={listRef}>
+        {children}
+      </List>
+    )
+  }),
+
+  Item: ({ children, ...props }) => {
+    return (
+      <ListItem component="div" {...props} style={{ margin: 0 }}>
+        {children}
+      </ListItem>
+    )
+  },
+
+  Group: ({ children, style, ...props }) => {
+    return (
+      <ListSubheader
+        component="div"
+        {...props}
+        style={{
+          ...style,
+          backgroundColor: 'white',
+          margin: 0,
+        }}
+      >
+        {children}
+      </ListSubheader>
+    )
+  },
 }
 ```
