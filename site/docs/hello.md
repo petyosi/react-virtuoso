@@ -12,6 +12,8 @@ The `itemContent` render callback accepts `index`, and `item` parameter (if `dat
 which specifies the absolute index of the item rendered;
 It is up to you to build and return the respective content for it.
 
+**Note:** VirtuosoGrid does not support `data`.
+
 ## List with `data`
 
 ```jsx live include-data
