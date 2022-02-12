@@ -5,16 +5,17 @@ import { createElement, FC } from 'react'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import { ComputeItemKey, ItemContent, FixedHeaderContent, TableComponents, TableRootProps } from './interfaces'
 import { listSystem } from './listSystem'
-import { identity, buildScroller, buildWindowScroller, viewportStyle } from './List'
+import { identity, buildScroller, buildWindowScroller, viewportStyle, contextPropIfNotDomElement } from './List'
 import useSize from './hooks/useSize'
 import { correctItemSize } from './utils/correctItemSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 
 const tableComponentPropsSystem = system(() => {
-  const itemContent = statefulStream<ItemContent<any>>((index: number) => <td>Item ${index}</td>)
+  const itemContent = statefulStream<ItemContent<any, unknown>>((index: number) => <td>Item ${index}</td>)
+  const context = statefulStream<unknown>(null)
   const fixedHeaderContent = statefulStream<FixedHeaderContent>(null)
   const components = statefulStream<TableComponents>({})
-  const computeItemKey = statefulStream<ComputeItemKey<any>>(identity)
+  const computeItemKey = statefulStream<ComputeItemKey<any, unknown>>(identity)
   const scrollerRef = statefulStream<(ref: HTMLElement | Window | null) => void>(noop)
 
   const distinctProp = <K extends keyof TableComponents>(
@@ -32,6 +33,7 @@ const tableComponentPropsSystem = system(() => {
   }
 
   return {
+    context,
     itemContent,
     fixedHeaderContent,
     components,
@@ -88,9 +90,10 @@ export const Items = React.memo(function VirtuosoItems() {
   const paddingTopAddition = useEmitterValue('paddingTopAddition')
   const firstItemIndex = useEmitterValue('firstItemIndex')
   const statefulTotalCount = useEmitterValue('statefulTotalCount')
+  const context = useEmitterValue('context')
 
   if (statefulTotalCount === 0 && EmptyPlaceholder) {
-    return createElement(EmptyPlaceholder)
+    return createElement(EmptyPlaceholder, contextPropIfNotDomElement(EmptyPlaceholder, context))
   }
 
   const paddingTop = listState.offsetTop + paddingTopAddition + deviation
@@ -102,10 +105,11 @@ export const Items = React.memo(function VirtuosoItems() {
 
   const items = listState.items.map((item) => {
     const index = item.originalIndex!
-    const key = computeItemKey(index + firstItemIndex, item.data)
+    const key = computeItemKey(index + firstItemIndex, item.data, context)
 
     if (isSeeking) {
       return createElement(ScrollSeekPlaceholder, {
+        ...contextPropIfNotDomElement(ScrollSeekPlaceholder, context),
         key,
         index: item.index,
         height: item.size,
@@ -115,20 +119,20 @@ export const Items = React.memo(function VirtuosoItems() {
     return createElement(
       TableRowComponent,
       {
+        ...contextPropIfNotDomElement(TableRowComponent, context),
         key,
         'data-index': index,
         'data-known-size': item.size,
         'data-item-index': item.index,
         style: { overflowAnchor: 'none' },
       } as any,
-      itemContent(item.index, item.data)
+      itemContent(item.index, item.data, context)
     )
   })
 
   return createElement(
     TableBodyComponent,
-    { ref, 'data-test-id': 'virtuoso-item-list' },
-
+    { ref, 'data-test-id': 'virtuoso-item-list', ...contextPropIfNotDomElement(TableBodyComponent, context) },
     [paddingTopEl, ...items, paddingBottomEl]
   )
 })
@@ -167,6 +171,7 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
   const customScrollParent = useEmitterValue('customScrollParent')
   const fixedHeaderHeight = usePublisher('fixedHeaderHeight')
   const fixedHeaderContent = useEmitterValue('fixedHeaderContent')
+  const context = useEmitterValue('context')
   const theadRef = useSize(compose(fixedHeaderHeight, (el) => correctItemSize(el, 'height')))
   const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
   const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
@@ -176,7 +181,12 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
   const theHead = fixedHeaderContent
     ? React.createElement(
         TheTHead!,
-        { key: 'TableHead', style: { zIndex: 1, position: 'sticky', top: 0 }, ref: theadRef } as any,
+        {
+          key: 'TableHead',
+          style: { zIndex: 1, position: 'sticky', top: 0 },
+          ref: theadRef,
+          ...contextPropIfNotDomElement(TheTHead, context),
+        } as any,
         fixedHeaderContent()
       )
     : null
@@ -184,7 +194,10 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
   return (
     <TheScroller {...props}>
       <TheViewport>
-        {React.createElement(TheTable!, { style: { borderSpacing: 0 } } as any, [theHead, <Items key="TableBody" />])}
+        {React.createElement(TheTable!, { style: { borderSpacing: 0 }, ...contextPropIfNotDomElement(TheTable, context) } as any, [
+          theHead,
+          <Items key="TableBody" />,
+        ])}
       </TheViewport>
     </TheScroller>
   )
@@ -197,6 +210,7 @@ export const { Component: Table, usePublisher, useEmitterValue, useEmitter } = s
   {
     required: {},
     optional: {
+      context: 'context',
       followOutput: 'followOutput',
       firstItemIndex: 'firstItemIndex',
       itemContent: 'itemContent',

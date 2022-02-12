@@ -7,11 +7,12 @@ import { gridSystem } from './gridSystem'
 import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { GridComponents, GridComputeItemKey, GridItemContent, GridRootProps } from './interfaces'
-import { addDeprecatedAlias, buildScroller, buildWindowScroller, identity, viewportStyle } from './List'
+import { addDeprecatedAlias, buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle } from './List'
 
 const gridComponentPropsSystem = u.system(() => {
-  const itemContent = u.statefulStream<GridItemContent>((index) => `Item ${index}`)
+  const itemContent = u.statefulStream<GridItemContent<any>>((index) => `Item ${index}`)
   const components = u.statefulStream<GridComponents>({})
+  const context = u.statefulStream<unknown>(null)
   const itemClassName = u.statefulStream('virtuoso-grid-item')
   const listClassName = u.statefulStream('virtuoso-grid-list')
   const computeItemKey = u.statefulStream<GridComputeItemKey>(identity)
@@ -29,6 +30,7 @@ const gridComponentPropsSystem = u.system(() => {
   }
 
   return {
+    context,
     itemContent,
     components,
     computeItemKey,
@@ -97,7 +99,7 @@ const GridItems: FC = React.memo(function GridItems() {
   const ItemComponent = useEmitterValue('ItemComponent')!
   const ListComponent = useEmitterValue('ListComponent')!
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder')!
-
+  const context = useEmitterValue('context')
   const itemDimensions = usePublisher('itemDimensions')
 
   const listRef = useSize((el) => {
@@ -111,12 +113,27 @@ const GridItems: FC = React.memo(function GridItems() {
 
   return createElement(
     ListComponent,
-    { ref: listRef, className: listClassName, style: { paddingTop: gridState.offsetTop, paddingBottom: gridState.offsetBottom } },
+    {
+      ref: listRef,
+      className: listClassName,
+      ...contextPropIfNotDomElement(ListComponent, context),
+      style: { paddingTop: gridState.offsetTop, paddingBottom: gridState.offsetBottom },
+    },
     gridState.items.map((item) => {
       const key = computeItemKey(item.index)
       return isSeeking
-        ? createElement(ScrollSeekPlaceholder, { key, index: item.index, height: gridState.itemHeight, width: gridState.itemWidth })
-        : createElement(ItemComponent, { className: itemClassName, 'data-index': item.index, key }, itemContent(item.index))
+        ? createElement(ScrollSeekPlaceholder, {
+            key,
+            ...contextPropIfNotDomElement(ScrollSeekPlaceholder, context),
+            index: item.index,
+            height: gridState.itemHeight,
+            width: gridState.itemWidth,
+          })
+        : createElement(
+            ItemComponent,
+            { ...contextPropIfNotDomElement(ItemComponent, context), className: itemClassName, 'data-index': item.index, key },
+            itemContent(item.index, context)
+          )
     })
   )
 })

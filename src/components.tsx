@@ -25,7 +25,7 @@ type CompProps<T> = T extends ForwardRefExoticComponent<infer R> ? R : never
 type ListProps = CompProps<typeof List>
 type GridProps = CompProps<typeof Grid>
 
-export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'groupContent' | 'itemsRendered'> {
+export interface VirtuosoProps<D, C> extends Omit<ListProps, 'groupCounts' | 'groupContent' | 'itemsRendered'> {
   /**
    * The total amount of items to be rendered.
    */
@@ -35,6 +35,11 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
    * The data items to be rendered. If data is set, the total count will be inferred from the length of the array.
    */
   data?: readonly D[]
+
+  /**
+   * Additional context available in the custom components and content callbacks
+   */
+  context?: C
 
   /**
    * Set the overscan property to make the component "chunk" the rendering of new items on scroll.
@@ -79,17 +84,17 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
   /**
    * Use the `components` property for advanced customization of the elements rendered by the list.
    */
-  components?: Components
+  components?: Components<C>
 
   /**
    * Set the callback to specify the contents of the item.
    */
-  itemContent?: ItemContent<D>
+  itemContent?: ItemContent<D, C>
 
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.
    */
-  computeItemKey?: ComputeItemKey<D>
+  computeItemKey?: ComputeItemKey<D, C>
 
   /**
    * By default, the component assumes the default item height from the first rendered item (rendering it as a "probe").
@@ -224,8 +229,8 @@ export interface VirtuosoProps<D> extends Omit<ListProps, 'groupCounts' | 'group
   atBottomThreshold?: number
 }
 
-export interface GroupedVirtuosoProps<D>
-  extends Omit<VirtuosoProps<D>, 'totalCount' | 'itemContent'>,
+export interface GroupedVirtuosoProps<D, C>
+  extends Omit<VirtuosoProps<D, C>, 'totalCount' | 'itemContent'>,
     Pick<ListProps, 'groupCounts' | 'groupContent'> {
   /**
    * Specifies the amount of items in each group (and, actually, how many groups are there).
@@ -241,14 +246,14 @@ export interface GroupedVirtuosoProps<D>
   /**
    * Specifies how each each item gets rendered.
    */
-  itemContent?: GroupItemContent<D>
+  itemContent?: GroupItemContent<D, C>
 }
 
-export interface TableVirtuosoProps<D> extends Omit<VirtuosoProps<D>, 'components' | 'headerFooterTag' | 'topItemCount'> {
+export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'components' | 'headerFooterTag' | 'topItemCount'> {
   /**
    * Use the `components` property for advanced customization of the elements rendered by the table.
    */
-  components?: TableComponents
+  components?: TableComponents<C>
   /**
    * Set the contents of the table header.
    */
@@ -300,12 +305,12 @@ export interface TableVirtuosoProps<D> extends Omit<VirtuosoProps<D>, 'component
   /**
    * Set the callback to specify the contents of the item.
    */
-  itemContent?: ItemContent<D>
+  itemContent?: ItemContent<D, C>
 
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.
    */
-  computeItemKey?: ComputeItemKey<D>
+  computeItemKey?: ComputeItemKey<D, C>
 
   /**
    * By default, the component assumes the default item height from the first rendered item (rendering it as a "probe").
@@ -435,7 +440,7 @@ export interface TableVirtuosoProps<D> extends Omit<VirtuosoProps<D>, 'component
   atBottomThreshold?: number
 }
 
-export interface VirtuosoGridProps extends GridProps {
+export interface VirtuosoGridProps<C extends unknown = unknown> extends GridProps {
   /**
    * The total amount of items to be rendered.
    */
@@ -444,12 +449,12 @@ export interface VirtuosoGridProps extends GridProps {
   /**
    * Set the callback to specify the contents of the item.
    */
-  itemContent?: GridItemContent
+  itemContent?: GridItemContent<C>
 
   /**
    * Use the `components` property for advanced customization of the elements rendered by the list.
    */
-  components?: GridComponents
+  components?: GridComponents<C>
 
   /**
    * Set the overscan property to make the component "chunk" the rendering of new items on scroll.
@@ -559,9 +564,18 @@ export interface VirtuosoGridHandle extends GridHandle {
   scrollBy(location: ScrollToOptions): void
 }
 
-export const Virtuoso = List as <D extends unknown = any>(props: VirtuosoProps<D> & { ref?: Ref<VirtuosoHandle> }) => ReactElement
-export const GroupedVirtuoso = List as <D extends unknown = any>(
-  props: GroupedVirtuosoProps<D> & { ref?: Ref<GroupedVirtuosoHandle> }
+export const Virtuoso = List as <ItemData extends unknown = any, Context extends unknown = any>(
+  props: VirtuosoProps<ItemData, Context> & { ref?: Ref<VirtuosoHandle> }
 ) => ReactElement
-export const TableVirtuoso = Table as <D extends unknown = any>(props: TableVirtuosoProps<D> & { ref?: Ref<TableHandle> }) => ReactElement
-export const VirtuosoGrid = Grid as (props: VirtuosoGridProps & { ref?: Ref<VirtuosoGridHandle> }) => ReactElement
+
+export const GroupedVirtuoso = List as <ItemData extends unknown = any, Context extends unknown = any>(
+  props: GroupedVirtuosoProps<ItemData, Context> & { ref?: Ref<GroupedVirtuosoHandle> }
+) => ReactElement
+
+export const TableVirtuoso = Table as <ItemData extends unknown = any, Context extends unknown = any>(
+  props: TableVirtuosoProps<ItemData, Context> & { ref?: Ref<TableHandle> }
+) => ReactElement
+
+export const VirtuosoGrid = Grid as <Context extends unknown = any>(
+  props: VirtuosoGridProps<Context> & { ref?: Ref<VirtuosoGridHandle> }
+) => ReactElement

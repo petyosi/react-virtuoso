@@ -18,7 +18,7 @@ import {
   noop,
 } from '@virtuoso.dev/urx'
 import * as React from 'react'
-import { createElement, CSSProperties, FC } from 'react'
+import { ComponentType, createElement, CSSProperties, FC } from 'react'
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import useScrollTop from './hooks/useScrollTop'
@@ -28,20 +28,22 @@ import { listSystem } from './listSystem'
 import { positionStickyCssValue } from './utils/positionStickyCssValue'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { correctItemSize } from './utils/correctItemSize'
+import { ScrollerProps } from '.'
 
 export function identity<T>(value: T) {
   return value
 }
 
 const listComponentPropsSystem = system(() => {
-  const itemContent = statefulStream<ItemContent<any> | GroupItemContent<any>>((index: number) => `Item ${index}`)
+  const itemContent = statefulStream<ItemContent<any, any> | GroupItemContent<any, any>>((index: number) => `Item ${index}`)
+  const context = statefulStream<unknown>(null)
   const groupContent = statefulStream<GroupContent>((index: number) => `Group ${index}`)
-  const components = statefulStream<Components>({})
-  const computeItemKey = statefulStream<ComputeItemKey<any>>(identity)
+  const components = statefulStream<Components<any>>({})
+  const computeItemKey = statefulStream<ComputeItemKey<any, any>>(identity)
   const headerFooterTag = statefulStream('div')
   const scrollerRef = statefulStream<(ref: HTMLElement | Window | null) => void>(noop)
 
-  const distinctProp = <K extends keyof Components>(propName: K, defaultValue: Components[K] | null | 'div' = null) => {
+  const distinctProp = <K extends keyof Components<any>>(propName: K, defaultValue: Components<any>[K] | null | 'div' = null) => {
     return statefulStreamFromEmitter(
       pipe(
         components,
@@ -53,6 +55,7 @@ const listComponentPropsSystem = system(() => {
   }
 
   return {
+    context,
     itemContent,
     groupContent,
     components,
@@ -176,6 +179,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const scrollContainerStateCallback =
     customScrollParent || useWindowScroll ? windowScrollContainerStateCallback : _scrollContainerStateCallback
   const itemContent = useEmitterValue('itemContent')
+  const context = useEmitterValue('context')
   const groupContent = useEmitterValue('groupContent')
   const trackItemSizes = useEmitterValue('trackItemSizes')
   const itemSize = useEmitterValue('itemSize')
@@ -211,18 +215,24 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
       }
 
   if (!showTopList && statefulTotalCount === 0 && EmptyPlaceholder) {
-    return createElement(EmptyPlaceholder)
+    return createElement(EmptyPlaceholder, contextPropIfNotDomElement(EmptyPlaceholder, context))
   }
 
   return createElement(
     ListComponent,
-    { ref, style: containerStyle, 'data-test-id': showTopList ? 'virtuoso-top-item-list' : 'virtuoso-item-list' },
+    {
+      ...contextPropIfNotDomElement(ListComponent, context),
+      ref,
+      style: containerStyle,
+      'data-test-id': showTopList ? 'virtuoso-top-item-list' : 'virtuoso-item-list',
+    },
     (showTopList ? listState.topItems : listState.items).map((item) => {
       const index = item.originalIndex!
-      const key = computeItemKey(index + firstItemIndex, item.data)
+      const key = computeItemKey(index + firstItemIndex, item.data, context)
 
       if (isSeeking) {
         return createElement(ScrollSeekPlaceholder, {
+          ...contextPropIfNotDomElement(ScrollSeekPlaceholder, context),
           key,
           index: item.index,
           height: item.size,
@@ -235,6 +245,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
         return createElement(
           GroupComponent,
           {
+            ...contextPropIfNotDomElement(GroupComponent, context),
             key,
             'data-index': index,
             'data-known-size': item.size,
@@ -247,6 +258,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
         return createElement(
           ItemComponent,
           {
+            ...contextPropIfNotDomElement(ItemComponent, context),
             key,
             'data-index': index,
             'data-known-size': item.size,
@@ -255,8 +267,8 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
             style: { overflowAnchor: 'none' },
           } as any,
           hasGroups
-            ? (itemContent as GroupItemContent<any>)(item.index, item.groupIndex!, item.data)
-            : (itemContent as ItemContent<any>)(item.index, item.data)
+            ? (itemContent as GroupItemContent<any, any>)(item.index, item.groupIndex!, item.data, context)
+            : (itemContent as ItemContent<any, any>)(item.index, item.data, context)
         )
       }
     })
@@ -284,12 +296,20 @@ const topItemListStyle: CSSProperties = {
   top: 0,
 }
 
+export function contextPropIfNotDomElement(element: unknown, context: unknown) {
+  if (typeof element === 'string') {
+    return undefined
+  }
+  return { context }
+}
+
 const Header: FC = React.memo(function VirtuosoHeader() {
   const Header = useEmitterValue('HeaderComponent')
   const headerHeight = usePublisher('headerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
   const ref = useSize((el) => headerHeight(correctItemSize(el, 'height')))
-  return Header ? createElement(headerFooterTag, { ref }, createElement(Header)) : null
+  const context = useEmitterValue('context')
+  return Header ? createElement(headerFooterTag, { ref }, createElement(Header, contextPropIfNotDomElement(Header, context))) : null
 })
 
 const Footer: FC = React.memo(function VirtuosoFooter() {
@@ -297,7 +317,8 @@ const Footer: FC = React.memo(function VirtuosoFooter() {
   const footerHeight = usePublisher('footerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
   const ref = useSize((el) => footerHeight(correctItemSize(el, 'height')))
-  return Footer ? createElement(headerFooterTag, { ref }, createElement(Footer)) : null
+  const context = useEmitterValue('context')
+  return Footer ? createElement(headerFooterTag, { ref }, createElement(Footer, contextPropIfNotDomElement(Footer, context))) : null
 })
 
 export interface Hooks {
@@ -307,11 +328,12 @@ export interface Hooks {
 }
 
 export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hooks) {
-  const Scroller: Components['Scroller'] = React.memo(function VirtuosoScroller({ style, children, ...props }) {
+  const Scroller: ComponentType<ScrollerProps> = React.memo(function VirtuosoScroller({ style, children, ...props }) {
     const scrollContainerStateCallback = usePublisher('scrollContainerState')
     const ScrollerComponent = useEmitterValue('ScrollerComponent')!
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
     const scrollerRefCallback = useEmitterValue('scrollerRef')
+    const context = useEmitterValue('context')
 
     const { scrollerRef, scrollByCallback, scrollToCallback } = useScrollTop(
       scrollContainerStateCallback,
@@ -328,10 +350,10 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
         ref: scrollerRef as React.MutableRefObject<HTMLDivElement | null>,
         style: { ...scrollerStyle, ...style },
         'data-test-id': 'virtuoso-scroller',
-        //@ts-expect-error what?
-        'data-virtuoso-scroller': 'true',
+        'data-virtuoso-scroller': true,
         tabIndex: 0,
         ...props,
+        ...contextPropIfNotDomElement(ScrollerComponent, context),
       },
       children
     )
@@ -347,6 +369,7 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
     const totalListHeight = useEmitterValue('totalListHeight')
     const deviation = useEmitterValue('deviation')
     const customScrollParent = useEmitterValue('customScrollParent')
+    const context = useEmitterValue('context')
     const { scrollerRef, scrollByCallback, scrollToCallback } = useScrollTop(
       scrollContainerStateCallback,
       smoothScrollTargetReached,
@@ -368,9 +391,9 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
       ScrollerComponent,
       {
         style: { position: 'relative', ...style, ...(totalListHeight !== 0 ? { height: totalListHeight + deviation } : {}) },
-        //@ts-expect-error what?
-        'data-virtuoso-scroller': 'true',
+        'data-virtuoso-scroller': true,
         ...props,
+        ...contextPropIfNotDomElement(ScrollerComponent, context),
       },
       children
     )
@@ -405,7 +428,8 @@ const TopItemListContainer: FC = ({ children }) => {
   const TopItemList = useEmitterValue('TopItemListComponent')
   const headerHeight = useEmitterValue('headerHeight')
   const style = { ...topItemListStyle, marginTop: `${headerHeight}px` }
-  return createElement(TopItemList || 'div', { style }, children)
+  const context = useEmitterValue('context')
+  return createElement(TopItemList || 'div', { style, context }, children)
 }
 
 const ListRoot: FC<ListRootProps> = React.memo(function VirtuosoRoot(props) {
@@ -437,6 +461,7 @@ export const { Component: List, usePublisher, useEmitterValue, useEmitter } = sy
   {
     required: {},
     optional: {
+      context: 'context',
       followOutput: 'followOutput',
       firstItemIndex: 'firstItemIndex',
       itemContent: 'itemContent',

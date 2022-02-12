@@ -4,14 +4,14 @@ export interface ListRange {
   endIndex: number
 }
 
-export interface ItemContent<D> {
-  (index: number, data: D): ReactNode
+export interface ItemContent<D, C> {
+  (index: number, data: D, context: C): ReactNode
 }
 
 export type FixedHeaderContent = (() => React.ReactChildren | React.ReactNode) | null
 
-export interface GroupItemContent<D> {
-  (index: number, groupIndex: number, data: D): ReactNode
+export interface GroupItemContent<D, C> {
+  (index: number, groupIndex: number, data: D, context: C): ReactNode
 }
 
 export interface GroupContent {
@@ -74,99 +74,99 @@ export interface GridScrollSeekPlaceholderProps {
 /**
  * Customize the Virtuoso rendering by passing a set of custom components.
  */
-export interface Components {
+export interface Components<Context = unknown> {
   /**
    * Set to render a component at the top of the list.
    *
    * The header remains above the top items and does not remain sticky.
    */
-  Header?: ComponentType
+  Header?: ComponentType<{ context?: Context }>
   /**
    * Set to render a component at the bottom of the list.
    */
-  Footer?: ComponentType
+  Footer?: ComponentType<{ context?: Context }>
   /**
    * Set to customize the item wrapping element. Use only if you would like to render list from elements different than a `div`.
    */
-  Item?: ComponentType<ItemProps>
+  Item?: ComponentType<ItemProps & { context?: Context }>
   /**
    * Set to customize the group item wrapping element. Use only if you would like to render list from elements different than a `div`.
    */
-  Group?: ComponentType<GroupProps>
+  Group?: ComponentType<GroupProps & { context?: Context }>
 
   /**
    * Set to customize the top list item wrapping element. Use if you would like to render list from elements different than a `div`
    * or you want to set a custom z-index for the sticky position.
    */
-  TopItemList?: ComponentType<TopItemListProps>
+  TopItemList?: ComponentType<TopItemListProps & { context?: Context }>
 
   /**
    * Set to customize the outermost scrollable element. This should not be necessary in general,
    * as the component passes its HTML attribute props to it.
    */
-  Scroller?: ComponentType<ScrollerProps>
+  Scroller?: ComponentType<ScrollerProps & { context?: Context }>
 
   /**
    * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
    */
-  List?: ComponentType<ListProps>
+  List?: ComponentType<ListProps & { context?: Context }>
 
   /**
    * Set to render a custom UI when the list is empty.
    */
-  EmptyPlaceholder?: ComponentType
+  EmptyPlaceholder?: ComponentType<{ context?: Context }>
 
   /**
    * Set to render an item placeholder when the user scrolls fast.  See the `scrollSeek` property for more details.
    */
-  ScrollSeekPlaceholder?: ComponentType<ScrollSeekPlaceholderProps>
+  ScrollSeekPlaceholder?: ComponentType<ScrollSeekPlaceholderProps & { context?: Context }>
 }
 
 /**
  * Customize the TableVirtuoso rendering by passing a set of custom components.
  */
-export interface TableComponents {
+export interface TableComponents<Context = unknown> {
   /**
    * Set to customize the wrapping `table` element.
    *
    */
-  Table?: ComponentType<TableProps>
+  Table?: ComponentType<TableProps & { context?: Context }>
 
   /**
    * Set to render a fixed header at the top of the table (`thead`). use [[fixedHeaderHeight]] to set the contents
    *
    */
-  TableHead?: ComponentType
+  TableHead?: ComponentType<{ context?: Context }>
 
   /**
    * Set to customize the item wrapping element. Default is `tr`.
    */
-  TableRow?: ComponentType<ItemProps>
+  TableRow?: ComponentType<ItemProps & { context?: Context }>
 
   /**
    * Set to customize the outermost scrollable element. This should not be necessary in general,
    * as the component passes its HTML attribute props to it.
    */
-  Scroller?: ComponentType<ScrollerProps>
+  Scroller?: ComponentType<ScrollerProps & { context?: Context }>
 
   /**
    * Set to customize the items wrapper. Default is `tbody`.
    */
-  TableBody?: ComponentType<ListProps>
+  TableBody?: ComponentType<ListProps & { context?: Context }>
 
   /**
    * Set to render a custom UI when the list is empty.
    */
-  EmptyPlaceholder?: ComponentType
+  EmptyPlaceholder?: ComponentType<{ context?: Context }>
 
   /**
    * Set to render an item placeholder when the user scrolls fast.  See the `scrollSeek` property for more details.
    */
-  ScrollSeekPlaceholder?: ComponentType<ScrollSeekPlaceholderProps>
+  ScrollSeekPlaceholder?: ComponentType<ScrollSeekPlaceholderProps & { context?: Context }>
 }
 
-export interface ComputeItemKey<D> {
-  (index: number, item: D): Key
+export interface ComputeItemKey<D, C> {
+  (index: number, item: D, context: C): Key
 }
 
 export interface ScrollSeekToggle {
@@ -240,36 +240,36 @@ export interface GridItem {
   className?: string
 }
 
-export interface GridComponents {
+export interface GridComponents<Context = any> {
   /**
    * Set to customize the item wrapping element. Use only if you would like to render list from elements different than a `div`.
    */
-  Item?: ComponentType<GridItem>
+  Item?: ComponentType<GridItem & { context?: Context }>
 
   /**
    * Set to customize the outermost scrollable element. This should not be necessary in general,
    * as the component passes its HTML attribute props to it.
    */
-  Scroller?: ComponentType<ScrollerProps>
+  Scroller?: ComponentType<ScrollerProps & { context?: Context }>
 
   /**
    * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
    */
-  List?: ComponentType<GridListProps>
+  List?: ComponentType<GridListProps & { context?: Context }>
 
   /**
    * Set to render an item placeholder when the user scrolls fast.
    * See the `scrollSeekConfiguration` property for more details.
    */
-  ScrollSeekPlaceholder?: ComponentType<GridScrollSeekPlaceholderProps>
+  ScrollSeekPlaceholder?: ComponentType<GridScrollSeekPlaceholderProps & { context?: Context }>
 }
 
 export interface GridComputeItemKey {
   (index: number): Key
 }
 
-export interface GridItemContent {
-  (index: number): ReactNode
+export interface GridItemContent<C> {
+  (index: number, context: C): ReactNode
 }
 
 export interface WindowViewportInfo {
