@@ -52,10 +52,6 @@ const PROBE_GRID_STATE: GridState = {
 
 const { ceil, floor, min, max } = Math
 
-function hackFloor(val: number) {
-  return ceil(val) - val < 0.03 ? ceil(val) : floor(val)
-}
-
 function buildItems(startIndex: number, endIndex: number) {
   return Array.from({ length: endIndex - startIndex + 1 }).map((_, i) => ({ index: i + startIndex } as GridItem))
 }
@@ -117,7 +113,8 @@ export const gridSystem = u.system(
             return PROBE_GRID_STATE
           }
 
-          const perRow = hackFloor(viewportWidth / itemWidth)
+          const perRow = Math.floor(viewportWidth / itemWidth)
+
           let startIndex = perRow * floor(startOffset / itemHeight)
           let endIndex = perRow * ceil(endOffset / itemHeight) - 1
           endIndex = min(totalCount - 1, endIndex)
@@ -295,5 +292,5 @@ function itemTop(viewport: ElementDimensions, item: ElementDimensions, index: nu
 }
 
 function itemsPerRow(viewportWidth: number, itemWidth: number) {
-  return hackFloor(viewportWidth / itemWidth)
+  return Math.floor(viewportWidth / itemWidth)
 }
