@@ -42,17 +42,24 @@ export interface VirtuosoProps<D, C> extends Omit<ListProps, 'groupCounts' | 'gr
   context?: C
 
   /**
+   * *The property accepts pixel values.*
+   *
    * Set the overscan property to make the component "chunk" the rendering of new items on scroll.
    * The property causes the component to render more items than the necessary, but reduces the re-renders on scroll.
    * Setting `{ main: number, reverse: number }` lets you extend the list in both the main and the reverse scrollable directions.
-   * See the `increaseViewportBy` property for a similar behavior (equivalent to the `overscan` in `react-window`).
+   * See the `increaseViewportBy` property for a similar behavior (equivalent to the `overscan` in react-window).
+   *
    */
   overscan?: number | { main: number; reverse: number }
 
   /**
+   *
+   * *The property accepts pixel values.*
+   *
    * Set the increaseViewportBy property to artificially increase the viewport size, causing items to be rendered before outside of the viewport.
    * The property causes the component to render more items than the necessary, but can help with slow loading content.
    * Using `{ top?: number, bottom?: number }` lets you set the increase for each end separately.
+   *
    */
   increaseViewportBy?: number | { top: number; bottom: number }
 
