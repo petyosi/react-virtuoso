@@ -50,7 +50,7 @@ const PROBE_GRID_STATE: GridState = {
   itemWidth: 0,
 }
 
-const { ceil, floor, min, max } = Math
+const { round, ceil, floor, min, max } = Math
 
 function buildItems(startIndex: number, endIndex: number) {
   return Array.from({ length: endIndex - startIndex + 1 }).map((_, i) => ({ index: i + startIndex } as GridItem))
@@ -113,7 +113,7 @@ export const gridSystem = u.system(
             return PROBE_GRID_STATE
           }
 
-          const perRow = Math.floor(viewportWidth / itemWidth)
+          const perRow = itemsPerRow(viewportWidth, itemWidth)
 
           let startIndex = perRow * floor(startOffset / itemHeight)
           let endIndex = perRow * ceil(endOffset / itemHeight) - 1
@@ -202,14 +202,14 @@ export const gridSystem = u.system(
             index = totalCount - 1
           }
 
-          index = Math.max(0, index, Math.min(totalCount - 1, index))
+          index = max(0, index, min(totalCount - 1, index))
 
           let top = itemTop(viewport, item, index)
 
           if (align === 'end') {
-            top = Math.round(top - viewport.height + item.height)
+            top = round(top - viewport.height + item.height)
           } else if (align === 'center') {
-            top = Math.round(top - viewport.height / 2 + item.height / 2)
+            top = round(top - viewport.height / 2 + item.height / 2)
           }
 
           if (offset) {
@@ -292,5 +292,5 @@ function itemTop(viewport: ElementDimensions, item: ElementDimensions, index: nu
 }
 
 function itemsPerRow(viewportWidth: number, itemWidth: number) {
-  return Math.floor(viewportWidth / itemWidth)
+  return max(1, floor(viewportWidth / itemWidth))
 }
