@@ -1,7 +1,7 @@
 import * as u from '@virtuoso.dev/urx'
 import { empty, findMaxKeyValue, Range, rangesWithin } from './AATree'
 import { groupedListSystem } from './groupedListSystem'
-import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
+import { getInitialTopMostItemIndexNumber, initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
 import { Item, ListItem, ListRange } from './interfaces'
 import { propsReadySystem } from './propsReadySystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
@@ -182,7 +182,13 @@ export const listStateSystem = u.system(
             }
 
             if (empty(sizeTree)) {
-              return buildListState(probeItemSet(initialTopMostItemIndex, sizesValue, data), [], totalCount, sizesValue, firstItemIndex)
+              return buildListState(
+                probeItemSet(getInitialTopMostItemIndexNumber(initialTopMostItemIndex, totalCount), sizesValue, data),
+                [],
+                totalCount,
+                sizesValue,
+                firstItemIndex
+              )
             }
 
             const topItems = [] as Item<any>[]

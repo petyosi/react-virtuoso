@@ -2,19 +2,25 @@ import * as u from '@virtuoso.dev/urx'
 import { empty } from './AATree'
 import { sizeSystem } from './sizeSystem'
 import { domIOSystem } from './domIOSystem'
-import { scrollToIndexSystem } from './scrollToIndexSystem'
+import { IndexLocation, scrollToIndexSystem } from './scrollToIndexSystem'
 import { propsReadySystem } from './propsReadySystem'
+
+export function getInitialTopMostItemIndexNumber(location: IndexLocation, totalCount: number): number {
+  const lastIndex = totalCount - 1
+  const index = typeof location === 'number' ? location : location.index === 'LAST' ? lastIndex : location.index
+  return index
+}
 
 export const initialTopMostItemIndexSystem = u.system(
   ([{ sizes, listRefresh, defaultItemSize }, { scrollTop }, { scrollToIndex }, { didMount }]) => {
     const scrolledToInitialItem = u.statefulStream(true)
-    const initialTopMostItemIndex = u.statefulStream(0)
+    const initialTopMostItemIndex = u.statefulStream<IndexLocation>(0)
 
     u.connect(
       u.pipe(
         didMount,
         u.withLatestFrom(initialTopMostItemIndex),
-        u.filter(([_, index]) => index !== 0),
+        u.filter(([_, location]) => !!location),
         u.mapTo(false)
       ),
       scrolledToInitialItem
