@@ -19,6 +19,15 @@ export default function App() {
         Prepend Items
       </button>
 
+      <button
+        onClick={() => {
+          setCount((val) => val - pageSize)
+          setFirstItemIndex((val) => val + pageSize)
+        }}
+      >
+        Shift Items
+      </button>
+
       <Virtuoso totalCount={count} firstItemIndex={firstItemIndex} itemContent={itemContent} style={style} />
     </div>
   )

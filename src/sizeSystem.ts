@@ -131,12 +131,56 @@ export function rangesWithinOffsets(
   return arrayToRanges(arrayBinarySearch.findRange(tree, startOffset, endOffset, offsetComparator), offsetPointParser)
 }
 
+function createOffsetTree(prevOffsetTree: OffsetPoint[], syncStart: number, sizeTree: AANode<number>) {
+  let offsetTree = prevOffsetTree
+  let prevIndex = 0
+  let prevSize = 0
+
+  let prevOffset = 0
+  let startIndex = 0
+
+  if (syncStart !== 0) {
+    startIndex = arrayBinarySearch.findIndexOfClosestSmallerOrEqual(offsetTree, syncStart - 1, indexComparator)
+    const offsetInfo = offsetTree[startIndex]
+    prevOffset = offsetInfo.offset
+    const kv = findMaxKeyValue(sizeTree, syncStart - 1)
+    prevIndex = kv[0]
+    prevSize = kv[1]!
+
+    if (offsetTree.length && offsetTree[startIndex].size === findMaxKeyValue(sizeTree, syncStart)[1]) {
+      startIndex -= 1
+    }
+
+    offsetTree = offsetTree.slice(0, startIndex + 1)
+  } else {
+    offsetTree = []
+  }
+
+  for (const { start: startIndex, value } of rangesWithin(sizeTree, syncStart, Infinity)) {
+    const aOffset = (startIndex - prevIndex) * prevSize + prevOffset
+    offsetTree.push({
+      offset: aOffset,
+      size: value,
+      index: startIndex,
+    })
+    prevIndex = startIndex
+    prevOffset = aOffset
+    prevSize = value
+  }
+
+  return {
+    offsetTree,
+    lastIndex: prevIndex,
+    lastOffset: prevOffset,
+    lastSize: prevSize,
+  }
+}
+
 export function sizeStateReducer(state: SizeState, [ranges, groupIndices, log]: [SizeRange[], number[], Log]) {
   if (ranges.length > 0) {
     log('received item sizes', ranges, LogLevel.DEBUG)
   }
   const sizeTree = state.sizeTree
-  let offsetTree = state.offsetTree
   let newSizeTree: AANode<number> = sizeTree
   let syncStart = 0
 
@@ -157,50 +201,17 @@ export function sizeStateReducer(state: SizeState, [ranges, groupIndices, log]: 
     return state
   }
 
-  let prevIndex = 0
-  let prevSize = 0
-
-  let prevAOffset = 0
-  let startAIndex = 0
-
-  if (syncStart !== 0) {
-    startAIndex = arrayBinarySearch.findIndexOfClosestSmallerOrEqual(offsetTree, syncStart - 1, indexComparator)
-    const offsetInfo = offsetTree[startAIndex]
-    prevAOffset = offsetInfo.offset
-    const kv = findMaxKeyValue(newSizeTree, syncStart - 1)
-    prevIndex = kv[0]
-    prevSize = kv[1]!
-
-    if (offsetTree.length && offsetTree[startAIndex].size === findMaxKeyValue(newSizeTree, syncStart)[1]) {
-      startAIndex -= 1
-    }
-
-    offsetTree = offsetTree.slice(0, startAIndex + 1)
-  } else {
-    offsetTree = []
-  }
-
-  for (const { start: startIndex, value } of rangesWithin(newSizeTree, syncStart, Infinity)) {
-    const aOffset = (startIndex - prevIndex) * prevSize + prevAOffset
-    offsetTree.push({
-      offset: aOffset,
-      size: value,
-      index: startIndex,
-    })
-    prevIndex = startIndex
-    prevAOffset = aOffset
-    prevSize = value
-  }
+  const { offsetTree: newOffsetTree, lastIndex, lastSize, lastOffset } = createOffsetTree(state.offsetTree, syncStart, newSizeTree)
 
   return {
     sizeTree: newSizeTree,
-    offsetTree,
+    offsetTree: newOffsetTree,
+    lastIndex,
+    lastOffset,
+    lastSize,
     groupOffsetTree: groupIndices.reduce((tree, index) => {
-      return insert(tree, index, offsetOf(index, offsetTree))
+      return insert(tree, index, offsetOf(index, newOffsetTree))
     }, newTree<number>()),
-    lastIndex: prevIndex,
-    lastOffset: prevAOffset,
-    lastSize: prevSize,
     groupIndices,
   }
 }
@@ -247,6 +258,7 @@ export const sizeSystem = u.system(
     const totalCount = u.stream<number>()
     const statefulTotalCount = u.statefulStreamFromEmitter(totalCount, 0)
     const unshiftWith = u.stream<number>()
+    const shiftWith = u.stream<number>()
     const firstItemIndex = u.statefulStream(0)
     const groupIndices = u.statefulStream([] as number[])
     const fixedItemSize = u.statefulStream<OptionalNumber>(undefined)
@@ -340,7 +352,7 @@ export const sizeSystem = u.system(
       )
     )
 
-    u.connect(
+    u.subscribe(
       u.pipe(
         firstItemIndex,
         u.scan(
@@ -349,10 +361,15 @@ export const sizeSystem = u.system(
           },
           { diff: 0, prev: 0 }
         ),
-        u.map((val) => val.diff),
-        u.filter((value) => value > 0)
+        u.map((val) => val.diff)
       ),
-      unshiftWith
+      (offset) => {
+        if (offset > 0) {
+          u.publish(unshiftWith, offset)
+        } else if (offset < 0) {
+          u.publish(shiftWith, offset)
+        }
+      }
     )
 
     u.subscribe(u.pipe(firstItemIndex, u.withLatestFrom(log)), ([index, log]) => {
@@ -396,6 +413,40 @@ export const sizeSystem = u.system(
       sizeRanges
     )
 
+    const shiftWithOffset = u.streamFromEmitter(
+      u.pipe(
+        shiftWith,
+        u.withLatestFrom(sizes),
+        u.map(([shiftWith, { offsetTree }]) => {
+          const newFirstItemIndex = -shiftWith
+          return offsetOf(newFirstItemIndex, offsetTree)
+        })
+      )
+    )
+
+    u.connect(
+      u.pipe(
+        shiftWith,
+        u.withLatestFrom(sizes),
+        u.map(([shiftWith, sizes]) => {
+          if (sizes.groupIndices.length > 0) {
+            throw new Error('Virtuoso: shifting items does not work with groups')
+          }
+
+          const newSizeTree = walk(sizes.sizeTree).reduce((acc, { k, v }) => {
+            return insert(acc, Math.max(0, k + shiftWith), v)
+          }, newTree<number>())
+
+          return {
+            ...sizes,
+            sizeTree: newSizeTree,
+            ...createOffsetTree(sizes.offsetTree, 0, newSizeTree),
+          }
+        })
+      ),
+      sizes
+    )
+
     return {
       // input
       data,
@@ -405,6 +456,8 @@ export const sizeSystem = u.system(
       defaultItemSize,
       fixedItemSize,
       unshiftWith,
+      shiftWith,
+      shiftWithOffset,
       beforeUnshiftWith,
       firstItemIndex,
 

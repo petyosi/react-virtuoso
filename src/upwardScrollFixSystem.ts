@@ -14,7 +14,7 @@ export const upwardScrollFixSystem = u.system(
     { scrollBy, scrollTop, deviation, scrollingInProgress },
     { isScrolling, isAtBottom, atBottomState, scrollDirection, lastJumpDueToItemResize },
     { listState },
-    { beforeUnshiftWith, sizes },
+    { beforeUnshiftWith, shiftWithOffset, sizes },
     { log },
   ]) => {
     const deviationOffset = u.streamFromEmitter(
@@ -98,6 +98,16 @@ export const upwardScrollFixSystem = u.system(
           u.publish(scrollBy, { top: -offset, behavior: 'auto' })
         }
       }
+    )
+
+    u.connect(
+      u.pipe(
+        shiftWithOffset,
+        u.map((offset) => {
+          return { top: -offset }
+        })
+      ),
+      scrollBy
     )
 
     u.connect(
