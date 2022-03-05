@@ -1,4 +1,4 @@
-const Parcel = require('@parcel/core')
+const Bundler = require('parcel-bundler')
 const Path = require('path')
 const FS = require('fs')
 
@@ -22,7 +22,7 @@ const options = {
   autoInstall: false, // Enable or disable auto install of missing dependencies found during bundling
 }
 
-const bundler = new Parcel(indexPath, options)
+const bundler = new Bundler(indexPath, options)
 
 ;(async function() {
   return await bundler.serve(1234)

@@ -86,9 +86,8 @@ describe('list engine', () => {
     it('starts from a specified location', (done) => {
       const INITIAL_INDEX = 300
       const SIZE = 30
-      const { propsReady, initialTopMostItemIndex, listState, scrollTop, scrollTo, viewportHeight, totalCount, sizeRanges } = init(
-        listSystem
-      )
+      const { propsReady, initialTopMostItemIndex, listState, scrollTop, scrollTo, viewportHeight, totalCount, sizeRanges } =
+        init(listSystem)
 
       publish(initialTopMostItemIndex, INITIAL_INDEX)
       publish(scrollTop, 0)
@@ -122,9 +121,8 @@ describe('list engine', () => {
     it('starts from a specified location with fixed item size', (done) => {
       const INITIAL_INDEX = 300
       const SIZE = 30
-      const { fixedItemHeight, propsReady, initialTopMostItemIndex, listState, scrollTop, scrollTo, viewportHeight, totalCount } = init(
-        listSystem
-      )
+      const { fixedItemHeight, propsReady, initialTopMostItemIndex, listState, scrollTop, scrollTo, viewportHeight, totalCount } =
+        init(listSystem)
 
       publish(initialTopMostItemIndex, INITIAL_INDEX)
       publish(scrollTop, 0)

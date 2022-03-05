@@ -456,7 +456,12 @@ const ListRoot: FC<ListRootProps> = React.memo(function VirtuosoRoot(props) {
 
 export type ListHandle = RefHandle<typeof List>
 
-export const { Component: List, usePublisher, useEmitterValue, useEmitter } = systemToComponent(
+export const {
+  Component: List,
+  usePublisher,
+  useEmitterValue,
+  useEmitter,
+} = systemToComponent(
   combinedSystem,
   {
     required: {},

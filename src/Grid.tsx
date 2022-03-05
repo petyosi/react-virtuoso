@@ -179,7 +179,12 @@ const GridRoot: FC<GridRootProps> = React.memo(function GridRoot({ ...props }) {
   )
 })
 
-const { Component: Grid, usePublisher, useEmitterValue, useEmitter } = systemToComponent(
+const {
+  Component: Grid,
+  usePublisher,
+  useEmitterValue,
+  useEmitter,
+} = systemToComponent(
   combinedSystem,
   {
     optional: {

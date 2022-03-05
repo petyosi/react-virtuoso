@@ -205,7 +205,12 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
 
 export type TableHandle = RefHandle<typeof Table>
 
-export const { Component: Table, usePublisher, useEmitterValue, useEmitter } = systemToComponent(
+export const {
+  Component: Table,
+  usePublisher,
+  useEmitterValue,
+  useEmitter,
+} = systemToComponent(
   combinedSystem,
   {
     required: {},

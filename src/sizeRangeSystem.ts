@@ -36,7 +36,7 @@ export const sizeRangeSystem = u.system(
     const increaseViewportBy = u.statefulStream<ViewportIncrease>(0)
     const overscan = u.statefulStream<Overscan>(0)
 
-    const visibleRange = (u.statefulStreamFromEmitter(
+    const visibleRange = u.statefulStreamFromEmitter(
       u.pipe(
         u.combineLatest(
           u.duc(scrollTop),
@@ -100,7 +100,7 @@ export const sizeRangeSystem = u.system(
         u.distinctUntilChanged(tupleComparator as any)
       ),
       [0, 0]
-    ) as unknown) as u.StatefulStream<NumberTuple>
+    ) as unknown as u.StatefulStream<NumberTuple>
 
     return {
       // input

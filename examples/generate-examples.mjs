@@ -80,7 +80,7 @@ const htmlCode = `
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="./__examples.jsx"></script>
+    <script src="./__examples.jsx"></script>
   </body>
 </html>
 `
