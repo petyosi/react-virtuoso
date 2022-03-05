@@ -72,8 +72,9 @@ export interface VirtuosoProps<D, C> extends Omit<ListProps, 'groupCounts' | 'gr
 
   /**
    * Set to a value between 0 and totalCount - 1 to make the list start scrolled to that item.
+   * Pass in an object to achieve additional effects similar to `scrollToIndex`.
    */
-  initialTopMostItemIndex?: number
+  initialTopMostItemIndex?: number | IndexLocationWithAlign
 
   /**
    * Set this value to offset the initial location of the list.
