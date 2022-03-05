@@ -7,7 +7,7 @@
 
 import React from 'react'
 import { TableVirtuoso, GroupedVirtuoso, Virtuoso, VirtuosoGrid } from '../../../../dist/'
-import faker from 'faker'
+import faker from '@faker-js/faker'
 import styled from '@emotion/styled'
 import { groupBy } from 'lodash'
 import List from '@mui/material/List'
