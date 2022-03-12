@@ -183,17 +183,9 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
     isAtBottom
   )
 
-  u.subscribe(isAtBottom, (value) => {
-    setTimeout(() => u.publish(atBottomStateChange, value))
-  })
+  u.connect(u.pipe(isAtBottom, u.throttleTime(50)), atBottomStateChange)
 
   const scrollDirection = u.statefulStream<ScrollDirection>(DOWN)
-
-  u.subscribe(isAtBottom, (value) => {
-    setTimeout(() => {
-      u.publish(atBottomStateChange, value)
-    })
-  })
 
   u.connect(
     u.pipe(
@@ -218,8 +210,6 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
   )
 
   u.connect(u.pipe(scrollContainerState, u.throttleTime(50), u.mapTo(NONE)), scrollDirection)
-
-  u.connect(isAtBottom, atBottomStateChange)
 
   const scrollVelocity = u.statefulStream(0)
 
