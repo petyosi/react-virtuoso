@@ -35,6 +35,11 @@ export type TopItemListProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'chi
 export type TableProps = Pick<ComponentPropsWithRef<'table'>, 'style'>
 
 /**
+ * Passed to the Components.TableBody custom component
+ */
+export type TableBodyProps = Pick<ComponentPropsWithRef<'tbody'>, 'style' | 'children' | 'ref' | 'className'> & { 'data-test-id': string }
+
+/**
  * Passed to the Components.List custom component
  */
 export type ListProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'ref'> & { 'data-test-id': string }
@@ -152,7 +157,7 @@ export interface TableComponents<Context = unknown> {
   /**
    * Set to customize the items wrapper. Default is `tbody`.
    */
-  TableBody?: ComponentType<ListProps & { context?: Context }>
+  TableBody?: ComponentType<TableBodyProps & { context?: Context }>
 
   /**
    * Set to render a custom UI when the list is empty.
