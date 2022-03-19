@@ -4,7 +4,6 @@ import { TableVirtuoso } from '../src/'
 export default function App() {
   return (
     <>
-      <div style={{ height: 200 }}>Top content</div>
       <TableVirtuoso
         totalCount={1000}
         components={{
@@ -22,10 +21,10 @@ export default function App() {
         fixedHeaderContent={() => {
           return (
             <tr style={{ background: 'white' }}>
-              <th key={1} style={{ height: 200, border: '1px solid black', background: 'white' }}>
+              <th key={1} style={{ height: 20, border: '1px solid black', background: 'white' }}>
                 TH 1
               </th>
-              <th key={2} style={{ height: 200, border: '1px solid black', background: 'white' }}>
+              <th key={2} style={{ height: 20, border: '1px solid black', background: 'white' }}>
                 TH meh
               </th>
             </tr>
