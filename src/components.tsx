@@ -19,7 +19,7 @@ import {
   FixedHeaderContent,
 } from './interfaces'
 import { List, ListHandle } from './List'
-import { Table, TableHandle } from './Table'
+import { Table } from './Table'
 import { ScrollIntoViewLocation } from './scrollIntoViewSystem'
 type CompProps<T> = T extends ForwardRefExoticComponent<infer R> ? R : never
 type ListProps = CompProps<typeof List>
@@ -572,6 +572,13 @@ export interface VirtuosoGridHandle extends GridHandle {
   scrollBy(location: ScrollToOptions): void
 }
 
+export interface TableVirtuosoHandle extends ListHandle {
+  scrollIntoView(location: ScrollIntoViewLocation): void
+  scrollToIndex(location: number | IndexLocationWithAlign): void
+  scrollTo(location: ScrollToOptions): void
+  scrollBy(location: ScrollToOptions): void
+}
+
 export const Virtuoso = List as <ItemData extends unknown = any, Context extends unknown = any>(
   props: VirtuosoProps<ItemData, Context> & { ref?: Ref<VirtuosoHandle> }
 ) => ReactElement
@@ -581,7 +588,7 @@ export const GroupedVirtuoso = List as <ItemData extends unknown = any, Context 
 ) => ReactElement
 
 export const TableVirtuoso = Table as <ItemData extends unknown = any, Context extends unknown = any>(
-  props: TableVirtuosoProps<ItemData, Context> & { ref?: Ref<TableHandle> }
+  props: TableVirtuosoProps<ItemData, Context> & { ref?: Ref<TableVirtuosoHandle> }
 ) => ReactElement
 
 export const VirtuosoGrid = Grid as <Context extends unknown = any>(

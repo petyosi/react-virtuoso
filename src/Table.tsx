@@ -1,4 +1,4 @@
-import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
+import { systemToComponent } from '@virtuoso.dev/react-urx'
 import { map, pipe, statefulStream, system, tup, statefulStreamFromEmitter, distinctUntilChanged, noop, compose } from '@virtuoso.dev/urx'
 import * as React from 'react'
 import { createElement, FC } from 'react'
@@ -202,8 +202,6 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
     </TheScroller>
   )
 })
-
-export type TableHandle = RefHandle<typeof Table>
 
 export const {
   Component: Table,
