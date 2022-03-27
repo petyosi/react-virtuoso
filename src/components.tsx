@@ -1,5 +1,4 @@
-import { ForwardRefExoticComponent, ReactElement, Ref } from 'react'
-import { Grid, GridHandle } from './Grid'
+import { ReactElement, Ref } from 'react'
 
 import {
   Components,
@@ -17,15 +16,13 @@ import {
   ScrollSeekConfiguration,
   TableComponents,
   FixedHeaderContent,
+  ScrollIntoViewLocation,
 } from './interfaces'
-import { List, ListHandle } from './List'
+import { List } from './List'
+import { Grid } from './Grid'
 import { Table } from './Table'
-import { ScrollIntoViewLocation } from './scrollIntoViewSystem'
-type CompProps<T> = T extends ForwardRefExoticComponent<infer R> ? R : never
-type ListProps = CompProps<typeof List>
-type GridProps = CompProps<typeof Grid>
 
-export interface VirtuosoProps<D, C> extends Omit<ListProps, 'groupCounts' | 'groupContent' | 'itemsRendered'> {
+export interface VirtuosoProps<D, C> {
   /**
    * The total amount of items to be rendered.
    */
@@ -237,9 +234,7 @@ export interface VirtuosoProps<D, C> extends Omit<ListProps, 'groupCounts' | 'gr
   atBottomThreshold?: number
 }
 
-export interface GroupedVirtuosoProps<D, C>
-  extends Omit<VirtuosoProps<D, C>, 'totalCount' | 'itemContent'>,
-    Pick<ListProps, 'groupCounts' | 'groupContent'> {
+export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'totalCount' | 'itemContent'> {
   /**
    * Specifies the amount of items in each group (and, actually, how many groups are there).
    * For example, passing [20, 30] will display 2 groups with 20 and 30 items each.
@@ -448,7 +443,7 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
   atBottomThreshold?: number
 }
 
-export interface VirtuosoGridProps<C extends unknown = unknown> extends GridProps {
+export interface VirtuosoGridProps<C extends unknown = unknown> {
   /**
    * The total amount of items to be rendered.
    */
@@ -541,9 +536,9 @@ export interface VirtuosoGridProps<C extends unknown = unknown> extends GridProp
   customScrollParent?: HTMLElement
 }
 
-export interface VirtuosoHandle extends ListHandle {
+export interface VirtuosoHandle {
   /**
-   * Scrolls the component to the specified item index. See {{IndexLocationWithAlign}} for more options.
+   * Scrolls the component to the specified item index. See {@link IndexLocationWithAlign} for more options.
    */
   scrollToIndex(location: number | IndexLocationWithAlign): void
   /**
@@ -560,19 +555,19 @@ export interface VirtuosoHandle extends ListHandle {
   scrollBy(location: ScrollToOptions): void
 }
 
-export interface GroupedVirtuosoHandle extends ListHandle {
+export interface GroupedVirtuosoHandle {
   scrollToIndex(location: number | IndexLocationWithAlign): void
   scrollTo(location: ScrollToOptions): void
   scrollBy(location: ScrollToOptions): void
 }
 
-export interface VirtuosoGridHandle extends GridHandle {
+export interface VirtuosoGridHandle {
   scrollToIndex(location: number | IndexLocationWithAlign): void
   scrollTo(location: ScrollToOptions): void
   scrollBy(location: ScrollToOptions): void
 }
 
-export interface TableVirtuosoHandle extends ListHandle {
+export interface TableVirtuosoHandle {
   scrollIntoView(location: ScrollIntoViewLocation): void
   scrollToIndex(location: number | IndexLocationWithAlign): void
   scrollTo(location: ScrollToOptions): void

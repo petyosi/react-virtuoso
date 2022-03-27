@@ -5,12 +5,7 @@ import { offsetOf, originalIndexFromItemIndex, sizeSystem } from './sizeSystem'
 import { loggerSystem } from './loggerSystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { listStateSystem } from './listStateSystem'
-
-export interface ScrollIntoViewLocation {
-  index: number
-  behavior?: 'auto' | 'smooth'
-  done?: () => void
-}
+import { ScrollIntoViewLocation } from './interfaces'
 
 export const scrollIntoViewSystem = u.system(
   ([{ sizes, totalCount }, { scrollTop, viewportHeight, headerHeight, scrollingInProgress }, { scrollToIndex }]) => {

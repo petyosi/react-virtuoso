@@ -6,6 +6,7 @@
     "lib": ["dom", "esnext"],
     "importHelpers": true,
     "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
     "rootDir": "./src",
     "strict": true,
