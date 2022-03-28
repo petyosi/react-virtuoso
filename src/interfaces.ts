@@ -282,3 +282,9 @@ export interface WindowViewportInfo {
   visibleHeight: number
   visibleWidth: number
 }
+
+export interface ScrollIntoViewLocation {
+  index: number
+  behavior?: 'auto' | 'smooth'
+  done?: () => void
+}
