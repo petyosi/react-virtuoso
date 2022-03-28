@@ -7,7 +7,7 @@ slug: /scroll-handling/
 
 Loading and rendering complex content while scrolling affects the scrolling performance.
 
-To let the integrator address that issue, the `Virtuoso` component exposes a `scrollingStateChange` event property which gets called when the user starts/stops scrolling.
+To let the integrator address that issue, the `Virtuoso` component exposes a `isScrolling` event property which gets called when the user starts/stops scrolling.
 The callback receives true when the user starts scrolling and false shortly after the last scroll event.
 
 Handling this event can improve performance by hiding/replacing certain heavy elements in the items.
