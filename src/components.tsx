@@ -17,12 +17,14 @@ import {
   TableComponents,
   FixedHeaderContent,
   ScrollIntoViewLocation,
+  ListRootProps,
+  GridRootProps,
 } from './interfaces'
 import { List } from './List'
 import { Grid } from './Grid'
 import { Table } from './Table'
 
-export interface VirtuosoProps<D, C> {
+export interface VirtuosoProps<D, C> extends ListRootProps {
   /**
    * The total amount of items to be rendered.
    */
@@ -443,7 +445,7 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
   atBottomThreshold?: number
 }
 
-export interface VirtuosoGridProps<C extends unknown = unknown> {
+export interface VirtuosoGridProps<C extends unknown = unknown> extends GridRootProps {
   /**
    * The total amount of items to be rendered.
    */
