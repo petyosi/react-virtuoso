@@ -66,6 +66,12 @@ export interface ScrollSeekPlaceholderProps {
   groupIndex?: number
   type: 'group' | 'item'
 }
+/**
+ * Passed to the Components.FillerRow custom component
+ */
+export interface FillerRowProps {
+  height: number
+}
 
 /**
  * Passed to the GridComponents.ScrollSeekPlaceholder custom component
@@ -168,6 +174,11 @@ export interface TableComponents<Context = unknown> {
    * Set to render an item placeholder when the user scrolls fast.  See the `scrollSeek` property for more details.
    */
   ScrollSeekPlaceholder?: ComponentType<ScrollSeekPlaceholderProps & { context?: Context }>
+
+  /**
+   * Set to render an empty item placeholder.
+   */
+  FillerRow?: ComponentType<FillerRowProps & { context?: Context }>
 }
 
 export interface ComputeItemKey<D, C> {
