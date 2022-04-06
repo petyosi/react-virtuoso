@@ -46,6 +46,7 @@ const tableComponentPropsSystem = system(() => {
     ScrollerComponent: distinctProp('Scroller', 'div'),
     EmptyPlaceholder: distinctProp('EmptyPlaceholder'),
     ScrollSeekPlaceholder: distinctProp('ScrollSeekPlaceholder'),
+    FillerRow: distinctProp('FillerRow'),
   }
 })
 
@@ -59,7 +60,7 @@ const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => (
   </tr>
 )
 
-const FillerRow = ({ height }: { height: number }) => (
+const DefaultFillerRow = ({ height }: { height: number }) => (
   <tr>
     <td style={{ height: height, padding: 0, border: 0 }}></td>
   </tr>
@@ -83,6 +84,7 @@ export const Items = React.memo(function VirtuosoItems() {
   const ref = useChangedListContentsSizes(sizeRanges, itemSize, trackItemSizes, scrollContainerStateCallback, log, customScrollParent)
   const EmptyPlaceholder = useEmitterValue('EmptyPlaceholder')
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder') || DefaultScrollSeekPlaceholder
+  const FillerRow = useEmitterValue('FillerRow') || DefaultFillerRow
   const TableBodyComponent = useEmitterValue('TableBodyComponent')!
   const TableRowComponent = useEmitterValue('TableRowComponent')!
   const computeItemKey = useEmitterValue('computeItemKey')
