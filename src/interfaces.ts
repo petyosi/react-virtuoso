@@ -18,14 +18,14 @@ export interface GroupContent {
   (index: number): ReactNode
 }
 
-export interface ItemProps {
+export type ItemProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children'> & {
   'data-index': number
   'data-item-index': number
   'data-item-group-index'?: number
   'data-known-size': number
 }
 
-export interface GroupProps {
+export type GroupProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children'> & {
   'data-index': number
   'data-item-index': number
   'data-known-size': number
