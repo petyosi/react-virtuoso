@@ -6,7 +6,7 @@ const ITEM_COUNT = 100
 const VIEWPORT_HEIGHT = 300
 const INITIAL_SCROLL_TOP = DEFAULT_ITEM_HEIGHT * ITEM_COUNT - VIEWPORT_HEIGHT
 const SCROLL_DELTA = -50
-test.describe('list with hundred items', () => {
+test.describe('reverse taller than viewport', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:1234/reverse-taller-than-viewport')
     await page.waitForSelector('#test-root')
@@ -14,15 +14,10 @@ test.describe('list with hundred items', () => {
   })
 
   test('compensates for the tall 90th item', async ({ page }) => {
-    await page.evaluate(() => {
-      document.querySelector('[data-test-id=virtuoso-scroller]')!.scrollBy(0, -50)
-    })
-
-    await new Promise((resolve) => setTimeout(resolve, 200))
-
-    const scrollTop = await page.evaluate(() => {
-      return document.querySelector('[data-test-id=virtuoso-scroller]')!.scrollTop
-    })
+    const scroller = page.locator('[data-test-id=virtuoso-scroller]')
+    await scroller.evaluate((el) => el.scrollBy(0, -50))
+    await page.waitForTimeout(200)
+    const scrollTop = await scroller.evaluate((el) => el.scrollTop)
 
     expect(scrollTop).toBe(INITIAL_SCROLL_TOP + SCROLL_DELTA + OUTLIER - DEFAULT_ITEM_HEIGHT)
   })

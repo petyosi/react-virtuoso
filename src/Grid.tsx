@@ -2,7 +2,7 @@ import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
 
 import * as u from '@virtuoso.dev/urx'
 import * as React from 'react'
-import { createElement, FC } from 'react'
+import { createElement, FC, PropsWithChildren } from 'react'
 import { gridSystem } from './gridSystem'
 import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
@@ -138,7 +138,7 @@ const GridItems: FC = React.memo(function GridItems() {
   )
 })
 
-const Viewport: FC = ({ children }) => {
+const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const viewportDimensions = usePublisher('viewportDimensions')
 
   const viewportRef = useSize((el) => {
@@ -152,7 +152,7 @@ const Viewport: FC = ({ children }) => {
   )
 }
 
-const WindowViewport: FC = ({ children }) => {
+const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const windowViewportRect = usePublisher('windowViewportRect')
   const customScrollParent = useEmitterValue('customScrollParent')
   const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent)

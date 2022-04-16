@@ -8,7 +8,7 @@ export interface ItemContent<D, C> {
   (index: number, data: D, context: C): ReactNode
 }
 
-export type FixedHeaderContent = (() => React.ReactChildren | React.ReactNode) | null
+export type FixedHeaderContent = (() => React.ReactNode[]) | null
 
 export interface GroupItemContent<D, C> {
   (index: number, groupIndex: number, data: D, context: C): ReactNode

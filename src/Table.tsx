@@ -1,7 +1,7 @@
 import { systemToComponent } from '@virtuoso.dev/react-urx'
 import { map, pipe, statefulStream, system, tup, statefulStreamFromEmitter, distinctUntilChanged, noop, compose } from '@virtuoso.dev/urx'
 import * as React from 'react'
-import { createElement, FC } from 'react'
+import { createElement, FC, PropsWithChildren } from 'react'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import { ComputeItemKey, ItemContent, FixedHeaderContent, TableComponents, TableRootProps } from './interfaces'
 import { listSystem } from './listSystem'
@@ -145,7 +145,7 @@ export interface Hooks {
   useEmitter: typeof useEmitter
 }
 
-const Viewport: FC = ({ children }) => {
+const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const viewportHeight = usePublisher('viewportHeight')
   const viewportRef = useSize(compose(viewportHeight, (el) => correctItemSize(el, 'height')))
 
@@ -156,7 +156,7 @@ const Viewport: FC = ({ children }) => {
   )
 }
 
-const WindowViewport: FC = ({ children }) => {
+const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const windowViewportRect = usePublisher('windowViewportRect')
   const customScrollParent = useEmitterValue('customScrollParent')
   const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent)

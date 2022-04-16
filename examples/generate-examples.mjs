@@ -6,7 +6,8 @@ const examples = fs
   .filter((name) => name !== 'server.tsx')
 
 const code = `import React, { useEffect } from 'react'
-import * as ReactDOM from 'react-dom'
+// import * as ReactDOM from 'react-dom'
+import ReactDOM from 'react-dom/client'
 import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom'
 
 export default function App() {
@@ -30,28 +31,30 @@ export default function App() {
 
   return (
     
-    <Router>
-      <div style={{ height: '100%', display: 'flex' }}>
+    <React.StrictMode>
+      <Router>
+        <div style={{ height: '100%', display: 'flex' }}>
 
-        <div style={{ flex: 1, height: '100%'  }} id="test-root" >
-        <Switch>
-          {exampleComponents.map(({ name, component }, index) => (
-            <Route key={index} path={name} component={component} />
-          ))}
-        </Switch>
+          <div style={{ flex: 1, height: '100%'  }} id="test-root" >
+          <Switch>
+            {exampleComponents.map(({ name, component }, index) => (
+              <Route key={index} path={name} component={component} />
+            ))}
+          </Switch>
+        </div>
+
+        <ul style={{ minWidth: 200 }} id="side-nav">
+          { exampleComponents.map(({ name }, index) => <li key={index}><Link to={name}>{name}</Link></li>) }
+        </ul>
+
       </div>
-
-      <ul style={{ minWidth: 200 }} id="side-nav">
-        { exampleComponents.map(({ name }, index) => <li key={index}><Link to={name}>{name}</Link></li>) }
-      </ul>
-
-    </div>
-    </Router>
-
+      </Router>
+    </React.StrictMode>
   )
 }
 
-ReactDOM.render(<App />, document.getElementById('root'))
+// ReactDOM.render(<App />, document.getElementById('root')) //.render(<App />)
+ReactDOM.createRoot(document.getElementById('root')).render(<App />)
 `
 
 const htmlCode = `

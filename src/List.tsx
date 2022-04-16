@@ -18,7 +18,7 @@ import {
   noop,
 } from '@virtuoso.dev/urx'
 import * as React from 'react'
-import { ComponentType, createElement, CSSProperties, FC } from 'react'
+import { ComponentType, createElement, CSSProperties, FC, PropsWithChildren } from 'react'
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import useScrollTop from './hooks/useScrollTop'
@@ -402,7 +402,7 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
   return Scroller
 }
 
-const Viewport: FC = ({ children }) => {
+const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const viewportHeight = usePublisher('viewportHeight')
   const viewportRef = useSize(compose(viewportHeight, (el) => correctItemSize(el, 'height')))
 
@@ -413,7 +413,7 @@ const Viewport: FC = ({ children }) => {
   )
 }
 
-const WindowViewport: FC = ({ children }) => {
+const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const windowViewportRect = usePublisher('windowViewportRect')
   const customScrollParent = useEmitterValue('customScrollParent')
   const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent)
@@ -425,7 +425,7 @@ const WindowViewport: FC = ({ children }) => {
   )
 }
 
-const TopItemListContainer: FC = ({ children }) => {
+const TopItemListContainer: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const TopItemList = useEmitterValue('TopItemListComponent')
   const headerHeight = useEmitterValue('headerHeight')
   const style = { ...topItemListStyle, marginTop: `${headerHeight}px` }
