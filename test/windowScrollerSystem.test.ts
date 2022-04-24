@@ -7,9 +7,9 @@ describe('window scroller system', () => {
     const sub = jest.fn()
     u.subscribe(scrollTop, sub)
     u.publish(windowViewportRect, { offsetTop: 100, visibleHeight: 1000 })
-    u.publish(windowScrollContainerState, [0, 1000])
+    u.publish(windowScrollContainerState, { scrollTop: 0, scrollHeight: 1000, viewportHeight: 400 })
     expect(sub).toHaveBeenCalledWith(0)
-    u.publish(windowScrollContainerState, [200, 1000])
+    u.publish(windowScrollContainerState, { scrollTop: 200, scrollHeight: 1000, viewportHeight: 400 })
     expect(sub).toHaveBeenCalledWith(100)
   })
   it('offsets the scrollTo calls with offsetTop', () => {
