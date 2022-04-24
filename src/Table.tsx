@@ -9,6 +9,7 @@ import { identity, buildScroller, buildWindowScroller, viewportStyle, contextPro
 import useSize from './hooks/useSize'
 import { correctItemSize } from './utils/correctItemSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
+import conditionalFlushSync from './utils/conditionalFlushSync'
 
 const tableComponentPropsSystem = system(() => {
   const itemContent = statefulStream<ItemContent<any, unknown>>((index: number) => <td>Item ${index}</td>)
@@ -68,7 +69,13 @@ const DefaultFillerRow = ({ height }: { height: number }) => (
 
 export const Items = React.memo(function VirtuosoItems() {
   const listState = useEmitterValue('listState')
-  const deviation = useEmitterValue('deviation')
+  const [deviation, setDeviation] = React.useState(0)
+  const react18ConcurrentRendering = useEmitterValue('react18ConcurrentRendering')
+  useEmitter('deviation', (value) => {
+    if (deviation !== value) {
+      conditionalFlushSync(react18ConcurrentRendering)(() => setDeviation(value))
+    }
+  })
   const sizeRanges = usePublisher('sizeRanges')
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const customScrollParent = useEmitterValue('customScrollParent')
@@ -241,6 +248,7 @@ export const {
       customScrollParent: 'customScrollParent',
       scrollerRef: 'scrollerRef',
       logLevel: 'logLevel',
+      react18ConcurrentRendering: 'react18ConcurrentRendering',
     },
     methods: {
       scrollToIndex: 'scrollToIndex',
