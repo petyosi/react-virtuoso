@@ -299,3 +299,9 @@ export interface ScrollIntoViewLocation {
   behavior?: 'auto' | 'smooth'
   done?: () => void
 }
+
+export interface ScrollContainerState {
+  scrollHeight: number
+  scrollTop: number
+  viewportHeight: number
+}

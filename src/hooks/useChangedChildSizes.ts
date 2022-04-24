@@ -1,12 +1,12 @@
 import { Log, LogLevel } from '../loggerSystem'
 import { SizeFunction, SizeRange } from '../sizeSystem'
 import useSize from './useSize'
-
+import { ScrollContainerState } from '../interfaces'
 export default function useChangedListContentsSizes(
   callback: (ranges: SizeRange[]) => void,
   itemSize: SizeFunction,
   enabled: boolean,
-  scrollContainerStateCallback: (state: [number, number]) => void,
+  scrollContainerStateCallback: (state: ScrollContainerState) => void,
   log: Log,
   customScrollParent?: HTMLElement
 ) {
@@ -25,9 +25,12 @@ export default function useChangedListContentsSizes(
       ? window.pageYOffset || document.documentElement.scrollTop
       : scrollableElement.scrollTop
 
-    customScrollParent
-      ? scrollContainerStateCallback([Math.max(scrollTop, 0), customScrollParent.scrollHeight])
-      : scrollContainerStateCallback([Math.max(scrollTop, 0), scrollableElement.scrollHeight])
+    scrollContainerStateCallback({
+      scrollTop: Math.max(scrollTop, 0),
+      scrollHeight: (customScrollParent ?? scrollableElement).scrollHeight,
+      viewportHeight: (customScrollParent ?? scrollableElement).offsetHeight,
+    })
+
     if (ranges !== null) {
       callback(ranges)
     }

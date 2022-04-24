@@ -1,6 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react'
 import * as u from '@virtuoso.dev/urx'
 import { correctItemSize } from '../utils/correctItemSize'
+import { ScrollContainerState } from '../interfaces'
 
 export type ScrollerRef = Window | HTMLElement | null
 
@@ -9,7 +10,7 @@ function approximatelyEqual(num1: number, num2: number) {
 }
 
 export default function useScrollTop(
-  scrollContainerStateCallback: (state: [number, number]) => void,
+  scrollContainerStateCallback: (state: ScrollContainerState) => void,
   smoothScrollTargetReached: (yes: true) => void,
   scrollerElement: any,
   scrollerRefCallback: (ref: ScrollerRef) => void = u.noop,
@@ -25,8 +26,13 @@ export default function useScrollTop(
       const scrollTop =
         (el as any) === window || (el as any) === document ? window.pageYOffset || document.documentElement.scrollTop : el.scrollTop
       const scrollHeight = (el as any) === window ? document.documentElement.scrollHeight : el.scrollHeight
+      const viewportHeight = (el as any) === window ? window.innerHeight : el.offsetHeight
 
-      scrollContainerStateCallback([Math.max(scrollTop, 0), scrollHeight])
+      scrollContainerStateCallback({
+        scrollTop: Math.max(scrollTop, 0),
+        scrollHeight,
+        viewportHeight,
+      })
 
       if (scrollTopTarget.current !== null) {
         if (scrollTop === scrollTopTarget.current || scrollTop <= 0 || scrollTop === el.scrollHeight - correctItemSize(el, 'height')) {
@@ -85,7 +91,7 @@ export default function useScrollTop(
     // with the scrollTop
     // scroller is already at this location
     if (approximatelyEqual(offsetHeight, scrollHeight) || location.top === scrollTop) {
-      scrollContainerStateCallback([scrollTop, scrollHeight])
+      scrollContainerStateCallback({ scrollTop, scrollHeight, viewportHeight: offsetHeight })
       if (isSmooth) {
         smoothScrollTargetReached(true)
       }

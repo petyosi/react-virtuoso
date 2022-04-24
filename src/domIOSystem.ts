@@ -1,8 +1,9 @@
 import * as u from '@virtuoso.dev/urx'
+import { ScrollContainerState } from './interfaces'
 
 export const domIOSystem = u.system(
   () => {
-    const scrollContainerState = u.stream<[number, number]>()
+    const scrollContainerState = u.stream<ScrollContainerState>()
     const scrollTop = u.stream<number>()
     const deviation = u.statefulStream(0)
     const smoothScrollTargetReached = u.stream<true>()
@@ -18,7 +19,7 @@ export const domIOSystem = u.system(
     u.connect(
       u.pipe(
         scrollContainerState,
-        u.map(([scrollTop]) => scrollTop)
+        u.map(({ scrollTop }) => scrollTop)
       ),
       scrollTop
     )
@@ -26,7 +27,7 @@ export const domIOSystem = u.system(
     u.connect(
       u.pipe(
         scrollContainerState,
-        u.map(([, scrollHeight]) => scrollHeight)
+        u.map(({ scrollHeight }) => scrollHeight)
       ),
       scrollHeight
     )
