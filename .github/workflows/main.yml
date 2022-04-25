@@ -45,10 +45,10 @@ jobs:
           yarn test --ci 
           yarn e2e 
 
-      - name: build site
-        run: |
-          cd site 
-          yarn build
+      # - name: build site
+      #   run: |
+      #     cd site 
+      #     yarn build
 
       - name: Release
         env:
@@ -73,11 +73,11 @@ jobs:
           IdentityFile ~/.ssh/id_rsa
           EOT
 
-      - name: Deploy docs
-        if: github.ref == 'refs/heads/master'
-        env:
-          GIT_USER: git
-          USE_SSH: true
-        run: |
-          cd site
-          yarn deploy
+      # - name: Deploy docs
+      #   if: github.ref == 'refs/heads/master'
+      #   env:
+      #     GIT_USER: git
+      #     USE_SSH: true
+      #   run: |
+      #     cd site
+      #     yarn deploy
