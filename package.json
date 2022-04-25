@@ -44,7 +44,8 @@
     "@virtuoso.dev/urx": "^0.2.12"
   },
   "peerDependencies": {
-    "react": ">=16 || >=17 || >= 18"
+    "react": ">=16 || >=17 || >= 18",
+    "react-dom": ">=16 || >=17 || >= 18"
   },
   "devDependencies": {
     "@commitlint/cli": "^12.1.4",
