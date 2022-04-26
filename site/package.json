@@ -34,6 +34,8 @@
   "devDependencies": {
     "docusaurus-plugin-typedoc": "^0.4.0",
     "eslint-plugin-json": "^2.1.1",
+    "react": "16",
+    "react-dom": "16",
     "typedoc": "^0.19.2",
     "typedoc-plugin-markdown": "^3.0.11"
   },
