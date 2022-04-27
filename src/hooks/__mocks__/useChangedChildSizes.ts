@@ -11,5 +11,5 @@ export default function useChangedChildSizes(callback: (sizes: SizeRange[]) => v
     }
   }
 
-  return callbackRef
+  return { callbackRef }
 }

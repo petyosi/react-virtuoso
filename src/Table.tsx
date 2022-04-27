@@ -9,7 +9,6 @@ import { identity, buildScroller, buildWindowScroller, viewportStyle, contextPro
 import useSize from './hooks/useSize'
 import { correctItemSize } from './utils/correctItemSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
-import conditionalFlushSync from './utils/conditionalFlushSync'
 
 const tableComponentPropsSystem = system(() => {
   const itemContent = statefulStream<ItemContent<any, unknown>>((index: number) => <td>Item ${index}</td>)
@@ -69,13 +68,6 @@ const DefaultFillerRow = ({ height }: { height: number }) => (
 
 export const Items = React.memo(function VirtuosoItems() {
   const listState = useEmitterValue('listState')
-  const [deviation, setDeviation] = React.useState(0)
-  const react18ConcurrentRendering = useEmitterValue('react18ConcurrentRendering')
-  useEmitter('deviation', (value) => {
-    if (deviation !== value) {
-      conditionalFlushSync(react18ConcurrentRendering)(() => setDeviation(value))
-    }
-  })
   const sizeRanges = usePublisher('sizeRanges')
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const customScrollParent = useEmitterValue('customScrollParent')
@@ -88,7 +80,22 @@ export const Items = React.memo(function VirtuosoItems() {
   const itemSize = useEmitterValue('itemSize')
   const log = useEmitterValue('log')
 
-  const ref = useChangedListContentsSizes(sizeRanges, itemSize, trackItemSizes, scrollContainerStateCallback, log, customScrollParent)
+  const { callbackRef, ref } = useChangedListContentsSizes(
+    sizeRanges,
+    itemSize,
+    trackItemSizes,
+    scrollContainerStateCallback,
+    log,
+    customScrollParent
+  )
+
+  const [deviation, setDeviation] = React.useState(0)
+  useEmitter('deviation', (value) => {
+    if (deviation !== value) {
+      ref.current!.style.marginTop = `${value}px`
+      setDeviation(value)
+    }
+  })
   const EmptyPlaceholder = useEmitterValue('EmptyPlaceholder')
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder') || DefaultScrollSeekPlaceholder
   const FillerRow = useEmitterValue('FillerRow') || DefaultFillerRow
@@ -141,7 +148,7 @@ export const Items = React.memo(function VirtuosoItems() {
 
   return createElement(
     TableBodyComponent,
-    { ref, 'data-test-id': 'virtuoso-item-list', ...contextPropIfNotDomElement(TableBodyComponent, context) },
+    { ref: callbackRef, 'data-test-id': 'virtuoso-item-list', ...contextPropIfNotDomElement(TableBodyComponent, context) },
     [paddingTopEl, ...items, paddingBottomEl]
   )
 })

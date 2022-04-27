@@ -15,6 +15,7 @@ export const domIOSystem = u.system(
     const scrollTo = u.stream<ScrollToOptions>()
     const scrollBy = u.stream<ScrollToOptions>()
     const scrollingInProgress = u.statefulStream(false)
+    // bogus, has no effect
     const react18ConcurrentRendering = u.statefulStream(false)
 
     u.connect(

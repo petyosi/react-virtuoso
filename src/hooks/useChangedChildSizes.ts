@@ -1,6 +1,6 @@
 import { Log, LogLevel } from '../loggerSystem'
 import { SizeFunction, SizeRange } from '../sizeSystem'
-import useSize from './useSize'
+import { useSizeWithElRef } from './useSize'
 import { ScrollContainerState } from '../interfaces'
 export default function useChangedListContentsSizes(
   callback: (ranges: SizeRange[]) => void,
@@ -10,7 +10,7 @@ export default function useChangedListContentsSizes(
   log: Log,
   customScrollParent?: HTMLElement
 ) {
-  return useSize((el: HTMLElement) => {
+  return useSizeWithElRef((el: HTMLElement) => {
     const ranges = getChangedChildSizes(el.children, itemSize, 'offsetHeight', log)
     let scrollableElement = el.parentElement!
 

@@ -27,7 +27,6 @@ import { Components, ComputeItemKey, GroupContent, GroupItemContent, ItemContent
 import { listSystem } from './listSystem'
 import { positionStickyCssValue } from './utils/positionStickyCssValue'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
-import conditionalFlushSync from './utils/conditionalFlushSync'
 import { correctItemSize } from './utils/correctItemSize'
 import { ScrollerProps } from '.'
 
@@ -173,14 +172,6 @@ const ITEM_STYLE = { overflowAnchor: 'none' }
 export const Items = React.memo(function VirtuosoItems({ showTopList = false }: { showTopList?: boolean }) {
   const listState = useEmitterValue('listState')
 
-  const [deviation, setDeviation] = React.useState(0)
-  const react18ConcurrentRendering = useEmitterValue('react18ConcurrentRendering')
-  useEmitter('deviation', (value) => {
-    if (deviation !== value) {
-      conditionalFlushSync(react18ConcurrentRendering)(() => setDeviation(value))
-    }
-  })
-
   const sizeRanges = usePublisher('sizeRanges')
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const customScrollParent = useEmitterValue('customScrollParent')
@@ -195,7 +186,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const itemSize = useEmitterValue('itemSize')
   const log = useEmitterValue('log')
 
-  const ref = useChangedListContentsSizes(
+  const { callbackRef, ref } = useChangedListContentsSizes(
     sizeRanges,
     itemSize,
     trackItemSizes,
@@ -203,6 +194,15 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
     log,
     customScrollParent
   )
+
+  const [deviation, setDeviation] = React.useState(0)
+  useEmitter('deviation', (value) => {
+    if (deviation !== value) {
+      ref.current!.style.marginTop = `${value}px`
+      setDeviation(value)
+    }
+  })
+
   const EmptyPlaceholder = useEmitterValue('EmptyPlaceholder')
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder') || DefaultScrollSeekPlaceholder
   const ListComponent = useEmitterValue('ListComponent')!
@@ -232,7 +232,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
     ListComponent,
     {
       ...contextPropIfNotDomElement(ListComponent, context),
-      ref,
+      ref: callbackRef,
       style: containerStyle,
       'data-test-id': showTopList ? 'virtuoso-top-item-list' : 'virtuoso-item-list',
     },
