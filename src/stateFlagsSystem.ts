@@ -51,12 +51,15 @@ const INITIAL_BOTTOM_STATE = {
   },
 } as AtBottomState
 
+const DEFAULT_AT_TOP_THRESHOLD = 0
+
 export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, viewportHeight, headerHeight, footerHeight, scrollBy }]) => {
   const isAtBottom = u.statefulStream(false)
   const isAtTop = u.statefulStream(true)
   const atBottomStateChange = u.stream<boolean>()
   const atTopStateChange = u.stream<boolean>()
   const atBottomThreshold = u.statefulStream(4)
+  const atTopThreshold = u.statefulStream(DEFAULT_AT_TOP_THRESHOLD)
 
   // skip 1 to avoid an initial on/off flick
   const isScrolling = u.streamFromEmitter(
@@ -75,14 +78,14 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
 
   u.connect(
     u.pipe(
-      u.duc(scrollTop),
-      u.map((top) => top === 0),
+      u.combineLatest(u.duc(scrollTop), u.duc(atTopThreshold)),
+      u.map(([top, atTopThreshold]) => top <= atTopThreshold),
       u.distinctUntilChanged()
     ),
     isAtTop
   )
 
-  u.connect(isAtTop, atTopStateChange)
+  u.connect(u.pipe(isAtTop, u.throttleTime(50)), atTopStateChange)
 
   const atBottomState = u.streamFromEmitter(
     u.pipe(
@@ -245,6 +248,7 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
     atBottomStateChange,
     scrollDirection,
     atBottomThreshold,
+    atTopThreshold,
     scrollVelocity,
     lastJumpDueToItemResize,
   }

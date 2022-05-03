@@ -242,6 +242,7 @@ export const {
       components: 'components',
       groupCounts: 'groupCounts',
       atBottomThreshold: 'atBottomThreshold',
+      atTopThreshold: 'atTopThreshold',
       computeItemKey: 'computeItemKey',
       defaultItemHeight: 'defaultItemHeight',
       fixedItemHeight: 'fixedItemHeight',
