@@ -228,11 +228,7 @@ export interface GroupItem<D> extends Item<D> {
 
 export type ListItem<D> = RecordItem<D> | GroupItem<D>
 
-export interface IndexLocationWithAlign {
-  /**
-   * The index of the item to scroll to.
-   */
-  index: number | 'LAST'
+export interface LocationOptions {
   /**
    * How to position the item in the viewport.
    */
@@ -246,6 +242,22 @@ export interface IndexLocationWithAlign {
    */
   offset?: number
 }
+
+export interface FlatIndexLocationWithAlign extends LocationOptions {
+  /**
+   * The index of the item to scroll to.
+   */
+  index: number | 'LAST'
+}
+
+export interface GroupIndexLocationWithAlign extends LocationOptions {
+  /**
+   * The group index of the item to scroll to.
+   */
+  groupIndex: number
+}
+
+export type IndexLocationWithAlign = FlatIndexLocationWithAlign | GroupIndexLocationWithAlign
 
 export type ListRootProps = Omit<React.HTMLProps<'div'>, 'ref' | 'data'>
 export type TableRootProps = Omit<React.HTMLProps<'table'>, 'ref' | 'data'>
@@ -294,11 +306,20 @@ export interface WindowViewportInfo {
   visibleWidth: number
 }
 
-export interface ScrollIntoViewLocation {
-  index: number
+export interface ScrollIntoViewLocationOptions {
   behavior?: 'auto' | 'smooth'
   done?: () => void
 }
+
+export interface FlatScrollIntoViewLocation extends ScrollIntoViewLocationOptions {
+  index: number
+}
+
+export interface GroupedScrollIntoViewLocation extends ScrollIntoViewLocationOptions {
+  groupIndex: number
+}
+
+export type ScrollIntoViewLocation = FlatScrollIntoViewLocation | GroupedScrollIntoViewLocation
 
 export interface ScrollContainerState {
   scrollHeight: number

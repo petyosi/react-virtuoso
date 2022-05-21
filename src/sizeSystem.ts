@@ -225,6 +225,26 @@ export function offsetOf(index: number, tree: Array<OffsetPoint>) {
   return size * (index - startIndex) + offset
 }
 
+export type FlatOrGroupedLocation = { index: number | 'LAST' } | { groupIndex: number }
+
+export function isGroupLocation(location: FlatOrGroupedLocation): location is { groupIndex: number } {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  return typeof (location as any).groupIndex !== 'undefined'
+}
+
+export function originalIndexFromLocation(location: FlatOrGroupedLocation, sizes: SizeState, lastIndex: number) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  if (isGroupLocation(location)) {
+    // return the index of the first item below the index
+    return sizes.groupIndices[location.groupIndex] + 1
+  } else {
+    const numericIndex = location.index === 'LAST' ? lastIndex - 1 : location.index
+    let result = originalIndexFromItemIndex(numericIndex, sizes)
+    result = Math.max(0, result, Math.min(lastIndex, result))
+    return result
+  }
+}
+
 export function originalIndexFromItemIndex(itemIndex: number, sizes: SizeState) {
   if (!hasGroups(sizes)) {
     return itemIndex

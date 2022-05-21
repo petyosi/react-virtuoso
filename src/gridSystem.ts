@@ -1,6 +1,7 @@
 import * as u from '@virtuoso.dev/urx'
 import { rangeComparator, tupleComparator } from './comparators'
 import { domIOSystem } from './domIOSystem'
+import { FlatIndexLocationWithAlign } from './interfaces'
 import { propsReadySystem } from './propsReadySystem'
 import { scrollSeekSystem } from './scrollSeekSystem'
 import { IndexLocation, normalizeIndexLocation } from './scrollToIndexSystem'
@@ -195,7 +196,7 @@ export const gridSystem = u.system(
         scrollToIndex,
         u.withLatestFrom(viewportDimensions, itemDimensions, totalCount),
         u.map(([location, viewport, item, totalCount]) => {
-          const normalLocation = normalizeIndexLocation(location)
+          const normalLocation = normalizeIndexLocation(location) as FlatIndexLocationWithAlign
           const { align, behavior, offset } = normalLocation
           let index = normalLocation.index
           if (index === 'LAST') {
