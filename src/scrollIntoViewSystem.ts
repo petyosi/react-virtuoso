@@ -18,14 +18,14 @@ export const scrollIntoViewSystem = u.system(
         u.map(([{ index, behavior = 'auto', done }, sizes, viewportHeight, totalCount, headerHeight, scrollTop]) => {
           const lastIndex = totalCount - 1
           let location = null
-          index = originalIndexFromItemIndex(index, sizes)
-          index = Math.max(0, index, Math.min(lastIndex, index))
+          let actualIndex = originalIndexFromItemIndex(index, sizes)
+          actualIndex = Math.max(0, actualIndex, Math.min(lastIndex, actualIndex))
 
-          const itemTop = offsetOf(index, sizes.offsetTree) + headerHeight
+          const itemTop = offsetOf(actualIndex, sizes.offsetTree) + headerHeight
           if (itemTop < scrollTop) {
             location = { index, behavior, align: 'start' }
           } else {
-            const itemBottom = itemTop + findMaxKeyValue(sizes.sizeTree, index)[1]!
+            const itemBottom = itemTop + findMaxKeyValue(sizes.sizeTree, actualIndex)[1]!
 
             if (itemBottom > scrollTop + viewportHeight) {
               location = { index, behavior, align: 'end' }

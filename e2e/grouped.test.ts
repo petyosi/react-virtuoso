@@ -33,3 +33,22 @@ test.describe('jagged grouped list', () => {
     expect(stickyItemIndex).toBe('20')
   })
 })
+
+test.describe('scroll into view for grouped list', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('http://localhost:1234/group-scroll-into-view')
+    await page.waitForSelector('#test-root > div')
+    await page.waitForTimeout(100)
+  })
+
+  test('goes to correct location', async ({ page }) => {
+    await page.click('data-test-id=scroll-into-view-button')
+    await page.waitForTimeout(100)
+
+    const scrollTop = await page.locator('data-test-id=virtuoso-scroller').evaluate((element) => {
+      return element.scrollTop
+    })
+
+    expect(scrollTop).toBe(20)
+  })
+})
