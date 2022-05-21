@@ -11,6 +11,7 @@ export const domIOSystem = u.system(
     const viewportHeight = u.stream<number>()
     const scrollHeight = u.stream<number>()
     const headerHeight = u.statefulStream(0)
+    const fixedHeaderHeight = u.statefulStream(0)
     const footerHeight = u.statefulStream(0)
     const scrollTo = u.stream<ScrollToOptions>()
     const scrollBy = u.stream<ScrollToOptions>()
@@ -42,6 +43,7 @@ export const domIOSystem = u.system(
       scrollTop,
       viewportHeight,
       headerHeight,
+      fixedHeaderHeight,
       footerHeight,
       scrollHeight,
       smoothScrollTargetReached,

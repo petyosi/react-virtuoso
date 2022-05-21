@@ -29,10 +29,9 @@ function getViewportIncrease(value: ViewportIncrease, end: ListEnd) {
 }
 
 export const sizeRangeSystem = u.system(
-  ([{ scrollTop, viewportHeight, deviation, headerHeight }]) => {
+  ([{ scrollTop, viewportHeight, deviation, headerHeight, fixedHeaderHeight }]) => {
     const listBoundary = u.stream<NumberTuple>()
     const topListHeight = u.statefulStream(0)
-    const fixedHeaderHeight = u.statefulStream(0)
     const increaseViewportBy = u.statefulStream<ViewportIncrease>(0)
     const overscan = u.statefulStream<Overscan>(0)
 
@@ -108,7 +107,6 @@ export const sizeRangeSystem = u.system(
       listBoundary,
       overscan,
       topListHeight,
-      fixedHeaderHeight,
       increaseViewportBy,
 
       // output
