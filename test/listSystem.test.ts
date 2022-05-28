@@ -161,6 +161,7 @@ describe('list engine', () => {
     const INDEX = 300
     const SIZE = 30
     const VIEWPORT = 200
+    const TOTAL_COUNT = 1000
     beforeEach(() => {
       const { propsReady, scrollToIndex, scrollTop, scrollTo, viewportHeight, totalCount, sizeRanges } = init(listSystem)
 
@@ -168,7 +169,7 @@ describe('list engine', () => {
       sr = sizeRanges
       publish(scrollTop, 0)
       publish(viewportHeight, VIEWPORT)
-      publish(totalCount, 1000)
+      publish(totalCount, TOTAL_COUNT)
 
       sub = jest.fn()
       subscribe(scrollTo, sub)
@@ -206,6 +207,15 @@ describe('list engine', () => {
 
       expect(sub).toHaveBeenCalledWith({
         top: INDEX * SIZE - VIEWPORT + SIZE,
+        behavior: 'auto',
+      })
+    })
+
+    it('navigates to last index', () => {
+      publish(sti, { index: 'LAST', align: 'end' })
+
+      expect(sub).toHaveBeenCalledWith({
+        top: TOTAL_COUNT * SIZE - VIEWPORT,
         behavior: 'auto',
       })
     })

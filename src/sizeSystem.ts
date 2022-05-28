@@ -238,7 +238,7 @@ export function originalIndexFromLocation(location: FlatOrGroupedLocation, sizes
     // return the index of the first item below the index
     return sizes.groupIndices[location.groupIndex] + 1
   } else {
-    const numericIndex = location.index === 'LAST' ? lastIndex - 1 : location.index
+    const numericIndex = location.index === 'LAST' ? lastIndex : location.index
     let result = originalIndexFromItemIndex(numericIndex, sizes)
     result = Math.max(0, result, Math.min(lastIndex, result))
     return result
