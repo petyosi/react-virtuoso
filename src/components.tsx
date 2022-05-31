@@ -473,6 +473,12 @@ export interface VirtuosoGridProps<C extends unknown = unknown> extends GridRoot
    */
   totalCount: number
 
+   /**
+   * Use for server-side rendering - if set, the list will render the specified amount of items
+   * regardless of the container / item size.
+   */
+    initialItemCount?: number
+    
   /**
    * Set the callback to specify the contents of the item.
    */
