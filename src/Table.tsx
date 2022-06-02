@@ -1,5 +1,5 @@
 import { systemToComponent } from '@virtuoso.dev/react-urx'
-import { map, pipe, statefulStream, system, tup, statefulStreamFromEmitter, distinctUntilChanged, noop, compose } from '@virtuoso.dev/urx'
+import * as u from '@virtuoso.dev/urx'
 import * as React from 'react'
 import { createElement, FC, PropsWithChildren } from 'react'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
@@ -10,23 +10,23 @@ import useSize from './hooks/useSize'
 import { correctItemSize } from './utils/correctItemSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 
-const tableComponentPropsSystem = system(() => {
-  const itemContent = statefulStream<ItemContent<any, unknown>>((index: number) => <td>Item ${index}</td>)
-  const context = statefulStream<unknown>(null)
-  const fixedHeaderContent = statefulStream<FixedHeaderContent>(null)
-  const components = statefulStream<TableComponents>({})
-  const computeItemKey = statefulStream<ComputeItemKey<any, unknown>>(identity)
-  const scrollerRef = statefulStream<(ref: HTMLElement | Window | null) => void>(noop)
+const tableComponentPropsSystem = u.system(() => {
+  const itemContent = u.statefulStream<ItemContent<any, unknown>>((index: number) => <td>Item ${index}</td>)
+  const context = u.statefulStream<unknown>(null)
+  const fixedHeaderContent = u.statefulStream<FixedHeaderContent>(null)
+  const components = u.statefulStream<TableComponents>({})
+  const computeItemKey = u.statefulStream<ComputeItemKey<any, unknown>>(identity)
+  const scrollerRef = u.statefulStream<(ref: HTMLElement | Window | null) => void>(u.noop)
 
   const distinctProp = <K extends keyof TableComponents>(
     propName: K,
     defaultValue: TableComponents[K] | null | 'thead' | 'table' | 'tbody' | 'tr' | 'div' = null
   ) => {
-    return statefulStreamFromEmitter(
-      pipe(
+    return u.statefulStreamFromEmitter(
+      u.pipe(
         components,
-        map((components) => components[propName]),
-        distinctUntilChanged()
+        u.map((components) => components[propName]),
+        u.distinctUntilChanged()
       ),
       defaultValue
     )
@@ -50,9 +50,9 @@ const tableComponentPropsSystem = system(() => {
   }
 })
 
-const combinedSystem = system(([listSystem, propsSystem]) => {
+const combinedSystem = u.system(([listSystem, propsSystem]) => {
   return { ...listSystem, ...propsSystem }
-}, tup(listSystem, tableComponentPropsSystem))
+}, u.tup(listSystem, tableComponentPropsSystem))
 
 const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => (
   <tr>
@@ -161,7 +161,7 @@ export interface Hooks {
 
 const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const viewportHeight = usePublisher('viewportHeight')
-  const viewportRef = useSize(compose(viewportHeight, (el) => correctItemSize(el, 'height')))
+  const viewportRef = useSize(u.compose(viewportHeight, (el) => correctItemSize(el, 'height')))
 
   return (
     <div style={viewportStyle} ref={viewportRef} data-viewport-type="element">
@@ -188,7 +188,7 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
   const fixedHeaderHeight = usePublisher('fixedHeaderHeight')
   const fixedHeaderContent = useEmitterValue('fixedHeaderContent')
   const context = useEmitterValue('context')
-  const theadRef = useSize(compose(fixedHeaderHeight, (el) => correctItemSize(el, 'height')))
+  const theadRef = useSize(u.compose(fixedHeaderHeight, (el) => correctItemSize(el, 'height')))
   const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
   const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
   const TheTable = useEmitterValue('TableComponent')
