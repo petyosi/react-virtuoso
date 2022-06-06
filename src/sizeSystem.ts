@@ -286,6 +286,7 @@ export const sizeSystem = u.system(
     const itemSize = u.statefulStream<SizeFunction>((el, field) => correctItemSize(el, SIZE_MAP[field]))
     const data = u.statefulStream<Data>(undefined)
     const initial = initialSizeState()
+    const recalcInProgress = u.statefulStream(false)
 
     const sizes = u.statefulStreamFromEmitter(
       u.pipe(sizeRanges, u.withLatestFrom(groupIndices, log), u.scan(sizeStateReducer, initial), u.distinctUntilChanged()),
@@ -385,6 +386,7 @@ export const sizeSystem = u.system(
       ),
       (offset) => {
         if (offset > 0) {
+          u.publish(recalcInProgress, true)
           u.publish(unshiftWith, offset)
         } else if (offset < 0) {
           u.publish(shiftWith, offset)
@@ -487,6 +489,7 @@ export const sizeSystem = u.system(
       statefulTotalCount,
       trackItemSizes,
       itemSize,
+      recalcInProgress,
     }
   },
   u.tup(loggerSystem),

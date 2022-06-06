@@ -15,7 +15,7 @@ export const upwardScrollFixSystem = u.system(
     { scrollBy, scrollTop, deviation, scrollingInProgress },
     { isScrolling, isAtBottom, atBottomState, scrollDirection, lastJumpDueToItemResize },
     { listState },
-    { beforeUnshiftWith, shiftWithOffset, sizes },
+    { beforeUnshiftWith, shiftWithOffset, sizes, recalcInProgress },
     { log },
   ]) => {
     const deviationOffset = u.streamFromEmitter(
@@ -71,8 +71,8 @@ export const upwardScrollFixSystem = u.system(
       u.pipe(
         u.combineLatest(u.statefulStreamFromEmitter(isScrolling, false), deviation),
         u.filter(([is, deviation]) => !is && deviation !== 0),
-        u.map(([_, deviation]) => deviation),
-        u.throttleTime(1)
+        u.map(([_, deviation]) => deviation)
+        // u.throttleTime(1)
       ),
       (offset) => {
         if (offset > 0) {
@@ -80,6 +80,9 @@ export const upwardScrollFixSystem = u.system(
           u.publish(deviation, 0)
         } else {
           u.publish(deviation, 0)
+          u.handleNext(scrollTop, () => {
+            u.publish(recalcInProgress, false)
+          })
           u.publish(scrollBy, { top: -offset, behavior: 'auto' })
         }
       }

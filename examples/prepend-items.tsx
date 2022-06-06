@@ -2,7 +2,18 @@ import * as React from 'react'
 import { useState } from 'react'
 import { Virtuoso } from '../src'
 
-const itemContent = (index: number) => <div style={{ height: index % 2 ? 20 : 55 }}>Item {index}</div>
+const Item = ({ index }: { index: number }) => {
+  React.useEffect(() => {
+    return () => {
+      // eslint-disable-next-line no-console
+      console.log(`unmounting ${index}`)
+    }
+  }, [index])
+
+  return <div style={{ height: index % 2 ? 20 : 55 }}>Item {index}</div>
+}
+const itemContent = (index: number) => <Item index={index} />
+
 const style = { height: 300 }
 const pageSize = 2
 export default function App() {
