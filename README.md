@@ -2,12 +2,13 @@
 
 [![npm version](https://img.shields.io/npm/v/react-virtuoso.svg?style=flat)](//badge.fury.io/js/react-virtuoso)
 
-**React Virtuoso** is the most powerful React virtual list component, full stop. Here's why:
+**React Virtuoso** is the most powerful React virtual list/table component, full stop. Here's why:
 
 - Variable sized items out of the box; no manual measurements or hard-coding item heights is necessary;
 - Support for [reverse (bottom up) scrolling and prepending items](//virtuoso.dev/prepend-items/) (chat, feeds, etc);
 - [Grouped mode with sticky headers](//virtuoso.dev/grouped-by-first-letter/);
 - [Responsive grid layout](//virtuoso.dev/grid-responsive-columns/);
+- [Table Support](//virtuoso.dev/hello-table/);
 - [Automatic handling of content resize](//virtuoso.dev/auto-resizing/);
 - [Custom Header, Footer, and empty list components](//virtuoso.dev/customize-structure/);
 - [Pinned top items](//virtuoso.dev/top-items/);
@@ -19,9 +20,9 @@ For live examples and documentation, check the [documentation website](//virtuos
 
 ## Sponsors
 
-[![Stream](https://i.imgur.com/oU7XYkk.png)](https://getstream.io/chat/react-chat/tutorial/?utm_source=https://github.com/petyosi/react-virtuoso&utm_medium=github&utm_content=developer&utm_term=react)
+[![Stream](https://i.imgur.com/oU7XYkk.png)](https://getstream.io/chat/react-chat/tutorial/?utm_source=Github&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Github_Jan2022_ReactChat&utm_term=react-virtuoso)
 
-React Virtuoso is proudly sponsored by [Stream](https://getstream.io/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship), the leading provider in enterprise grade [Feed](https://getstream.io/activity-feeds/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship) & [Chat](https://getstream.io/chat/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship) APIs. To learn more about Stream, [click here](https://getstream.io/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship).
+React Virtuoso is proudly sponsored by [Stream](https://getstream.io/chat/react-chat/tutorial/?utm_source=Github&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Github_Jan2022_ReactChat&utm_term=react-virtuoso), the leading provider in enterprise grade [Feed](https://getstream.io/activity-feeds/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship) & [Chat](https://getstream.io/chat/?utm_source=github&utm_medium=react-virtuoso&utm_campaign=sponsorship) APIs. To learn more about Stream, [click here](https://getstream.io/chat/react-chat/tutorial/?utm_source=Github&utm_medium=Github_Repo_Content_Ad&utm_content=Developer&utm_campaign=Github_Jan2022_ReactChat&utm_term=react-virtuoso).
 
 If you are using Virtuoso for work, [sponsor it](https://www.patreon.com/react_virtuoso). Any donation helps a lot with the project development and maintenance.
 
@@ -56,6 +57,11 @@ The `GroupedVirtuoso` component is a variant of the "flat" `Virtuoso`, with the 
 
 The `VirtuosoGrid` component displays **same sized items** in multiple columns.
 The layout and item sizing is controlled through CSS class properties, which allows you to use media queries, min-width, percentage, etc.
+
+## [Table](//virtuoso.dev/hello-table/)
+
+The `TableVirtuoso` component works just like `Virtuoso`, but with HTML tables.
+It supports window scrolling, sticky headers, sticky columns, and works with React Table and MUI Table.
 
 ## Works With Your UI Library of Choice
 

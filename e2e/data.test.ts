@@ -1,33 +1,35 @@
-describe('list with hundred items', () => {
-  beforeEach(async () => {
-    await page.goto('http://localhost:1234/data')
-    await page.waitForSelector('#test-root > div')
+import { test, expect } from '@playwright/test'
+
+test.describe('list with hundred items', () => {
+  test.beforeEach(async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/data`)
+    await page.waitForSelector('[data-test-id=virtuoso-scroller]')
     await page.waitForTimeout(100)
   })
 
-  it('renders 10 items', async () => {
+  test('renders 10 items', async ({ page }) => {
     const itemCount = await page.evaluate(() => {
-      const listContainer = document.querySelector('#test-root > div > div > div > div')!
+      const listContainer = document.querySelector('[data-test-id=virtuoso-item-list]')!
       return listContainer.childElementCount
     })
     expect(itemCount).toBe(10)
   })
 
-  it('fills in the scroller', async () => {
+  test('fills in the scroller', async ({ page }) => {
     const scrollHeight = await page.evaluate(() => {
-      const scroller = document.querySelector('#test-root > div > div')!
+      const scroller = document.querySelector('[data-test-id=virtuoso-scroller]')!
       return scroller.scrollHeight
     })
     expect(scrollHeight).toBe(100 * 30)
   })
 
-  it('increases the items', async () => {
+  test('increases the items', async ({ page }) => {
     await page.evaluate(() => {
       document.querySelector('button')!.click()
     })
 
     const scrollHeight = await page.evaluate(() => {
-      const scroller = document.querySelector('#test-root > div > div')!
+      const scroller = document.querySelector('[data-test-id=virtuoso-scroller]')!
       return scroller.scrollHeight
     })
 

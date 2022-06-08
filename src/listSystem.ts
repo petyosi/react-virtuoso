@@ -60,7 +60,18 @@ const featureGroup1System = u.system(
 
 export const listSystem = u.system(
   ([
-    { totalCount, sizeRanges, fixedItemSize, defaultItemSize, trackItemSizes, itemSize, data, firstItemIndex, groupIndices },
+    {
+      totalCount,
+      sizeRanges,
+      fixedItemSize,
+      defaultItemSize,
+      trackItemSizes,
+      itemSize,
+      data,
+      firstItemIndex,
+      groupIndices,
+      statefulTotalCount,
+    },
     { initialTopMostItemIndex, scrolledToInitialItem },
     domIO,
     followOutput,
@@ -91,6 +102,7 @@ export const listSystem = u.system(
       ...followOutput,
 
       // output
+      statefulTotalCount,
       listState,
       scrollToIndex,
       trackItemSizes,

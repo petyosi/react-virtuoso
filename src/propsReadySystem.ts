@@ -1,5 +1,4 @@
 import * as u from '@virtuoso.dev/urx'
-import { getValue, tup } from '@virtuoso.dev/urx'
 import { loggerSystem, LogLevel } from './loggerSystem'
 
 export const propsReadySystem = u.system(
@@ -14,11 +13,11 @@ export const propsReadySystem = u.system(
       )
     )
     u.subscribe(propsReady, (value) => {
-      value && getValue(log)('props updated', {}, LogLevel.DEBUG)
+      value && u.getValue(log)('props updated', {}, LogLevel.DEBUG)
     })
 
     return { propsReady, didMount }
   },
-  tup(loggerSystem),
+  u.tup(loggerSystem),
   { singleton: true }
 )

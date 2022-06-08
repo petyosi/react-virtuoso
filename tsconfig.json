@@ -6,6 +6,7 @@
     "lib": ["dom", "esnext"],
     "importHelpers": true,
     "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
     "rootDir": "./src",
     "strict": true,
@@ -17,6 +18,6 @@
     "jsx": "react",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "types": ["@types/jest", "jest-playwright-preset", "expect-playwright"]
+    "types": ["@types/jest"]
   }
 }

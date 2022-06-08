@@ -1,11 +1,13 @@
-describe('list with a long last item', () => {
-  beforeEach(async () => {
+import { test, expect } from '@playwright/test'
+
+test.describe('list with a long last item', () => {
+  test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:1234/long-last-item')
     await page.waitForSelector('#test-root')
     await page.waitForTimeout(300)
   })
 
-  it('starts from the last item', async () => {
+  test('starts from the last item', async ({ page }) => {
     const paddingTop = await page.evaluate(() => {
       const listContainer = document.querySelector('#test-root > div > div > div')
       return (listContainer as HTMLElement).style.paddingTop
@@ -13,7 +15,7 @@ describe('list with a long last item', () => {
     expect(paddingTop).toBe('7200px')
   })
 
-  it.skip('compensates on upwards scrolling correctly', async () => {
+  test('compensates on upwards scrolling correctly', async ({ page }) => {
     await page.evaluate(() => {
       const scroller = document.querySelector('#test-root > div')!
       scroller.scrollBy({ top: -2 })

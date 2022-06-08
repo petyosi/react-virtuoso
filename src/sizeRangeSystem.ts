@@ -1,5 +1,6 @@
 import * as u from '@virtuoso.dev/urx'
-import { domIOSystem, DOWN, ScrollDirection, UP } from './domIOSystem'
+import { domIOSystem } from './domIOSystem'
+import { UP, DOWN, ScrollDirection } from './stateFlagsSystem'
 import { tupleComparator } from './comparators'
 
 export type NumberTuple = [number, number]
@@ -28,13 +29,13 @@ function getViewportIncrease(value: ViewportIncrease, end: ListEnd) {
 }
 
 export const sizeRangeSystem = u.system(
-  ([{ scrollTop, viewportHeight, deviation, headerHeight }]) => {
+  ([{ scrollTop, viewportHeight, deviation, headerHeight, fixedHeaderHeight }]) => {
     const listBoundary = u.stream<NumberTuple>()
     const topListHeight = u.statefulStream(0)
     const increaseViewportBy = u.statefulStream<ViewportIncrease>(0)
     const overscan = u.statefulStream<Overscan>(0)
 
-    const visibleRange = (u.statefulStreamFromEmitter(
+    const visibleRange = u.statefulStreamFromEmitter(
       u.pipe(
         u.combineLatest(
           u.duc(scrollTop),
@@ -43,23 +44,36 @@ export const sizeRangeSystem = u.system(
           u.duc(listBoundary, tupleComparator),
           u.duc(overscan),
           u.duc(topListHeight),
+          u.duc(fixedHeaderHeight),
           u.duc(deviation),
           u.duc(increaseViewportBy)
         ),
         u.map(
-          ([scrollTop, viewportHeight, headerHeight, [listTop, listBottom], overscan, topListHeight, deviation, increaseViewportBy]) => {
+          ([
+            scrollTop,
+            viewportHeight,
+            headerHeight,
+            [listTop, listBottom],
+            overscan,
+            topListHeight,
+            fixedHeaderHeight,
+            deviation,
+            increaseViewportBy,
+          ]) => {
             const top = scrollTop - deviation
+            const stickyHeaderHeight = topListHeight + fixedHeaderHeight
             const headerVisible = Math.max(headerHeight - top, 0)
             let direction: ChangeDirection = NONE
             const topViewportAddition = getViewportIncrease(increaseViewportBy, TOP)
             const bottomViewportAddition = getViewportIncrease(increaseViewportBy, BOTTOM)
 
             listTop -= deviation
-            listTop += headerHeight
-            listBottom += headerHeight
+            listTop += headerHeight + fixedHeaderHeight
+            listBottom += headerHeight + fixedHeaderHeight
             listBottom -= deviation
 
-            if (listTop > scrollTop + topListHeight - topViewportAddition) {
+            // console.log({ listTop, scrollTop, stickyHeaderHeight, topViewportAddition })
+            if (listTop > scrollTop + stickyHeaderHeight - topViewportAddition) {
               direction = UP
             }
 
@@ -70,7 +84,12 @@ export const sizeRangeSystem = u.system(
             if (direction !== NONE) {
               return [
                 Math.max(top - headerHeight - getOverscan(overscan, TOP, direction) - topViewportAddition, 0),
-                top - headerVisible + viewportHeight + getOverscan(overscan, BOTTOM, direction) + bottomViewportAddition,
+                top -
+                  headerVisible -
+                  fixedHeaderHeight +
+                  viewportHeight +
+                  getOverscan(overscan, BOTTOM, direction) +
+                  bottomViewportAddition,
               ] as NumberTuple
             }
 
@@ -81,7 +100,7 @@ export const sizeRangeSystem = u.system(
         u.distinctUntilChanged(tupleComparator as any)
       ),
       [0, 0]
-    ) as unknown) as u.StatefulStream<NumberTuple>
+    ) as unknown as u.StatefulStream<NumberTuple>
 
     return {
       // input

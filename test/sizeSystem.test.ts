@@ -477,6 +477,51 @@ describe('size engine', () => {
     })
   })
 
+  describe('shifting', () => {
+    it('shifts known sizes', () => {
+      const { sizes, sizeRanges, shiftWith } = init(sizeSystem)
+
+      publish(sizeRanges, [
+        { startIndex: 0, endIndex: 0, size: 30 },
+        { startIndex: 1, endIndex: 5, size: 20 },
+      ])
+
+      expect(toKV(getValue(sizes).sizeTree)).toEqual([
+        [0, 30],
+        [1, 20],
+        [6, 30],
+      ])
+
+      expect(getValue(sizes).offsetTree).toEqual([
+        { offset: 0, index: 0, size: 30 },
+        { offset: 30, index: 1, size: 20 },
+        { offset: 130, index: 6, size: 30 },
+      ])
+
+      publish(shiftWith, -3)
+
+      expect(toKV(getValue(sizes).sizeTree)).toEqual([
+        [0, 20],
+        [3, 30],
+      ])
+
+      expect(getValue(sizes).offsetTree).toEqual([
+        { offset: 0, index: 0, size: 20 },
+        { offset: 60, index: 3, size: 30 },
+      ])
+    })
+
+    it.skip('decreasing the first item index unshifts items', () => {
+      const { unshiftWith, firstItemIndex } = init(sizeSystem)
+      const sub = jest.fn()
+      subscribe(unshiftWith, sub)
+      publish(firstItemIndex, 150)
+      publish(firstItemIndex, 100)
+      expect(sub).toHaveBeenCalledTimes(1)
+      expect(sub).toHaveBeenCalledWith(50)
+    })
+  })
+
   it('trims the sizes when total count decreases', () => {
     const { sizeRanges, totalCount, sizes } = init(sizeSystem)
     publish(totalCount, 5)

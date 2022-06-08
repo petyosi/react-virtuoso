@@ -5,18 +5,22 @@ sidebar_label: Load on Demand
 slug: /grouped-with-load-on-demand/
 ---
 
-The GroupedVirtuoso component can have a `Footer`, that can contain a "load more" button that appends more items to the existing ones.
+The `GroupedVirtuoso` component can have a `Footer`, that has a "load more" button that appends more items to the existing ones.
 
 To add additional items to the groups, you should re-calculate the `groupCounts` property value with the group values of the newly loaded items. 
-Check the source code of this example for a possible implementation.
+Check the source code of this example for an example implementation.
 
-The `calculateGroupsSoFar` Slices the total groups to the groups which contain the items so far. 
+The `calculateGroupsSoFar` Slices the total groups into the groups which contain the items so far. 
 For example, if you have `[10, 10, 10, 10]` groups in total, slicing them to 23 will result in `[10, 10, 3]`.
 
-The `setTimeout` delay is just for illustrative purposes - in reality, the data would be fetched from a remote source.
+The `setTimeout` delay is just for illustrative purposes - in reality, the data is fetched from a remote source.
 
-```jsx live
-() => {
+```jsx live include-data
+import { GroupedVirtuoso } from 'react-virtuoso'
+import { useCallback, useState, useRef, useEffect, useMemo } from 'react'
+import { generateGroupedUsers, toggleBg } from './data'
+
+export default function App() {
   const { users, groups, groupCounts } = useMemo(
     () => generateGroupedUsers(500),
     []
@@ -56,6 +60,7 @@ The `setTimeout` delay is just for illustrative purposes - in reality, the data 
 
   return (
     <GroupedVirtuoso
+      style={{ height: 400 }}
       groupCounts={currentGroupCounts}
       groupContent={index => (
         <div style={{ backgroundColor: 'var(--ifm-background-color)', paddingTop: '1rem' }}>Group {groups[index]}</div>

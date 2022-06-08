@@ -10,6 +10,10 @@ module.exports = {
   organizationName: 'petyosi', // Usually your GitHub org/user name.
   projectName: 'react-virtuoso', // Usually your repo name.
   themeConfig: {
+    colorMode: {
+      disableSwitch: true,
+    },
+    sandpack: { theme: 'aqua-blue' },
     googleAnalytics: { trackingID: 'UA-140068800-1' },
     navbar: {
       title: '',
@@ -39,7 +43,7 @@ module.exports = {
       copyright: `Copyright © ${new Date().getFullYear()} Petyo Ivanov. Built with Docusaurus.`,
     },
   },
-  themes: ['./docusaurus-theme-live-codeblock'],
+  themes: ['./docusaurus-sandpack'],
   presets: [
     [
       '@docusaurus/preset-classic',
@@ -56,11 +60,12 @@ module.exports = {
           editUrl: 'https://github.com/facebook/docusaurus/edit/master/website/blog/',
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: [require.resolve('@codesandbox/sandpack-react/dist/index.css'), require.resolve('./src/css/custom.css')],
         },
       },
     ],
   ],
+
   plugins: [
     [
       'docusaurus-plugin-typedoc',

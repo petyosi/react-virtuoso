@@ -86,9 +86,8 @@ describe('list engine', () => {
     it('starts from a specified location', (done) => {
       const INITIAL_INDEX = 300
       const SIZE = 30
-      const { propsReady, initialTopMostItemIndex, listState, scrollTop, scrollTo, viewportHeight, totalCount, sizeRanges } = init(
-        listSystem
-      )
+      const { propsReady, initialTopMostItemIndex, listState, scrollTop, scrollTo, viewportHeight, totalCount, sizeRanges } =
+        init(listSystem)
 
       publish(initialTopMostItemIndex, INITIAL_INDEX)
       publish(scrollTop, 0)
@@ -122,9 +121,8 @@ describe('list engine', () => {
     it('starts from a specified location with fixed item size', (done) => {
       const INITIAL_INDEX = 300
       const SIZE = 30
-      const { fixedItemHeight, propsReady, initialTopMostItemIndex, listState, scrollTop, scrollTo, viewportHeight, totalCount } = init(
-        listSystem
-      )
+      const { fixedItemHeight, propsReady, initialTopMostItemIndex, listState, scrollTop, scrollTo, viewportHeight, totalCount } =
+        init(listSystem)
 
       publish(initialTopMostItemIndex, INITIAL_INDEX)
       publish(scrollTop, 0)
@@ -163,6 +161,7 @@ describe('list engine', () => {
     const INDEX = 300
     const SIZE = 30
     const VIEWPORT = 200
+    const TOTAL_COUNT = 1000
     beforeEach(() => {
       const { propsReady, scrollToIndex, scrollTop, scrollTo, viewportHeight, totalCount, sizeRanges } = init(listSystem)
 
@@ -170,7 +169,7 @@ describe('list engine', () => {
       sr = sizeRanges
       publish(scrollTop, 0)
       publish(viewportHeight, VIEWPORT)
-      publish(totalCount, 1000)
+      publish(totalCount, TOTAL_COUNT)
 
       sub = jest.fn()
       subscribe(scrollTo, sub)
@@ -212,6 +211,15 @@ describe('list engine', () => {
       })
     })
 
+    it('navigates to last index', () => {
+      publish(sti, { index: 'LAST', align: 'end' })
+
+      expect(sub).toHaveBeenCalledWith({
+        top: TOTAL_COUNT * SIZE - VIEWPORT,
+        behavior: 'auto',
+      })
+    })
+
     it('readjusts once when new sizes are reported', (done) => {
       const DEVIATION = 20
       publish(sti, { index: INDEX, align: 'end' })
@@ -241,7 +249,7 @@ describe('list engine', () => {
         propsReady,
         initialTopMostItemIndex,
         listState,
-        scrollTop,
+        scrollContainerState,
         scrollTo,
         viewportHeight,
         totalCount,
@@ -250,7 +258,7 @@ describe('list engine', () => {
       } = init(listSystem)
 
       publish(initialTopMostItemIndex, INITIAL_INDEX)
-      publish(scrollTop, 0)
+      publish(scrollContainerState, { scrollTop: 0, scrollHeight: 1000 * 30, viewportHeight: 200 })
       publish(viewportHeight, 200)
       publish(totalCount, 1000)
       publish(propsReady, true)
@@ -275,9 +283,17 @@ describe('list engine', () => {
         })
 
         setTimeout(() => {
-          publish(scrollTop, INITIAL_INDEX * SIZE)
+          publish(scrollContainerState, {
+            scrollTop: INITIAL_INDEX * SIZE,
+            scrollHeight: 1000 * 30,
+            viewportHeight: 200,
+          })
 
-          publish(scrollTop, INITIAL_INDEX * SIZE - 2)
+          publish(scrollContainerState, {
+            scrollTop: INITIAL_INDEX * SIZE - 2,
+            scrollHeight: 1000 * 30,
+            viewportHeight: 200,
+          })
 
           publish(sizeRanges, [
             {

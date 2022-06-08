@@ -1,10 +1,36 @@
 import { Log, LogLevel } from '../loggerSystem'
 import { SizeFunction, SizeRange } from '../sizeSystem'
-import useSize from './useSize'
-
-export default function useChangedChildSizes(callback: (ranges: SizeRange[]) => void, itemSize: SizeFunction, enabled: boolean, log: Log) {
-  return useSize((el: HTMLElement) => {
+import { useSizeWithElRef } from './useSize'
+import { ScrollContainerState } from '../interfaces'
+export default function useChangedListContentsSizes(
+  callback: (ranges: SizeRange[]) => void,
+  itemSize: SizeFunction,
+  enabled: boolean,
+  scrollContainerStateCallback: (state: ScrollContainerState) => void,
+  log: Log,
+  customScrollParent?: HTMLElement
+) {
+  return useSizeWithElRef((el: HTMLElement) => {
     const ranges = getChangedChildSizes(el.children, itemSize, 'offsetHeight', log)
+    let scrollableElement = el.parentElement!
+
+    while (!scrollableElement.dataset['virtuosoScroller']) {
+      scrollableElement = scrollableElement.parentElement!
+    }
+
+    const scrollTop = customScrollParent
+      ? customScrollParent.scrollTop
+      : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      (scrollableElement.firstElementChild! as HTMLDivElement).dataset['viewportType']! === 'window'
+      ? window.pageYOffset || document.documentElement.scrollTop
+      : scrollableElement.scrollTop
+
+    scrollContainerStateCallback({
+      scrollTop: Math.max(scrollTop, 0),
+      scrollHeight: (customScrollParent ?? scrollableElement).scrollHeight,
+      viewportHeight: (customScrollParent ?? scrollableElement).offsetHeight,
+    })
+
     if (ranges !== null) {
       callback(ranges)
     }

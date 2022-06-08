@@ -2,12 +2,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import * as React from 'react'
-import { render, unmountComponentAtNode } from 'react-dom'
+import ReactDOM from 'react-dom/client'
 import { act } from 'react-dom/test-utils'
 import { List } from '../src/List'
 jest.mock('../src/hooks/useSize')
 jest.mock('../src/hooks/useChangedChildSizes')
 jest.mock('../src/hooks/useScrollTop')
+;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 describe('List', () => {
   let container: any
@@ -19,13 +20,13 @@ describe('List', () => {
 
   afterEach(() => {
     // cleanup on exiting
-    unmountComponentAtNode(container)
-    container.remove()
+    document.body.removeChild(container)
+    container = null
   })
 
   it('renders a probe item initially', () => {
     act(() => {
-      render(<List totalCount={20000} />, container)
+      ReactDOM.createRoot(container).render(<List totalCount={20000} />)
     })
 
     const scroller = container.firstElementChild
@@ -33,7 +34,7 @@ describe('List', () => {
     const listParent = viewport.firstElementChild
 
     act(() => {
-      scroller.triggerScroll(0)
+      scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
     })
 
@@ -48,7 +49,7 @@ describe('List', () => {
 
     beforeEach(() => {
       act(() => {
-        render(<List totalCount={20000} />, container)
+        ReactDOM.createRoot(container).render(<List totalCount={20000} />)
       })
 
       scroller = container.firstElementChild
@@ -56,7 +57,7 @@ describe('List', () => {
       listParent = viewport.firstElementChild
 
       act(() => {
-        scroller.triggerScroll(0)
+        scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
         viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
         listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 30 }])
       })
@@ -76,7 +77,7 @@ describe('List', () => {
 
     it('renders new items when scrolling', () => {
       act(() => {
-        scroller.triggerScroll(600)
+        scroller.triggerScroll({ scrollTop: 600, scrollHeight: 1000, viewportHeight: 200 })
       })
       expect(listParent.firstElementChild.dataset.index).toBe('20')
     })
@@ -90,7 +91,7 @@ describe('List', () => {
 
     beforeEach(() => {
       act(() => {
-        render(<List data={data} itemContent={(_: number, data: string) => data} />, container)
+        ReactDOM.createRoot(container).render(<List data={data} itemContent={(_: number, data: string) => data} />)
       })
 
       scroller = container.firstElementChild
@@ -98,7 +99,7 @@ describe('List', () => {
       listParent = viewport.firstElementChild
 
       act(() => {
-        scroller.triggerScroll(0)
+        scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
         viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
         listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
       })
@@ -122,7 +123,7 @@ describe('List', () => {
     }
 
     act(() => {
-      render(<Case />, container)
+      ReactDOM.createRoot(container).render(<Case />)
     })
 
     const scroller = container.firstElementChild
@@ -130,7 +131,7 @@ describe('List', () => {
     const listParent = viewport.firstElementChild
 
     act(() => {
-      scroller.triggerScroll(0)
+      scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
       listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
       container.querySelector('button').dispatchEvent(new MouseEvent('click', { bubbles: true }))
@@ -157,7 +158,7 @@ describe('List', () => {
     }
 
     act(() => {
-      render(<Case />, container)
+      ReactDOM.createRoot(container).render(<Case />)
     })
 
     const scroller = container.firstElementChild
@@ -165,7 +166,7 @@ describe('List', () => {
     const listParent = viewport.firstElementChild
 
     act(() => {
-      scroller.triggerScroll(0)
+      scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
       listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
       container.querySelector('button').dispatchEvent(new MouseEvent('click', { bubbles: true }))

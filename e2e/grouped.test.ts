@@ -1,11 +1,13 @@
-describe('jagged grouped list', () => {
-  beforeAll(async () => {
+import { test, expect } from '@playwright/test'
+
+test.describe('jagged grouped list', () => {
+  test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:1234/grouped')
     await page.waitForSelector('#test-root > div')
     await page.waitForTimeout(100)
   })
 
-  it('renders correct sizing', async () => {
+  test('renders correct sizing', async ({ page }) => {
     const [paddingTop, paddingBottom] = await page.evaluate(() => {
       const listContainer = document.querySelector('#test-root > div > div > div:first-child') as HTMLElement
       return [listContainer.style.paddingTop, listContainer.style.paddingBottom]
@@ -15,7 +17,7 @@ describe('jagged grouped list', () => {
     expect(paddingBottom).toBe('1500px')
   })
 
-  it('renders correct state when scrolled', async () => {
+  test('renders correct state when scrolled', async ({ page }) => {
     await page.evaluate(() => {
       const scroller = document.querySelector('#test-root > div') as HTMLElement
       scroller.scrollTo({ top: 500 })
@@ -29,5 +31,24 @@ describe('jagged grouped list', () => {
     })
 
     expect(stickyItemIndex).toBe('20')
+  })
+})
+
+test.describe('scroll into view for grouped list', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('http://localhost:1234/group-scroll-into-view')
+    await page.waitForSelector('#test-root > div')
+    await page.waitForTimeout(100)
+  })
+
+  test('goes to correct location', async ({ page }) => {
+    await page.click('data-test-id=scroll-into-view-button')
+    await page.waitForTimeout(100)
+
+    const scrollTop = await page.locator('data-test-id=virtuoso-scroller').evaluate((element) => {
+      return element.scrollTop
+    })
+
+    expect(scrollTop).toBe(20)
   })
 })

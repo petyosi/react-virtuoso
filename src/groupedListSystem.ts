@@ -1,16 +1,5 @@
-import {
-  combineLatest,
-  connect,
-  distinctUntilChanged,
-  system,
-  filter,
-  map,
-  pipe,
-  prop,
-  stream,
-  streamFromEmitter,
-  tup,
-} from '@virtuoso.dev/urx'
+import * as u from '@virtuoso.dev/urx'
+
 import { findMaxKeyValue } from './AATree'
 import { domIOSystem } from './domIOSystem'
 import { sizeSystem, hasGroups } from './sizeSystem'
@@ -33,23 +22,23 @@ export function groupCountsToIndicesAndCount(counts: number[]) {
   )
 }
 
-export const groupedListSystem = system(([{ totalCount, groupIndices, sizes }, { scrollTop, headerHeight }]) => {
-  const groupCounts = stream<number[]>()
-  const topItemsIndexes = stream<[number]>()
-  const groupIndicesAndCount = streamFromEmitter(pipe(groupCounts, map(groupCountsToIndicesAndCount)))
-  connect(pipe(groupIndicesAndCount, map(prop('totalCount'))), totalCount)
-  connect(pipe(groupIndicesAndCount, map(prop('groupIndices'))), groupIndices)
+export const groupedListSystem = u.system(([{ totalCount, groupIndices, sizes }, { scrollTop, headerHeight }]) => {
+  const groupCounts = u.stream<number[]>()
+  const topItemsIndexes = u.stream<[number]>()
+  const groupIndicesAndCount = u.streamFromEmitter(u.pipe(groupCounts, u.map(groupCountsToIndicesAndCount)))
+  u.connect(u.pipe(groupIndicesAndCount, u.map(u.prop('totalCount'))), totalCount)
+  u.connect(u.pipe(groupIndicesAndCount, u.map(u.prop('groupIndices'))), groupIndices)
 
-  connect(
-    pipe(
-      combineLatest(scrollTop, sizes, headerHeight),
-      filter(([_, sizes]) => hasGroups(sizes)),
-      map(([scrollTop, state, headerHeight]) => findMaxKeyValue(state.groupOffsetTree, Math.max(scrollTop - headerHeight, 0), 'v')[0]),
-      distinctUntilChanged(),
-      map((index) => [index])
+  u.connect(
+    u.pipe(
+      u.combineLatest(scrollTop, sizes, headerHeight),
+      u.filter(([_, sizes]) => hasGroups(sizes)),
+      u.map(([scrollTop, state, headerHeight]) => findMaxKeyValue(state.groupOffsetTree, Math.max(scrollTop - headerHeight, 0), 'v')[0]),
+      u.distinctUntilChanged(),
+      u.map((index) => [index])
     ),
     topItemsIndexes
   )
 
   return { groupCounts, topItemsIndexes }
-}, tup(sizeSystem, domIOSystem))
+}, u.tup(sizeSystem, domIOSystem))

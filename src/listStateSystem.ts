@@ -1,7 +1,7 @@
 import * as u from '@virtuoso.dev/urx'
 import { empty, findMaxKeyValue, Range, rangesWithin } from './AATree'
 import { groupedListSystem } from './groupedListSystem'
-import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
+import { getInitialTopMostItemIndexNumber, initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
 import { Item, ListItem, ListRange } from './interfaces'
 import { propsReadySystem } from './propsReadySystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
@@ -25,6 +25,7 @@ export interface ListState {
   top: number
   bottom: number
   totalCount: number
+  firstItemIndex: number
 }
 
 function probeItemSet(index: number, sizes: SizeState, data: Data) {
@@ -49,6 +50,7 @@ const EMPTY_LIST_STATE: ListState = {
   bottom: 0,
   topListHeight: 0,
   totalCount: 0,
+  firstItemIndex: 0,
 }
 
 function transposeItems(items: Item<any>[], sizes: SizeState, firstItemIndex: number): ListItems {
@@ -130,12 +132,13 @@ export function buildListState(
     top,
     bottom,
     totalCount,
+    firstItemIndex,
   }
 }
 
 export const listStateSystem = u.system(
   ([
-    { sizes, totalCount, data, firstItemIndex },
+    { sizes, totalCount, data, firstItemIndex, recalcInProgress },
     groupedListSystem,
     { visibleRange, listBoundary, topListHeight: rangeTopListHeight },
     { scrolledToInitialItem, initialTopMostItemIndex },
@@ -152,6 +155,7 @@ export const listStateSystem = u.system(
       u.pipe(
         u.combineLatest(
           didMount,
+          recalcInProgress,
           u.duc(visibleRange),
           u.duc(totalCount),
           u.duc(sizes),
@@ -161,9 +165,10 @@ export const listStateSystem = u.system(
           u.duc(firstItemIndex),
           data
         ),
-        u.filter(([mount]) => mount),
+        u.filter(([mount, recalcInProgress]) => mount && !recalcInProgress),
         u.map(
           ([
+            ,
             ,
             [startOffset, endOffset],
             totalCount,
@@ -182,7 +187,13 @@ export const listStateSystem = u.system(
             }
 
             if (empty(sizeTree)) {
-              return buildListState(probeItemSet(initialTopMostItemIndex, sizesValue, data), [], totalCount, sizesValue, firstItemIndex)
+              return buildListState(
+                probeItemSet(getInitialTopMostItemIndexNumber(initialTopMostItemIndex, totalCount), sizesValue, data),
+                [],
+                totalCount,
+                sizesValue,
+                firstItemIndex
+              )
             }
 
             const topItems = [] as Item<any>[]
@@ -271,7 +282,6 @@ export const listStateSystem = u.system(
 
     u.connect(u.pipe(listState, u.map(u.prop('topListHeight'))), topListHeight)
     u.connect(topListHeight, rangeTopListHeight)
-    u.connect(listState, stateFlags.listStateListener)
 
     u.connect(
       u.pipe(

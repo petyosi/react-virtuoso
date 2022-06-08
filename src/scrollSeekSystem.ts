@@ -1,59 +1,20 @@
-import {
-  combineLatest,
-  connect,
-  distinctUntilChanged,
-  filter,
-  map,
-  mapTo,
-  pipe,
-  scan,
-  statefulStream,
-  stream,
-  subscribe,
-  system,
-  throttleTime,
-  tup,
-  withLatestFrom,
-} from '@virtuoso.dev/urx'
-import { domIOSystem } from './domIOSystem'
+import * as u from '@virtuoso.dev/urx'
 import { ListRange } from './interfaces'
 import { stateFlagsSystem } from './stateFlagsSystem'
 import { ScrollSeekConfiguration } from './interfaces'
 
-export const scrollSeekSystem = system(
-  ([{ scrollTop }, { isScrolling }]) => {
-    const scrollVelocity = statefulStream(0)
-    const isSeeking = statefulStream(false)
-    const rangeChanged = stream<ListRange>()
-    const scrollSeekConfiguration = statefulStream<ScrollSeekConfiguration | undefined | false>(false)
+export const scrollSeekSystem = u.system(
+  ([{ scrollVelocity }]) => {
+    const isSeeking = u.statefulStream(false)
+    const rangeChanged = u.stream<ListRange>()
+    const scrollSeekConfiguration = u.statefulStream<ScrollSeekConfiguration | undefined | false>(false)
 
-    connect(
-      pipe(
-        isScrolling,
-        filter((value) => !value),
-        mapTo(0)
-      ),
-      scrollVelocity
-    )
-
-    connect(
-      pipe(
-        scrollTop,
-        throttleTime(100),
-        withLatestFrom(isScrolling),
-        filter(([_, isScrolling]) => !!isScrolling),
-        scan(([_, prev], [next]) => [prev, next], [0, 0]),
-        map(([prev, next]) => next - prev)
-      ),
-      scrollVelocity
-    )
-
-    connect(
-      pipe(
+    u.connect(
+      u.pipe(
         scrollVelocity,
-        withLatestFrom(scrollSeekConfiguration, isSeeking, rangeChanged),
-        filter(([_, config]) => !!config),
-        map(([speed, config, isSeeking, range]) => {
+        u.withLatestFrom(scrollSeekConfiguration, isSeeking, rangeChanged),
+        u.filter(([_, config]) => !!config),
+        u.map(([speed, config, isSeeking, range]) => {
           const { exit, enter } = config as ScrollSeekConfiguration
           if (isSeeking) {
             if (exit(speed, range)) {
@@ -66,18 +27,18 @@ export const scrollSeekSystem = system(
           }
           return isSeeking
         }),
-        distinctUntilChanged()
+        u.distinctUntilChanged()
       ),
       isSeeking
     )
 
-    subscribe(
-      pipe(combineLatest(isSeeking, scrollVelocity, rangeChanged), withLatestFrom(scrollSeekConfiguration)),
+    u.subscribe(
+      u.pipe(u.combineLatest(isSeeking, scrollVelocity, rangeChanged), u.withLatestFrom(scrollSeekConfiguration)),
       ([[isSeeking, velocity, range], config]) => isSeeking && config && config.change && config.change(velocity, range)
     )
 
     return { isSeeking, scrollSeekConfiguration, scrollVelocity, scrollSeekRangeChanged: rangeChanged }
   },
-  tup(domIOSystem, stateFlagsSystem),
+  u.tup(stateFlagsSystem),
   { singleton: true }
 )
