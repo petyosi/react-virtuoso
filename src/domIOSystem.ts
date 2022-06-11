@@ -1,8 +1,9 @@
 import * as u from '@virtuoso.dev/urx'
 import { ScrollContainerState } from './interfaces'
+import { recalcSystem } from './recalcSystem'
 
 export const domIOSystem = u.system(
-  () => {
+  ([{ recalcInProgress }]) => {
     const scrollContainerState = u.stream<ScrollContainerState>()
     const scrollTop = u.stream<number>()
     const deviation = u.statefulStream(0)
@@ -18,6 +19,8 @@ export const domIOSystem = u.system(
     const scrollingInProgress = u.statefulStream(false)
     // bogus, has no effect
     const react18ConcurrentRendering = u.statefulStream(false)
+
+    u.connect(u.pipe(scrollTop, u.mapTo(false)), recalcInProgress)
 
     u.connect(
       u.pipe(
@@ -59,6 +62,6 @@ export const domIOSystem = u.system(
       scrollingInProgress,
     }
   },
-  [],
+  u.tup(recalcSystem),
   { singleton: true }
 )

@@ -62,11 +62,12 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
   const atTopThreshold = u.statefulStream(DEFAULT_AT_TOP_THRESHOLD)
 
   // skip 1 to avoid an initial on/off flick
-  const isScrolling = u.streamFromEmitter(
+  const isScrolling = u.statefulStreamFromEmitter(
     u.pipe(
       u.merge(u.pipe(u.duc(scrollTop), u.skip(1), u.mapTo(true)), u.pipe(u.duc(scrollTop), u.skip(1), u.mapTo(false), u.debounceTime(100))),
       u.distinctUntilChanged()
-    )
+    ),
+    false
   )
 
   const isScrollingBy = u.statefulStreamFromEmitter(

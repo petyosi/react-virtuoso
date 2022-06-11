@@ -17,7 +17,7 @@ export default function App() {
     setTimeout(() => {
       setFirstItemIndex(() => nextFirstItemIndex)
       setUsers(() => [...generateUsers(usersToPrepend, nextFirstItemIndex), ...users])
-    }, 500)
+    }, 100)
 
     return false
   }, [firstItemIndex, users, setUsers])
@@ -29,6 +29,7 @@ export default function App() {
       initialTopMostItemIndex={INITIAL_ITEM_COUNT - 1}
       data={users}
       startReached={prependItems}
+      increaseViewportBy={{ top: 1500, bottom: 0 }}
       itemContent={(_, user) => {
         return (
           <div style={{ backgroundColor: user.bgColor, padding: '1rem 0.5rem' }}>

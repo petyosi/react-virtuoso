@@ -2,6 +2,7 @@ import { useRef, useCallback, useEffect } from 'react'
 import * as u from '@virtuoso.dev/urx'
 import { correctItemSize } from '../utils/correctItemSize'
 import { ScrollContainerState } from '../interfaces'
+import { flushSync } from 'react-dom'
 
 export type ScrollerRef = Window | HTMLElement | null
 
@@ -19,6 +20,7 @@ export default function useScrollTop(
   const scrollerRef = useRef<HTMLElement | null | Window>(null)
   const scrollTopTarget = useRef<any>(null)
   const timeoutRef = useRef<any>(null)
+  const shouldFlushSync = useRef(false)
 
   const handler = useCallback(
     (ev: Event) => {
@@ -28,11 +30,20 @@ export default function useScrollTop(
       const scrollHeight = (el as any) === window ? document.documentElement.scrollHeight : el.scrollHeight
       const viewportHeight = (el as any) === window ? window.innerHeight : el.offsetHeight
 
-      scrollContainerStateCallback({
-        scrollTop: Math.max(scrollTop, 0),
-        scrollHeight,
-        viewportHeight,
-      })
+      const call = () => {
+        scrollContainerStateCallback({
+          scrollTop: Math.max(scrollTop, 0),
+          scrollHeight,
+          viewportHeight,
+        })
+      }
+
+      if (shouldFlushSync.current) {
+        flushSync(call)
+      } else {
+        call()
+      }
+      shouldFlushSync.current = false
 
       if (scrollTopTarget.current !== null) {
         if (scrollTop === scrollTopTarget.current || scrollTop <= 0 || scrollTop === el.scrollHeight - correctItemSize(el, 'height')) {
@@ -117,6 +128,7 @@ export default function useScrollTop(
   }
 
   function scrollByCallback(location: ScrollToOptions) {
+    shouldFlushSync.current = true
     scrollerRef.current!.scrollBy(location)
   }
 

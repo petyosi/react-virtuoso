@@ -52,7 +52,7 @@
     "@commitlint/config-conventional": "^12.1.4",
     "@emotion/core": "^10.1.0",
     "@emotion/styled": "^10.0.27",
-    "@microsoft/api-extractor": "^7.19.5",
+    "@microsoft/api-extractor": "^7.25.0",
     "@playwright/test": "^1.17.1",
     "@types/faker": "^5.1.4",
     "@types/jest": "^26.0.20",

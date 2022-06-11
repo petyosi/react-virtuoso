@@ -9,6 +9,7 @@ import { sizeRangeSystem } from './sizeRangeSystem'
 import { Data, originalIndexFromItemIndex, SizeState, sizeSystem, hasGroups, rangesWithinOffsets } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
 import { rangeComparator, tupleComparator } from './comparators'
+import { recalcSystem } from './recalcSystem'
 
 export type ListItems = ListItem<unknown>[]
 export interface TopListState {
@@ -138,13 +139,14 @@ export function buildListState(
 
 export const listStateSystem = u.system(
   ([
-    { sizes, totalCount, data, firstItemIndex, recalcInProgress },
+    { sizes, totalCount, data, firstItemIndex },
     groupedListSystem,
     { visibleRange, listBoundary, topListHeight: rangeTopListHeight },
     { scrolledToInitialItem, initialTopMostItemIndex },
     { topListHeight },
     stateFlags,
     { didMount },
+    { recalcInProgress },
   ]) => {
     const topItemsIndexes = u.statefulStream<Array<number>>([])
     const itemsRendered = u.stream<ListItems>()
@@ -155,8 +157,7 @@ export const listStateSystem = u.system(
       u.pipe(
         u.combineLatest(
           didMount,
-          recalcInProgress,
-          u.duc(visibleRange),
+          u.duc(visibleRange, tupleComparator),
           u.duc(totalCount),
           u.duc(sizes),
           u.duc(initialTopMostItemIndex),
@@ -165,19 +166,23 @@ export const listStateSystem = u.system(
           u.duc(firstItemIndex),
           data
         ),
-        u.filter(([mount, recalcInProgress]) => mount && !recalcInProgress),
+        u.withLatestFrom(recalcInProgress),
+        u.filter(([[mount], recalcInProgress]) => {
+          return mount && !recalcInProgress
+        }),
         u.map(
           ([
-            ,
-            ,
-            [startOffset, endOffset],
-            totalCount,
-            sizes,
-            initialTopMostItemIndex,
-            scrolledToInitialItem,
-            topItemsIndexes,
-            firstItemIndex,
-            data,
+            [
+              ,
+              [startOffset, endOffset],
+              totalCount,
+              sizes,
+              initialTopMostItemIndex,
+              scrolledToInitialItem,
+              topItemsIndexes,
+              firstItemIndex,
+              data,
+            ],
           ]) => {
             const sizesValue = sizes
             const { sizeTree, offsetTree } = sizesValue
@@ -346,7 +351,8 @@ export const listStateSystem = u.system(
     initialTopMostItemIndexSystem,
     scrollToIndexSystem,
     stateFlagsSystem,
-    propsReadySystem
+    propsReadySystem,
+    recalcSystem
   ),
   { singleton: true }
 )

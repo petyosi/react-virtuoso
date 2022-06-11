@@ -196,8 +196,6 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const hasGroups = useEmitterValue('groupIndices').length > 0
   const paddingTopAddition = useEmitterValue('paddingTopAddition')
 
-  const statefulTotalCount = useEmitterValue('statefulTotalCount')
-
   const containerStyle: CSSProperties = showTopList
     ? {}
     : {
@@ -207,7 +205,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
         marginTop: deviation,
       }
 
-  if (!showTopList && statefulTotalCount === 0 && EmptyPlaceholder) {
+  if (!showTopList && listState.totalCount === 0 && EmptyPlaceholder) {
     return createElement(EmptyPlaceholder, contextPropIfNotDomElement(EmptyPlaceholder, context))
   }
 

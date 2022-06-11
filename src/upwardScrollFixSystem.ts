@@ -5,6 +5,11 @@ import { sizeSystem } from './sizeSystem'
 import { UP, stateFlagsSystem } from './stateFlagsSystem'
 import { ListItem } from './interfaces'
 import { loggerSystem, LogLevel } from './loggerSystem'
+import { simpleMemoize } from './utils/simpleMemoize'
+
+const isMobileSafari = simpleMemoize(() => {
+  return /iP(ad|hone|od).+Version\/[\d.]+.*Safari/i.test(navigator.userAgent)
+})
 
 type UpwardFixState = [number, ListItem<any>[], number, number]
 /**
@@ -15,7 +20,7 @@ export const upwardScrollFixSystem = u.system(
     { scrollBy, scrollTop, deviation, scrollingInProgress },
     { isScrolling, isAtBottom, atBottomState, scrollDirection, lastJumpDueToItemResize },
     { listState },
-    { beforeUnshiftWith, shiftWithOffset, sizes, recalcInProgress },
+    { beforeUnshiftWith, shiftWithOffset, sizes },
     { log },
   ]) => {
     const deviationOffset = u.streamFromEmitter(
@@ -56,36 +61,34 @@ export const upwardScrollFixSystem = u.system(
       )
     )
 
-    u.connect(
-      u.pipe(
-        deviationOffset,
-        u.withLatestFrom(deviation),
-        u.map(([amount, deviation]) => deviation - amount)
-      ),
-      deviation
-    )
+    function scrollByWith(offset: number) {
+      if (offset > 0) {
+        u.publish(scrollBy, { top: -offset, behavior: 'auto' })
+        u.publish(deviation, 0)
+      } else {
+        u.publish(deviation, 0)
+        u.publish(scrollBy, { top: -offset, behavior: 'auto' })
+      }
+    }
 
-    // when the browser stops scrolling,
-    // restore the position and reset the glitching
+    u.subscribe(u.pipe(deviationOffset, u.withLatestFrom(deviation, isScrolling)), ([offset, deviationAmount, isScrolling]) => {
+      if (isScrolling && isMobileSafari()) {
+        u.publish(deviation, deviationAmount - offset)
+      } else {
+        scrollByWith(-offset)
+      }
+    })
+
+    // this hack is only necessary for mobile safari which does not support scrollBy while scrolling is in progress.
+    // when the browser stops scrolling, restore the position and reset the glitching
     u.subscribe(
       u.pipe(
         u.combineLatest(u.statefulStreamFromEmitter(isScrolling, false), deviation),
         u.filter(([is, deviation]) => !is && deviation !== 0),
-        u.map(([_, deviation]) => deviation)
-        // u.throttleTime(1)
+        u.map(([_, deviation]) => deviation),
+        u.throttleTime(1)
       ),
-      (offset) => {
-        if (offset > 0) {
-          u.publish(scrollBy, { top: -offset, behavior: 'auto' })
-          u.publish(deviation, 0)
-        } else {
-          u.publish(deviation, 0)
-          u.handleNext(scrollTop, () => {
-            u.publish(recalcInProgress, false)
-          })
-          u.publish(scrollBy, { top: -offset, behavior: 'auto' })
-        }
-      }
+      scrollByWith
     )
 
     u.connect(
