@@ -169,7 +169,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const itemSize = useEmitterValue('itemSize')
   const log = useEmitterValue('log')
 
-  const { callbackRef, ref } = useChangedListContentsSizes(
+  const { callbackRef } = useChangedListContentsSizes(
     sizeRanges,
     itemSize,
     trackItemSizes,
@@ -181,7 +181,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const [deviation, setDeviation] = React.useState(0)
   useEmitter('deviation', (value) => {
     if (deviation !== value) {
-      ref.current!.style.marginTop = `${value}px`
+      // ref.current!.style.marginTop = `${value}px`
       setDeviation(value)
     }
   })

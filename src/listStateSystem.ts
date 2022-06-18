@@ -157,6 +157,7 @@ export const listStateSystem = u.system(
       u.pipe(
         u.combineLatest(
           didMount,
+          recalcInProgress,
           u.duc(visibleRange, tupleComparator),
           u.duc(totalCount),
           u.duc(sizes),
@@ -166,23 +167,21 @@ export const listStateSystem = u.system(
           u.duc(firstItemIndex),
           data
         ),
-        u.withLatestFrom(recalcInProgress),
-        u.filter(([[mount], recalcInProgress]) => {
+        u.filter(([mount, recalcInProgress]) => {
           return mount && !recalcInProgress
         }),
         u.map(
           ([
-            [
-              ,
-              [startOffset, endOffset],
-              totalCount,
-              sizes,
-              initialTopMostItemIndex,
-              scrolledToInitialItem,
-              topItemsIndexes,
-              firstItemIndex,
-              data,
-            ],
+            ,
+            ,
+            [startOffset, endOffset],
+            totalCount,
+            sizes,
+            initialTopMostItemIndex,
+            scrolledToInitialItem,
+            topItemsIndexes,
+            firstItemIndex,
+            data,
           ]) => {
             const sizesValue = sizes
             const { sizeTree, offsetTree } = sizesValue

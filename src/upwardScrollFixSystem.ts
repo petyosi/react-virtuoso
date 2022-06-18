@@ -6,6 +6,7 @@ import { UP, stateFlagsSystem } from './stateFlagsSystem'
 import { ListItem } from './interfaces'
 import { loggerSystem, LogLevel } from './loggerSystem'
 import { simpleMemoize } from './utils/simpleMemoize'
+import { recalcSystem } from './recalcSystem'
 
 const isMobileSafari = simpleMemoize(() => {
   return /iP(ad|hone|od).+Version\/[\d.]+.*Safari/i.test(navigator.userAgent)
@@ -22,6 +23,7 @@ export const upwardScrollFixSystem = u.system(
     { listState },
     { beforeUnshiftWith, shiftWithOffset, sizes },
     { log },
+    { recalcInProgress },
   ]) => {
     const deviationOffset = u.streamFromEmitter(
       u.pipe(
@@ -83,8 +85,8 @@ export const upwardScrollFixSystem = u.system(
     // when the browser stops scrolling, restore the position and reset the glitching
     u.subscribe(
       u.pipe(
-        u.combineLatest(u.statefulStreamFromEmitter(isScrolling, false), deviation),
-        u.filter(([is, deviation]) => !is && deviation !== 0),
+        u.combineLatest(u.statefulStreamFromEmitter(isScrolling, false), deviation, recalcInProgress),
+        u.filter(([is, deviation, recalc]) => !is && !recalc && deviation !== 0),
         u.map(([_, deviation]) => deviation),
         u.throttleTime(1)
       ),
@@ -101,16 +103,25 @@ export const upwardScrollFixSystem = u.system(
       scrollBy
     )
 
-    u.connect(
+    u.subscribe(
       u.pipe(
         beforeUnshiftWith,
         u.withLatestFrom(sizes),
         u.map(([offset, { lastSize }]) => offset * lastSize)
       ),
-      deviationOffset
+      (offset) => {
+        u.publish(deviation, offset)
+        requestAnimationFrame(() => {
+          u.publish(scrollBy, { top: offset })
+          requestAnimationFrame(() => {
+            u.publish(deviation, 0)
+            u.publish(recalcInProgress, false)
+          })
+        })
+      }
     )
 
     return { deviation }
   },
-  u.tup(domIOSystem, stateFlagsSystem, listStateSystem, sizeSystem, loggerSystem)
+  u.tup(domIOSystem, stateFlagsSystem, listStateSystem, sizeSystem, loggerSystem, recalcSystem)
 )
