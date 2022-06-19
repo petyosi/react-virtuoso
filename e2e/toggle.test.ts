@@ -13,10 +13,10 @@ test.describe('list with prependable items', () => {
   }
 
   test('keeps the location at where it should be (toggle)', async ({ page }) => {
-    expect(await getScrollTop(page)).toBe(8822)
+    const iniitalScrollTop = await getScrollTop(page)
     await page.locator('data-test-id=toggle-last-two').click()
-    expect(await getScrollTop(page)).toBe(8922)
+    expect(await getScrollTop(page)).toBe(iniitalScrollTop + 100)
     await page.locator('data-test-id=toggle-last-two').click()
-    expect(await getScrollTop(page)).toBe(8822)
+    expect(await getScrollTop(page)).toBe(iniitalScrollTop)
   })
 })
