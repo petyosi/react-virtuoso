@@ -11,7 +11,7 @@ jest.mock('../src/hooks/useScrollTop')
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 describe('List', () => {
-  let container: any
+  let container: HTMLDivElement
   beforeEach(() => {
     // setup a DOM element as a render target
     container = document.createElement('div')
@@ -29,7 +29,7 @@ describe('List', () => {
       ReactDOM.createRoot(container).render(<List totalCount={20000} />)
     })
 
-    const scroller = container.firstElementChild
+    const scroller = container.firstElementChild as any
     const viewport = scroller.firstElementChild
     const listParent = viewport.firstElementChild
 
@@ -126,7 +126,7 @@ describe('List', () => {
       ReactDOM.createRoot(container).render(<Case />)
     })
 
-    const scroller = container.firstElementChild
+    const scroller = container.firstElementChild as any
     const viewport = scroller.firstElementChild
     const listParent = viewport.firstElementChild
 
@@ -161,7 +161,7 @@ describe('List', () => {
       ReactDOM.createRoot(container).render(<Case />)
     })
 
-    const scroller = container.firstElementChild
+    const scroller = container.firstElementChild as any
     const viewport = scroller.firstElementChild
     const listParent = viewport.firstElementChild
 

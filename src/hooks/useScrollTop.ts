@@ -16,7 +16,7 @@ export default function useScrollTop(
 ) {
   const scrollerRef = useRef<HTMLElement | null | Window>(null)
   const scrollTopTarget = useRef<any>(null)
-  const timeoutRef = useRef<any>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const shouldFlushSync = useRef(false)
 
   const handler = useCallback(

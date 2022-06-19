@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { listSystem } from '../src/listSystem'
 import { init, getValue, publish, subscribe } from '@virtuoso.dev/urx'
 

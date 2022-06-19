@@ -36,7 +36,7 @@ export const scrollToIndexSystem = u.system(
     const topListHeight = u.statefulStream(0)
 
     let unsubscribeNextListRefresh: any = null
-    let cleartTimeoutRef: any = null
+    let cleartTimeoutRef: ReturnType<typeof setTimeout> | null = null
     let unsubscribeListRefresh: any = null
 
     function cleanup() {

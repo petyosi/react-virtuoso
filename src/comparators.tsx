@@ -1,6 +1,6 @@
 import { ListRange } from './interfaces'
 
-export function tupleComparator(prev: [any, any] | undefined, current: [any, any]) {
+export function tupleComparator<T1, T2>(prev: [T1, T2] | undefined, current: [T1, T2]) {
   return !!(prev && prev[0] === current[0] && prev[1] === current[1])
 }
 

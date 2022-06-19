@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import * as u from '@virtuoso.dev/urx'
 import { domIOSystem } from './domIOSystem'
 import { approximatelyEqual } from './utils/approximatelyEqual'
@@ -216,6 +217,7 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
     scrollDirection
   )
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   u.connect(u.pipe(scrollContainerState, u.throttleTime(50), u.mapTo(NONE)), scrollDirection)
 
   const scrollVelocity = u.statefulStream(0)
@@ -224,6 +226,7 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
     u.pipe(
       isScrolling,
       u.filter((value) => !value),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       u.mapTo(0)
     ),
     scrollVelocity

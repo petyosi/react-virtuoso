@@ -26,8 +26,20 @@ export const groupedListSystem = u.system(([{ totalCount, groupIndices, sizes },
   const groupCounts = u.stream<number[]>()
   const topItemsIndexes = u.stream<[number]>()
   const groupIndicesAndCount = u.streamFromEmitter(u.pipe(groupCounts, u.map(groupCountsToIndicesAndCount)))
-  u.connect(u.pipe(groupIndicesAndCount, u.map(u.prop('totalCount'))), totalCount)
-  u.connect(u.pipe(groupIndicesAndCount, u.map(u.prop('groupIndices'))), groupIndices)
+  u.connect(
+    u.pipe(
+      groupIndicesAndCount,
+      u.map((value) => value.totalCount)
+    ),
+    totalCount
+  )
+  u.connect(
+    u.pipe(
+      groupIndicesAndCount,
+      u.map((value) => value.groupIndices)
+    ),
+    groupIndices
+  )
 
   u.connect(
     u.pipe(

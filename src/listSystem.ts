@@ -84,7 +84,13 @@ export const listSystem = u.system(
     log,
   ]) => {
     u.connect(flags.rangeChanged, featureGroup1.scrollSeekRangeChanged)
-    u.connect(u.pipe(featureGroup1.windowViewportRect, u.map(u.prop('visibleHeight'))), domIO.viewportHeight)
+    u.connect(
+      u.pipe(
+        featureGroup1.windowViewportRect,
+        u.map((value) => value.visibleHeight)
+      ),
+      domIO.viewportHeight
+    )
 
     return {
       // input

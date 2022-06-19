@@ -467,7 +467,7 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
   react18ConcurrentRendering?: boolean
 }
 
-export interface VirtuosoGridProps<C extends unknown = unknown> extends GridRootProps {
+export interface VirtuosoGridProps<C = unknown> extends GridRootProps {
   /**
    * The total amount of items to be rendered.
    */
@@ -605,18 +605,16 @@ export interface TableVirtuosoHandle {
   scrollBy(location: ScrollToOptions): void
 }
 
-export const Virtuoso = List as <ItemData extends unknown = any, Context extends unknown = any>(
+export const Virtuoso = List as <ItemData = any, Context = any>(
   props: VirtuosoProps<ItemData, Context> & { ref?: Ref<VirtuosoHandle> }
 ) => ReactElement
 
-export const GroupedVirtuoso = List as <ItemData extends unknown = any, Context extends unknown = any>(
+export const GroupedVirtuoso = List as <ItemData = any, Context = any>(
   props: GroupedVirtuosoProps<ItemData, Context> & { ref?: Ref<GroupedVirtuosoHandle> }
 ) => ReactElement
 
-export const TableVirtuoso = Table as <ItemData extends unknown = any, Context extends unknown = any>(
+export const TableVirtuoso = Table as <ItemData = any, Context = any>(
   props: TableVirtuosoProps<ItemData, Context> & { ref?: Ref<TableVirtuosoHandle> }
 ) => ReactElement
 
-export const VirtuosoGrid = Grid as <Context extends unknown = any>(
-  props: VirtuosoGridProps<Context> & { ref?: Ref<VirtuosoGridHandle> }
-) => ReactElement
+export const VirtuosoGrid = Grid as <Context = any>(props: VirtuosoGridProps<Context> & { ref?: Ref<VirtuosoGridHandle> }) => ReactElement

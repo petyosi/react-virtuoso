@@ -149,8 +149,8 @@ const combinedSystem = u.system(([listSystem, propsSystem]) => {
 
 const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => <div style={{ height }}></div>
 
-const GROUP_STYLE = { position: positionStickyCssValue(), zIndex: 1, overflowAnchor: 'none' }
-const ITEM_STYLE = { overflowAnchor: 'none' }
+const GROUP_STYLE = { position: positionStickyCssValue(), zIndex: 1, overflowAnchor: 'none' } as const
+const ITEM_STYLE = { overflowAnchor: 'none' } as const
 
 export const Items = React.memo(function VirtuosoItems({ showTopList = false }: { showTopList?: boolean }) {
   const listState = useEmitterValue('listState')
@@ -242,7 +242,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
             'data-known-size': item.size,
             'data-item-index': item.index,
             style: GROUP_STYLE,
-          } as any,
+          },
           groupContent(item.index)
         )
       } else {
@@ -256,7 +256,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
             'data-item-index': item.index,
             'data-item-group-index': item.groupIndex,
             style: ITEM_STYLE,
-          } as any,
+          },
           hasGroups
             ? (itemContent as GroupItemContent<any, any>)(item.index, item.groupIndex!, item.data, context)
             : (itemContent as ItemContent<any, any>)(item.index, item.data, context)

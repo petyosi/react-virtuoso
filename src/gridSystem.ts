@@ -170,6 +170,7 @@ export const gridSystem = u.system(
         u.filter(({ items }) => {
           return items.length > 0 && items[0].index === 0
         }),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         u.mapTo(0),
         u.distinctUntilChanged()
       )

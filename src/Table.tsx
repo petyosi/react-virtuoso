@@ -141,7 +141,7 @@ export const Items = React.memo(function VirtuosoItems() {
         'data-known-size': item.size,
         'data-item-index': item.index,
         style: { overflowAnchor: 'none' },
-      } as any,
+      },
       itemContent(item.index, item.data, context)
     )
   })
@@ -202,7 +202,7 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
           style: { zIndex: 1, position: 'sticky', top: 0 },
           ref: theadRef,
           ...contextPropIfNotDomElement(TheTHead, context),
-        } as any,
+        },
         fixedHeaderContent()
       )
     : null
@@ -210,7 +210,7 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
   return (
     <TheScroller {...props}>
       <TheViewport>
-        {React.createElement(TheTable!, { style: { borderSpacing: 0 }, ...contextPropIfNotDomElement(TheTable, context) } as any, [
+        {React.createElement(TheTable!, { style: { borderSpacing: 0 }, ...contextPropIfNotDomElement(TheTable, context) }, [
           theHead,
           <Items key="TableBody" />,
         ])}
