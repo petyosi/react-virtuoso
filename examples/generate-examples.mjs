@@ -55,6 +55,7 @@ export default function App() {
 
 if (location.search.includes('r18') || navigator.acceptLanguage == 'de-DE') {
   ReactDOMClient.createRoot(document.getElementById('root')).render(<App />)
+  document.body.style.backgroundColor = 'beige'
 } else {
   ReactDOM.render(<App />, document.getElementById('root')) //.render(<App />)
 }

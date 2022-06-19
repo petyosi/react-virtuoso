@@ -28,6 +28,7 @@ export default function App() {
   return (
     <div>
       <button
+        data-test-id="toggle-last-two"
         onClick={() => {
           toggleSize(99)
           toggleSize(98)
