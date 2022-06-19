@@ -53,8 +53,11 @@ export default function App() {
   )
 }
 
-ReactDOM.render(<App />, document.getElementById('root')) //.render(<App />)
-// ReactDOMClient.createRoot(document.getElementById('root')).render(<App />)
+if (location.search.includes('r18') || navigator.acceptLanguage == 'de-DE') {
+  ReactDOMClient.createRoot(document.getElementById('root')).render(<App />)
+} else {
+  ReactDOM.render(<App />, document.getElementById('root')) //.render(<App />)
+}
 `
 
 const htmlCode = `

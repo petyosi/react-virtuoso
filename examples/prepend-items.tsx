@@ -15,30 +15,27 @@ const Item = ({ index }: { index: number }) => {
 const itemContent = (index: number) => <Item index={index} />
 
 const style = { height: 300 }
-const pageSize = 2
 export default function App() {
   const [count, setCount] = useState(100)
   const [firstItemIndex, setFirstItemIndex] = useState(2000)
+  const prepend = React.useCallback(
+    (count: number) => () => {
+      setCount((val) => val + count)
+      setFirstItemIndex((val) => val - count)
+    },
+    []
+  )
   return (
     <div>
-      <button
-        onClick={() => {
-          setCount((val) => val + pageSize)
-          setFirstItemIndex((val) => val - pageSize)
-        }}
-      >
-        Prepend Items
+      <button data-test-id="prepend-2" onClick={prepend(2)}>
+        Prepend 2 Items
       </button>
-
-      <button
-        onClick={() => {
-          setCount((val) => val - pageSize)
-          setFirstItemIndex((val) => val + pageSize)
-        }}
-      >
-        Shift Items
+      <button data-test-id="shift-2" onClick={prepend(-2)}>
+        Shift 2 Items
       </button>
-
+      <button data-test-id="prepend-200" onClick={prepend(200)}>
+        Prepend 200 Items
+      </button>
       <Virtuoso totalCount={count} firstItemIndex={firstItemIndex} itemContent={itemContent} style={style} />
     </div>
   )
