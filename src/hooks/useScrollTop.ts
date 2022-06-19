@@ -3,12 +3,9 @@ import * as u from '@virtuoso.dev/urx'
 import { correctItemSize } from '../utils/correctItemSize'
 import { ScrollContainerState } from '../interfaces'
 import { flushSync } from 'react-dom'
+import { approximatelyEqual } from '../utils/approximatelyEqual'
 
 export type ScrollerRef = Window | HTMLElement | null
-
-function approximatelyEqual(num1: number, num2: number) {
-  return Math.abs(num1 - num2) < 1.01
-}
 
 export default function useScrollTop(
   scrollContainerStateCallback: (state: ScrollContainerState) => void,

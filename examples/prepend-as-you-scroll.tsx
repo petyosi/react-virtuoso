@@ -1,7 +1,40 @@
 import * as React from 'react'
 import { Virtuoso } from '../src'
-import { generateUsers } from './example-data'
+import faker from 'faker'
 import { useState, useCallback } from 'react'
+
+const generated: Array<ReturnType<typeof user>> = []
+
+export function toggleBg(index: number) {
+  return index % 2 ? '#f5f5f5' : 'white'
+}
+
+export function user(index = 0) {
+  const firstName = faker.name.firstName()
+  const lastName = faker.name.lastName()
+
+  return {
+    index: index + 1,
+    bgColor: toggleBg(index),
+    name: `${firstName} ${lastName}`,
+    initials: `${firstName.substring(0, 1)}${lastName.substring(0, 1)}`,
+    jobTitle: faker.name.jobTitle(),
+    description: faker.lorem.sentence(10),
+    longText: faker.lorem.paragraphs(1),
+  }
+}
+
+export const getUser = (index: number) => {
+  if (!generated[index]) {
+    generated[index] = user(index)
+  }
+
+  return generated[index]
+}
+
+function generateUsers(length: number, startIndex = 0) {
+  return Array.from({ length }).map((_, i) => getUser(i + startIndex))
+}
 
 export default function App() {
   const START_INDEX = 10000

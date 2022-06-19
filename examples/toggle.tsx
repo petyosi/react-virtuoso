@@ -8,7 +8,7 @@ export default function App() {
     (index: number) => {
       return (
         <div>
-          <div>Item {index}</div>
+          <div style={{}}>Item {index}</div>
           <button style={{ height: !!toggle[index] ? 100 : 50 }} onClick={() => setToggle((map) => ({ ...map, [index]: !map[index] }))}>
             Toggle
           </button>
@@ -33,7 +33,7 @@ export default function App() {
           toggleSize(98)
         }}
       >
-        Add + shrink
+        Toggle 99 and 98
       </button>
 
       <button
@@ -43,7 +43,7 @@ export default function App() {
           toggleSize(90)
         }}
       >
-        Add + shrink
+        Toggle 99, 98 and 90
       </button>
 
       <button
@@ -52,9 +52,17 @@ export default function App() {
           toggleSize(90)
         }}
       >
-        Add + shrink
+        Add 2 + toggle 90
       </button>
 
+      <button
+        onClick={() => {
+          toggleSize(98)
+          toggleSize(97)
+        }}
+      >
+        Toggle 98 and 97
+      </button>
       <Virtuoso
         computeItemKey={(key: number) => `item-${key.toString()}`}
         totalCount={count}

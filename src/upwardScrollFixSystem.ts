@@ -19,7 +19,7 @@ type UpwardFixState = [number, ListItem<any>[], number, number]
 export const upwardScrollFixSystem = u.system(
   ([
     { scrollBy, scrollTop, deviation, scrollingInProgress },
-    { isScrolling, isAtBottom, atBottomState, scrollDirection, lastJumpDueToItemResize },
+    { isScrolling, isAtBottom, scrollDirection, lastJumpDueToItemResize },
     { listState },
     { beforeUnshiftWith, shiftWithOffset, sizes },
     { log },
@@ -51,12 +51,11 @@ export const upwardScrollFixSystem = u.system(
           [0, [], 0, 0] as UpwardFixState
         ),
         u.filter(([amount]) => amount !== 0),
-        u.withLatestFrom(scrollTop, scrollDirection, scrollingInProgress, log, isAtBottom, atBottomState),
+        u.withLatestFrom(scrollTop, scrollDirection, scrollingInProgress, isAtBottom, log),
         u.filter(([, scrollTop, scrollDirection, scrollingInProgress]) => {
-          // console.log({ amount, scrollTop, scrollDirection, scrollingInProgress, isAtBottom, atBottomState })
-          return !scrollingInProgress && scrollTop !== 0 && scrollDirection === UP // && (isAtBottom ? amount > 0 : true)
+          return !scrollingInProgress && scrollTop !== 0 && scrollDirection === UP
         }),
-        u.map(([[amount], , , , log]) => {
+        u.map(([[amount], , , , , log]) => {
           log('Upward scrolling compensation', { amount }, LogLevel.DEBUG)
           return amount
         })

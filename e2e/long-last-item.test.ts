@@ -8,7 +8,7 @@ test.describe('list with a long last item', () => {
   })
 
   test('starts from the last item', async ({ page }) => {
-    const paddingTop = await page.evaluate(() => {
+    const paddingTop: string = await page.evaluate(() => {
       const listContainer = document.querySelector('#test-root > div > div > div')
       return (listContainer as HTMLElement).style.paddingTop
     })

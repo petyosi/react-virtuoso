@@ -1,5 +1,6 @@
 import * as u from '@virtuoso.dev/urx'
 import { domIOSystem } from './domIOSystem'
+import { approximatelyEqual } from './utils/approximatelyEqual'
 
 export const UP = 'up' as const
 export const DOWN = 'down' as const
@@ -146,8 +147,8 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
       scrollContainerState,
       u.scan(
         (current, { scrollTop, scrollHeight, viewportHeight }) => {
-          if (current.scrollHeight !== scrollHeight) {
-            const atBottom = scrollTop === scrollHeight - viewportHeight
+          if (!approximatelyEqual(current.scrollHeight, scrollHeight)) {
+            const atBottom = scrollHeight - (scrollTop + viewportHeight) < 1
 
             if (current.scrollTop !== scrollTop && atBottom) {
               return {
