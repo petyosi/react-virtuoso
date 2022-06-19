@@ -7,7 +7,7 @@ export default function useWindowViewportRectRef(callback: (info: WindowViewport
 
   const calculateInfo = useCallback(
     (element: HTMLElement | null) => {
-      if (element === null) {
+      if (element === null || !element.offsetParent) {
         return
       }
       const rect = element.getBoundingClientRect()
