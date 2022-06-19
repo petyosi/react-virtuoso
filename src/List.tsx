@@ -272,6 +272,7 @@ export const scrollerStyle: CSSProperties = {
   overflowY: 'auto',
   position: 'relative',
   WebkitOverflowScrolling: 'touch',
+  willChange: 'transform',
 }
 
 export const viewportStyle: CSSProperties = {

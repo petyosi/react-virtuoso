@@ -21,7 +21,6 @@ describe('List', () => {
   afterEach(() => {
     // cleanup on exiting
     document.body.removeChild(container)
-    container = null
   })
 
   it('renders a probe item initially', () => {
@@ -134,7 +133,7 @@ describe('List', () => {
       scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
       listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
-      container.querySelector('button').dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      container.querySelector('button')!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     })
 
     expect(listParent.firstElementChild.textContent).toBe('Item 0')
@@ -169,7 +168,7 @@ describe('List', () => {
       scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
       listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
-      container.querySelector('button').dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      container.querySelector('button')!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     })
 
     expect(listParent.firstElementChild.textContent).toBe('Item 1')
