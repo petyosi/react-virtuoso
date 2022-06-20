@@ -101,11 +101,14 @@ const GridItems: FC = React.memo(function GridItems() {
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder')!
   const context = useEmitterValue('context')
   const itemDimensions = usePublisher('itemDimensions')
+  const gridGap = usePublisher('rowGap')
 
   const listRef = useSize((el) => {
     const scrollHeight = el.parentElement!.parentElement!.scrollHeight
     scrollHeightCallback(scrollHeight)
     const firstItem = el.firstChild as HTMLElement
+    const rowGap = parseInt(getComputedStyle(el).rowGap, 10)
+    gridGap(Number.isNaN(rowGap) ? 0 : rowGap)
     if (firstItem) {
       itemDimensions(firstItem.getBoundingClientRect())
     }
