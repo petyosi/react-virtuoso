@@ -121,7 +121,7 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
    *
    * The default implementation reads `el.getBoundingClientRect().height` and `el.getBoundingClientRect().width`.
    */
-  itemSize?: (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number
+  itemSize?: (el: HTMLElement, dimension: 'height' | 'width') => number
 
   /**
    * Can be used to improve performance if the rendered items are of known size.
