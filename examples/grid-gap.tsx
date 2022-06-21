@@ -36,6 +36,7 @@ const ListContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   row-gap: 20px;
+  column-gap: 20px;
 ` as GridComponents['List']
 
 export default function App() {

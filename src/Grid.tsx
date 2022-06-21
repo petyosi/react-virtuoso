@@ -102,7 +102,7 @@ const GridItems: FC = React.memo(function GridItems() {
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder')!
   const context = useEmitterValue('context')
   const itemDimensions = usePublisher('itemDimensions')
-  const gridGap = usePublisher('rowGap')
+  const gridGap = usePublisher('gap')
   const log = useEmitterValue('log')
 
   const listRef = useSize((el) => {
@@ -112,8 +112,10 @@ const GridItems: FC = React.memo(function GridItems() {
     if (firstItem) {
       itemDimensions(firstItem.getBoundingClientRect())
     }
-    const rowGap = resolveGapValue(getComputedStyle(el).rowGap, log)
-    gridGap(rowGap)
+    gridGap({
+      row: resolveGapValue('row-gap', getComputedStyle(el).rowGap, log),
+      column: resolveGapValue('column-gap', getComputedStyle(el).columnGap, log),
+    })
   })
 
   return createElement(
@@ -238,9 +240,9 @@ export { Grid }
 const Scroller = buildScroller({ usePublisher, useEmitterValue, useEmitter })
 const WindowScroller = buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })
 
-function resolveGapValue(value: string, log: Log) {
+function resolveGapValue(property: string, value: string, log: Log) {
   if (value !== 'normal' && !value.endsWith('px')) {
-    log('Gap was not resolved to pixel value correctly', value, LogLevel.WARN)
+    log(`${property} was not resolved to pixel value correctly`, value, LogLevel.WARN)
   }
   if (value === 'normal') {
     return 0
