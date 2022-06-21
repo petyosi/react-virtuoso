@@ -8,6 +8,7 @@ import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { GridComponents, GridComputeItemKey, GridItemContent, GridRootProps } from './interfaces'
 import { addDeprecatedAlias, buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle } from './List'
+import { Log, LogLevel } from './loggerSystem'
 
 const gridComponentPropsSystem = u.system(() => {
   const itemContent = u.statefulStream<GridItemContent<any>>((index) => `Item ${index}`)
@@ -102,16 +103,17 @@ const GridItems: FC = React.memo(function GridItems() {
   const context = useEmitterValue('context')
   const itemDimensions = usePublisher('itemDimensions')
   const gridGap = usePublisher('rowGap')
+  const log = useEmitterValue('log')
 
   const listRef = useSize((el) => {
     const scrollHeight = el.parentElement!.parentElement!.scrollHeight
     scrollHeightCallback(scrollHeight)
     const firstItem = el.firstChild as HTMLElement
-    const rowGap = parseInt(getComputedStyle(el).rowGap, 10)
-    gridGap(Number.isNaN(rowGap) ? 0 : rowGap)
     if (firstItem) {
       itemDimensions(firstItem.getBoundingClientRect())
     }
+    const rowGap = resolveGapValue(getComputedStyle(el).rowGap, log)
+    gridGap(rowGap)
   })
 
   return createElement(
@@ -235,3 +237,13 @@ export { Grid }
 
 const Scroller = buildScroller({ usePublisher, useEmitterValue, useEmitter })
 const WindowScroller = buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })
+
+function resolveGapValue(value: string, log: Log) {
+  if (value !== 'normal' && !value.endsWith('px')) {
+    log('Gap was not resolved to pixel value correctly', value, LogLevel.WARN)
+  }
+  if (value === 'normal') {
+    return 0
+  }
+  return parseInt(value, 10)
+}

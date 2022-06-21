@@ -7,6 +7,7 @@ import { scrollSeekSystem } from './scrollSeekSystem'
 import { IndexLocation, normalizeIndexLocation } from './scrollToIndexSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
+import { loggerSystem } from './loggerSystem'
 import { windowScrollerSystem } from './windowScrollerSystem'
 
 export interface ElementDimensions {
@@ -64,6 +65,7 @@ export const gridSystem = u.system(
     scrollSeek,
     { propsReady, didMount },
     { windowViewportRect, windowScrollTo, useWindowScroll, customScrollParent, windowScrollContainerState },
+    log,
   ]) => {
     const totalCount = u.statefulStream(0)
     const initialItemCount = u.statefulStream(0)
@@ -276,9 +278,10 @@ export const gridSystem = u.system(
       endReached,
       rangeChanged,
       propsReady,
+      ...log,
     }
   },
-  u.tup(sizeRangeSystem, domIOSystem, stateFlagsSystem, scrollSeekSystem, propsReadySystem, windowScrollerSystem)
+  u.tup(sizeRangeSystem, domIOSystem, stateFlagsSystem, scrollSeekSystem, propsReadySystem, windowScrollerSystem, loggerSystem)
 )
 
 function gridLayout(viewport: ElementDimensions, gap: number, item: ElementDimensions, items: GridItem[]): GridLayout {
