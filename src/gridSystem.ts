@@ -7,7 +7,13 @@ import { scrollSeekSystem } from './scrollSeekSystem'
 import { IndexLocation, normalizeIndexLocation } from './scrollToIndexSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
+import { loggerSystem } from './loggerSystem'
 import { windowScrollerSystem } from './windowScrollerSystem'
+
+export interface Gap {
+  row: number
+  column: number
+}
 
 export interface ElementDimensions {
   width: number
@@ -64,6 +70,7 @@ export const gridSystem = u.system(
     scrollSeek,
     { propsReady, didMount },
     { windowViewportRect, windowScrollTo, useWindowScroll, customScrollParent, windowScrollContainerState },
+    log,
   ]) => {
     const totalCount = u.statefulStream(0)
     const initialItemCount = u.statefulStream(0)
@@ -73,6 +80,7 @@ export const gridSystem = u.system(
     const scrollToIndex = u.stream<IndexLocation>()
     const scrollHeight = u.stream<number>()
     const deviation = u.statefulStream(0)
+    const gap = u.statefulStream<Gap>({ row: 0, column: 0 })
 
     u.connect(
       u.pipe(
@@ -99,10 +107,12 @@ export const gridSystem = u.system(
         u.combineLatest(
           u.duc(totalCount),
           visibleRange,
+          u.duc(gap),
           u.duc(itemDimensions, (prev, next) => prev && prev.width === next.width && prev.height === next.height)
         ),
         u.withLatestFrom(viewportDimensions),
-        u.map(([[totalCount, [startOffset, endOffset], item], viewport]) => {
+        u.map(([[totalCount, [startOffset, endOffset], gap, item], viewport]) => {
+          const { row: rowGap, column: columnGap } = gap
           const { height: itemHeight, width: itemWidth } = item
           const { width: viewportWidth } = viewport
 
@@ -114,16 +124,17 @@ export const gridSystem = u.system(
             return PROBE_GRID_STATE
           }
 
-          const perRow = itemsPerRow(viewportWidth, itemWidth)
+          const perRow = itemsPerRow(viewportWidth, itemWidth, columnGap)
 
-          let startIndex = perRow * floor(startOffset / itemHeight)
-          let endIndex = perRow * ceil(endOffset / itemHeight) - 1
+          let startIndex = perRow * floor((startOffset + rowGap) / (itemHeight + rowGap))
+          let endIndex = perRow * ceil((endOffset + rowGap) / (itemHeight + rowGap)) - 1
           endIndex = max(0, min(totalCount - 1, endIndex))
           startIndex = min(endIndex, max(0, startIndex))
 
           const items = buildItems(startIndex, endIndex)
-          const { top, bottom } = gridLayout(viewport, item, items)
-          const totalHeight = ceil(totalCount / perRow) * itemHeight
+          const { top, bottom } = gridLayout(viewport, gap, item, items)
+          const rowCount = ceil(totalCount / perRow)
+          const totalHeight = rowCount * itemHeight + (rowCount - 1) * rowGap
           const offsetBottom = totalHeight - bottom
 
           return { items, offsetTop: top, offsetBottom, top, bottom, itemHeight, itemWidth } as GridState
@@ -142,9 +153,9 @@ export const gridSystem = u.system(
 
     u.connect(
       u.pipe(
-        u.combineLatest(viewportDimensions, itemDimensions, gridState),
-        u.map(([viewportDimensions, item, { items }]) => {
-          const { top, bottom } = gridLayout(viewportDimensions, item, items)
+        u.combineLatest(viewportDimensions, itemDimensions, gridState, gap),
+        u.map(([viewportDimensions, item, { items }, gap]) => {
+          const { top, bottom } = gridLayout(viewportDimensions, gap, item, items)
 
           return [top, bottom] as [number, number]
         }),
@@ -195,8 +206,8 @@ export const gridSystem = u.system(
     u.connect(
       u.pipe(
         scrollToIndex,
-        u.withLatestFrom(viewportDimensions, itemDimensions, totalCount),
-        u.map(([location, viewport, item, totalCount]) => {
+        u.withLatestFrom(viewportDimensions, itemDimensions, totalCount, gap),
+        u.map(([location, viewport, item, totalCount, gap]) => {
           const normalLocation = normalizeIndexLocation(location) as FlatIndexLocationWithAlign
           const { align, behavior, offset } = normalLocation
           let index = normalLocation.index
@@ -206,7 +217,7 @@ export const gridSystem = u.system(
 
           index = max(0, index, min(totalCount - 1, index))
 
-          let top = itemTop(viewport, item, index)
+          let top = itemTop(viewport, gap, item, index)
 
           if (align === 'end') {
             top = round(top - viewport.height + item.height)
@@ -262,6 +273,7 @@ export const gridSystem = u.system(
       deviation,
       scrollContainerState,
       initialItemCount,
+      gap,
       ...scrollSeek,
 
       // output
@@ -272,27 +284,30 @@ export const gridSystem = u.system(
       endReached,
       rangeChanged,
       propsReady,
+      ...log,
     }
   },
-  u.tup(sizeRangeSystem, domIOSystem, stateFlagsSystem, scrollSeekSystem, propsReadySystem, windowScrollerSystem)
+  u.tup(sizeRangeSystem, domIOSystem, stateFlagsSystem, scrollSeekSystem, propsReadySystem, windowScrollerSystem, loggerSystem)
 )
 
-function gridLayout(viewport: ElementDimensions, item: ElementDimensions, items: GridItem[]): GridLayout {
+function gridLayout(viewport: ElementDimensions, gap: Gap, item: ElementDimensions, items: GridItem[]): GridLayout {
   const { height: itemHeight } = item
   if (itemHeight === undefined || items.length === 0) {
     return { top: 0, bottom: 0 }
   }
 
-  const top = itemTop(viewport, item, items[0].index)
-  const bottom = itemTop(viewport, item, items[items.length - 1].index) + itemHeight
+  const top = itemTop(viewport, gap, item, items[0].index)
+  const bottom = itemTop(viewport, gap, item, items[items.length - 1].index) + itemHeight
   return { top, bottom }
 }
 
-function itemTop(viewport: ElementDimensions, item: ElementDimensions, index: number) {
-  const perRow = itemsPerRow(viewport.width, item.width)
-  return floor(index / perRow) * item.height
+function itemTop(viewport: ElementDimensions, gap: Gap, item: ElementDimensions, index: number) {
+  const perRow = itemsPerRow(viewport.width, item.width, gap.column)
+  const rowCount = floor(index / perRow)
+  const top = rowCount * item.height + max(0, rowCount - 1) * gap.row
+  return top > 0 ? top + gap.row : top
 }
 
-function itemsPerRow(viewportWidth: number, itemWidth: number) {
-  return max(1, floor(viewportWidth / itemWidth))
+function itemsPerRow(viewportWidth: number, itemWidth: number, gap: number) {
+  return max(1, floor((viewportWidth + gap) / (itemWidth + gap)))
 }
