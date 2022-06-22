@@ -168,6 +168,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const trackItemSizes = useEmitterValue('trackItemSizes')
   const itemSize = useEmitterValue('itemSize')
   const log = useEmitterValue('log')
+  const listGap = usePublisher('gap')
 
   const { callbackRef } = useChangedListContentsSizes(
     sizeRanges,
@@ -175,6 +176,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
     trackItemSizes,
     showTopList ? u.noop : scrollContainerStateCallback,
     log,
+    listGap,
     customScrollParent
   )
 

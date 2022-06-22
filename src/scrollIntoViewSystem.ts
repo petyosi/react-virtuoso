@@ -8,19 +8,19 @@ import { listStateSystem } from './listStateSystem'
 import { ScrollIntoViewLocation } from './interfaces'
 
 export const scrollIntoViewSystem = u.system(
-  ([{ sizes, totalCount }, { scrollTop, viewportHeight, headerHeight, scrollingInProgress }, { scrollToIndex }]) => {
+  ([{ sizes, totalCount, gap }, { scrollTop, viewportHeight, headerHeight, scrollingInProgress }, { scrollToIndex }]) => {
     const scrollIntoView = u.stream<ScrollIntoViewLocation>()
 
     u.connect(
       u.pipe(
         scrollIntoView,
-        u.withLatestFrom(sizes, viewportHeight, totalCount, headerHeight, scrollTop),
-        u.map(([viewLocation, sizes, viewportHeight, totalCount, headerHeight, scrollTop]) => {
+        u.withLatestFrom(sizes, viewportHeight, totalCount, headerHeight, scrollTop, gap),
+        u.map(([viewLocation, sizes, viewportHeight, totalCount, headerHeight, scrollTop, gap]) => {
           const { done, behavior, ...rest } = viewLocation
           let location = null
           const actualIndex = originalIndexFromLocation(viewLocation, sizes, totalCount - 1)
 
-          const itemTop = offsetOf(actualIndex, sizes.offsetTree) + headerHeight
+          const itemTop = offsetOf(actualIndex, sizes.offsetTree, gap) + headerHeight
           if (itemTop < scrollTop) {
             location = { ...rest, behavior, align: 'start' }
           } else {

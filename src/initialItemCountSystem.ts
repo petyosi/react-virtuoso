@@ -4,7 +4,7 @@ import { sizeSystem } from './sizeSystem'
 import { propsReadySystem } from './propsReadySystem'
 
 export const initialItemCountSystem = u.system(
-  ([{ sizes, firstItemIndex, data }, { listState }, { didMount }]) => {
+  ([{ sizes, firstItemIndex, data, gap }, { listState }, { didMount }]) => {
     const initialItemCount = u.statefulStream(0)
 
     u.connect(
@@ -12,8 +12,8 @@ export const initialItemCountSystem = u.system(
         didMount,
         u.withLatestFrom(initialItemCount),
         u.filter(([, count]) => count !== 0),
-        u.withLatestFrom(sizes, firstItemIndex, data),
-        u.map(([[, count], sizes, firstItemIndex, data = []]) => {
+        u.withLatestFrom(sizes, firstItemIndex, gap, data),
+        u.map(([[, count], sizes, firstItemIndex, gap, data = []]) => {
           let includedGroupsCount = 0
           if (sizes.groupIndices.length > 0) {
             for (const index of sizes.groupIndices) {
@@ -25,7 +25,7 @@ export const initialItemCountSystem = u.system(
           }
           const adjustedCount = count + includedGroupsCount
           const items = Array.from({ length: adjustedCount }).map((_, index) => ({ index, size: 0, offset: 0, data: data[index] }))
-          return buildListState(items, [], adjustedCount, sizes, firstItemIndex)
+          return buildListState(items, [], adjustedCount, gap, sizes, firstItemIndex)
         })
       ),
       listState

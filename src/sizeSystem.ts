@@ -177,7 +177,7 @@ function createOffsetTree(prevOffsetTree: OffsetPoint[], syncStart: number, size
   }
 }
 
-export function sizeStateReducer(state: SizeState, [ranges, groupIndices, log]: [SizeRange[], number[], Log]) {
+export function sizeStateReducer(state: SizeState, [ranges, groupIndices, log, gap]: [SizeRange[], number[], Log, number]) {
   if (ranges.length > 0) {
     log('received item sizes', ranges, LogLevel.DEBUG)
   }
@@ -211,19 +211,21 @@ export function sizeStateReducer(state: SizeState, [ranges, groupIndices, log]: 
     lastOffset,
     lastSize,
     groupOffsetTree: groupIndices.reduce((tree, index) => {
-      return insert(tree, index, offsetOf(index, newOffsetTree))
+      return insert(tree, index, offsetOf(index, newOffsetTree, gap))
     }, newTree<number>()),
     groupIndices,
   }
 }
 
-export function offsetOf(index: number, tree: Array<OffsetPoint>) {
+export function offsetOf(index: number, tree: Array<OffsetPoint>, gap: number) {
   if (tree.length === 0) {
     return 0
   }
 
   const { offset, index: startIndex, size } = arrayBinarySearch.findClosestSmallerOrEqual(tree, index, indexComparator)
-  return size * (index - startIndex) + offset
+  const itemCount = index - startIndex
+  const top = size * itemCount + (itemCount - 1) * gap + offset
+  return top > 0 ? top + gap : top
 }
 
 export type FlatOrGroupedLocation = { index: number | 'LAST' } | { groupIndex: number }
@@ -286,10 +288,11 @@ export const sizeSystem = u.system(
     const defaultItemSize = u.statefulStream<OptionalNumber>(undefined)
     const itemSize = u.statefulStream<SizeFunction>((el, field) => correctItemSize(el, SIZE_MAP[field]))
     const data = u.statefulStream<Data>(undefined)
+    const gap = u.statefulStream(0)
     const initial = initialSizeState()
 
     const sizes = u.statefulStreamFromEmitter(
-      u.pipe(sizeRanges, u.withLatestFrom(groupIndices, log), u.scan(sizeStateReducer, initial), u.distinctUntilChanged()),
+      u.pipe(sizeRanges, u.withLatestFrom(groupIndices, log, gap), u.scan(sizeStateReducer, initial), u.distinctUntilChanged()),
       initial
     )
 
@@ -297,10 +300,10 @@ export const sizeSystem = u.system(
       u.pipe(
         groupIndices,
         u.filter((indexes) => indexes.length > 0),
-        u.withLatestFrom(sizes),
-        u.map(([groupIndices, sizes]) => {
+        u.withLatestFrom(sizes, gap),
+        u.map(([groupIndices, sizes, gap]) => {
           const groupOffsetTree = groupIndices.reduce((tree, index, idx) => {
-            return insert(tree, index, offsetOf(index, sizes.offsetTree) || idx)
+            return insert(tree, index, offsetOf(index, sizes.offsetTree, gap) || idx)
           }, newTree<number>())
 
           return {
@@ -438,10 +441,10 @@ export const sizeSystem = u.system(
     const shiftWithOffset = u.streamFromEmitter(
       u.pipe(
         shiftWith,
-        u.withLatestFrom(sizes),
-        u.map(([shiftWith, { offsetTree }]) => {
+        u.withLatestFrom(sizes, gap),
+        u.map(([shiftWith, { offsetTree }, gap]) => {
           const newFirstItemIndex = -shiftWith
-          return offsetOf(newFirstItemIndex, offsetTree)
+          return offsetOf(newFirstItemIndex, offsetTree, gap)
         })
       )
     )
@@ -482,6 +485,7 @@ export const sizeSystem = u.system(
       shiftWithOffset,
       beforeUnshiftWith,
       firstItemIndex,
+      gap,
 
       // output
       sizes,

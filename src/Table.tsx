@@ -86,6 +86,7 @@ export const Items = React.memo(function VirtuosoItems() {
     trackItemSizes,
     scrollContainerStateCallback,
     log,
+    undefined,
     customScrollParent
   )
 

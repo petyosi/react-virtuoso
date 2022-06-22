@@ -28,7 +28,7 @@ export function normalizeIndexLocation(location: IndexLocation) {
 
 export const scrollToIndexSystem = u.system(
   ([
-    { sizes, totalCount, listRefresh },
+    { sizes, totalCount, listRefresh, gap },
     { scrollingInProgress, viewportHeight, scrollTo, smoothScrollTargetReached, headerHeight, footerHeight },
     { log },
   ]) => {
@@ -61,14 +61,15 @@ export const scrollToIndexSystem = u.system(
       u.pipe(
         scrollToIndex,
         u.withLatestFrom(sizes, viewportHeight, totalCount, topListHeight, headerHeight, footerHeight, log),
-        u.map(([location, sizes, viewportHeight, totalCount, topListHeight, headerHeight, footerHeight, log]) => {
+        u.withLatestFrom(gap),
+        u.map(([[location, sizes, viewportHeight, totalCount, topListHeight, headerHeight, footerHeight, log], gap]) => {
           const normalLocation = normalizeIndexLocation(location)
           const { align, behavior, offset } = normalLocation
           const lastIndex = totalCount - 1
 
           const index = originalIndexFromLocation(normalLocation, sizes, lastIndex)
 
-          let top = offsetOf(index, sizes.offsetTree) + headerHeight
+          let top = offsetOf(index, sizes.offsetTree, gap) + headerHeight
           if (align === 'end') {
             top = top - viewportHeight + findMaxKeyValue(sizes.sizeTree, index)[1]!
             if (index === lastIndex) {

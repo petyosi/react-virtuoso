@@ -107,6 +107,7 @@ export function buildListState(
   items: Item<any>[],
   topItems: Item<any>[],
   totalCount: number,
+  gap: number,
   sizes: SizeState,
   firstItemIndex: number
 ): ListState {
@@ -120,7 +121,8 @@ export function buildListState(
     bottom = lastItem.offset + lastItem.size
   }
 
-  const total = lastOffset + (totalCount - lastIndex) * lastSize
+  const itemCount = totalCount - lastIndex
+  const total = lastOffset + itemCount * lastSize + (itemCount - 1) * gap
   const top = offsetTop
   const offsetBottom = total - bottom
 
@@ -139,7 +141,7 @@ export function buildListState(
 
 export const listStateSystem = u.system(
   ([
-    { sizes, totalCount, data, firstItemIndex },
+    { sizes, totalCount, data, firstItemIndex, gap },
     groupedListSystem,
     { visibleRange, listBoundary, topListHeight: rangeTopListHeight },
     { scrolledToInitialItem, initialTopMostItemIndex },
@@ -165,6 +167,7 @@ export const listStateSystem = u.system(
           scrolledToInitialItem,
           u.duc(topItemsIndexes),
           u.duc(firstItemIndex),
+          u.duc(gap),
           data
         ),
         u.filter(([mount, recalcInProgress]) => {
@@ -181,6 +184,7 @@ export const listStateSystem = u.system(
             scrolledToInitialItem,
             topItemsIndexes,
             firstItemIndex,
+            gap,
             data,
           ]) => {
             const sizesValue = sizes
@@ -195,6 +199,7 @@ export const listStateSystem = u.system(
                 probeItemSet(getInitialTopMostItemIndexNumber(initialTopMostItemIndex, totalCount), sizesValue, data),
                 [],
                 totalCount,
+                gap,
                 sizesValue,
                 firstItemIndex
               )
@@ -223,7 +228,7 @@ export const listStateSystem = u.system(
             // This is a condition to be evaluated past the probe check, do not merge
             // with the totalCount check above
             if (!scrolledToInitialItem) {
-              return buildListState([], topItems, totalCount, sizesValue, firstItemIndex)
+              return buildListState([], topItems, totalCount, gap, sizesValue, firstItemIndex)
             }
 
             const minStartIndex = topItemsIndexes.length > 0 ? topItemsIndexes[topItemsIndexes.length - 1] + 1 : 0
@@ -243,8 +248,9 @@ export const listStateSystem = u.system(
                 const size = point.size
 
                 if (point.offset < startOffset) {
-                  rangeStartIndex += Math.floor((startOffset - point.offset) / size)
-                  offset += (rangeStartIndex - range.start) * size
+                  rangeStartIndex += Math.floor((startOffset - point.offset + gap) / (size + gap))
+                  const itemCount = rangeStartIndex - range.start
+                  offset += itemCount * size + itemCount * gap
                 }
 
                 if (rangeStartIndex < minStartIndex) {
@@ -260,12 +266,12 @@ export const listStateSystem = u.system(
                   }
 
                   result.push({ index: i, size, offset: offset, data: data && data[i] })
-                  offset += size
+                  offset += size + gap
                 }
               }
             })
 
-            return buildListState(items, topItems, totalCount, sizesValue, firstItemIndex)
+            return buildListState(items, topItems, totalCount, gap, sizesValue, firstItemIndex)
           }
         ),
         //@ts-expect-error filter needs to be fixed
