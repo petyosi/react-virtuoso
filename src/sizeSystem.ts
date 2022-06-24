@@ -132,7 +132,7 @@ export function rangesWithinOffsets(
   return arrayToRanges(arrayBinarySearch.findRange(tree, startOffset, endOffset, offsetComparator), offsetPointParser)
 }
 
-function createOffsetTree(prevOffsetTree: OffsetPoint[], syncStart: number, sizeTree: AANode<number>) {
+function createOffsetTree(prevOffsetTree: OffsetPoint[], syncStart: number, sizeTree: AANode<number>, gap: number) {
   let offsetTree = prevOffsetTree
   let prevIndex = 0
   let prevSize = 0
@@ -158,7 +158,8 @@ function createOffsetTree(prevOffsetTree: OffsetPoint[], syncStart: number, size
   }
 
   for (const { start: startIndex, value } of rangesWithin(sizeTree, syncStart, Infinity)) {
-    const aOffset = (startIndex - prevIndex) * prevSize + prevOffset
+    const indexOffset = startIndex - prevIndex
+    const aOffset = indexOffset * prevSize + prevOffset + indexOffset * gap
     offsetTree.push({
       offset: aOffset,
       size: value,
@@ -202,7 +203,7 @@ export function sizeStateReducer(state: SizeState, [ranges, groupIndices, log, g
     return state
   }
 
-  const { offsetTree: newOffsetTree, lastIndex, lastSize, lastOffset } = createOffsetTree(state.offsetTree, syncStart, newSizeTree)
+  const { offsetTree: newOffsetTree, lastIndex, lastSize, lastOffset } = createOffsetTree(state.offsetTree, syncStart, newSizeTree, gap)
 
   return {
     sizeTree: newSizeTree,
@@ -452,8 +453,8 @@ export const sizeSystem = u.system(
     u.connect(
       u.pipe(
         shiftWith,
-        u.withLatestFrom(sizes),
-        u.map(([shiftWith, sizes]) => {
+        u.withLatestFrom(sizes, gap),
+        u.map(([shiftWith, sizes, gap]) => {
           if (sizes.groupIndices.length > 0) {
             throw new Error('Virtuoso: shifting items does not work with groups')
           }
@@ -465,7 +466,7 @@ export const sizeSystem = u.system(
           return {
             ...sizes,
             sizeTree: newSizeTree,
-            ...createOffsetTree(sizes.offsetTree, 0, newSizeTree),
+            ...createOffsetTree(sizes.offsetTree, 0, newSizeTree, gap),
           }
         })
       ),
