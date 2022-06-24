@@ -6,20 +6,6 @@ export default function App() {
 
   return (
     <>
-      <div>
-        <button id="start-30" onClick={() => ref.current!.scrollToIndex({ index: 30, align: 'start' })}>
-          Start 30
-        </button>
-        <button id="offset-30" onClick={() => ref.current!.scrollToIndex({ index: 30, offset: 5 })}>
-          Offset 30 by 5px
-        </button>
-        <button id="center-50" onClick={() => ref.current!.scrollToIndex({ index: 50, align: 'center' })}>
-          Center 50
-        </button>
-        <button id="end-99" onClick={() => ref.current!.scrollToIndex({ index: 99, align: 'end' })}>
-          End 99
-        </button>
-      </div>
       <Virtuoso
         ref={ref}
         computeItemKey={(key) => `item-${key}`}
@@ -39,6 +25,20 @@ export default function App() {
         itemContent={(index) => <div style={{ height: 30 }}>Item {index}</div>}
         style={{ height: 300 }}
       />
+      <div>
+        <button id="start-30" onClick={() => ref.current!.scrollToIndex({ index: 30, align: 'start' })}>
+          Start 30
+        </button>
+        <button id="offset-30" onClick={() => ref.current!.scrollToIndex({ index: 30, offset: 5 })}>
+          Offset 30 by 5px
+        </button>
+        <button id="center-50" onClick={() => ref.current!.scrollToIndex({ index: 50, align: 'center' })}>
+          Center 50
+        </button>
+        <button id="end-99" onClick={() => ref.current!.scrollToIndex({ index: 99, align: 'end' })}>
+          End 99
+        </button>
+      </div>
     </>
   )
 }
