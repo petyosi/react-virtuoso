@@ -192,7 +192,7 @@ In a nutshell, increasing the `overscan` causes less frequent re-renders,
 but makes each re-render more expensive (because more items will get replaced).
 
 Loading images and displaying complex components while scrolling can cause jank.
-To fix that, you can hook to the `scrollingStateChange` callback and replace
+To fix that, you can hook to the `isScrolling` callback and replace
 the problematic content in the item with a simplified one.
 Check the [scroll handling example](/scroll-handling) for a possible implementation.
 
