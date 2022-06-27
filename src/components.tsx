@@ -583,6 +583,10 @@ export interface VirtuosoHandle {
    * Scrolls the component with the specified amount. See [ScrollToOptions (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/ScrollToOptions)
    */
   scrollBy(location: ScrollToOptions): void
+  /**
+   * Use this with combination with follow output if you have images loading in the list. Listen to the image loading and call the method.
+   */
+  autoscrollToBottom(): void
 }
 
 export interface GroupedVirtuosoHandle {
@@ -590,6 +594,7 @@ export interface GroupedVirtuosoHandle {
   scrollIntoView(location: number | ScrollIntoViewLocation): void
   scrollTo(location: ScrollToOptions): void
   scrollBy(location: ScrollToOptions): void
+  autoscrollToBottom(): void
 }
 
 export interface VirtuosoGridHandle {

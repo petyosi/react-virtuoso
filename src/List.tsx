@@ -512,6 +512,7 @@ export const {
       scrollTo: 'scrollTo',
       scrollBy: 'scrollBy',
       adjustForPrependedItems: 'adjustForPrependedItems',
+      autoscrollToBottom: 'autoscrollToBottom',
     },
     events: {
       isScrolling: 'isScrolling',
