@@ -62,6 +62,10 @@ const { round, ceil, floor, min, max } = Math
 function buildItems(startIndex: number, endIndex: number) {
   return Array.from({ length: endIndex - startIndex + 1 }).map((_, i) => ({ index: i + startIndex } as GridItem))
 }
+
+function gapComparator(prev: Gap, next: Gap) {
+  return prev && prev.column === next.column && prev.row === next.row
+}
 export const gridSystem = u.system(
   ([
     { overscan, visibleRange, listBoundary },
@@ -107,7 +111,7 @@ export const gridSystem = u.system(
         u.combineLatest(
           u.duc(totalCount),
           visibleRange,
-          u.duc(gap),
+          u.duc(gap, gapComparator),
           u.duc(itemDimensions, (prev, next) => prev && prev.width === next.width && prev.height === next.height)
         ),
         u.withLatestFrom(viewportDimensions),
