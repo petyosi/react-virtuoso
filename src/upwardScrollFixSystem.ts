@@ -21,7 +21,7 @@ export const upwardScrollFixSystem = u.system(
     { scrollBy, scrollTop, deviation, scrollingInProgress },
     { isScrolling, isAtBottom, scrollDirection, lastJumpDueToItemResize },
     { listState },
-    { beforeUnshiftWith, shiftWithOffset, sizes },
+    { beforeUnshiftWith, shiftWithOffset, sizes, gap },
     { log },
     { recalcInProgress },
   ]) => {
@@ -105,8 +105,8 @@ export const upwardScrollFixSystem = u.system(
     u.subscribe(
       u.pipe(
         beforeUnshiftWith,
-        u.withLatestFrom(sizes),
-        u.map(([offset, { lastSize }]) => offset * lastSize)
+        u.withLatestFrom(sizes, gap),
+        u.map(([offset, { lastSize }, gap]) => offset * lastSize + offset * gap)
       ),
       (offset) => {
         u.publish(deviation, offset)

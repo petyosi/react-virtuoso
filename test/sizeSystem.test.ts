@@ -14,7 +14,7 @@ describe('size state reducer', () => {
   describe('insert', () => {
     it('sets the initial insert as a baseline', () => {
       const state = initialSizeState()
-      const { sizeTree, offsetTree } = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 0, size: 1 }], [], mockLogger])
+      const { sizeTree, offsetTree } = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 0, size: 1 }], [], mockLogger, 0])
       expect(toKV(sizeTree)).toEqual([[0, 1]])
       expect(offsetTree).toEqual([{ offset: 0, index: 0, size: 1 }])
     })
@@ -29,6 +29,7 @@ describe('size state reducer', () => {
         ],
         [],
         mockLogger,
+        0,
       ])
       expect(toKV(sizeTree)).toEqual([
         [0, 1],
@@ -56,6 +57,7 @@ describe('size state reducer', () => {
         ],
         [],
         mockLogger,
+        0,
       ])
 
       expect(toKV(sizeTree)).toEqual([[0, 1]])
@@ -71,6 +73,7 @@ describe('size state reducer', () => {
         ],
         [],
         mockLogger,
+        0,
       ])
 
       expect(toKV(sizeTree)).toEqual([
@@ -94,9 +97,10 @@ describe('size state reducer', () => {
         ],
         [],
         mockLogger,
+        0,
       ])
 
-      state = sizeStateReducer(state, [[{ startIndex: 5, endIndex: 9, size: 2 }], [], mockLogger])
+      state = sizeStateReducer(state, [[{ startIndex: 5, endIndex: 9, size: 2 }], [], mockLogger, 0])
 
       const { sizeTree, offsetTree } = state
 
@@ -124,6 +128,7 @@ describe('size state reducer', () => {
         ],
         [],
         mockLogger,
+        0,
       ])
 
       expect(toKV(sizeTree)).toEqual([
@@ -151,6 +156,7 @@ describe('size state reducer', () => {
       ],
       [],
       mockLogger,
+      0,
     ])
 
     expect(toKV(sizeTree)).toEqual([
@@ -180,6 +186,7 @@ describe('size state reducer', () => {
       ],
       [],
       mockLogger,
+      0,
     ])
 
     expect(toKV(sizeTree)).toEqual([[0, 1]])
@@ -189,11 +196,11 @@ describe('size state reducer', () => {
   it('handles subsequent insertions correctly (bug)', () => {
     const state = initialSizeState()
 
-    let nextState = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 0, size: 158 }], [], mockLogger])
+    let nextState = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 0, size: 158 }], [], mockLogger, 0])
 
     expect(ranges(nextState.sizeTree)).toEqual([{ start: 0, end: Infinity, value: 158 }])
 
-    nextState = sizeStateReducer(nextState, [[{ startIndex: 1, endIndex: 1, size: 206 }], [], mockLogger])
+    nextState = sizeStateReducer(nextState, [[{ startIndex: 1, endIndex: 1, size: 206 }], [], mockLogger, 0])
 
     expect(ranges(nextState.sizeTree)).toEqual([
       { start: 0, end: 0, value: 158 },
@@ -201,7 +208,7 @@ describe('size state reducer', () => {
       { start: 2, end: Infinity, value: 158 },
     ])
 
-    nextState = sizeStateReducer(nextState, [[{ startIndex: 3, endIndex: 3, size: 182 }], [], mockLogger])
+    nextState = sizeStateReducer(nextState, [[{ startIndex: 3, endIndex: 3, size: 182 }], [], mockLogger, 0])
 
     expect(ranges(nextState.sizeTree)).toEqual([
       { start: 0, end: 0, value: 158 },
@@ -221,6 +228,7 @@ describe('size state reducer', () => {
       ],
       [],
       mockLogger,
+      0,
     ])
 
     expect(ranges(nextState.sizeTree)).toEqual([
@@ -248,6 +256,7 @@ describe('size state reducer', () => {
       ],
       [],
       mockLogger,
+      0,
     ])
 
     expect(ranges(sizeTree)).toEqual([
@@ -264,25 +273,25 @@ describe('size state reducer', () => {
   it('finds the offset of a given index (simple tree)', () => {
     let state = initialSizeState()
 
-    state = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 0, size: 30 }], [], mockLogger])
+    state = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 0, size: 30 }], [], mockLogger, 0])
 
-    expect(offsetOf(10, state.offsetTree)).toBe(300)
+    expect(offsetOf(10, state.offsetTree, 0)).toBe(300)
   })
 
   it('finds the offset of a given index (complex tree)', () => {
     let state = initialSizeState()
 
-    state = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 0, size: 30 }], [], mockLogger])
-    state = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 4, size: 20 }], [], mockLogger])
+    state = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 0, size: 30 }], [], mockLogger, 0])
+    state = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 4, size: 20 }], [], mockLogger, 0])
 
-    expect(offsetOf(10, state.offsetTree)).toBe(250)
+    expect(offsetOf(10, state.offsetTree, 0)).toBe(250)
   })
 
   it('builds correct index tree', () => {
     let state = initialSizeState()
 
     for (let index = 0; index < 5; index++) {
-      state = sizeStateReducer(state, [[{ startIndex: index, endIndex: index, size: index % 2 ? 50 : 30 }], [], mockLogger])
+      state = sizeStateReducer(state, [[{ startIndex: index, endIndex: index, size: index % 2 ? 50 : 30 }], [], mockLogger, 0])
     }
 
     const { sizeTree, offsetTree } = state
@@ -295,7 +304,7 @@ describe('size state reducer', () => {
     let state = initialSizeState()
 
     for (let index = 4; index >= 0; index--) {
-      state = sizeStateReducer(state, [[{ startIndex: index, endIndex: index, size: index % 2 ? 50 : 30 }], [], mockLogger])
+      state = sizeStateReducer(state, [[{ startIndex: index, endIndex: index, size: index % 2 ? 50 : 30 }], [], mockLogger, 0])
     }
 
     const { offsetTree, sizeTree } = state
@@ -307,7 +316,7 @@ describe('size state reducer', () => {
   describe('group indices', () => {
     it('merges groups and items if a single size is reported', () => {
       let state = initialSizeState()
-      state = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 1, size: 30 }], [0, 6, 11], mockLogger])
+      state = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 1, size: 30 }], [0, 6, 11], mockLogger, 0])
       expect(toKV(state.sizeTree)).toEqual([[0, 30]])
 
       expect(state.offsetTree).toEqual([{ index: 0, size: 30, offset: 0 }])
@@ -322,6 +331,7 @@ describe('size state reducer', () => {
         ],
         [0, 6, 11],
         mockLogger,
+        0,
       ])
       expect(toKV(state.sizeTree)).toEqual([
         [0, 30],

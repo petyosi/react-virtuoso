@@ -8,6 +8,7 @@ export default function useChangedListContentsSizes(
   enabled: boolean,
   scrollContainerStateCallback: (state: ScrollContainerState) => void,
   log: Log,
+  gap?: (gap: number) => void,
   customScrollParent?: HTMLElement
 ) {
   return useSizeWithElRef((el: HTMLElement) => {
@@ -30,6 +31,8 @@ export default function useChangedListContentsSizes(
       scrollHeight: (customScrollParent ?? scrollableElement).scrollHeight,
       viewportHeight: (customScrollParent ?? scrollableElement).offsetHeight,
     })
+
+    gap?.(resolveGapValue('row-gap', getComputedStyle(el).rowGap, log))
 
     if (ranges !== null) {
       callback(ranges)
@@ -74,4 +77,14 @@ function getChangedChildSizes(children: HTMLCollection, itemSize: SizeFunction, 
   }
 
   return results
+}
+
+function resolveGapValue(property: string, value: string, log: Log) {
+  if (value !== 'normal' && !value.endsWith('px')) {
+    log(`${property} was not resolved to pixel value correctly`, value, LogLevel.WARN)
+  }
+  if (value === 'normal') {
+    return 0
+  }
+  return parseInt(value, 10)
 }
