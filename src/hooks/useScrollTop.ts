@@ -22,10 +22,10 @@ export default function useScrollTop(
   const handler = useCallback(
     (ev: Event) => {
       const el = ev.target as HTMLElement
-      const scrollTop =
-        (el as any) === window || (el as any) === document ? window.pageYOffset || document.documentElement.scrollTop : el.scrollTop
-      const scrollHeight = (el as any) === window ? document.documentElement.scrollHeight : el.scrollHeight
-      const viewportHeight = (el as any) === window ? window.innerHeight : el.offsetHeight
+      const windowScroll = (el as any) === window || (el as any) === document
+      const scrollTop = windowScroll ? window.pageYOffset || document.documentElement.scrollTop : el.scrollTop
+      const scrollHeight = windowScroll ? document.documentElement.scrollHeight : el.scrollHeight
+      const viewportHeight = windowScroll ? window.innerHeight : el.offsetHeight
 
       const call = () => {
         scrollContainerStateCallback({
@@ -43,7 +43,7 @@ export default function useScrollTop(
       shouldFlushSync.current = false
 
       if (scrollTopTarget.current !== null) {
-        if (scrollTop === scrollTopTarget.current || scrollTop <= 0 || scrollTop === el.scrollHeight - correctItemSize(el, 'height')) {
+        if (scrollTop === scrollTopTarget.current || scrollTop <= 0 || scrollTop === scrollHeight - viewportHeight) {
           scrollTopTarget.current = null
           smoothScrollTargetReached(true)
           if (timeoutRef.current) {
