@@ -233,11 +233,15 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   scrollerRef?: (ref: HTMLElement | Window | null) => any
 
   /**
+   * *The property accepts pixel values.*
+   *
    * By default `0`. Redefine to change how much away from the top the scroller can be before the list is not considered not at top.
    */
   atTopThreshold?: number
 
   /**
+   * *The property accepts pixel values.*
+   *
    * By default `4`. Redefine to change how much away from the bottom the scroller can be before the list is not considered not at bottom.
    */
   atBottomThreshold?: number
