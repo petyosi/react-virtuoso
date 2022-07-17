@@ -345,10 +345,15 @@ export const listStateSystem = u.system(
         u.filter(({ items }) => items.length > 0),
         u.map(({ items }) => {
           let startIndex = 0
-          while (items[startIndex].type === 'group') startIndex++
-
           let endIndex = items.length - 1
-          while (items[endIndex].type === 'group') endIndex--
+
+          while (items[startIndex].type === 'group' && startIndex < endIndex) {
+            startIndex++
+          }
+
+          while (items[endIndex].type === 'group' && endIndex > startIndex) {
+            endIndex--
+          }
 
           return {
             startIndex: items[startIndex].index,
