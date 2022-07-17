@@ -344,9 +344,20 @@ export const listStateSystem = u.system(
         listState,
         u.filter(({ items }) => items.length > 0),
         u.map(({ items }) => {
+          let startIndex = 0
+          let endIndex = items.length - 1
+
+          while (items[startIndex].type === 'group' && startIndex < endIndex) {
+            startIndex++
+          }
+
+          while (items[endIndex].type === 'group' && endIndex > startIndex) {
+            endIndex--
+          }
+
           return {
-            startIndex: items[0].index,
-            endIndex: items[items.length - 1].index,
+            startIndex: items[startIndex].index,
+            endIndex: items[endIndex].index,
           } as ListRange
         }),
         u.distinctUntilChanged(rangeComparator)
