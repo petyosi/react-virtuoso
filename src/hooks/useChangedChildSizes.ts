@@ -19,17 +19,31 @@ export default function useChangedListContentsSizes(
       scrollableElement = scrollableElement.parentElement!
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const windowScrolling = (scrollableElement.firstElementChild! as HTMLDivElement).dataset['viewportType']! === 'window'
+
     const scrollTop = customScrollParent
       ? customScrollParent.scrollTop
-      : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      (scrollableElement.firstElementChild! as HTMLDivElement).dataset['viewportType']! === 'window'
+      : windowScrolling
       ? window.pageYOffset || document.documentElement.scrollTop
       : scrollableElement.scrollTop
 
+    const scrollHeight = customScrollParent
+      ? customScrollParent.scrollHeight
+      : windowScrolling
+      ? document.documentElement.scrollHeight
+      : scrollableElement.scrollHeight
+
+    const viewportHeight = customScrollParent
+      ? customScrollParent.offsetHeight
+      : windowScrolling
+      ? window.innerHeight
+      : scrollableElement.offsetHeight
+
     scrollContainerStateCallback({
       scrollTop: Math.max(scrollTop, 0),
-      scrollHeight: (customScrollParent ?? scrollableElement).scrollHeight,
-      viewportHeight: (customScrollParent ?? scrollableElement).offsetHeight,
+      scrollHeight,
+      viewportHeight,
     })
 
     gap?.(resolveGapValue('row-gap', getComputedStyle(el).rowGap, log))
