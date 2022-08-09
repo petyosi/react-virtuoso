@@ -12,7 +12,7 @@ export default function useChangedListContentsSizes(
   customScrollParent?: HTMLElement
 ) {
   return useSizeWithElRef((el: HTMLElement) => {
-    const ranges = getChangedChildSizes(el.children, itemSize, 'offsetHeight', log)
+    const ranges = getChangedChildSizes(el.children, itemSize, 'height', log)
     let scrollableElement = el.parentElement!
 
     while (!scrollableElement.dataset['virtuosoScroller']) {
@@ -54,7 +54,7 @@ export default function useChangedListContentsSizes(
   }, enabled)
 }
 
-function getChangedChildSizes(children: HTMLCollection, itemSize: SizeFunction, field: 'offsetHeight' | 'offsetWidth', log: Log) {
+function getChangedChildSizes(children: HTMLCollection, itemSize: SizeFunction, field: 'height' | 'width', log: Log) {
   const length = children.length
 
   if (length === 0) {
