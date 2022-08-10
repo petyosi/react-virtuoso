@@ -307,6 +307,7 @@ export interface WindowViewportInfo {
 }
 
 export interface ScrollIntoViewLocationOptions {
+  align?: 'start' | 'center' | 'end'
   behavior?: 'auto' | 'smooth'
   done?: () => void
 }
