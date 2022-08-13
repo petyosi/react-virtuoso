@@ -93,12 +93,12 @@ function getChangedChildSizes(children: HTMLCollection, itemSize: SizeFunction, 
   return results
 }
 
-function resolveGapValue(property: string, value: string, log: Log) {
-  if (value !== 'normal' && !value.endsWith('px')) {
+function resolveGapValue(property: string, value: string | undefined, log: Log) {
+  if (value !== 'normal' && !value?.endsWith('px')) {
     log(`${property} was not resolved to pixel value correctly`, value, LogLevel.WARN)
   }
   if (value === 'normal') {
     return 0
   }
-  return parseInt(value, 10)
+  return parseInt(value ?? '0', 10)
 }
