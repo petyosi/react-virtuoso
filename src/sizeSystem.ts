@@ -4,6 +4,7 @@ import * as arrayBinarySearch from './utils/binaryArraySearch'
 import { correctItemSize } from './utils/correctItemSize'
 import { loggerSystem, Log, LogLevel } from './loggerSystem'
 import { recalcSystem } from './recalcSystem'
+import { SizeFunction } from './interfaces'
 
 export interface SizeRange {
   startIndex: number
@@ -272,9 +273,6 @@ const SIZE_MAP = {
   offsetHeight: 'height',
   offsetWidth: 'width',
 } as const
-
-/** Calculates the height of `el`, which will be the `Item` element in the DOM. */
-export type SizeFunction = (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number
 
 export const sizeSystem = u.system(
   ([{ log }, { recalcInProgress }]) => {

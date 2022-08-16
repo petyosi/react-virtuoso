@@ -1,7 +1,7 @@
 import { Log, LogLevel } from '../loggerSystem'
-import { SizeFunction, SizeRange } from '../sizeSystem'
+import { SizeRange } from '../sizeSystem'
 import { useSizeWithElRef } from './useSize'
-import { ScrollContainerState } from '../interfaces'
+import { SizeFunction, ScrollContainerState } from '../interfaces'
 export default function useChangedListContentsSizes(
   callback: (ranges: SizeRange[]) => void,
   itemSize: SizeFunction,
