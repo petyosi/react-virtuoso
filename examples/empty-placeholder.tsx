@@ -10,12 +10,16 @@ export default function App() {
       <Virtuoso
         computeItemKey={(key) => `item-${key}`}
         components={{
-          EmptyPlaceholder: () => <div>Nothing to See here!</div>,
+          EmptyPlaceholder: () => {
+            console.log('empty placeholder rendered')
+            return <div>Nothing to See here!</div>
+          },
         }}
         totalCount={totalCount}
         itemContent={(index) => <div style={{ height: 30 }}>Item {index}</div>}
         style={{ height: 300 }}
       />
+      <p>Empty placeholder should not be flashed in default rendering. check the console for logs.</p>
     </div>
   )
 }

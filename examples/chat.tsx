@@ -71,10 +71,11 @@ function ChatList({ userId, messages = [], onSend, onReceive, placeholder }: Cha
   }
 
   const row = React.useMemo(
-    () => (i: number, { message, id }: { message: string; id: string }) => {
-      const fromUser = id === userId
-      return <Bubble key={i} fromUser={fromUser} text={message} />
-    },
+    () =>
+      (i: number, { message, id }: { message: string; id: string }) => {
+        const fromUser = id === userId
+        return <Bubble key={i} fromUser={fromUser} text={message} />
+      },
     [userId]
   )
 
@@ -127,7 +128,7 @@ function ChatList({ userId, messages = [], onSend, onReceive, placeholder }: Cha
 }
 
 const data = Array.from({ length: 130 }, (_) => ({
-  id: faker.random.number({ min: 1, max: 2 }).toString(),
+  id: faker.datatype.number({ min: 1, max: 2 }).toString(),
   message: faker.lorem.sentences(),
 }))
 

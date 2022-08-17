@@ -191,7 +191,7 @@ export const listStateSystem = u.system(
             const { sizeTree, offsetTree } = sizesValue
 
             if (totalCount === 0 || (startOffset === 0 && endOffset === 0)) {
-              return EMPTY_LIST_STATE
+              return { ...EMPTY_LIST_STATE, totalCount }
             }
 
             if (empty(sizeTree)) {
