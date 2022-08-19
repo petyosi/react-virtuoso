@@ -32,7 +32,7 @@ export type GroupProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children'
 }
 
 export type TopItemListProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children'>
-export type TableProps = Pick<ComponentPropsWithRef<'table'>, 'style'>
+export type TableProps = Pick<ComponentPropsWithRef<'table'>, 'style' | 'children'>
 
 /**
  * Passed to the Components.TableBody custom component
