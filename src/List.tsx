@@ -11,6 +11,7 @@ import { listSystem } from './listSystem'
 import { positionStickyCssValue } from './utils/positionStickyCssValue'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { correctItemSize } from './utils/correctItemSize'
+import { VirtuosoContext } from './utils/context'
 import { ScrollerProps } from '.'
 
 export function identity<T>(value: T) {
@@ -153,7 +154,8 @@ const GROUP_STYLE = { position: positionStickyCssValue(), zIndex: 1, overflowAnc
 const ITEM_STYLE = { overflowAnchor: 'none' } as const
 
 export const Items = React.memo(function VirtuosoItems({ showTopList = false }: { showTopList?: boolean }) {
-  const listState = useEmitterValue('listState')
+  const ctx = React.useContext(VirtuosoContext)
+  const computedListState = useEmitterValue('listState')
 
   const sizeRanges = usePublisher('sizeRanges')
   const useWindowScroll = useEmitterValue('useWindowScroll')
@@ -169,6 +171,13 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const itemSize = useEmitterValue('itemSize')
   const log = useEmitterValue('log')
   const listGap = usePublisher('gap')
+
+  const listState = ctx
+    ? {
+        ...computedListState,
+        ...ctx.listState,
+      }
+    : computedListState
 
   const { callbackRef } = useChangedListContentsSizes(
     sizeRanges,
