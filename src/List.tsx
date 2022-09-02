@@ -1,7 +1,7 @@
 import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
 import * as u from '@virtuoso.dev/urx'
 import * as React from 'react'
-import { ComponentType, createElement, CSSProperties, FC, PropsWithChildren } from 'react'
+import { ComponentType, createElement, CSSProperties, FC, PropsWithChildren, useContext } from 'react'
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import useScrollTop from './hooks/useScrollTop'
@@ -11,7 +11,7 @@ import { listSystem } from './listSystem'
 import { positionStickyCssValue } from './utils/positionStickyCssValue'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { correctItemSize } from './utils/correctItemSize'
-import { VirtuosoContext } from './utils/context'
+import { VirtuosoMockContext } from './utils/context'
 import { ScrollerProps } from '.'
 
 export function identity<T>(value: T) {
@@ -154,8 +154,7 @@ const GROUP_STYLE = { position: positionStickyCssValue(), zIndex: 1, overflowAnc
 const ITEM_STYLE = { overflowAnchor: 'none' } as const
 
 export const Items = React.memo(function VirtuosoItems({ showTopList = false }: { showTopList?: boolean }) {
-  const ctx = React.useContext(VirtuosoContext)
-  const computedListState = useEmitterValue('listState')
+  const listState = useEmitterValue('listState')
 
   const sizeRanges = usePublisher('sizeRanges')
   const useWindowScroll = useEmitterValue('useWindowScroll')
@@ -171,13 +170,6 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const itemSize = useEmitterValue('itemSize')
   const log = useEmitterValue('log')
   const listGap = usePublisher('gap')
-
-  const listState = ctx
-    ? {
-        ...computedListState,
-        ...ctx.listState,
-      }
-    : computedListState
 
   const { callbackRef } = useChangedListContentsSizes(
     sizeRanges,
@@ -404,8 +396,17 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
 }
 
 const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
+  const ctx = useContext(VirtuosoMockContext)
   const viewportHeight = usePublisher('viewportHeight')
+  const fixedItemHeight = usePublisher('fixedItemHeight')
   const viewportRef = useSize(u.compose(viewportHeight, (el) => correctItemSize(el, 'height')))
+
+  React.useEffect(() => {
+    if (ctx) {
+      viewportHeight(ctx.viewportHeight)
+      fixedItemHeight(ctx.itemHeight)
+    }
+  }, [ctx, viewportHeight, fixedItemHeight])
 
   return (
     <div style={viewportStyle} ref={viewportRef} data-viewport-type="element">
