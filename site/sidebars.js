@@ -26,6 +26,7 @@ module.exports = {
       'window-scrolling',
       'keyboard-navigation',
       'react-beautiful-dnd-window-scroller',
+      'mocking-in-tests',
     ],
     'Customize Markup': ['custom-scroll-container', 'customize-structure'],
     'API Reference': ['virtuoso-api-reference', 'virtuoso-grid-api-reference', 'table-virtuoso-api-reference'],
