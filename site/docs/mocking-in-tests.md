@@ -22,7 +22,7 @@ describe('Virtuoso', () => {
     { id: '3', value: 'baz' },
   ]
 
-  it('correctly renders items', async () => {
+  it('correctly renders items', () => {
     const { container } = render(<Virtuoso data={data} />, {
       wrapper: ({ children }) => (
         <VirtuosoMockContext.Provider value={{ viewportHeight: 300, itemHeight: 100 }}>{children}</VirtuosoMockContext.Provider>

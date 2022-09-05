@@ -182,9 +182,18 @@ const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
 }
 
 const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
+  const ctx = useContext(VirtuosoMockContext)
   const windowViewportRect = usePublisher('windowViewportRect')
+  const fixedItemHeight = usePublisher('fixedItemHeight')
   const customScrollParent = useEmitterValue('customScrollParent')
   const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent)
+
+  React.useEffect(() => {
+    if (ctx) {
+      fixedItemHeight(ctx.itemHeight)
+      windowViewportRect({ offsetTop: 0, visibleHeight: ctx.viewportHeight, visibleWidth: 100 })
+    }
+  }, [ctx, windowViewportRect, fixedItemHeight])
 
   return (
     <div ref={viewportRef} style={viewportStyle} data-viewport-type="window">
