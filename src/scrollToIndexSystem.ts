@@ -29,7 +29,7 @@ export function normalizeIndexLocation(location: IndexLocation) {
 export const scrollToIndexSystem = u.system(
   ([
     { sizes, totalCount, listRefresh, gap },
-    { scrollingInProgress, viewportHeight, scrollTo, smoothScrollTargetReached, headerHeight, footerHeight },
+    { scrollingInProgress, viewportHeight, scrollTo, smoothScrollTargetReached, headerHeight, footerHeight, fixedHeaderHeight },
     { log },
   ]) => {
     const scrollToIndex = u.stream<IndexLocation>()
@@ -61,8 +61,8 @@ export const scrollToIndexSystem = u.system(
       u.pipe(
         scrollToIndex,
         u.withLatestFrom(sizes, viewportHeight, totalCount, topListHeight, headerHeight, footerHeight, log),
-        u.withLatestFrom(gap),
-        u.map(([[location, sizes, viewportHeight, totalCount, topListHeight, headerHeight, footerHeight, log], gap]) => {
+        u.withLatestFrom(gap, fixedHeaderHeight),
+        u.map(([[location, sizes, viewportHeight, totalCount, topListHeight, headerHeight, footerHeight, log], gap, fixedHeaderHeight]) => {
           const normalLocation = normalizeIndexLocation(location)
           const { align, behavior, offset } = normalLocation
           const lastIndex = totalCount - 1
@@ -71,12 +71,12 @@ export const scrollToIndexSystem = u.system(
 
           let top = offsetOf(index, sizes.offsetTree, gap) + headerHeight
           if (align === 'end') {
-            top = top - viewportHeight + findMaxKeyValue(sizes.sizeTree, index)[1]!
+            top += fixedHeaderHeight + findMaxKeyValue(sizes.sizeTree, index)[1]! - viewportHeight
             if (index === lastIndex) {
               top += footerHeight
             }
           } else if (align === 'center') {
-            top = top - viewportHeight / 2 + findMaxKeyValue(sizes.sizeTree, index)[1]! / 2
+            top += (fixedHeaderHeight + findMaxKeyValue(sizes.sizeTree, index)[1]! - viewportHeight) / 2
           } else {
             top -= topListHeight
           }
