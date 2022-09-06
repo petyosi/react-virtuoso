@@ -1,7 +1,7 @@
 import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
 import * as u from '@virtuoso.dev/urx'
 import * as React from 'react'
-import { ComponentType, createElement, CSSProperties, FC, PropsWithChildren } from 'react'
+import { ComponentType, createElement, CSSProperties, FC, PropsWithChildren, useContext } from 'react'
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import useScrollTop from './hooks/useScrollTop'
@@ -11,6 +11,7 @@ import { listSystem } from './listSystem'
 import { positionStickyCssValue } from './utils/positionStickyCssValue'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { correctItemSize } from './utils/correctItemSize'
+import { VirtuosoMockContext } from './utils/context'
 import { ScrollerProps } from '.'
 
 export function identity<T>(value: T) {
@@ -395,8 +396,17 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
 }
 
 const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
+  const ctx = useContext(VirtuosoMockContext)
   const viewportHeight = usePublisher('viewportHeight')
+  const fixedItemHeight = usePublisher('fixedItemHeight')
   const viewportRef = useSize(u.compose(viewportHeight, (el) => correctItemSize(el, 'height')))
+
+  React.useEffect(() => {
+    if (ctx) {
+      viewportHeight(ctx.viewportHeight)
+      fixedItemHeight(ctx.itemHeight)
+    }
+  }, [ctx, viewportHeight, fixedItemHeight])
 
   return (
     <div style={viewportStyle} ref={viewportRef} data-viewport-type="element">
@@ -406,9 +416,18 @@ const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
 }
 
 const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
+  const ctx = useContext(VirtuosoMockContext)
   const windowViewportRect = usePublisher('windowViewportRect')
+  const fixedItemHeight = usePublisher('fixedItemHeight')
   const customScrollParent = useEmitterValue('customScrollParent')
   const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent)
+
+  React.useEffect(() => {
+    if (ctx) {
+      fixedItemHeight(ctx.itemHeight)
+      windowViewportRect({ offsetTop: 0, visibleHeight: ctx.viewportHeight, visibleWidth: 100 })
+    }
+  }, [ctx, windowViewportRect, fixedItemHeight])
 
   return (
     <div ref={viewportRef} style={viewportStyle} data-viewport-type="window">
