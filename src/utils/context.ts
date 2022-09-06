@@ -1,8 +1,8 @@
 import * as React from 'react'
 
-interface Context {
+export interface VirtuosoMockContextValue {
   viewportHeight: number
   itemHeight: number
 }
 
-export const VirtuosoMockContext = React.createContext<Context | undefined>(undefined)
+export const VirtuosoMockContext = React.createContext<VirtuosoMockContextValue | undefined>(undefined)
