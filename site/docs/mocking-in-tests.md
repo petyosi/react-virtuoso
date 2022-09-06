@@ -5,7 +5,9 @@ sidebar_label: Mocking in tests
 slug: /mocking-in-tests/
 ---
 
-Virtuoso exposes a `VirtuosoMockContext` context API, which can be used to mock DOM measurements in tests, so list items or table rows would be rendered and could be tested with snapshots or other assertions.
+If you try to use Virtuoso in a testing environment, you're likely going to discover that it does not render any items. This is due to rendering being controlled by measuring the height of its DOM elements (the list container and the items themselves). 
+This information is not available in the simulated JSDOM environment.
+To work around this, Virtuoso exposes a `VirtuosoMockContext` context API, which can be used to mock DOM measurements in tests, so list items or table rows would be rendered and could be tested with snapshots or other assertions.
 
 It allows specifying `viewportHeight` and `itemHeight`.
 
