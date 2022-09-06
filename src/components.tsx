@@ -495,6 +495,11 @@ export interface VirtuosoGridProps<C = unknown> extends GridRootProps {
   components?: GridComponents<C>
 
   /**
+   * Use the `components` property for advanced customization of the elements rendered by the list.
+   */
+  context?: C
+
+  /**
    * Set the overscan property to make the component "chunk" the rendering of new items on scroll.
    * The property causes the component to render more items than the necessary, but reduces the re-renders on scroll.
    * Setting `{ main: number, reverse: number }` lets you extend the list in both the main and the reverse scrollable directions.

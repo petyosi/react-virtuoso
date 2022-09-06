@@ -195,6 +195,7 @@ const {
   combinedSystem,
   {
     optional: {
+      context: 'context',
       totalCount: 'totalCount',
       overscan: 'overscan',
       itemContent: 'itemContent',
