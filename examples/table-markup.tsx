@@ -32,6 +32,18 @@ export default function App() {
             </tr>
           )
         }}
+        fixedFooterContent={() => {
+          return (
+            <tr style={{ background: 'white' }}>
+              <th key={1} style={{ height: 150, border: '1px solid black', background: 'white' }}>
+                Footer TH 1
+              </th>
+              <th key={2} style={{ height: 150, border: '1px solid black', background: 'white' }}>
+                Footer TH meh
+              </th>
+            </tr>
+          )
+        }}
         itemContent={(index) => {
           return (
             <>

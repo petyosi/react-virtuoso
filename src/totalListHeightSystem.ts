@@ -3,13 +3,13 @@ import { listStateSystem } from './listStateSystem'
 import { domIOSystem } from './domIOSystem'
 
 export const totalListHeightSystem = u.system(
-  ([{ footerHeight, headerHeight, fixedHeaderHeight }, { listState }]) => {
+  ([{ footerHeight, headerHeight, fixedHeaderHeight, fixedFooterHeight }, { listState }]) => {
     const totalListHeightChanged = u.stream<number>()
     const totalListHeight = u.statefulStreamFromEmitter(
       u.pipe(
-        u.combineLatest(footerHeight, headerHeight, fixedHeaderHeight, listState),
-        u.map(([footerHeight, headerHeight, fixedHeaderHeight, listState]) => {
-          return footerHeight + headerHeight + fixedHeaderHeight + listState.offsetBottom + listState.bottom
+        u.combineLatest(footerHeight, fixedFooterHeight, headerHeight, fixedHeaderHeight, listState),
+        u.map(([footerHeight, fixedFooterHeight, headerHeight, fixedHeaderHeight, listState]) => {
+          return footerHeight + fixedFooterHeight + headerHeight + fixedHeaderHeight + listState.offsetBottom + listState.bottom
         })
       ),
       0
