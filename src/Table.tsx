@@ -3,7 +3,7 @@ import * as u from '@virtuoso.dev/urx'
 import * as React from 'react'
 import { createElement, FC, PropsWithChildren, useContext } from 'react'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
-import { ComputeItemKey, ItemContent, FixedHeaderContent, TableComponents, TableRootProps } from './interfaces'
+import { ComputeItemKey, ItemContent, FixedHeaderContent, FixedFooterContent, TableComponents, TableRootProps } from './interfaces'
 import { listSystem } from './listSystem'
 import { identity, buildScroller, buildWindowScroller, viewportStyle, contextPropIfNotDomElement } from './List'
 import useSize from './hooks/useSize'
@@ -15,13 +15,14 @@ const tableComponentPropsSystem = u.system(() => {
   const itemContent = u.statefulStream<ItemContent<any, unknown>>((index: number) => <td>Item ${index}</td>)
   const context = u.statefulStream<unknown>(null)
   const fixedHeaderContent = u.statefulStream<FixedHeaderContent>(null)
+  const fixedFooterContent = u.statefulStream<FixedFooterContent>(null)
   const components = u.statefulStream<TableComponents>({})
   const computeItemKey = u.statefulStream<ComputeItemKey<any, unknown>>(identity)
   const scrollerRef = u.statefulStream<(ref: HTMLElement | Window | null) => void>(u.noop)
 
   const distinctProp = <K extends keyof TableComponents>(
     propName: K,
-    defaultValue: TableComponents[K] | null | 'thead' | 'table' | 'tbody' | 'tr' | 'div' = null
+    defaultValue: TableComponents[K] | null | 'thead' | 'tfoot' | 'table' | 'tbody' | 'tr' | 'div' = null
   ) => {
     return u.statefulStreamFromEmitter(
       u.pipe(
@@ -37,11 +38,13 @@ const tableComponentPropsSystem = u.system(() => {
     context,
     itemContent,
     fixedHeaderContent,
+    fixedFooterContent,
     components,
     computeItemKey,
     scrollerRef,
     TableComponent: distinctProp('Table', 'table'),
     TableHeadComponent: distinctProp('TableHead', 'thead'),
+    TableFooterComponent: distinctProp('TableFoot', 'tfoot'),
     TableBodyComponent: distinctProp('TableBody', 'tbody'),
     TableRowComponent: distinctProp('TableRow', 'tr'),
     ScrollerComponent: distinctProp('Scroller', 'div'),
@@ -206,13 +209,17 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const customScrollParent = useEmitterValue('customScrollParent')
   const fixedHeaderHeight = usePublisher('fixedHeaderHeight')
+  const fixedFooterHeight = usePublisher('fixedFooterHeight')
   const fixedHeaderContent = useEmitterValue('fixedHeaderContent')
+  const fixedFooterContent = useEmitterValue('fixedFooterContent')
   const context = useEmitterValue('context')
   const theadRef = useSize(u.compose(fixedHeaderHeight, (el) => correctItemSize(el, 'height')))
+  const tfootRef = useSize(u.compose(fixedFooterHeight, (el) => correctItemSize(el, 'height')))
   const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
   const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
   const TheTable = useEmitterValue('TableComponent')
   const TheTHead = useEmitterValue('TableHeadComponent')
+  const TheTFoot = useEmitterValue('TableFooterComponent')
 
   const theHead = fixedHeaderContent
     ? React.createElement(
@@ -226,6 +233,18 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
         fixedHeaderContent()
       )
     : null
+  const theFoot = fixedFooterContent
+    ? React.createElement(
+        TheTFoot!,
+        {
+          key: 'TableFoot',
+          style: { zIndex: 1, position: 'sticky', bottom: 0 },
+          ref: tfootRef,
+          ...contextPropIfNotDomElement(TheTFoot, context),
+        },
+        fixedFooterContent()
+      )
+    : null
 
   return (
     <TheScroller {...props}>
@@ -233,6 +252,7 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
         {React.createElement(TheTable!, { style: { borderSpacing: 0 }, ...contextPropIfNotDomElement(TheTable, context) }, [
           theHead,
           <Items key="TableBody" />,
+          theFoot,
         ])}
       </TheViewport>
     </TheScroller>
@@ -254,6 +274,7 @@ export const {
       firstItemIndex: 'firstItemIndex',
       itemContent: 'itemContent',
       fixedHeaderContent: 'fixedHeaderContent',
+      fixedFooterContent: 'fixedFooterContent',
       overscan: 'overscan',
       increaseViewportBy: 'increaseViewportBy',
       totalCount: 'totalCount',

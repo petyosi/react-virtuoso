@@ -1,4 +1,4 @@
-import { ComponentPropsWithRef, ComponentType, Key, ReactNode } from 'react'
+import React, { ComponentPropsWithRef, ComponentType, Key, ReactNode } from 'react'
 export interface ListRange {
   startIndex: number
   endIndex: number
@@ -10,6 +10,7 @@ export interface ItemContent<D, C> {
 
 export type FixedHeaderContent = (() => React.ReactNode) | null
 
+export type FixedFooterContent = (() => React.ReactNode) | null
 export interface GroupItemContent<D, C> {
   (index: number, groupIndex: number, data: D, context: C): ReactNode
 }
@@ -148,6 +149,11 @@ export interface TableComponents<Context = unknown> {
    *
    */
   TableHead?: ComponentType<Pick<ComponentPropsWithRef<'thead'>, 'style' | 'ref'> & { context?: Context }>
+
+  /**
+   * Set to render a fixed footer at the bottom of the table (`tfoot`). use [[fixedFooterContent]] to set the contents
+   */
+  TableFoot?: ComponentType<Pick<ComponentPropsWithRef<'tfoot'>, 'style' | 'ref'> & { context?: Context }>
 
   /**
    * Set to customize the item wrapping element. Default is `tr`.

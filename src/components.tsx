@@ -22,6 +22,7 @@ import {
   FlatIndexLocationWithAlign,
   FlatScrollIntoViewLocation,
   SizeFunction,
+  FixedFooterContent,
 } from './interfaces'
 import { List } from './List'
 import { Grid } from './Grid'
@@ -280,6 +281,11 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
    * Set the contents of the table header.
    */
   fixedHeaderContent?: FixedHeaderContent
+
+  /**
+   * Set the contents of the table footer.
+   */
+  fixedFooterContent?: FixedFooterContent
 
   /**
    * The total amount of items to be rendered.
