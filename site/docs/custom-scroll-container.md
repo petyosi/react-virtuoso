@@ -29,7 +29,7 @@ export default function App() {
 }
 ```
 
-The example above changes the scroller element with a custom component. This approach is useful for integrating the component with a custom scroller library.
+The example below changes the scroller element with a custom component. This approach is useful for integrating the component with a custom scroller library.
 
 ## List with custom scroller
 
