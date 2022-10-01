@@ -84,6 +84,15 @@ export default function App() {
       >
         scroll 900 center
       </button>
+      <button
+        onClick={() =>
+          ref.current.scrollIntoView({
+            index: 50,
+          })
+        }
+      >
+        scroll 50 into view
+      </button>
       <p>Buttons should align 900 correctly </p>
     </>
   )

@@ -8,25 +8,30 @@ import { listStateSystem } from './listStateSystem'
 import { ScrollIntoViewLocation } from './interfaces'
 
 export const scrollIntoViewSystem = u.system(
-  ([{ sizes, totalCount, gap }, { scrollTop, viewportHeight, headerHeight, scrollingInProgress }, { scrollToIndex }]) => {
+  ([
+    { sizes, totalCount, gap },
+    { scrollTop, viewportHeight, headerHeight, fixedHeaderHeight, fixedFooterHeight, scrollingInProgress },
+    { scrollToIndex },
+  ]) => {
     const scrollIntoView = u.stream<ScrollIntoViewLocation>()
 
     u.connect(
       u.pipe(
         scrollIntoView,
-        u.withLatestFrom(sizes, viewportHeight, totalCount, headerHeight, scrollTop, gap),
-        u.map(([viewLocation, sizes, viewportHeight, totalCount, headerHeight, scrollTop, gap]) => {
+        u.withLatestFrom(sizes, viewportHeight, totalCount, headerHeight, fixedHeaderHeight, fixedFooterHeight, scrollTop),
+        u.withLatestFrom(gap),
+        u.map(([[viewLocation, sizes, viewportHeight, totalCount, headerHeight, fixedHeaderHeight, fixedFooterHeight, scrollTop], gap]) => {
           const { done, behavior, align, ...rest } = viewLocation
           let location = null
           const actualIndex = originalIndexFromLocation(viewLocation, sizes, totalCount - 1)
 
-          const itemTop = offsetOf(actualIndex, sizes.offsetTree, gap) + headerHeight
-          if (itemTop < scrollTop) {
+          const itemTop = offsetOf(actualIndex, sizes.offsetTree, gap) + headerHeight + fixedHeaderHeight
+          if (itemTop < scrollTop + fixedHeaderHeight) {
             location = { ...rest, behavior, align: align ?? 'start' }
           } else {
             const itemBottom = itemTop + findMaxKeyValue(sizes.sizeTree, actualIndex)[1]!
 
-            if (itemBottom > scrollTop + viewportHeight) {
+            if (itemBottom > scrollTop + viewportHeight - fixedFooterHeight) {
               location = { ...rest, behavior, align: align ?? 'end' }
             }
           }
