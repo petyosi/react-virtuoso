@@ -269,7 +269,12 @@ export type ListRootProps = Omit<React.HTMLProps<'div'>, 'ref' | 'data'>
 export type TableRootProps = Omit<React.HTMLProps<'table'>, 'ref' | 'data'>
 export type GridRootProps = Omit<React.HTMLProps<'div'>, 'ref' | 'data'>
 
-export interface GridItem {
+export interface GridItem<D> {
+  index: number
+  data?: D
+}
+
+export interface GridItemProps {
   'data-index': number
   className?: string
 }
@@ -278,7 +283,7 @@ export interface GridComponents<Context = any> {
   /**
    * Set to customize the item wrapping element. Use only if you would like to render list from elements different than a `div`.
    */
-  Item?: ComponentType<GridItem & { context?: Context }>
+  Item?: ComponentType<GridItemProps & { context?: Context }>
 
   /**
    * Set to customize the outermost scrollable element. This should not be necessary in general,
@@ -298,12 +303,12 @@ export interface GridComponents<Context = any> {
   ScrollSeekPlaceholder?: ComponentType<GridScrollSeekPlaceholderProps & { context?: Context }>
 }
 
-export interface GridComputeItemKey {
-  (index: number): Key
+export interface GridComputeItemKey<D, C> {
+  (index: number, item: D, context: C): Key
 }
 
-export interface GridItemContent<C> {
-  (index: number, context: C): ReactNode
+export interface GridItemContent<D, C> {
+  (index: number, data: D, context: C): ReactNode
 }
 
 export interface WindowViewportInfo {
