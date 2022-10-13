@@ -69,7 +69,7 @@ function gapComparator(prev: Gap, next: Gap) {
 export const gridSystem = u.system(
   ([
     { overscan, visibleRange, listBoundary },
-    { scrollTop, viewportHeight, scrollBy, scrollTo, smoothScrollTargetReached, scrollContainerState },
+    { scrollTop, viewportHeight, scrollBy, scrollTo, smoothScrollTargetReached, scrollContainerState, footerHeight, headerHeight },
     stateFlags,
     scrollSeek,
     { propsReady, didMount },
@@ -287,6 +287,8 @@ export const gridSystem = u.system(
       windowScrollContainerState,
       deviation,
       scrollContainerState,
+      footerHeight,
+      headerHeight,
       initialItemCount,
       gap,
       ...scrollSeek,

@@ -9,6 +9,7 @@ import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { GridComponents, GridComputeItemKey, GridItemContent, GridRootProps } from './interfaces'
 import { addDeprecatedAlias, buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle } from './List'
 import { Log, LogLevel } from './loggerSystem'
+import { correctItemSize } from './utils/correctItemSize'
 
 const gridComponentPropsSystem = u.system(() => {
   const itemContent = u.statefulStream<GridItemContent<any, any>>((index) => `Item ${index}`)
@@ -17,6 +18,7 @@ const gridComponentPropsSystem = u.system(() => {
   const itemClassName = u.statefulStream('virtuoso-grid-item')
   const listClassName = u.statefulStream('virtuoso-grid-list')
   const computeItemKey = u.statefulStream<GridComputeItemKey<any, any>>(identity)
+  const headerFooterTag = u.statefulStream('div')
   const scrollerRef = u.statefulStream<(ref: HTMLElement | null) => void>(u.noop)
 
   const distinctProp = <K extends keyof GridComponents>(propName: K, defaultValue: GridComponents[K] | null | 'div' = null) => {
@@ -37,7 +39,10 @@ const gridComponentPropsSystem = u.system(() => {
     computeItemKey,
     itemClassName,
     listClassName,
+    headerFooterTag,
     scrollerRef,
+    FooterComponent: distinctProp('Footer'),
+    HeaderComponent: distinctProp('Header'),
     ListComponent: distinctProp('List', 'div'),
     ItemComponent: distinctProp('Item', 'div'),
     ScrollerComponent: distinctProp('Scroller', 'div'),
@@ -145,6 +150,24 @@ const GridItems: FC = React.memo(function GridItems() {
   )
 })
 
+const Header: FC = React.memo(function VirtuosoHeader() {
+  const Header = useEmitterValue('HeaderComponent')
+  const headerHeight = usePublisher('headerHeight')
+  const headerFooterTag = useEmitterValue('headerFooterTag')
+  const ref = useSize((el) => headerHeight(correctItemSize(el, 'height')))
+  const context = useEmitterValue('context')
+  return Header ? createElement(headerFooterTag, { ref }, createElement(Header, contextPropIfNotDomElement(Header, context))) : null
+})
+
+const Footer: FC = React.memo(function VirtuosoGridFooter() {
+  const Footer = useEmitterValue('FooterComponent')
+  const footerHeight = usePublisher('footerHeight')
+  const headerFooterTag = useEmitterValue('headerFooterTag')
+  const ref = useSize((el) => footerHeight(correctItemSize(el, 'height')))
+  const context = useEmitterValue('context')
+  return Footer ? createElement(headerFooterTag, { ref }, createElement(Footer, contextPropIfNotDomElement(Footer, context))) : null
+})
+
 const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const viewportDimensions = usePublisher('viewportDimensions')
 
@@ -180,7 +203,9 @@ const GridRoot: FC<GridRootProps> = React.memo(function GridRoot({ ...props }) {
   return (
     <TheScroller {...props}>
       <TheViewport>
+        <Header />
         <GridItems />
+        <Footer />
       </TheViewport>
     </TheScroller>
   )
@@ -204,6 +229,7 @@ const {
       data: 'data',
       initialItemCount: 'initialItemCount',
       scrollSeekConfiguration: 'scrollSeekConfiguration',
+      headerFooterTag: 'headerFooterTag',
       listClassName: 'listClassName',
       itemClassName: 'itemClassName',
       useWindowScroll: 'useWindowScroll',

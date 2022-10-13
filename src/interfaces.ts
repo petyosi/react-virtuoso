@@ -297,6 +297,18 @@ export interface GridComponents<Context = any> {
   List?: ComponentType<GridListProps & { context?: Context }>
 
   /**
+   * Set to render a component at the top of the list.
+   *
+   * The header remains above the top items and does not remain sticky.
+   */
+  Header?: ComponentType<{ context?: Context }>
+
+  /**
+   * Set to render a component at the bottom of the list.
+   */
+  Footer?: ComponentType<{ context?: Context }>
+
+  /**
    * Set to render an item placeholder when the user scrolls fast.
    * See the `scrollSeekConfiguration` property for more details.
    */
