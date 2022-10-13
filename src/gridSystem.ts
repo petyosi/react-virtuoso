@@ -150,6 +150,15 @@ export const gridSystem = u.system(
 
     u.connect(
       u.pipe(
+        data,
+        u.filter((data) => data !== undefined),
+        u.map((data) => data!.length)
+      ),
+      totalCount
+    )
+
+    u.connect(
+      u.pipe(
         viewportDimensions,
         u.map(({ height }) => height)
       ),

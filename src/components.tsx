@@ -482,10 +482,10 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
   /**
    * The total amount of items to be rendered.
    */
-  totalCount: number
+  totalCount?: number
 
   /**
-   * The data items to be rendered.
+   * The data items to be rendered. If data is set, the total count will be inferred from the length of the array.
    */
   data?: readonly D[]
 

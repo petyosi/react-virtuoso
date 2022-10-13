@@ -23,7 +23,7 @@ export default function App() {
       >
         Append 20 Items
       </button>
-      <VirtuosoGrid totalCount={data.length} data={data} itemContent={itemContent} style={{ height: 300 }} />
+      <VirtuosoGrid data={data} itemContent={itemContent} style={{ height: 300 }} />
     </div>
   )
 }
