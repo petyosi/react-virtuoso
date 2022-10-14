@@ -11,12 +11,12 @@ import { addDeprecatedAlias, buildScroller, buildWindowScroller, contextPropIfNo
 import { Log, LogLevel } from './loggerSystem'
 
 const gridComponentPropsSystem = u.system(() => {
-  const itemContent = u.statefulStream<GridItemContent<any>>((index) => `Item ${index}`)
+  const itemContent = u.statefulStream<GridItemContent<any, any>>((index) => `Item ${index}`)
   const components = u.statefulStream<GridComponents>({})
   const context = u.statefulStream<unknown>(null)
   const itemClassName = u.statefulStream('virtuoso-grid-item')
   const listClassName = u.statefulStream('virtuoso-grid-list')
-  const computeItemKey = u.statefulStream<GridComputeItemKey>(identity)
+  const computeItemKey = u.statefulStream<GridComputeItemKey<any, any>>(identity)
   const scrollerRef = u.statefulStream<(ref: HTMLElement | null) => void>(u.noop)
 
   const distinctProp = <K extends keyof GridComponents>(propName: K, defaultValue: GridComponents[K] | null | 'div' = null) => {
@@ -127,7 +127,7 @@ const GridItems: FC = React.memo(function GridItems() {
       style: { paddingTop: gridState.offsetTop, paddingBottom: gridState.offsetBottom },
     },
     gridState.items.map((item) => {
-      const key = computeItemKey(item.index)
+      const key = computeItemKey(item.index, item.data, context)
       return isSeeking
         ? createElement(ScrollSeekPlaceholder, {
             key,
@@ -139,7 +139,7 @@ const GridItems: FC = React.memo(function GridItems() {
         : createElement(
             ItemComponent,
             { ...contextPropIfNotDomElement(ItemComponent, context), className: itemClassName, 'data-index': item.index, key },
-            itemContent(item.index, context)
+            itemContent(item.index, item.data, context)
           )
     })
   )
@@ -201,6 +201,7 @@ const {
       itemContent: 'itemContent',
       components: 'components',
       computeItemKey: 'computeItemKey',
+      data: 'data',
       initialItemCount: 'initialItemCount',
       scrollSeekConfiguration: 'scrollSeekConfiguration',
       listClassName: 'listClassName',
