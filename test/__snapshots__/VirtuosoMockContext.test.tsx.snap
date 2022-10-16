@@ -126,7 +126,7 @@ exports[`VirtuosoMockContext List correctly renders items 1`] = `
     >
       <div
         data-test-id="virtuoso-item-list"
-        style="box-sizing: border-box; padding-top: 0px; padding-bottom: 100px; margin-top: 0px;"
+        style="box-sizing: border-box; padding-top: 0px; padding-bottom: 500px; margin-top: 0px;"
       >
         <div
           data-index="0"
@@ -159,7 +159,7 @@ exports[`VirtuosoMockContext List correctly renders items with useWindowScroll 1
 <div>
   <div
     data-virtuoso-scroller="true"
-    style="position: relative; height: 400px;"
+    style="position: relative; height: 800px;"
   >
     <div
       data-viewport-type="window"
@@ -167,7 +167,7 @@ exports[`VirtuosoMockContext List correctly renders items with useWindowScroll 1
     >
       <div
         data-test-id="virtuoso-item-list"
-        style="box-sizing: border-box; padding-top: 0px; padding-bottom: 100px; margin-top: 0px;"
+        style="box-sizing: border-box; padding-top: 0px; padding-bottom: 500px; margin-top: 0px;"
       >
         <div
           data-index="0"
@@ -246,7 +246,7 @@ exports[`VirtuosoMockContext Table correctly renders items 1`] = `
           </tr>
           <tr>
             <td
-              style="height: 100px; padding: 0px; border: 0px;"
+              style="height: 500px; padding: 0px; border: 0px;"
             />
           </tr>
         </tbody>
@@ -260,7 +260,7 @@ exports[`VirtuosoMockContext Table correctly renders items with useWindowScroll 
 <div>
   <div
     data-virtuoso-scroller="true"
-    style="position: relative; height: 400px;"
+    style="position: relative; height: 800px;"
   >
     <div
       data-viewport-type="window"
@@ -304,7 +304,7 @@ exports[`VirtuosoMockContext Table correctly renders items with useWindowScroll 
           </tr>
           <tr>
             <td
-              style="height: 100px; padding: 0px; border: 0px;"
+              style="height: 500px; padding: 0px; border: 0px;"
             />
           </tr>
         </tbody>
