@@ -2,7 +2,7 @@ import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
 
 import * as u from '@virtuoso.dev/urx'
 import * as React from 'react'
-import { createElement, FC, PropsWithChildren } from 'react'
+import { createElement, FC, PropsWithChildren, useContext } from 'react'
 import { gridSystem } from './gridSystem'
 import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
@@ -10,6 +10,8 @@ import { GridComponents, GridComputeItemKey, GridItemContent, GridRootProps } fr
 import { addDeprecatedAlias, buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle } from './List'
 import { Log, LogLevel } from './loggerSystem'
 import { correctItemSize } from './utils/correctItemSize'
+import { VirtuosoGridMockContext } from './utils/context'
+
 
 const gridComponentPropsSystem = u.system(() => {
   const itemContent = u.statefulStream<GridItemContent<any, any>>((index) => `Item ${index}`)
@@ -169,11 +171,20 @@ const Footer: FC = React.memo(function VirtuosoGridFooter() {
 })
 
 const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
+  const ctx = useContext(VirtuosoGridMockContext)
+  const itemDimensions = usePublisher('itemDimensions')
   const viewportDimensions = usePublisher('viewportDimensions')
 
   const viewportRef = useSize((el) => {
     viewportDimensions(el.getBoundingClientRect())
   })
+
+  React.useEffect(() => {
+    if (ctx) {
+      viewportDimensions({ height: ctx.viewportHeight, width: ctx.viewportWidth })
+      itemDimensions({ height: ctx.itemHeight, width: ctx.itemWidth })
+    }
+  }, [ctx, viewportDimensions, itemDimensions])
 
   return (
     <div style={viewportStyle} ref={viewportRef}>
@@ -183,9 +194,18 @@ const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
 }
 
 const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
+  const ctx = useContext(VirtuosoGridMockContext)
   const windowViewportRect = usePublisher('windowViewportRect')
+  const itemDimensions = usePublisher('itemDimensions')
   const customScrollParent = useEmitterValue('customScrollParent')
   const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent)
+
+  React.useEffect(() => {
+    if (ctx) {
+      itemDimensions({ height: ctx.itemHeight, width: ctx.itemWidth })
+      windowViewportRect({ offsetTop: 0, visibleHeight: ctx.viewportHeight, visibleWidth: ctx.viewportWidth })
+    }
+  }, [ctx, windowViewportRect, itemDimensions])
 
   return (
     <div ref={viewportRef} style={viewportStyle}>
