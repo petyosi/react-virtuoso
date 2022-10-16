@@ -523,6 +523,11 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
   computeItemKey?: GridComputeItemKey<D, C>
 
   /**
+   * Set to customize the wrapper tag for the header and footer components (default is `div`).
+   */
+  headerFooterTag?: string
+
+  /**
    * Use to display placeholders if the user scrolls fast through the list.
    *
    * Set `components.ScrollSeekPlaceholder` to change the placeholder content.
