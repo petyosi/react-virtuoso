@@ -12,7 +12,6 @@ import { Log, LogLevel } from './loggerSystem'
 import { correctItemSize } from './utils/correctItemSize'
 import { VirtuosoGridMockContext } from './utils/context'
 
-
 const gridComponentPropsSystem = u.system(() => {
   const itemContent = u.statefulStream<GridItemContent<any, any>>((index) => `Item ${index}`)
   const components = u.statefulStream<GridComponents>({})
