@@ -648,4 +648,6 @@ export const TableVirtuoso = Table as <ItemData = any, Context = any>(
   props: TableVirtuosoProps<ItemData, Context> & { ref?: Ref<TableVirtuosoHandle> }
 ) => ReactElement
 
-export const VirtuosoGrid = Grid as <Context = any>(props: VirtuosoGridProps<Context> & { ref?: Ref<VirtuosoGridHandle> }) => ReactElement
+export const VirtuosoGrid = Grid as <ItemData = any, Context = any>(
+  props: VirtuosoGridProps<ItemData, Context> & { ref?: Ref<VirtuosoGridHandle> }
+) => ReactElement
