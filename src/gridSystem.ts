@@ -57,6 +57,13 @@ const PROBE_GRID_STATE: GridState = {
 
 const { round, ceil, floor, min, max } = Math
 
+function buildProbeGridState<D = unknown>(items: GridItem<D>[]): GridState {
+  return {
+    ...PROBE_GRID_STATE,
+    items: items,
+  }
+}
+
 function buildItems<D>(startIndex: number, endIndex: number, data: D[] | undefined) {
   return Array.from({ length: endIndex - startIndex + 1 }).map(
     (_, i) => ({ index: i + startIndex, data: data?.[i + startIndex] } as GridItem<D>)
@@ -126,7 +133,7 @@ export const gridSystem = u.system(
           }
 
           if (itemWidth === 0) {
-            return PROBE_GRID_STATE
+            return buildProbeGridState(buildItems(0, 0, data))
           }
 
           const perRow = itemsPerRow(viewportWidth, itemWidth, columnGap)
