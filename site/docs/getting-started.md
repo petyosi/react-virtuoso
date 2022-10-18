@@ -62,7 +62,7 @@ The `GroupedVirtuoso` component is similar to the "flat" `Virtuoso`, with the fo
   For example, passing `[20, 30]` will render two groups with 20 and 30 items each;
 - In addition the `item` render prop, the Component requires an additional `group` render prop,
   which renders the **group header**. The `group` callback receives the zero-based group index as a parameter;
-- The `item` render prop gets called with an additional second parameter, `groupIndex: number`.
+- The `itemContent` render prop gets called with an additional second parameter, `groupIndex: number`.
 
 ```jsx live
 import { GroupedVirtuoso } from 'react-virtuoso'
