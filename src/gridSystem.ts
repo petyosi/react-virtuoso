@@ -140,7 +140,7 @@ export const gridSystem = u.system(
 
           let startIndex = perRow * floor((startOffset + rowGap) / (itemHeight + rowGap))
           let endIndex = perRow * ceil((endOffset + rowGap) / (itemHeight + rowGap)) - 1
-          endIndex = max(0, min(totalCount - 1, endIndex))
+          endIndex = max(perRow - 1, min(totalCount - 1, endIndex))
           startIndex = min(endIndex, max(0, startIndex))
 
           const items = buildItems(startIndex, endIndex, data)
