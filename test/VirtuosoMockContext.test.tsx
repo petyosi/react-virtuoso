@@ -84,6 +84,20 @@ describe('VirtuosoMockContext', () => {
       expect(container.querySelectorAll('.virtuoso-grid-item')).toHaveLength(3)
     })
 
+    it('does not overflow the index', () => {
+      const fourItemData = data.slice(0, 1)
+
+      const { container } = render(<VirtuosoGrid data={fourItemData} />, {
+        wrapper: ({ children }) => (
+          <VirtuosoGridMockContext.Provider value={{ viewportHeight: 200, viewportWidth: 300, itemHeight: 100, itemWidth: 100 }}>
+            {children}
+          </VirtuosoGridMockContext.Provider>
+        ),
+      })
+
+      expect(container.querySelectorAll('.virtuoso-grid-item')).toHaveLength(1)
+    })
+
     it('correctly renders items with useWindowScroll', () => {
       const { container } = render(<VirtuosoGrid data={data} useWindowScroll />, {
         wrapper: ({ children }) => (
