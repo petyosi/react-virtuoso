@@ -15,7 +15,7 @@ test.describe('list with scroll seek placeholders', () => {
       }, 10)
     })
 
-    await page.waitForTimeout(200)
+    await page.waitForSelector('#test-root div[aria-label=placeholder]')
 
     const [width, height, containerPaddingTop, text, color] = await page.evaluate(() => {
       const container = document.querySelector('#test-root > div > div:first-child > div') as HTMLElement

@@ -15,7 +15,7 @@ test.describe('list with scroll seek placeholders', () => {
       }, 10)
     })
 
-    await page.waitForTimeout(200)
+    await page.waitForSelector('#test-root div[aria-label=placeholder]')
 
     const color = await page.evaluate(() => {
       const stickyItem = document.querySelector('#test-root > div > div:first-child > div > div') as HTMLElement
