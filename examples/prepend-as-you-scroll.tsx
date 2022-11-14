@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Virtuoso } from '../src'
-import faker from 'faker'
+import faker from 'faker/dist/faker.js'
 import { useState, useCallback } from 'react'
 
 const generated: Array<ReturnType<typeof user>> = []

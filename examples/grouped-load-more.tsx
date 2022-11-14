@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Components, GroupedVirtuoso } from '../src'
 import { useMemo, useRef, useState, useEffect } from 'react'
-import faker from 'faker'
+import faker from 'faker/dist/faker.js'
 import { groupBy } from 'lodash'
 
 const getUser = () => {

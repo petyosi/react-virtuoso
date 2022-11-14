@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import * as React from 'react'
 import { Virtuoso } from '../src'
-import faker from 'faker'
+import faker from 'faker/dist/faker.js'
 
 function toggleBg(index: number) {
   return index % 2 ? 'var(--ifm-background-color)' : 'var(--ifm-color-emphasis-200)'
