@@ -9,7 +9,7 @@ import { simpleMemoize } from './utils/simpleMemoize'
 import { recalcSystem } from './recalcSystem'
 
 const isMobileSafari = simpleMemoize(() => {
-  return /iP(ad|hone|od).+Version\/[\d.]+.*Safari/i.test(navigator.userAgent)
+  return /iP(ad|od|hone)/i.test(navigator.userAgent) && /WebKit/i.test(navigator.userAgent)
 })
 
 type UpwardFixState = [number, ListItem<any>[], number, number]
