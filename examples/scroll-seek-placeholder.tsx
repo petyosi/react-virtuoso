@@ -13,7 +13,11 @@ export default function App() {
         exit: (velocity) => Math.abs(velocity) < 30,
       }}
       components={{
-        ScrollSeekPlaceholder: ({ height, index }) => <div style={{ height, color: 'red' }}>Placeholder {index}</div>,
+        ScrollSeekPlaceholder: ({ height, index }) => (
+          <div aria-label="placeholder" style={{ height, color: 'red' }}>
+            Placeholder {index}
+          </div>
+        ),
       }}
     />
   )

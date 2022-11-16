@@ -32,7 +32,11 @@ export default function App() {
       components={{
         Item: ItemContainer,
         List: ListContainer,
-        ScrollSeekPlaceholder: ({ index, width, height }) => <div style={{ height, width, color: 'red' }}>Placeholder {index}</div>,
+        ScrollSeekPlaceholder: ({ index, width, height }) => (
+          <div aria-label="placeholder" style={{ height, width, color: 'red' }}>
+            Placeholder {index}
+          </div>
+        ),
       }}
     />
   )

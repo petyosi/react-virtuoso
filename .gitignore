@@ -5,4 +5,4 @@ node_modules
 dist
 examples/__examples.jsx
 examples/__examples.html
-
+.parcel-cache
