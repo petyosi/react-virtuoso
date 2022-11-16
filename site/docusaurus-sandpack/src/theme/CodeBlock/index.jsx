@@ -4,7 +4,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import './style.css'
 
 const dataCode = `
-import { faker } from '@faker-js/faker'
+import faker from 'faker'
 import { groupBy } from 'lodash'
 import React from 'react'
 
