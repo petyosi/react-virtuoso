@@ -1,13 +1,12 @@
 import * as React from 'react'
-import { TableVirtuoso, TableVirtuosoHandle } from '../src/'
+import { GroupedTableVirtuoso, GroupedTableVirtuosoHandle } from '../src/'
 
 export default function App() {
-  const ref = React.useRef<TableVirtuosoHandle>(null)
+  const ref = React.useRef<GroupedTableVirtuosoHandle>(null)
   return (
     <>
-      <TableVirtuoso
+      <GroupedTableVirtuoso
         ref={ref}
-        totalCount={1000}
         components={{
           EmptyPlaceholder: () => {
             return (
