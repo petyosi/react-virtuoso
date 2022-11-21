@@ -5,6 +5,7 @@ import type {
   FlatScrollIntoViewLocation,
   FollowOutput,
   ItemContent,
+  GroupContent,
   ListItem,
   ListRange,
   ScrollSeekConfiguration,
@@ -14,6 +15,15 @@ import type {
 import type { VirtuosoProps } from './Virtuoso'
 
 export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'components' | 'headerFooterTag' | 'topItemCount'> {
+  /**
+   * Specifies the amount of items in each group (and, actually, how many groups are there).
+   * For example, passing [20, 30] will display 2 groups with 20 and 30 items each.
+   */
+  groupCounts?: number[]
+  /**
+   * Specifies how each each group header gets rendered. The callback receives the zero-based index of the group.
+   */
+  groupContent?: GroupContent
   /**
    * Use the `components` property for advanced customization of the elements rendered by the table.
    */
