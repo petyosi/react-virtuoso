@@ -16,7 +16,7 @@ test.describe('jagged list with 2 top items', () => {
     expect(scrollTop).toBe(0)
 
     const paddingTop = await page.evaluate(() => {
-      const listContainer = document.querySelector('#test-root > div > div > div') as HTMLElement
+      const listContainer = document.querySelector('#test-root > div > div:last-child > div') as HTMLElement
       return listContainer.style.paddingTop
     })
 
@@ -25,7 +25,7 @@ test.describe('jagged list with 2 top items', () => {
 
   test('renders correct amount of items', async ({ page }) => {
     const childElementCount = await page.evaluate(() => {
-      const listContainer = document.querySelectorAll('#test-root > div > div > div')[0]
+      const listContainer = document.querySelectorAll('#test-root > div > div:last-child > div')[0]
       return listContainer.childElementCount
     })
     expect(childElementCount).toBe(9)
@@ -40,7 +40,7 @@ test.describe('jagged list with 2 top items', () => {
     await page.waitForTimeout(100)
 
     const firstChildIndex: string = await page.evaluate(() => {
-      const firstChild = document.querySelector('#test-root > div > div > div > div') as HTMLElement
+      const firstChild = document.querySelector('#test-root > div > div:last-child > div > div') as HTMLElement
       return firstChild.dataset['index']!
     })
 

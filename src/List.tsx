@@ -288,6 +288,7 @@ const topItemListStyle: CSSProperties = {
   width: '100%',
   position: positionStickyCssValue(),
   top: 0,
+  zIndex: 1,
 }
 
 export function contextPropIfNotDomElement(element: unknown, context: unknown) {
@@ -452,16 +453,16 @@ const ListRoot: FC<ListRootProps> = React.memo(function VirtuosoRoot(props) {
   const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
   return (
     <TheScroller {...props}>
-      <TheViewport>
-        <Header />
-        <Items />
-        <Footer />
-      </TheViewport>
       {showTopList && (
         <TopItemListContainer>
           <Items showTopList={true} />
         </TopItemListContainer>
       )}
+      <TheViewport>
+        <Header />
+        <Items />
+        <Footer />
+      </TheViewport>
     </TheScroller>
   )
 })

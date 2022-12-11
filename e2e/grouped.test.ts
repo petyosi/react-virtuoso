@@ -9,7 +9,7 @@ test.describe('jagged grouped list', () => {
 
   test('renders correct sizing', async ({ page }) => {
     const [paddingTop, paddingBottom] = await page.evaluate(() => {
-      const listContainer = document.querySelector('#test-root > div > div > div:first-child') as HTMLElement
+      const listContainer = document.querySelector('#test-root > div > div:last-child > div:first-child') as HTMLElement
       return [listContainer.style.paddingTop, listContainer.style.paddingBottom]
     })
 
@@ -26,7 +26,7 @@ test.describe('jagged grouped list', () => {
     await page.waitForTimeout(100)
 
     const stickyItemIndex = await page.evaluate(() => {
-      const stickyItem = document.querySelector('#test-root > div > div:last-child > div > div') as HTMLElement
+      const stickyItem = document.querySelector('#test-root > div > div > div > div') as HTMLElement
       return stickyItem.dataset['index']
     })
 
