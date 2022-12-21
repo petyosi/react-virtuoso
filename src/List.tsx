@@ -258,6 +258,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
             'data-known-size': item.size,
             'data-item-index': item.index,
             'data-item-group-index': item.groupIndex,
+            item: item.data,
             style: ITEM_STYLE,
           },
           hasGroups

@@ -95,7 +95,7 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   /**
    * Use the `components` property for advanced customization of the elements rendered by the list.
    */
-  components?: Components<C>
+  components?: Components<D, C>
 
   /**
    * Set the callback to specify the contents of the item.
@@ -276,7 +276,7 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
   /**
    * Use the `components` property for advanced customization of the elements rendered by the table.
    */
-  components?: TableComponents<C>
+  components?: TableComponents<D, C>
   /**
    * Set the contents of the table header.
    */

@@ -19,7 +19,8 @@ export interface GroupContent {
   (index: number): ReactNode
 }
 
-export type ItemProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children'> & {
+export type ItemProps<D> = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children'> & {
+  item: D
   'data-index': number
   'data-item-index': number
   'data-item-group-index'?: number
@@ -86,7 +87,7 @@ export interface GridScrollSeekPlaceholderProps {
 /**
  * Customize the Virtuoso rendering by passing a set of custom components.
  */
-export interface Components<Context = unknown> {
+export interface Components<Data = unknown, Context = unknown> {
   /**
    * Set to render a component at the top of the list.
    *
@@ -100,7 +101,7 @@ export interface Components<Context = unknown> {
   /**
    * Set to customize the item wrapping element. Use only if you would like to render list from elements different than a `div`.
    */
-  Item?: ComponentType<ItemProps & { context?: Context }>
+  Item?: ComponentType<ItemProps<Data> & { context?: Context }>
   /**
    * Set to customize the group item wrapping element. Use only if you would like to render list from elements different than a `div`.
    */
@@ -137,7 +138,7 @@ export interface Components<Context = unknown> {
 /**
  * Customize the TableVirtuoso rendering by passing a set of custom components.
  */
-export interface TableComponents<Context = unknown> {
+export interface TableComponents<Data = unknown, Context = unknown> {
   /**
    * Set to customize the wrapping `table` element.
    *
@@ -158,7 +159,7 @@ export interface TableComponents<Context = unknown> {
   /**
    * Set to customize the item wrapping element. Default is `tr`.
    */
-  TableRow?: ComponentType<ItemProps & { context?: Context }>
+  TableRow?: ComponentType<ItemProps<Data> & { context?: Context }>
 
   /**
    * Set to customize the outermost scrollable element. This should not be necessary in general,

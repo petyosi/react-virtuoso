@@ -145,6 +145,7 @@ export const Items = React.memo(function VirtuosoItems() {
         'data-index': index,
         'data-known-size': item.size,
         'data-item-index': item.index,
+        item: item.data,
         style: { overflowAnchor: 'none' },
       },
       itemContent(item.index, item.data, context)
