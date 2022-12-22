@@ -1,13 +1,13 @@
 ---
 id: mui-table-virtual-scroll
-title: Table Virtuoso with mui table
-sidebar_label: MUI Table
+title: Table Virtuoso with Material UI table
+sidebar_label: Material UI Table
 slug: /mui-table-virtual-scroll/
 ---
 
-The structure of `TableVirtuoso` is compatible with the markup of MUI Table. Notice the adjustment of the `borderCollapse` styling.
+The structure of `TableVirtuoso` is compatible with the markup of Material UI Table. Notice the adjustment of the `borderCollapse` styling.
 
-## MUI Table virtualized with Table Virtuoso
+## Material UI Table virtualized with Table Virtuoso
 
 ```jsx live include-data import=@mui/material
 import { TableVirtuoso } from 'react-virtuoso'
