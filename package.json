@@ -53,9 +53,9 @@
     "@emotion/core": "^10.1.0",
     "@emotion/styled": "^10.0.27",
     "@faker-js/faker": "^7.6.0",
-    "@microsoft/api-extractor": "^7.25.0",
-    "@playwright/test": "^1.27.1",
     "@testing-library/react": "^13.4.0",
+    "@microsoft/api-extractor": "^7.33.7",
+    "@playwright/test": "^1.22.2",
     "@types/jest": "^26.0.20",
     "@types/jsdom": "^16.2.3",
     "@types/lodash": "^4.14.165",
@@ -98,7 +98,7 @@
     "semantic-release": "^19.0.5",
     "ts-jest": "^26.5.1",
     "tslib": "^2.0.0",
-    "typescript": "^4.4.2"
+    "typescript": "^4.9.4"
   },
   "resolutions": {
     "@types/react": "^16.14.2"
