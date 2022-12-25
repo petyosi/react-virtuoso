@@ -3,6 +3,7 @@ import { TableVirtuosoProps, GroupedVirtuosoProps, VirtuosoGridProps, VirtuosoPr
 import { List } from '../src/List'
 import { Grid } from '../src/Grid'
 import { Table } from '../src/Table'
+import { describe, it, expect } from 'vitest'
 
 type CompProps<T> = T extends ForwardRefExoticComponent<infer R> ? R : never
 type ListProps = Omit<CompProps<typeof List>, 'groupCounts' | 'groupContent' | 'itemsRendered'>

@@ -1,5 +1,6 @@
 import { init, getValue, publish, subscribe } from '@virtuoso.dev/urx'
 import { gridSystem } from '../src/gridSystem'
+import { describe, it, expect, vi } from 'vitest'
 
 describe('grid system', () => {
   it('outputs a single probe item once totalCount is set', () => {
@@ -67,7 +68,7 @@ describe('grid system', () => {
       height: 200,
     })
 
-    const sub = jest.fn()
+    const sub = vi.fn()
     subscribe(gridState, sub)
 
     publish(scrollTop, 50)
@@ -165,7 +166,7 @@ describe('grid system', () => {
       width: 3,
       height: 2,
     })
-    const sub = jest.fn()
+    const sub = vi.fn()
     subscribe(gridState, sub)
     publish(scrollTop, 8)
     publish(scrollTop, 2)

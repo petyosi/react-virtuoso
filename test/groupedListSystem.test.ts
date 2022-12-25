@@ -1,4 +1,6 @@
 import { groupCountsToIndicesAndCount } from '../src/groupedListSystem'
+import { describe, it, expect } from 'vitest'
+
 describe('grouped list system', () => {
   describe('groupCountsToIndicesAndCount', () => {
     it('calculates total count and marks the group indices', () => {

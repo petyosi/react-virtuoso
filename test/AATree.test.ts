@@ -1,10 +1,11 @@
 /* eslint @typescript-eslint/explicit-function-return-type: 0 */
+import { describe, it, expect } from 'vitest'
 
 import * as AA from '../src/AATree'
 import { AANode } from '../src/AATree'
 
 function range(start: number, end: number) {
-  const result = []
+  const result = [] as number[]
   for (let index = start; index <= end; index++) {
     result.push(index)
   }

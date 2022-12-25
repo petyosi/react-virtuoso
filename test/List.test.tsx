@@ -5,9 +5,12 @@ import * as React from 'react'
 import ReactDOM from 'react-dom/client'
 import { act } from 'react-dom/test-utils'
 import { List } from '../src/List'
-jest.mock('../src/hooks/useSize')
-jest.mock('../src/hooks/useChangedChildSizes')
-jest.mock('../src/hooks/useScrollTop')
+
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+
+vi.mock('../src/hooks/useSize')
+vi.mock('../src/hooks/useChangedChildSizes')
+vi.mock('../src/hooks/useScrollTop')
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 describe('List', () => {

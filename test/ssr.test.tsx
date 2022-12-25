@@ -8,6 +8,7 @@ import * as React from 'react'
 // import { create } from 'react-test-renderer' // ES6
 import { List } from '../src/List'
 import { Grid } from '../src/Grid'
+import { describe, it, expect } from 'vitest'
 
 describe('SSR List', () => {
   it('renders 30 items', () => {
