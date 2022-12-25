@@ -34,7 +34,7 @@
     "lint": "eslint src test e2e --ext .ts,.tsx",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "browse-examples": "node examples/generate-examples.mjs && parcel examples/__examples.html",
-    "prepare": "yarn build && husky install",
+    "prepare": "pnpm run build && husky install",
     "semantic-release": "semantic-release"
   },
   "dependencies": {
@@ -95,6 +95,7 @@
     "vite": "^4.0.0",
     "vitest": "^0.26.2"
   },
+  "packageManager": "pnpm@7.19.0",
   "resolutions": {
     "@types/react": "^16.14.2"
   },
