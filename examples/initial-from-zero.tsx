@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Virtuoso } from '../src'
 
-export default function App() {
+export function Example() {
   const [items, setItems] = React.useState(Array.from({ length: 0 }).map(() => 'item'))
   const initialTopMostItemIndex = Math.max(0, items.length - 1)
   // set the initialTopMostItemIndex to 999 to have the list start at the bottom

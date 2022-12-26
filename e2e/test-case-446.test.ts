@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test'
+import { navigateToExample } from './utils'
 
 test.describe('list with a long last item', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:1234/test-case-446')
-    await page.waitForSelector('#test-root')
+  test.beforeEach(async ({ page, baseURL }) => {
+    await navigateToExample(page, baseURL, 'test-case-446')
     await page.waitForTimeout(300)
   })
 

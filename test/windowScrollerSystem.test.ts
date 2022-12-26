@@ -1,4 +1,4 @@
-import * as u from '@virtuoso.dev/urx'
+import * as u from '../src/urx'
 import { listSystem } from '../src/listSystem'
 import { describe, it, expect, vi } from 'vitest'
 

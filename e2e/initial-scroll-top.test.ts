@@ -1,15 +1,15 @@
 import { test, expect } from '@playwright/test'
+import { navigateToExample } from './utils'
 
 test.describe('initial scroll top', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:1234/initial-scroll-top')
-    await page.waitForSelector('#test-root > div')
+  test.beforeEach(async ({ page, baseURL }) => {
+    await navigateToExample(page, baseURL, 'initial-scroll-top')
   })
 
   test('starts from 50px', async ({ page }) => {
     const scrollTop = await page.evaluate(() => {
-      const listContainer = document.querySelectorAll('#test-root > div')[0]
-      return listContainer.scrollTop
+      const scroller = document.querySelectorAll('[data-test-id=virtuoso-scroller]')[0]
+      return scroller.scrollTop
     })
 
     expect(scrollTop).toBe(50)

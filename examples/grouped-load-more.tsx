@@ -93,7 +93,7 @@ const components: Components = {
 }
 const Style = { height: '350px', width: '400px' }
 
-export default function App() {
+export function Example() {
   const { loadMore, groupCounts, users, groups } = useGroupedUsers(500)
 
   useEffect(loadMore, [loadMore])

@@ -1,4 +1,4 @@
-import * as u from '@virtuoso.dev/urx'
+import * as u from './urx'
 import { domIOSystem } from './domIOSystem'
 import { followOutputSystem } from './followOutputSystem'
 import { groupedListSystem } from './groupedListSystem'

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { GroupedVirtuoso, GroupedVirtuosoHandle } from '../src'
 
-export default function App() {
+export function Example() {
   const virutoso = React.useRef<GroupedVirtuosoHandle>(null)
   const g = React.useRef(0)
   const groupCounts = React.useMemo(() => {

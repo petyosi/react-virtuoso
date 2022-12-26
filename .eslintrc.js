@@ -20,6 +20,7 @@ module.exports = {
     '@typescript-eslint/restrict-template-expressions': 'off',
     'no-console': ['error', { allow: ['warn', 'error'] }],
     'react/prop-types': 'off',
+    'react/display-name': 'off',
     '@typescript-eslint/no-unused-vars': [
       'warn',
       {

@@ -93,7 +93,7 @@ const components: Partial<Components> = {
 }
 const Style = { height: '350px', width: '300px' }
 
-export default function App() {
+export function Example() {
   const { loadMore, groupCounts, users, groups } = useGroupedUsers(12500)
 
   useEffect(loadMore, [loadMore])

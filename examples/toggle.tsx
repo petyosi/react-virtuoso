@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Virtuoso } from '../src'
 
-export default function App() {
+export function Example() {
   const [toggle, setToggle] = React.useState<Record<number, boolean | undefined>>({})
   const [count, setCount] = React.useState(100)
   const itemContent = React.useCallback(

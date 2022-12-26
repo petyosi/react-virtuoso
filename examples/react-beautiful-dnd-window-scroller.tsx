@@ -3,7 +3,7 @@ import { DropResult, DragDropContext, Draggable, Droppable, DraggableProvided } 
 import { Components, Virtuoso } from '../src'
 
 type Item = { id: string; text: string }
-export default function App() {
+export function Example() {
   const [items, setItems] = useState(() => {
     return Array.from({ length: 1000 }, (_, k) => ({
       id: `id:${k}`,

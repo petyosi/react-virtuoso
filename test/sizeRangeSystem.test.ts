@@ -1,5 +1,5 @@
 import { BOTTOM, getOverscan, TOP, sizeRangeSystem } from '../src/sizeRangeSystem'
-import { init, getValue, publish, subscribe, system, tup } from '@virtuoso.dev/urx'
+import { init, getValue, publish, subscribe, system, tup } from '../src/urx'
 import { domIOSystem } from '../src/domIOSystem'
 import { DOWN, UP } from '../src/stateFlagsSystem'
 import { describe, it, expect, vi } from 'vitest'

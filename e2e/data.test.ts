@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test'
+import { navigateToExample } from './utils'
 
 test.describe('list with hundred items', () => {
   test.beforeEach(async ({ page, baseURL }) => {
-    await page.goto(`${baseURL}/data`)
+    await navigateToExample(page, baseURL, 'data')
     await page.waitForSelector('[data-test-id=virtuoso-scroller]')
     await page.waitForTimeout(100)
   })

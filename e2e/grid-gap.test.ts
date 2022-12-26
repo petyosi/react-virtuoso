@@ -1,15 +1,15 @@
 import { test, expect } from '@playwright/test'
+import { navigateToExample } from './utils'
 
-test.describe('list with hundred items', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:1234/grid-gap')
-    await page.waitForSelector('#test-root')
+test.describe('grid with gaps', () => {
+  test.beforeEach(async ({ page, baseURL }) => {
+    await navigateToExample(page, baseURL, 'grid-gap')
     await page.waitForTimeout(100)
   })
 
   test('renders 16 items', async ({ page }) => {
     const itemCount = await page.evaluate(() => {
-      const listContainer = document.querySelector('#test-root > div > div > div')
+      const listContainer = document.querySelector('[data-test-id=virtuoso-item-list]')
       return listContainer!.childElementCount
     })
     expect(itemCount).toBe(16)

@@ -1,5 +1,5 @@
-import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
-import * as u from '@virtuoso.dev/urx'
+import { RefHandle, systemToComponent } from './react-urx'
+import * as u from './urx'
 import * as React from 'react'
 import { ComponentType, createElement, CSSProperties, FC, PropsWithChildren, useContext } from 'react'
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'

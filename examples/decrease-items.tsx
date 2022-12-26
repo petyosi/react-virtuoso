@@ -4,7 +4,7 @@ import { Virtuoso } from '../src'
 
 const itemContent = (index: number) => <div style={{ border: '1px solid black', height: index % 2 ? 20 : 55 }}>Item {index}</div>
 const style = { height: 300 }
-export default function App() {
+export function Example() {
   const [count, setCount] = useState(100)
   return (
     <div>

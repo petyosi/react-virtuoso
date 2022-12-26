@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import * as u from '@virtuoso.dev/urx'
+import * as u from './urx'
 import { domIOSystem } from './domIOSystem'
 import { approximatelyEqual } from './utils/approximatelyEqual'
 

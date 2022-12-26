@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Virtuoso } from '../src'
 import { useState } from 'react'
 
-export default function App() {
+export function Example() {
   const [totalCount, setTotalCount] = useState(1000)
   return (
     <div>

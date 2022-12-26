@@ -10,7 +10,7 @@ const itemContent = (_: number, data: string) => {
   return <div style={{ height: 30 }}>{data}</div>
 }
 
-export default function App() {
+export function Example() {
   const [items, setItems] = useState<string[]>(() => [])
 
   const loadMore = useCallback(() => {

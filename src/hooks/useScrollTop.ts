@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect } from 'react'
-import * as u from '@virtuoso.dev/urx'
+import * as u from '../urx'
 import { correctItemSize } from '../utils/correctItemSize'
 import { ScrollContainerState } from '../interfaces'
 import { flushSync } from 'react-dom'

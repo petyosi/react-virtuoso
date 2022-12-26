@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Virtuoso, VirtuosoHandle } from '../src'
 
-export default function App() {
+export function Example() {
   const ref = React.useRef<VirtuosoHandle>(null)
 
   return (
@@ -16,8 +16,8 @@ export default function App() {
               {children}
             </div>
           ),
-          List: React.forwardRef(({ style, children }, ref) => (
-            <div ref={ref} style={{ ...style, display: 'flex', flexDirection: 'column', gap: 20, background: 'grey' }}>
+          List: React.forwardRef(({ style, children, ...props }, ref) => (
+            <div ref={ref} style={{ ...style, display: 'flex', flexDirection: 'column', gap: 20, background: 'grey' }} {...props}>
               {children}
             </div>
           )),

@@ -1,4 +1,4 @@
-import * as u from '@virtuoso.dev/urx'
+import * as u from './urx'
 import { totalListHeightSystem } from './totalListHeightSystem'
 import { propsReadySystem } from './propsReadySystem'
 import { domIOSystem } from './domIOSystem'

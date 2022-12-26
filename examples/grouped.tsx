@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { GroupedVirtuoso } from '../src'
 
-export default function App() {
+export function Example() {
   return (
     <GroupedVirtuoso
       groupCounts={Array.from({ length: 20 }).fill(3) as number[]}

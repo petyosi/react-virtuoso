@@ -3,7 +3,7 @@
   "author": "Petyo Ivanov",
   "sideEffects": false,
   "version": "0.0.0-development",
-  "homepage": "https://virtuoso.dev/",
+  "homepage": "https./virtuoso.dev/",
   "license": "MIT",
   "source": "src/index.tsx",
   "main": "dist/index.js",
@@ -33,13 +33,9 @@
     "e2e": "playwright test",
     "lint": "eslint src test e2e --ext .ts,.tsx",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
-    "browse-examples": "node examples/generate-examples.mjs && parcel examples/__examples.html",
+    "dev": "ladle serve",
     "prepare": "pnpm run build && husky install",
     "semantic-release": "semantic-release"
-  },
-  "dependencies": {
-    "@virtuoso.dev/react-urx": "^0.2.12",
-    "@virtuoso.dev/urx": "^0.2.12"
   },
   "peerDependencies": {
     "react": ">=16 || >=17 || >= 18",
@@ -52,6 +48,7 @@
     "@emotion/styled": "^10.0.27",
     "@faker-js/faker": "^7.6.0",
     "@testing-library/react": "^13.4.0",
+    "@ladle/react": "^2.4.5",
     "@microsoft/api-extractor": "^7.33.7",
     "@playwright/test": "^1.22.2",
     "@types/jsdom": "^16.2.3",
@@ -61,14 +58,11 @@
     "@types/react-dom": "^18.0.1",
     "@types/react-router-dom": "^5.1.7",
     "@types/react-table": "^7.7.10",
-    "@types/react-test-renderer": "^16.9.3",
     "@typescript-eslint/eslint-plugin": "^5.47.0",
     "@typescript-eslint/parser": "^5.47.0",
     "@vitejs/plugin-react": "^3.0.0",
-    "babel-eslint": "^10.0.0",
     "eslint": "^8.30.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-flowtype": "^8.0.3",
     "eslint-plugin-html": "^7.1.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-json": "^3.1.0",
@@ -77,7 +71,7 @@
     "eslint-plugin-react": "^7.31.11",
     "eslint-plugin-react-hooks": "^4.6.0",
     "husky": "^6.0.0",
-    "jsdom": "^16.4.0",
+    "jsdom": "^20.0.3",
     "lodash": "^4.17.21",
     "playwright": "^1.27.1",
     "prettier": "^2.2.1",
@@ -87,7 +81,6 @@
     "react-dom": "^18.0.0",
     "react-router-dom": "^5.2.0",
     "react-table": "^7.7.0",
-    "react-test-renderer": "^16.13.1",
     "semantic-release": "^19.0.5",
     "terser": "^5.16.1",
     "tslib": "^2.0.0",
@@ -110,6 +103,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/petyosi/react-virtuoso.git"
+    "url": "https./github.com/petyosi/react-virtuoso.git"
   }
 }

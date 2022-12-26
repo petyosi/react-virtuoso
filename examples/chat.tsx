@@ -132,7 +132,7 @@ const data = Array.from({ length: 130 }, (_) => ({
   message: faker.lorem.sentences(),
 }))
 
-export default function App() {
+export function Example() {
   const [messages, setMessages] = React.useState(data)
   const userId = '1'
   return (

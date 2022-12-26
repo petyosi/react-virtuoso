@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { listSystem } from '../src/listSystem'
-import { init, getValue, publish, subscribe } from '@virtuoso.dev/urx'
+import { init, getValue, publish, subscribe } from '../src/urx'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 describe('list engine', () => {

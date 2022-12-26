@@ -4,13 +4,12 @@ const config: PlaywrightTestConfig = {
   testDir: './e2e',
   webServer: {
     command: 'pnpm run browse-examples',
-    port: 1234,
+    port: 61000,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,
   },
 
   use: {
-    locale: process.env['REACT18'] ? 'de-DE' : 'en-GB',
     launchOptions: {},
   },
 }

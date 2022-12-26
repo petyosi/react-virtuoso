@@ -23,7 +23,7 @@ const generateData = (length: number, startIndex = 0) => {
   return Array.from({ length }).map((_, i) => getItem(i + startIndex))
 }
 
-export default function App() {
+export function Example() {
   const [data, columns] = React.useMemo(() => {
     const columns: readonly Column<{ id: number; content: string }>[] = [
       {

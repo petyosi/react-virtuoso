@@ -1,4 +1,4 @@
-import { init, getValue, publish, subscribe } from '@virtuoso.dev/urx'
+import { init, getValue, publish, subscribe } from '../src/urx'
 import { gridSystem } from '../src/gridSystem'
 import { describe, it, expect, vi } from 'vitest'
 

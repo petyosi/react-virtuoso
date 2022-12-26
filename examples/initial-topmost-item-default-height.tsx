@@ -3,7 +3,7 @@ import { Virtuoso } from '../src'
 
 //
 const itemContent = (index: number) => <div style={{ height: index % 2 ? 30 : 20, background: 'white' }}>Item {index}</div>
-export default function App() {
+export function Example() {
   return (
     <div>
       <h2>Randomly buggy in safari, container height gets reported later</h2>

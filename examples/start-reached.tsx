@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react'
 const START_INDEX = 10000
 const INITIAL_ITEM_COUNT = 100
 
-export default function App() {
+export function Example() {
   const [firstItemIndex, setFirstItemIndex] = useState(START_INDEX)
   const [items, setItems] = useState(() => Array.from({ length: INITIAL_ITEM_COUNT }))
 

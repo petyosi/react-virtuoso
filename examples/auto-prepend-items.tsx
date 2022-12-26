@@ -36,7 +36,7 @@ const getUser = (index: number) => {
   return generated[index]
 }
 
-export default function App() {
+export function Example() {
   const START_INDEX = 10000
   const INITIAL_ITEM_COUNT = 20
 

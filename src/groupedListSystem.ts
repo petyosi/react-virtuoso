@@ -1,4 +1,4 @@
-import * as u from '@virtuoso.dev/urx'
+import * as u from './urx'
 
 import { findMaxKeyValue } from './AATree'
 import { domIOSystem } from './domIOSystem'

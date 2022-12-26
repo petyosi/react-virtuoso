@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useState } from 'react'
 import { Virtuoso } from '../src'
 
-export default function App() {
+export function Example() {
   const [data] = useState([{ msg: 'im a bird' }, { msg: 'im a bird 2' }])
   return (
     <div style={{ height: 475.61, width: '100%' }}>

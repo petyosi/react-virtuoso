@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test'
+import { navigateToExample } from './utils'
 
 test.describe('scroll to index', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:1234/scroll-to-index')
+  test.beforeEach(async ({ page, baseURL }) => {
+    await navigateToExample(page, baseURL, 'scroll-to-index')
     await page.reload()
     await page.waitForTimeout(100)
   })
@@ -16,8 +17,7 @@ test.describe('scroll to index', () => {
     await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
-      const listContainer = document.querySelectorAll('#test-root > div')[1]
-      return listContainer.scrollTop
+      return document.querySelector('[data-test-id=virtuoso-scroller]')!.scrollTop
     })
 
     expect(scrollTop).toBe((30 - 7) * 20 + 7 * 30)
@@ -29,8 +29,7 @@ test.describe('scroll to index', () => {
     await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
-      const listContainer = document.querySelectorAll('#test-root > div')[1]
-      return listContainer.scrollTop
+      return document.querySelector('[data-test-id=virtuoso-scroller]')!.scrollTop
     })
 
     expect(scrollTop).toBe((30 - 7) * 20 + 7 * 30 + 5)
@@ -42,8 +41,7 @@ test.describe('scroll to index', () => {
     await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
-      const listContainer = document.querySelectorAll('#test-root > div')[1]
-      return listContainer.scrollTop
+      return document.querySelector('[data-test-id=virtuoso-scroller]')!.scrollTop
     })
     const rendered30s = 11
     expect(scrollTop).toBe((50 - rendered30s) * 20 + rendered30s * 30 - 300 / 2 + 20 / 2)
@@ -55,8 +53,7 @@ test.describe('scroll to index', () => {
     await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
-      const listContainer = document.querySelectorAll('#test-root > div')[1]
-      return listContainer.scrollTop
+      return document.querySelector('[data-test-id=virtuoso-scroller]')!.scrollTop
     })
 
     const rendered30s = 14

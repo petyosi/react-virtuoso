@@ -1,5 +1,5 @@
-import { systemToComponent } from '@virtuoso.dev/react-urx'
-import * as u from '@virtuoso.dev/urx'
+import { systemToComponent } from './react-urx'
+import * as u from './urx'
 import * as React from 'react'
 import { createElement, FC, PropsWithChildren, useContext } from 'react'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'

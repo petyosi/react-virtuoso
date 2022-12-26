@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Virtuoso } from '../src/'
 
-export default function App() {
+export function Example() {
   return (
     <Virtuoso
       computeItemKey={(key) => `item-${key}`}

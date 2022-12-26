@@ -1,4 +1,4 @@
-import { getValue, init, publish, subscribe } from '@virtuoso.dev/urx'
+import { getValue, init, publish, subscribe } from '../src/urx'
 import { AANode, ranges, walk } from '../src/AATree'
 import { initialSizeState, offsetOf, rangesWithinOffsets, sizeStateReducer, sizeSystem } from '../src/sizeSystem'
 import { describe, it, expect, vi } from 'vitest'

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { TableVirtuoso, TableVirtuosoHandle } from '../src/'
 
-export default function App() {
+export function Example() {
   const ref = React.useRef<TableVirtuosoHandle>(null)
   return (
     <>
@@ -55,7 +55,7 @@ export default function App() {
       />
       <button
         onClick={() =>
-          ref.current.scrollToIndex({
+          ref.current?.scrollToIndex({
             index: 900,
             align: 'start',
           })
@@ -65,7 +65,7 @@ export default function App() {
       </button>
       <button
         onClick={() =>
-          ref.current.scrollToIndex({
+          ref.current?.scrollToIndex({
             index: 900,
             align: 'end',
           })
@@ -76,7 +76,7 @@ export default function App() {
 
       <button
         onClick={() =>
-          ref.current.scrollToIndex({
+          ref.current?.scrollToIndex({
             index: 900,
             align: 'center',
           })
@@ -86,7 +86,7 @@ export default function App() {
       </button>
       <button
         onClick={() =>
-          ref.current.scrollIntoView({
+          ref.current?.scrollIntoView({
             index: 50,
           })
         }

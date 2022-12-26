@@ -3,7 +3,7 @@ import { Virtuoso } from '../src'
 
 // globalThis['VIRTUOSO_LOG_LEVEL'] = 0
 
-export default function App() {
+export function Example() {
   return (
     <Virtuoso
       style={{ height: 500 }}

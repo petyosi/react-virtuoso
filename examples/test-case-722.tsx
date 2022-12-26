@@ -61,7 +61,7 @@ const SHORT_IDX = {
   182: true,
 }
 
-export default function App() {
+export function Example() {
   const [loadedCount, setLoadedCount] = useState(PAGE_COUNT)
 
   const prepend = () => {

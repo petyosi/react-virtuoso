@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { navigateToExample } from './utils'
 
 const DEFAULT_ITEM_HEIGHT = 35
 const OUTLIER = 400
@@ -7,9 +8,8 @@ const VIEWPORT_HEIGHT = 300
 const INITIAL_SCROLL_TOP = DEFAULT_ITEM_HEIGHT * ITEM_COUNT - VIEWPORT_HEIGHT
 const SCROLL_DELTA = -50
 test.describe('reverse taller than viewport', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:1234/reverse-taller-than-viewport')
-    await page.waitForSelector('#test-root')
+  test.beforeEach(async ({ page, baseURL }) => {
+    await navigateToExample(page, baseURL, 'reverse-taller-than-viewport')
     await page.waitForTimeout(200)
   })
 

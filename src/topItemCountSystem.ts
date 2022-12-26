@@ -1,4 +1,4 @@
-import * as u from '@virtuoso.dev/urx'
+import * as u from './urx'
 import { listStateSystem } from './listStateSystem'
 
 export const topItemCountSystem = u.system(([{ topItemsIndexes }]) => {

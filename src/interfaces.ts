@@ -48,7 +48,7 @@ export type ListProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' 
 /**
  * Passed to the Components.List custom component
  */
-export type GridListProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'ref' | 'className'>
+export type GridListProps = Pick<ComponentPropsWithRef<'div'>, 'style' | 'children' | 'ref' | 'className'> & { 'data-test-id': string }
 
 /**
  * Passed to the Components.Scroller custom component

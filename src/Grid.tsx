@@ -1,6 +1,6 @@
-import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
+import { RefHandle, systemToComponent } from './react-urx'
 
-import * as u from '@virtuoso.dev/urx'
+import * as u from './urx'
 import * as React from 'react'
 import { createElement, FC, PropsWithChildren, useContext } from 'react'
 import { gridSystem } from './gridSystem'
@@ -131,6 +131,7 @@ const GridItems: FC = React.memo(function GridItems() {
       className: listClassName,
       ...contextPropIfNotDomElement(ListComponent, context),
       style: { paddingTop: gridState.offsetTop, paddingBottom: gridState.offsetBottom },
+      'data-test-id': 'virtuoso-item-list',
     },
     gridState.items.map((item) => {
       const key = computeItemKey(item.index, item.data, context)
