@@ -44,24 +44,9 @@ import {
   useState,
   useCallback,
 } from 'react'
-import {
-  AnySystemSpec,
-  reset,
-  curry1to0,
-  curry2to1,
-  Emitter,
-  SR,
-  eventHandler,
-  getValue,
-  publish,
-  Publisher,
-  init,
-  StatefulStream,
-  Stream,
-  subscribe,
-  always,
-  tap,
-} from '../urx'
+import { flushSync } from 'react-dom'
+import * as u from '../urx'
+import type { Emitter, Publisher, AnySystemSpec, SR, Stream, StatefulStream } from '../urx'
 
 /** @internal */
 interface Dict<T> {
@@ -185,11 +170,12 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
   map: M,
   Root?: R
 ) {
+  type ContextValue = ReturnType<SS['constructor']> & { suppressFlushSync: boolean }
   const requiredPropNames = Object.keys(map.required || {})
   const optionalPropNames = Object.keys(map.optional || {})
   const methodNames = Object.keys(map.methods || {})
   const eventNames = Object.keys(map.events || {})
-  const Context = createContext<SR<SS>>({} as ReturnType<SS['constructor']>)
+  const Context = createContext({} as ContextValue)
 
   type RootCompProps = R extends ComponentType<infer RP> ? RP : { children?: ReactNode }
 
@@ -197,41 +183,43 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
 
   type CompMethods = MethodsFromPropMap<SS, M>
 
-  function applyPropsToSystem(system: ReturnType<SS['constructor']>, props: any) {
+  function applyPropsToSystem(system: ContextValue, props: any) {
+    system.suppressFlushSync = true
     if (system['propsReady']) {
-      publish(system['propsReady'], false)
+      u.publish(system['propsReady'], false)
     }
 
     for (const requiredPropName of requiredPropNames) {
       const stream = system[map.required![requiredPropName]]
-      publish(stream, props[requiredPropName])
+      u.publish(stream, props[requiredPropName])
     }
 
     for (const optionalPropName of optionalPropNames) {
       if (optionalPropName in props) {
         const stream = system[map.optional![optionalPropName]]
-        publish(stream, props[optionalPropName])
+        u.publish(stream, props[optionalPropName])
       }
     }
 
     if (system['propsReady']) {
-      publish(system['propsReady'], true)
+      u.publish(system['propsReady'], true)
     }
+    system.suppressFlushSync = false
   }
 
-  function buildMethods(system: ReturnType<SS['constructor']>) {
+  function buildMethods(system: ContextValue) {
     return methodNames.reduce((acc, methodName) => {
       ;(acc as any)[methodName] = (value: any) => {
         const stream = system[map.methods![methodName]]
-        publish(stream, value)
+        u.publish(stream, value)
       }
       return acc
     }, {} as CompMethods)
   }
 
-  function buildEventHandlers(system: ReturnType<SS['constructor']>) {
+  function buildEventHandlers(system: ContextValue) {
     return eventNames.reduce((handlers, eventName) => {
-      handlers[eventName] = eventHandler(system[map.events![eventName]])
+      handlers[eventName] = u.eventHandler(system[map.events![eventName]])
       return handlers
     }, {} as { [key: string]: Emitter<any> })
   }
@@ -244,19 +232,19 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
     const { children, ...props } = propsWithChildren as any
 
     const [system] = useState(() => {
-      return tap(init(systemSpec), (system) => applyPropsToSystem(system, props))
+      return u.tap(u.init(systemSpec), (system) => applyPropsToSystem(system, props))
     })
 
-    const [handlers] = useState(curry1to0(buildEventHandlers, system))
+    const [handlers] = useState(u.curry1to0(buildEventHandlers, system))
 
     useIsomorphicLayoutEffect(() => {
       for (const eventName of eventNames) {
         if (eventName in props) {
-          subscribe(handlers[eventName], props[eventName])
+          u.subscribe(handlers[eventName], props[eventName])
         }
       }
       return () => {
-        Object.values(handlers).map(reset)
+        Object.values(handlers).map(u.reset)
       }
     }, [props, handlers, system])
 
@@ -264,7 +252,7 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
       applyPropsToSystem(system, props)
     })
 
-    useImperativeHandle(ref, always(buildMethods(system)))
+    useImperativeHandle(ref, u.always(buildMethods(system)))
 
     return createElement(
       Context.Provider,
@@ -280,7 +268,7 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
   })
 
   const usePublisher = <K extends keyof S>(key: K) => {
-    return useCallback(curry2to1(publish, React.useContext(Context)[key]), [key]) as (
+    return useCallback(u.curry2to1(u.publish, React.useContext(Context)[key]), [key]) as (
       value: S[K] extends Stream<infer R> ? R : never
     ) => void
   }
@@ -289,16 +277,17 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
    * Returns the value emitted from the stream.
    */
   const useEmitterValue = <K extends keyof S, V = S[K] extends StatefulStream<infer R> ? R : never>(key: K) => {
-    const context = useContext(Context)
-    const source: StatefulStream<V> = context[key]
+    const system = useContext(Context)
+    const source: StatefulStream<V> = system[key]
 
-    const [value, setValue] = useState(curry1to0(getValue, source))
+    const [value, setValue] = useState(u.curry1to0(u.getValue, source))
 
     useIsomorphicLayoutEffect(
       () =>
-        subscribe(source, (next: V) => {
+        u.subscribe(source, (next: V) => {
           if (next !== value) {
-            setValue(always(next))
+            const wrapper = system.suppressFlushSync ? flushSync : u.call
+            wrapper(() => setValue(u.always(next)))
           }
         }),
       [source, value]
@@ -310,7 +299,7 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
   const useEmitter = <K extends keyof S, V = S[K] extends Stream<infer R> ? R : never>(key: K, callback: (value: V) => void) => {
     const context = useContext(Context)
     const source: Stream<V> = context[key]
-    useIsomorphicLayoutEffect(() => subscribe(source, callback), [callback, source])
+    useIsomorphicLayoutEffect(() => u.subscribe(source, callback), [callback, source])
   }
 
   return {
