@@ -297,7 +297,6 @@ export const {
       customScrollParent: 'customScrollParent',
       scrollerRef: 'scrollerRef',
       logLevel: 'logLevel',
-      react18ConcurrentRendering: 'react18ConcurrentRendering',
     },
     methods: {
       scrollToIndex: 'scrollToIndex',

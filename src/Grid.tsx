@@ -7,7 +7,7 @@ import { gridSystem } from './gridSystem'
 import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { GridComponents, GridComputeItemKey, GridItemContent, GridRootProps } from './interfaces'
-import { addDeprecatedAlias, buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle } from './List'
+import { buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle } from './List'
 import { Log, LogLevel } from './loggerSystem'
 import { correctItemSize } from './utils/correctItemSize'
 import { VirtuosoGridMockContext } from './utils/context'
@@ -52,47 +52,7 @@ const gridComponentPropsSystem = u.system(() => {
 })
 
 const combinedSystem = u.system(([gridSystem, gridComponentPropsSystem]) => {
-  const deprecatedProps = {
-    item: addDeprecatedAlias(gridComponentPropsSystem.itemContent, 'Rename the %citem%c prop to %citemContent.'),
-    ItemContainer: u.stream<any>(),
-    ScrollContainer: u.stream<any>(),
-    ListContainer: u.stream<any>(),
-    emptyComponent: u.stream<any>(),
-    scrollSeek: u.stream<any>(),
-  }
-
-  function deprecateComponentProp(stream: u.Stream<any>, componentName: string, propName: string) {
-    u.connect(
-      u.pipe(
-        stream,
-        u.withLatestFrom(gridComponentPropsSystem.components),
-        u.map(([comp, components]) => {
-          console.warn(`react-virtuoso: ${propName} property is deprecated. Pass components.${componentName} instead.`)
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          return { ...components, [componentName]: comp }
-        })
-      ),
-      gridComponentPropsSystem.components
-    )
-  }
-
-  u.subscribe(deprecatedProps.scrollSeek, ({ placeholder, ...config }) => {
-    console.warn(
-      `react-virtuoso: scrollSeek property is deprecated. Pass scrollSeekConfiguration and specify the placeholder in components.ScrollSeekPlaceholder instead.`
-    )
-    u.publish(gridComponentPropsSystem.components, {
-      ...u.getValue(gridComponentPropsSystem.components),
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      ScrollSeekPlaceholder: placeholder,
-    })
-    u.publish(gridSystem.scrollSeekConfiguration, config)
-  })
-
-  deprecateComponentProp(deprecatedProps.ItemContainer, 'Item', 'ItemContainer')
-  deprecateComponentProp(deprecatedProps.ListContainer, 'List', 'ListContainer')
-  deprecateComponentProp(deprecatedProps.ScrollContainer, 'Scroller', 'ScrollContainer')
-
-  return { ...gridSystem, ...gridComponentPropsSystem, ...deprecatedProps }
+  return { ...gridSystem, ...gridComponentPropsSystem }
 }, u.tup(gridSystem, gridComponentPropsSystem))
 
 const GridItems: FC = React.memo(function GridItems() {
@@ -255,13 +215,6 @@ const {
       useWindowScroll: 'useWindowScroll',
       customScrollParent: 'customScrollParent',
       scrollerRef: 'scrollerRef',
-
-      // deprecated
-      item: 'item',
-      ItemContainer: 'ItemContainer',
-      ScrollContainer: 'ScrollContainer',
-      ListContainer: 'ListContainer',
-      scrollSeek: 'scrollSeek',
     },
     methods: {
       scrollTo: 'scrollTo',

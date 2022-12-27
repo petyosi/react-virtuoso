@@ -247,11 +247,6 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
    * By default `4`. Redefine to change how much away from the bottom the scroller can be before the list is not considered not at bottom.
    */
   atBottomThreshold?: number
-
-  /**
-   * No longer necessary after 2.10.2. component should work out of the box.
-   */
-  react18ConcurrentRendering?: boolean
 }
 
 export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'totalCount' | 'itemContent'> {
@@ -471,11 +466,6 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
    * By default `4`. Redefine to change how much away from the bottom the scroller can be before the list is not considered not at bottom.
    */
   atBottomThreshold?: number
-
-  /**
-   * No longer necessary after 2.10.2. component should work out of the box.
-   */
-  react18ConcurrentRendering?: boolean
 }
 
 export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {

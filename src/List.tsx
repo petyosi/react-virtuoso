@@ -58,94 +58,8 @@ const listComponentPropsSystem = u.system(() => {
   }
 })
 
-export function addDeprecatedAlias<T>(prop: u.Stream<T>, message: string) {
-  const alias = u.stream<T>()
-  u.subscribe(alias, () =>
-    console.warn(`react-virtuoso: You are using a deprecated property. ${message}`, 'color: red;', 'color: inherit;', 'color: blue;')
-  )
-  u.connect(alias, prop)
-  return alias
-}
-
 const combinedSystem = u.system(([listSystem, propsSystem]) => {
-  const deprecatedProps = {
-    item: addDeprecatedAlias(propsSystem.itemContent, 'Rename the %citem%c prop to %citemContent.'),
-    group: addDeprecatedAlias(propsSystem.groupContent, 'Rename the %cgroup%c prop to %cgroupContent.'),
-    topItems: addDeprecatedAlias(listSystem.topItemCount, 'Rename the %ctopItems%c prop to %ctopItemCount.'),
-    itemHeight: addDeprecatedAlias(listSystem.fixedItemHeight, 'Rename the %citemHeight%c prop to %cfixedItemHeight.'),
-    scrollingStateChange: addDeprecatedAlias(listSystem.isScrolling, 'Rename the %cscrollingStateChange%c prop to %cisScrolling.'),
-    adjustForPrependedItems: u.stream<any>(),
-    maxHeightCacheSize: u.stream<any>(),
-    footer: u.stream<any>(),
-    header: u.stream<any>(),
-    HeaderContainer: u.stream<any>(),
-    FooterContainer: u.stream<any>(),
-    ItemContainer: u.stream<any>(),
-    ScrollContainer: u.stream<any>(),
-    GroupContainer: u.stream<any>(),
-    ListContainer: u.stream<any>(),
-    emptyComponent: u.stream<any>(),
-    scrollSeek: u.stream<any>(),
-  }
-
-  u.subscribe(deprecatedProps.adjustForPrependedItems, () => {
-    console.warn(
-      `react-virtuoso: adjustForPrependedItems is no longer supported. Use the firstItemIndex property instead - https://virtuoso.dev/prepend-items.`,
-      'color: red;',
-      'color: inherit;',
-      'color: blue;'
-    )
-  })
-
-  u.subscribe(deprecatedProps.maxHeightCacheSize, () => {
-    console.warn(`react-virtuoso: maxHeightCacheSize is no longer necessary. Setting it has no effect - remove it from your code.`)
-  })
-
-  u.subscribe(deprecatedProps.HeaderContainer, () => {
-    console.warn(
-      `react-virtuoso: HeaderContainer is deprecated. Use headerFooterTag if you want to change the wrapper of the header component and pass components.Header to change its contents.`
-    )
-  })
-
-  u.subscribe(deprecatedProps.FooterContainer, () => {
-    console.warn(
-      `react-virtuoso: FooterContainer is deprecated. Use headerFooterTag if you want to change the wrapper of the footer component and pass components.Footer to change its contents.`
-    )
-  })
-
-  function deprecateComponentProp(stream: u.Stream<any>, componentName: string, propName: string) {
-    u.connect(
-      u.pipe(
-        stream,
-        u.withLatestFrom(propsSystem.components),
-        u.map(([comp, components]) => {
-          console.warn(`react-virtuoso: ${propName} property is deprecated. Pass components.${componentName} instead.`)
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          return { ...components, [componentName]: comp }
-        })
-      ),
-      propsSystem.components
-    )
-  }
-
-  u.subscribe(deprecatedProps.scrollSeek, ({ placeholder, ...config }) => {
-    console.warn(
-      `react-virtuoso: scrollSeek property is deprecated. Pass scrollSeekConfiguration and specify the placeholder in components.ScrollSeekPlaceholder instead.`
-    )
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    u.publish(propsSystem.components, { ...u.getValue(propsSystem.components), ScrollSeekPlaceholder: placeholder })
-    u.publish(listSystem.scrollSeekConfiguration, config)
-  })
-
-  deprecateComponentProp(deprecatedProps.footer, 'Footer', 'footer')
-  deprecateComponentProp(deprecatedProps.header, 'Header', 'header')
-  deprecateComponentProp(deprecatedProps.ItemContainer, 'Item', 'ItemContainer')
-  deprecateComponentProp(deprecatedProps.ListContainer, 'List', 'ListContainer')
-  deprecateComponentProp(deprecatedProps.ScrollContainer, 'Scroller', 'ScrollContainer')
-  deprecateComponentProp(deprecatedProps.emptyComponent, 'EmptyPlaceholder', 'emptyComponent')
-  deprecateComponentProp(deprecatedProps.GroupContainer, 'Group', 'GroupContainer')
-
-  return { ...listSystem, ...propsSystem, ...deprecatedProps }
+  return { ...listSystem, ...propsSystem }
 }, u.tup(listSystem, listComponentPropsSystem))
 
 const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => <div style={{ height }}></div>
@@ -506,32 +420,12 @@ export const {
       customScrollParent: 'customScrollParent',
       scrollerRef: 'scrollerRef',
       logLevel: 'logLevel',
-      react18ConcurrentRendering: 'react18ConcurrentRendering',
-
-      // deprecated
-      item: 'item',
-      group: 'group',
-      topItems: 'topItems',
-      itemHeight: 'itemHeight',
-      scrollingStateChange: 'scrollingStateChange',
-      maxHeightCacheSize: 'maxHeightCacheSize',
-      footer: 'footer',
-      header: 'header',
-      ItemContainer: 'ItemContainer',
-      ScrollContainer: 'ScrollContainer',
-      ListContainer: 'ListContainer',
-      GroupContainer: 'GroupContainer',
-      emptyComponent: 'emptyComponent',
-      HeaderContainer: 'HeaderContainer',
-      FooterContainer: 'FooterContainer',
-      scrollSeek: 'scrollSeek',
     },
     methods: {
       scrollToIndex: 'scrollToIndex',
       scrollIntoView: 'scrollIntoView',
       scrollTo: 'scrollTo',
       scrollBy: 'scrollBy',
-      adjustForPrependedItems: 'adjustForPrependedItems',
       autoscrollToBottom: 'autoscrollToBottom',
     },
     events: {
