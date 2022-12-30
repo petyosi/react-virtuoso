@@ -1,17 +1,18 @@
 import { systemToComponent } from './react-urx'
 import * as u from './urx'
 import * as React from 'react'
-import { createElement, FC, PropsWithChildren, useContext } from 'react'
+import { createElement, FC, PropsWithChildren, ReactElement, Ref, useContext } from 'react'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import { ComputeItemKey, ItemContent, FixedHeaderContent, FixedFooterContent, TableComponents, TableRootProps } from './interfaces'
 import { listSystem } from './listSystem'
-import { identity, buildScroller, buildWindowScroller, viewportStyle, contextPropIfNotDomElement } from './List'
+import { identity, buildScroller, buildWindowScroller, viewportStyle, contextPropIfNotDomElement } from './Virtuoso'
 import useSize from './hooks/useSize'
 import { correctItemSize } from './utils/correctItemSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { VirtuosoMockContext } from './utils/context'
+import { TableVirtuosoHandle, TableVirtuosoProps } from './component-interfaces/TableVirtuoso'
 
-const tableComponentPropsSystem = u.system(() => {
+const tableComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   const itemContent = u.statefulStream<ItemContent<any, unknown>>((index: number) => <td>Item ${index}</td>)
   const context = u.statefulStream<unknown>(null)
   const fixedHeaderContent = u.statefulStream<FixedHeaderContent>(null)
@@ -54,7 +55,7 @@ const tableComponentPropsSystem = u.system(() => {
   }
 })
 
-const combinedSystem = u.system(([listSystem, propsSystem]) => {
+const combinedSystem = /*#__PURE__*/ u.system(([listSystem, propsSystem]) => {
   return { ...listSystem, ...propsSystem }
 }, u.tup(listSystem, tableComponentPropsSystem))
 
@@ -70,7 +71,7 @@ const DefaultFillerRow = ({ height }: { height: number }) => (
   </tr>
 )
 
-export const Items = React.memo(function VirtuosoItems() {
+const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
   const listState = useEmitterValue('listState')
   const sizeRanges = usePublisher('sizeRanges')
   const useWindowScroll = useEmitterValue('useWindowScroll')
@@ -158,12 +159,6 @@ export const Items = React.memo(function VirtuosoItems() {
   )
 })
 
-export interface Hooks {
-  usePublisher: typeof usePublisher
-  useEmitterValue: typeof useEmitterValue
-  useEmitter: typeof useEmitter
-}
-
 const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const ctx = useContext(VirtuosoMockContext)
   const viewportHeight = usePublisher('viewportHeight')
@@ -205,7 +200,7 @@ const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   )
 }
 
-const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(props) {
+const TableRoot: FC<TableRootProps> = /*#__PURE__*/ React.memo(function TableVirtuosoRoot(props) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const customScrollParent = useEmitterValue('customScrollParent')
   const fixedHeaderHeight = usePublisher('fixedHeaderHeight')
@@ -259,12 +254,12 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
   )
 })
 
-export const {
+const {
   Component: Table,
   usePublisher,
   useEmitterValue,
   useEmitter,
-} = systemToComponent(
+} = /*#__PURE__*/ systemToComponent(
   combinedSystem,
   {
     required: {},
@@ -319,5 +314,9 @@ export const {
   TableRoot
 )
 
-const Scroller = buildScroller({ usePublisher, useEmitterValue, useEmitter })
-const WindowScroller = buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })
+const Scroller = /*#__PURE__*/ buildScroller({ usePublisher, useEmitterValue, useEmitter })
+const WindowScroller = /*#__PURE__*/ buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })
+
+export const TableVirtuoso = Table as <ItemData = any, Context = any>(
+  props: TableVirtuosoProps<ItemData, Context> & { ref?: Ref<TableVirtuosoHandle> }
+) => ReactElement

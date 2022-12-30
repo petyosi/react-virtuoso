@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
-import { navigateToExample } from './utils'
+//@ts-expect-error - type module and playwright
+import { navigateToExample } from './utils.ts'
 
 test.describe('jagged list with initial topmost item', () => {
   test.beforeEach(async ({ page, baseURL }) => {

@@ -73,7 +73,7 @@ function buildItems<D>(startIndex: number, endIndex: number, data: D[] | undefin
 function gapComparator(prev: Gap, next: Gap) {
   return prev && prev.column === next.column && prev.row === next.row
 }
-export const gridSystem = u.system(
+export const gridSystem = /*#__PURE__*/ u.system(
   ([
     { overscan, visibleRange, listBoundary },
     { scrollTop, viewportHeight, scrollBy, scrollTo, smoothScrollTargetReached, scrollContainerState, footerHeight, headerHeight },

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
-import { navigateToExample } from './utils'
+//@ts-expect-error - type module and playwright
+import { navigateToExample } from './utils.ts'
 
 test.describe('grid with gaps', () => {
   test.beforeEach(async ({ page, baseURL }) => {

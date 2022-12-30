@@ -2,17 +2,18 @@ import { RefHandle, systemToComponent } from './react-urx'
 
 import * as u from './urx'
 import * as React from 'react'
-import { createElement, FC, PropsWithChildren, useContext } from 'react'
+import { createElement, FC, PropsWithChildren, ReactElement, Ref, useContext } from 'react'
 import { gridSystem } from './gridSystem'
 import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { GridComponents, GridComputeItemKey, GridItemContent, GridRootProps } from './interfaces'
-import { buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle } from './List'
+import { buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle } from './Virtuoso'
 import { Log, LogLevel } from './loggerSystem'
+import { VirtuosoGridHandle, VirtuosoGridProps } from './component-interfaces/VirtuosoGrid'
 import { correctItemSize } from './utils/correctItemSize'
 import { VirtuosoGridMockContext } from './utils/context'
 
-const gridComponentPropsSystem = u.system(() => {
+const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   const itemContent = u.statefulStream<GridItemContent<any, any>>((index) => `Item ${index}`)
   const components = u.statefulStream<GridComponents>({})
   const context = u.statefulStream<unknown>(null)
@@ -51,11 +52,11 @@ const gridComponentPropsSystem = u.system(() => {
   }
 })
 
-const combinedSystem = u.system(([gridSystem, gridComponentPropsSystem]) => {
+const combinedSystem = /*#__PURE__*/ u.system(([gridSystem, gridComponentPropsSystem]) => {
   return { ...gridSystem, ...gridComponentPropsSystem }
 }, u.tup(gridSystem, gridComponentPropsSystem))
 
-const GridItems: FC = React.memo(function GridItems() {
+const GridItems: FC = /*#__PURE__*/ React.memo(function GridItems() {
   const gridState = useEmitterValue('gridState')
   const listClassName = useEmitterValue('listClassName')
   const itemClassName = useEmitterValue('itemClassName')
@@ -174,7 +175,7 @@ const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   )
 }
 
-const GridRoot: FC<GridRootProps> = React.memo(function GridRoot({ ...props }) {
+const GridRoot: FC<GridRootProps> = /*#__PURE__*/ React.memo(function GridRoot({ ...props }) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const customScrollParent = useEmitterValue('customScrollParent')
   const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
@@ -196,7 +197,7 @@ const {
   usePublisher,
   useEmitterValue,
   useEmitter,
-} = systemToComponent(
+} = /*#__PURE__*/ systemToComponent(
   combinedSystem,
   {
     optional: {
@@ -233,13 +234,10 @@ const {
   GridRoot
 )
 
-export type foo<T> = T extends React.ForwardRefExoticComponent<React.RefAttributes<infer Handle>> ? Handle : never
-
 export type GridHandle = RefHandle<typeof Grid>
-export { Grid }
 
-const Scroller = buildScroller({ usePublisher, useEmitterValue, useEmitter })
-const WindowScroller = buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })
+const Scroller = /*#__PURE__*/ buildScroller({ usePublisher, useEmitterValue, useEmitter })
+const WindowScroller = /*#__PURE__*/ buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })
 
 function resolveGapValue(property: string, value: string | undefined, log: Log) {
   if (value !== 'normal' && !value?.endsWith('px')) {
@@ -250,3 +248,5 @@ function resolveGapValue(property: string, value: string | undefined, log: Log) 
   }
   return parseInt(value ?? '0', 10)
 }
+
+export const VirtuosoGrid = Grid as <Context = any>(props: VirtuosoGridProps<Context> & { ref?: Ref<VirtuosoGridHandle> }) => ReactElement

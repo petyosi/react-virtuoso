@@ -1,6 +1,7 @@
 {
   "name": "react-virtuoso",
   "author": "Petyo Ivanov",
+  "type": "module",
   "sideEffects": false,
   "version": "0.0.0-development",
   "homepage": "https./virtuoso.dev/",
@@ -50,7 +51,7 @@
     "@testing-library/react": "^13.4.0",
     "@ladle/react": "^2.4.5",
     "@microsoft/api-extractor": "^7.33.7",
-    "@playwright/test": "^1.22.2",
+    "@playwright/test": "^1.29.1",
     "@types/jsdom": "^16.2.3",
     "@types/lodash": "^4.14.165",
     "@types/react": "^18.0.5",
@@ -73,7 +74,7 @@
     "husky": "^6.0.0",
     "jsdom": "^20.0.3",
     "lodash": "^4.17.21",
-    "playwright": "^1.27.1",
+    "playwright": "^1.29.1",
     "prettier": "^2.2.1",
     "process": "^0.11.10",
     "react": "^18.0.0",
@@ -88,7 +89,7 @@
     "vite": "^4.0.0",
     "vitest": "^0.26.2"
   },
-  "packageManager": "pnpm@7.19.0",
+  "packageManager": "pnpm@7.21.0",
   "resolutions": {
     "@types/react": "^16.14.2"
   },

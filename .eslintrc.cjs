@@ -35,4 +35,12 @@ module.exports = {
       version: 'detect', // React version. "detect" automatically picks the version you have installed.
     },
   },
+  overrides: [
+    {
+      files: ['e2e/*.ts'],
+      rules: {
+        '@typescript-eslint/no-unsafe-call': 'off',
+      },
+    },
+  ],
 }

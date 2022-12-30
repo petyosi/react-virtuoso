@@ -10,7 +10,7 @@ specifiers:
   '@emotion/styled': ^10.0.27
   '@ladle/react': ^2.4.5
   '@microsoft/api-extractor': ^7.33.7
-  '@playwright/test': ^1.22.2
+  '@playwright/test': ^1.29.1
   '@types/faker': ^5.1.4
   '@types/jsdom': ^16.2.3
   '@types/lodash': ^4.14.165
@@ -35,8 +35,7 @@ specifiers:
   husky: ^6.0.0
   jsdom: ^20.0.3
   lodash: ^4.17.21
-  playwright: ^1.22.2
-  playwright-chromium: ^1.22.2
+  playwright: ^1.29.1
   prettier: ^2.2.1
   react: ^18.0.0
   react-beautiful-dnd: ^13.0.0
@@ -83,7 +82,6 @@ devDependencies:
   jsdom: 20.0.3
   lodash: 4.17.21
   playwright: 1.29.1
-  playwright-chromium: 1.29.1
   prettier: 2.8.1
   react: 18.2.0
   react-beautiful-dnd: 13.1.1_biqbaboplfbrettd7655fr4n2y
@@ -6116,15 +6114,6 @@ packages:
       jsonc-parser: 3.2.0
       mlly: 1.0.0
       pathe: 1.0.0
-    dev: true
-
-  /playwright-chromium/1.29.1:
-    resolution: {integrity: sha512-Mdt15dIcYyM3MBBBKYQPBWzqcjrMcJ0n9v567DmHYgJk4XfJlQ2jQVzdQ1OyM1oKaOZ70CuC60f1fZtH8KglMA==}
-    engines: {node: '>=14'}
-    hasBin: true
-    requiresBuild: true
-    dependencies:
-      playwright-core: 1.29.1
     dev: true
 
   /playwright-core/1.29.1:

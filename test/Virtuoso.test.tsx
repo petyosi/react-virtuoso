@@ -4,7 +4,7 @@
 import * as React from 'react'
 import ReactDOM from 'react-dom/client'
 import { act } from 'react-dom/test-utils'
-import { List } from '../src/List'
+import { Virtuoso } from '../src/Virtuoso'
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
@@ -13,7 +13,7 @@ vi.mock('../src/hooks/useChangedChildSizes')
 vi.mock('../src/hooks/useScrollTop')
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
-describe('List', () => {
+describe('Virtuoso', () => {
   let container: HTMLDivElement
   beforeEach(() => {
     // setup a DOM element as a render target
@@ -28,7 +28,7 @@ describe('List', () => {
 
   it('renders a probe item initially', () => {
     act(() => {
-      ReactDOM.createRoot(container).render(<List totalCount={20000} />)
+      ReactDOM.createRoot(container).render(<Virtuoso totalCount={20000} />)
     })
 
     const scroller = container.firstElementChild as any
@@ -51,7 +51,7 @@ describe('List', () => {
 
     beforeEach(() => {
       act(() => {
-        ReactDOM.createRoot(container).render(<List totalCount={20000} />)
+        ReactDOM.createRoot(container).render(<Virtuoso totalCount={20000} />)
       })
 
       scroller = container.firstElementChild
@@ -93,7 +93,7 @@ describe('List', () => {
 
     beforeEach(() => {
       act(() => {
-        ReactDOM.createRoot(container).render(<List data={data} itemContent={(_: number, data: string) => data} />)
+        ReactDOM.createRoot(container).render(<Virtuoso data={data} itemContent={(_: number, data: string) => data} />)
       })
 
       scroller = container.firstElementChild
@@ -118,7 +118,7 @@ describe('List', () => {
 
       return (
         <>
-          <List data={data} itemContent={(_: number, item: { name: string }) => item.name} />
+          <Virtuoso data={data} itemContent={(_: number, item: { name: string }) => item.name} />
           <button onClick={() => setData([{ name: 'Item 0' }])}>Set Data</button>
         </>
       )
@@ -148,7 +148,7 @@ describe('List', () => {
 
       return (
         <>
-          <List
+          <Virtuoso
             data={data}
             itemContent={(_: number, item: { name: string }) => {
               return item.name
