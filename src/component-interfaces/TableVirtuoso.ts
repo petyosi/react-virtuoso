@@ -17,7 +17,7 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
   /**
    * Use the `components` property for advanced customization of the elements rendered by the table.
    */
-  components?: TableComponents<C>
+  components?: TableComponents<D, C>
   /**
    * Set the contents of the table header.
    */

@@ -83,7 +83,7 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   /**
    * Use the `components` property for advanced customization of the elements rendered by the list.
    */
-  components?: Components<C>
+  components?: Components<D, C>
 
   /**
    * Set the callback to specify the contents of the item.

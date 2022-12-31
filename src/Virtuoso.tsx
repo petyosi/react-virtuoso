@@ -173,6 +173,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
             'data-known-size': item.size,
             'data-item-index': item.index,
             'data-item-group-index': item.groupIndex,
+            item: item.data,
             style: ITEM_STYLE,
           },
           hasGroups
