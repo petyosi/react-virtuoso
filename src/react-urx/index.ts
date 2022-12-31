@@ -44,7 +44,6 @@ import {
   useState,
   useCallback,
 } from 'react'
-import { flushSync } from 'react-dom'
 import * as u from '../urx'
 import type { Emitter, Publisher, AnySystemSpec, SR, Stream, StatefulStream } from '../urx'
 
@@ -184,7 +183,6 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
   type CompMethods = MethodsFromPropMap<SS, M>
 
   function applyPropsToSystem(system: ContextValue, props: any) {
-    system.suppressFlushSync = true
     if (system['propsReady']) {
       u.publish(system['propsReady'], false)
     }
@@ -204,7 +202,6 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
     if (system['propsReady']) {
       u.publish(system['propsReady'], true)
     }
-    system.suppressFlushSync = false
   }
 
   function buildMethods(system: ContextValue) {
@@ -286,8 +283,7 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
       () =>
         u.subscribe(source, (next: V) => {
           if (next !== value) {
-            const wrapper = system.suppressFlushSync ? flushSync : u.call
-            wrapper(() => setValue(u.always(next)))
+            setValue(u.always(next))
           }
         }),
       [source, value]

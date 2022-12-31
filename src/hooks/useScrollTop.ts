@@ -2,6 +2,7 @@ import { useRef, useCallback, useEffect } from 'react'
 import * as u from '../urx'
 import { correctItemSize } from '../utils/correctItemSize'
 import { ScrollContainerState } from '../interfaces'
+import { flushSync } from 'react-dom'
 import { approximatelyEqual } from '../utils/approximatelyEqual'
 
 export type ScrollerRef = Window | HTMLElement | null
@@ -25,11 +26,19 @@ export default function useScrollTop(
       const scrollHeight = windowScroll ? document.documentElement.scrollHeight : el.scrollHeight
       const viewportHeight = windowScroll ? window.innerHeight : el.offsetHeight
 
-      scrollContainerStateCallback({
-        scrollTop: Math.max(scrollTop, 0),
-        scrollHeight,
-        viewportHeight,
-      })
+      const call = () => {
+        scrollContainerStateCallback({
+          scrollTop: Math.max(scrollTop, 0),
+          scrollHeight,
+          viewportHeight,
+        })
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if ((ev as any).suppressFlushSync) {
+        call()
+      } else {
+        flushSync(call)
+      }
 
       if (scrollTopTarget.current !== null) {
         if (scrollTop === scrollTopTarget.current || scrollTop <= 0 || scrollTop === scrollHeight - viewportHeight) {
@@ -49,7 +58,7 @@ export default function useScrollTop(
     const localRef = customScrollParent ? customScrollParent : scrollerRef.current!
 
     scrollerRefCallback(customScrollParent ? customScrollParent : scrollerRef.current)
-    handler({ target: localRef } as unknown as Event)
+    handler({ target: localRef, suppressFlushSync: true } as unknown as Event)
     localRef.addEventListener('scroll', handler, { passive: true })
 
     return () => {
