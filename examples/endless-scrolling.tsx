@@ -27,7 +27,7 @@ export function Example() {
   return (
     <div>
       {items.length ? (
-        <Virtuoso data={items} initialItemCount={items.length} endReached={loadMore} itemContent={itemContent} style={{ height: 300 }} />
+        <Virtuoso data={items} endReached={loadMore} itemContent={itemContent} style={{ height: 300 }} />
       ) : (
         <div>Loading</div>
       )}

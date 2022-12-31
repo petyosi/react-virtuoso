@@ -92,6 +92,7 @@ function ChatList({ userId, messages = [], onSend, onReceive, placeholder }: Cha
         ref={ref}
         style={{ flex: 1 }}
         initialTopMostItemIndex={messages.length - 1}
+        increaseViewportBy={{ top: 0, bottom: 100 }}
         followOutput={(isAtBottom) => {
           if (isMyOwnMessage.current) {
             // if the user has scrolled away and sends a message, bring him to the bottom instantly
