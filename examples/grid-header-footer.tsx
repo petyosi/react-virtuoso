@@ -39,7 +39,7 @@ const ListContainer = styled.div`
   flex-wrap: wrap;
 ` as GridComponents['List']
 
-export default function App() {
+export function Example() {
   return (
     <VirtuosoGrid
       totalCount={100}

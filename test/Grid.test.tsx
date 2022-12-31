@@ -3,10 +3,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import * as React from 'react'
 import ReactDOM from 'react-dom/client'
+import { VirtuosoGrid } from '../src/VirtuosoGrid'
+
+import { describe, it, beforeEach, afterEach, vi, expect } from 'vitest'
 import { act } from 'react-dom/test-utils'
-import { Grid } from '../src/Grid'
-jest.mock('../src/hooks/useSize')
-jest.mock('../src/hooks/useScrollTop')
+
+vi.mock('../src/hooks/useSize')
+vi.mock('../src/hooks/useScrollTop')
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 describe('Grid', () => {
@@ -24,7 +27,7 @@ describe('Grid', () => {
 
   it('renders a probe item initially', () => {
     act(() => {
-      ReactDOM.createRoot(container).render(<Grid totalCount={20000} />)
+      ReactDOM.createRoot(container).render(<VirtuosoGrid totalCount={20000} />)
     })
 
     const scroller = container.firstElementChild as any
@@ -48,7 +51,7 @@ describe('Grid', () => {
 
     beforeEach(() => {
       act(() => {
-        ReactDOM.createRoot(container).render(<Grid data={data} itemContent={(_: number, data: string) => data} />)
+        ReactDOM.createRoot(container).render(<VirtuosoGrid data={data} itemContent={(_: number, data: string) => data} />)
       })
 
       scroller = container.firstElementChild
@@ -72,7 +75,7 @@ describe('Grid', () => {
 
       return (
         <>
-          <Grid data={data} itemContent={(_: number, item: { name: string }) => item.name} />
+          <VirtuosoGrid data={data} itemContent={(_: number, item: { name: string }) => item.name} />
           <button onClick={() => setData([{ name: 'Item 0' }])}>Set Data</button>
         </>
       )
@@ -101,7 +104,7 @@ describe('Grid', () => {
 
       return (
         <>
-          <Grid
+          <VirtuosoGrid
             data={data}
             itemContent={(_: number, item: { name: string }) => {
               return item.name

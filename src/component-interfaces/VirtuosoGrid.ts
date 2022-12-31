@@ -8,11 +8,16 @@ import type {
   ScrollSeekConfiguration,
 } from '../interfaces'
 
-export interface VirtuosoGridProps<C = unknown> extends GridRootProps {
+export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
   /**
    * The total amount of items to be rendered.
    */
-  totalCount: number
+  totalCount?: number
+
+  /**
+   * The data items to be rendered. If data is set, the total count will be inferred from the length of the array.
+   */
+  data?: readonly D[]
 
   /**
    * Use for server-side rendering - if set, the list will render the specified amount of items
@@ -23,7 +28,7 @@ export interface VirtuosoGridProps<C = unknown> extends GridRootProps {
   /**
    * Set the callback to specify the contents of the item.
    */
-  itemContent?: GridItemContent<C>
+  itemContent?: GridItemContent<D, C>
 
   /**
    * Use the `components` property for advanced customization of the elements rendered by the list.
@@ -40,7 +45,7 @@ export interface VirtuosoGridProps<C = unknown> extends GridRootProps {
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.
    */
-  computeItemKey?: GridComputeItemKey
+  computeItemKey?: GridComputeItemKey<D, C>
 
   /**
    * Use to display placeholders if the user scrolls fast through the list.

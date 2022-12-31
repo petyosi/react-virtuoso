@@ -16,7 +16,7 @@ test.describe('list with scroll seek placeholders', () => {
       }, 10)
     })
 
-    await page.waitForSelector('#test-root div[aria-label=placeholder]')
+    await page.waitForSelector('div[aria-label=placeholder]')
 
     const color = await page.evaluate(() => {
       const placeholderItem = document.querySelector('[data-test-id=virtuoso-item-list] > div') as HTMLElement
