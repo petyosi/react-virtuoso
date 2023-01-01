@@ -7,8 +7,8 @@
   "homepage": "https://virtuoso.dev/",
   "license": "MIT",
   "source": "src/index.tsx",
-  "main": "dist/index.js",
-  "module": "dist/index.m.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "keywords": [
     "react",
