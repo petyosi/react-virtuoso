@@ -27,7 +27,7 @@ describe('event handler', () => {
     expect(handle1).toHaveBeenCalledTimes(1)
   })
 
-  it.only('unsubscribes the handle when reset', () => {
+  it('unsubscribes the handle when reset', () => {
     const str = statefulStream(1)
     const handler = eventHandler(str)
     const handle = vi.fn()

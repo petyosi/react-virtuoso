@@ -72,7 +72,7 @@ describe('components from system', () => {
       Component = Comp
     })
 
-    it.only('maps a property to the component', () => {
+    it('maps a property to the component', () => {
       act(() => {
         render(
           <Component>
