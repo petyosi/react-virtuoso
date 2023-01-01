@@ -4,7 +4,7 @@
   "type": "module",
   "sideEffects": false,
   "version": "0.0.0-development",
-  "homepage": "https./virtuoso.dev/",
+  "homepage": "https://virtuoso.dev/",
   "license": "MIT",
   "source": "src/index.tsx",
   "main": "dist/index.js",
@@ -103,6 +103,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https./github.com/petyosi/react-virtuoso.git"
+    "url": "https://github.com/petyosi/react-virtuoso.git"
   }
 }
