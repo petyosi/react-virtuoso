@@ -62,7 +62,7 @@ jobs:
         run: |
           pnpm lint
           pnpm typecheck
-          pnpm test --ci 
+          pnpm test
           pnpm e2e 
 
       - name: Release
