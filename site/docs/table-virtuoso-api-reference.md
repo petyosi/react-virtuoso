@@ -5,9 +5,9 @@ sidebar_label: Table Virtuoso
 slug: /table-virtuoso-api-reference/
 ---
 
-import Props from './api/interfaces/_components_.tablevirtuosoprops.md'
-import VirtuosoProps from './api/interfaces/_components_.virtuosoprops.md'
-import Methods from './api/interfaces/_components_.virtuosohandle.md'
+import Props from './api/interfaces/_component_interfaces_tablevirtuoso_.tablevirtuosoprops.md'
+import VirtuosoProps from './api/interfaces/_component_interfaces_virtuoso_.virtuosoprops.md'
+import Methods from './api/interfaces/_component_interfaces_virtuoso_.virtuosohandle.md'
 
 All properties are optional - by default, the component will render empty. 
 

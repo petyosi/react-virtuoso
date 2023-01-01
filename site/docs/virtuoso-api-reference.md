@@ -5,9 +5,9 @@ sidebar_label: Virtuoso
 slug: /virtuoso-api-reference/
 ---
 
-import Props from './api/interfaces/_components_.virtuosoprops.md'
-import GroupProps from './api/interfaces/_components_.groupedvirtuosoprops.md'
-import Methods from './api/interfaces/_components_.virtuosohandle.md'
+import Props from './api/interfaces/_component_interfaces_virtuoso_.virtuosoprops.md'
+import GroupProps from './api/interfaces/_component_interfaces_virtuoso_.groupedvirtuosoprops.md'
+import Methods from './api/interfaces/_component_interfaces_virtuoso_.virtuosohandle.md'
 
 All properties are optional - by default, the component will render empty. Under the hood, both `Virtuoso` and `GroupedVirtuoso` are the same component - the only difference is that they have different TypeScript interfaces applied. 
 All `Virtuoso` props work for `GroupedVirtuoso`, but the properties in the `GroupedVirtuoso` section work only in grouped mode.
