@@ -96,13 +96,13 @@ jobs:
           IdentityFile ~/.ssh/id_rsa
           EOT
 
-     - name: Build and deploy docs
-       if: github.ref == 'refs/heads/master'
-       env:
-         GIT_USER: git
-         USE_SSH: true
-       run: |
-         cd site
-         yarn install --frozen-lockfile
-         yarn build
-         yarn deploy
+      - name: Build and deploy docs
+        if: github.ref == 'refs/heads/master'
+        env:
+          GIT_USER: git
+          USE_SSH: true
+        run: |
+          cd site
+          yarn install --frozen-lockfile
+          yarn build
+          yarn deploy
