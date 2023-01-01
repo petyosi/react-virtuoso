@@ -37,7 +37,7 @@ const ListContainer = styled.div`
   flex-wrap: wrap;
 ` as GridComponents['List']
 
-export default function App() {
+export function Example() {
   const [customScrollParent, setCustomScrollParent] = React.useState(null)
   const [height, setHeight] = React.useState('25vh')
   const toggleHeight = () => (height === '50vh' ? setHeight('25vh') : setHeight('50vh'))

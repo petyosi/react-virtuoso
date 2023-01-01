@@ -7,7 +7,7 @@ import { IndexLocation } from '../src/scrollToIndexSystem'
 globalThis['VIRTUOSO_LOG_LEVEL'] = 0
 
 const itemContent = (index: number) => <div style={{ height: index % 2 ? 30 : 20, background: 'white' }}>Item {index}</div>
-export default function App() {
+export function Example() {
   const NumberLocation = 60
   const ObjectLocation: IndexLocationWithAlign = { index: 80, align: 'end' }
 

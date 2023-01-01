@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test'
+//@ts-expect-error - type module and playwright
+import { navigateToExample } from './utils.ts'
 
 test.describe('window table with header', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:1234/window-table')
-    await page.waitForSelector('#test-root')
+  test.beforeEach(async ({ page, baseURL }) => {
+    await navigateToExample(page, baseURL, 'window-table')
     await page.waitForTimeout(100)
   })
 

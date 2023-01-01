@@ -4,7 +4,7 @@ import { Virtuoso, Components } from '../src'
 const components: Components = {
   Header: ({ context }) => <div>Header - {JSON.stringify(context)}</div>,
 }
-export default function App() {
+export function Example() {
   const [context, setContext] = React.useState({ key: 'value' })
   return (
     <>

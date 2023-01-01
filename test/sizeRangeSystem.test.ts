@@ -1,7 +1,8 @@
 import { BOTTOM, getOverscan, TOP, sizeRangeSystem } from '../src/sizeRangeSystem'
-import { init, getValue, publish, subscribe, system, tup } from '@virtuoso.dev/urx'
+import { init, getValue, publish, subscribe, system, tup } from '../src/urx'
 import { domIOSystem } from '../src/domIOSystem'
 import { DOWN, UP } from '../src/stateFlagsSystem'
+import { describe, it, expect, vi } from 'vitest'
 
 void getValue
 void publish
@@ -28,7 +29,7 @@ describe('extend viewport by', () => {
   it('increases the calculated range statically', () => {
     const sys = system(([a, b]) => ({ ...a, ...b }), tup(sizeRangeSystem, domIOSystem))
     const { listBoundary, visibleRange, increaseViewportBy, scrollTop, viewportHeight } = init(sys)
-    const spy = jest.fn()
+    const spy = vi.fn()
     subscribe(visibleRange, spy)
     publish(scrollTop, 0)
     publish(viewportHeight, 200)
@@ -41,7 +42,7 @@ describe('extend viewport by', () => {
   it('allows separate config for each list end', () => {
     const sys = system(([a, b]) => ({ ...a, ...b }), tup(sizeRangeSystem, domIOSystem))
     const { listBoundary, visibleRange, increaseViewportBy, scrollTop, viewportHeight } = init(sys)
-    const spy = jest.fn()
+    const spy = vi.fn()
     subscribe(visibleRange, spy)
     publish(scrollTop, 200)
     publish(viewportHeight, 200)

@@ -10,7 +10,7 @@ const itemContent = (_: number, data: string) => {
   return <div style={{ height: 30 }}>{data}</div>
 }
 
-export default function App() {
+export function Example() {
   const [items, setItems] = useState<string[]>(() => [])
 
   const loadMore = useCallback(() => {
@@ -27,7 +27,7 @@ export default function App() {
   return (
     <div>
       {items.length ? (
-        <Virtuoso data={items} initialItemCount={items.length} endReached={loadMore} itemContent={itemContent} style={{ height: 300 }} />
+        <Virtuoso data={items} endReached={loadMore} itemContent={itemContent} style={{ height: 300 }} />
       ) : (
         <div>Loading</div>
       )}

@@ -27,7 +27,7 @@ const Item = (props: { index: number }) => {
   )
 }
 
-export default function App() {
+export function Example() {
   return (
     <div className="App" style={{ height: 300, outline: `1px solid red` }}>
       <Virtuoso

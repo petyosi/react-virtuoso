@@ -1,24 +1,25 @@
 import { test, expect } from '@playwright/test'
+//@ts-expect-error - type module and playwright
+import { navigateToExample } from './utils.ts'
 
 test.describe('list with scroll seek placeholders', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:1234/grid-scroll-seek-placeholder')
-    await page.waitForSelector('#test-root div')
+  test.beforeEach(async ({ page, baseURL }) => {
+    await navigateToExample(page, baseURL, 'grid-scroll-seek-placeholder')
     await page.waitForTimeout(100)
   })
 
   test('renders grid placeholders when scrolled', async ({ page }) => {
     await page.evaluate(() => {
-      const scroller = document.querySelector('#test-root > div')!
+      const scroller = document.querySelector('[data-test-id=virtuoso-scroller]')!
       setInterval(() => {
         scroller.scrollBy({ top: 30 })
       }, 10)
     })
 
-    await page.waitForSelector('#test-root div[aria-label=placeholder]')
+    await page.waitForSelector('div[aria-label=placeholder]')
 
     const [width, height, containerPaddingTop, text, color] = await page.evaluate(() => {
-      const container = document.querySelector('#test-root > div > div:first-child > div') as HTMLElement
+      const container = document.querySelector('[data-test-id=virtuoso-item-list]') as HTMLElement
       const item = container.getElementsByTagName('div')[0] as HTMLElement
       return [item.offsetWidth, item.offsetHeight, container.style.paddingTop, item.textContent, item.style.color]
     })

@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test'
+//@ts-expect-error - type module and playwright
+import { navigateToExample } from './utils.ts'
 
 test.describe('jagged list with initial topmost item', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:1234/initial-topmost-item')
-    await page.waitForSelector('#test-root > div:last-child')
+  test.beforeEach(async ({ page, baseURL }) => {
+    await navigateToExample(page, baseURL, 'initial-topmost-item')
     await page.waitForTimeout(100)
   })
 
@@ -11,14 +12,14 @@ test.describe('jagged list with initial topmost item', () => {
   // first item size, which is 20px
   test('scrolls to the correct position', async ({ page }) => {
     const scrollTop = await page.evaluate(() => {
-      const listContainer = document.querySelector('#test-root > div:last-child')
-      return listContainer!.scrollTop
+      const scroller = document.querySelector('[data-test-id=virtuoso-scroller]')
+      return scroller!.scrollTop
     })
 
     expect(scrollTop).toBe(1200)
 
     const paddingTop = await page.evaluate(() => {
-      const listContainer = document.querySelector('#test-root > div:last-child > div > div') as HTMLElement
+      const listContainer = document.querySelector('[data-test-id=virtuoso-item-list]') as HTMLElement
       return listContainer.style.paddingTop
     })
 
@@ -27,7 +28,7 @@ test.describe('jagged list with initial topmost item', () => {
 
   test('sticks the item to the top', async ({ page }) => {
     const firstChildIndex = await page.evaluate(() => {
-      const firstChild = document.querySelector('#test-root > div:last-child > div > div > div') as HTMLElement
+      const firstChild = document.querySelector('[data-test-id=virtuoso-item-list] > div') as HTMLElement
       return firstChild.dataset['index']
     })
 
@@ -40,21 +41,21 @@ test.describe('jagged list with initial topmost item', () => {
     await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
-      const listContainer = document.querySelector('#test-root > div:last-child')
-      return listContainer!.scrollTop
+      const listContainer = document.querySelector('[data-test-id=virtuoso-scroller]') as HTMLElement
+      return listContainer.scrollTop
     })
 
     expect(Math.ceil(scrollTop)).toBe(1390)
 
     const paddingTop = await page.evaluate(() => {
-      const listContainer = document.querySelector('#test-root > div:last-child > div > div') as HTMLElement
+      const listContainer = document.querySelector('[data-test-id=virtuoso-item-list]') as HTMLElement
       return listContainer.style.paddingTop
     })
 
     expect(paddingTop).toBe('1390px')
 
     const lastChildIndex = await page.evaluate(() => {
-      const lastChildIndex = document.querySelector('#test-root > div > div > div > div:last-child') as HTMLElement
+      const lastChildIndex = document.querySelector('[data-test-id=virtuoso-item-list] > div:last-child') as HTMLElement
       return lastChildIndex.dataset['index']
     })
 

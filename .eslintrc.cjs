@@ -7,12 +7,11 @@ module.exports = {
   },
   plugins: ['@typescript-eslint', 'json', 'html'],
   extends: [
-    'react-app',
+    'plugin:react/recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
-    'prettier/@typescript-eslint',
+    'prettier',
     'plugin:prettier/recommended',
-    'prettier/react',
   ],
   rules: {
     '@typescript-eslint/no-non-null-assertion': 'off',
@@ -20,5 +19,28 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/restrict-template-expressions': 'off',
     'no-console': ['error', { allow: ['warn', 'error'] }],
+    'react/prop-types': 'off',
+    'react/display-name': 'off',
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+      },
+    ],
   },
+  settings: {
+    react: {
+      version: 'detect', // React version. "detect" automatically picks the version you have installed.
+    },
+  },
+  overrides: [
+    {
+      files: ['e2e/*.ts'],
+      rules: {
+        '@typescript-eslint/no-unsafe-call': 'off',
+      },
+    },
+  ],
 }

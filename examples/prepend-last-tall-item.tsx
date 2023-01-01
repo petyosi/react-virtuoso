@@ -7,7 +7,7 @@ function itemContent(index: number) {
   return <div style={{ height, backgroundColor }}>Item {index}</div>
 }
 
-export default function App() {
+export function Example() {
   const [fii] = React.useState(1000)
   return (
     <Virtuoso

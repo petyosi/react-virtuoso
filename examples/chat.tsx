@@ -92,6 +92,7 @@ function ChatList({ userId, messages = [], onSend, onReceive, placeholder }: Cha
         ref={ref}
         style={{ flex: 1 }}
         initialTopMostItemIndex={messages.length - 1}
+        increaseViewportBy={{ top: 0, bottom: 100 }}
         followOutput={(isAtBottom) => {
           if (isMyOwnMessage.current) {
             // if the user has scrolled away and sends a message, bring him to the bottom instantly
@@ -132,7 +133,7 @@ const data = Array.from({ length: 130 }, (_) => ({
   message: faker.lorem.sentences(),
 }))
 
-export default function App() {
+export function Example() {
   const [messages, setMessages] = React.useState(data)
   const userId = '1'
   return (

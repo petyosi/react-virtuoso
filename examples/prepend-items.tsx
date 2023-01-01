@@ -15,7 +15,7 @@ const Item = ({ index }: { index: number }) => {
 const itemContent = (index: number) => <Item index={index} />
 
 const style = { height: 300 }
-export default function App() {
+export function Example() {
   const [count, setCount] = useState(100)
   const [firstItemIndex, setFirstItemIndex] = useState(2000)
   const prepend = React.useCallback(

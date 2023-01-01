@@ -30,7 +30,7 @@ const generateNotes = (length: number, startIndex = 0) => {
 const START_INDEX = 10000
 const INITIAL_ITEM_COUNT = 20
 
-export default function App() {
+export function Example() {
   const [topMostItemIndex, setTopMostItemIndex] = useState(10)
   const [notes] = useState(() => generateNotes(INITIAL_ITEM_COUNT, START_INDEX))
 

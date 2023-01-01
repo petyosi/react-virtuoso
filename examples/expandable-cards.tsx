@@ -37,7 +37,7 @@ const Row = (props: any) => {
 interface IExpanded {
   [key: number]: boolean
 }
-export default function App() {
+export function Example() {
   const [expanded, setExpanded] = useState<IExpanded>({})
 
   const itemContent = (rowIndex: number) => (

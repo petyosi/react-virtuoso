@@ -1,4 +1,4 @@
-import * as u from '@virtuoso.dev/urx'
+import * as u from './urx'
 import { empty, findMaxKeyValue, Range, rangesWithin } from './AATree'
 import { groupedListSystem } from './groupedListSystem'
 import { getInitialTopMostItemIndexNumber, initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
@@ -285,7 +285,7 @@ export const listStateSystem = u.system(
       u.pipe(
         data,
         u.filter((data) => data !== undefined),
-        u.map((data) => data!.length)
+        u.map((data) => data?.length)
       ),
       totalCount
     )

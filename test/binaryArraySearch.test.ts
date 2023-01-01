@@ -1,4 +1,5 @@
 import { findClosestSmallerOrEqual, findRange } from '../src/utils/binaryArraySearch'
+import { describe, it, expect } from 'vitest'
 
 function exampleComparator(item: number, value: number) {
   return value === item ? 0 : value < item ? -1 : 1

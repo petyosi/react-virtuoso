@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect } from 'react'
-import * as u from '@virtuoso.dev/urx'
+import * as u from '../urx'
 import { correctItemSize } from '../utils/correctItemSize'
 import { ScrollContainerState } from '../interfaces'
 import { flushSync } from 'react-dom'
@@ -17,7 +17,6 @@ export default function useScrollTop(
   const scrollerRef = useRef<HTMLElement | null | Window>(null)
   const scrollTopTarget = useRef<any>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const shouldFlushSync = useRef(false)
 
   const handler = useCallback(
     (ev: Event) => {
@@ -34,13 +33,12 @@ export default function useScrollTop(
           viewportHeight,
         })
       }
-
-      if (shouldFlushSync.current) {
-        flushSync(call)
-      } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if ((ev as any).suppressFlushSync) {
         call()
+      } else {
+        flushSync(call)
       }
-      shouldFlushSync.current = false
 
       if (scrollTopTarget.current !== null) {
         if (scrollTop === scrollTopTarget.current || scrollTop <= 0 || scrollTop === scrollHeight - viewportHeight) {
@@ -60,7 +58,7 @@ export default function useScrollTop(
     const localRef = customScrollParent ? customScrollParent : scrollerRef.current!
 
     scrollerRefCallback(customScrollParent ? customScrollParent : scrollerRef.current)
-    handler({ target: localRef } as unknown as Event)
+    handler({ target: localRef, suppressFlushSync: true } as unknown as Event)
     localRef.addEventListener('scroll', handler, { passive: true })
 
     return () => {
@@ -125,7 +123,6 @@ export default function useScrollTop(
   }
 
   function scrollByCallback(location: ScrollToOptions) {
-    shouldFlushSync.current = true
     scrollerRef.current!.scrollBy(location)
   }
 

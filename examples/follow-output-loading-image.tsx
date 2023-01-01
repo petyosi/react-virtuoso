@@ -18,7 +18,7 @@ const Image = ({ index }: { index: number }) => {
     </div>
   )
 }
-export default function App() {
+export function Example() {
   const [count, setCount] = useState(100)
   const ref = React.useRef<HTMLDivElement>(null)
   const virtuosoRef = React.useRef<VirtuosoHandle>(null)

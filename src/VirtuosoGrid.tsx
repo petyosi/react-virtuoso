@@ -1,18 +1,19 @@
-import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
+import { RefHandle, systemToComponent } from './react-urx'
 
-import * as u from '@virtuoso.dev/urx'
+import * as u from './urx'
 import * as React from 'react'
-import { createElement, FC, PropsWithChildren, useContext } from 'react'
+import { createElement, FC, PropsWithChildren, ReactElement, Ref, useContext } from 'react'
 import { gridSystem } from './gridSystem'
 import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { GridComponents, GridComputeItemKey, GridItemContent, GridRootProps } from './interfaces'
-import { addDeprecatedAlias, buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle } from './List'
+import { buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle } from './Virtuoso'
 import { Log, LogLevel } from './loggerSystem'
+import { VirtuosoGridHandle, VirtuosoGridProps } from './component-interfaces/VirtuosoGrid'
 import { correctItemSize } from './utils/correctItemSize'
 import { VirtuosoGridMockContext } from './utils/context'
 
-const gridComponentPropsSystem = u.system(() => {
+const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   const itemContent = u.statefulStream<GridItemContent<any, any>>((index) => `Item ${index}`)
   const components = u.statefulStream<GridComponents>({})
   const context = u.statefulStream<unknown>(null)
@@ -51,51 +52,11 @@ const gridComponentPropsSystem = u.system(() => {
   }
 })
 
-const combinedSystem = u.system(([gridSystem, gridComponentPropsSystem]) => {
-  const deprecatedProps = {
-    item: addDeprecatedAlias(gridComponentPropsSystem.itemContent, 'Rename the %citem%c prop to %citemContent.'),
-    ItemContainer: u.stream<any>(),
-    ScrollContainer: u.stream<any>(),
-    ListContainer: u.stream<any>(),
-    emptyComponent: u.stream<any>(),
-    scrollSeek: u.stream<any>(),
-  }
-
-  function deprecateComponentProp(stream: u.Stream<any>, componentName: string, propName: string) {
-    u.connect(
-      u.pipe(
-        stream,
-        u.withLatestFrom(gridComponentPropsSystem.components),
-        u.map(([comp, components]) => {
-          console.warn(`react-virtuoso: ${propName} property is deprecated. Pass components.${componentName} instead.`)
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          return { ...components, [componentName]: comp }
-        })
-      ),
-      gridComponentPropsSystem.components
-    )
-  }
-
-  u.subscribe(deprecatedProps.scrollSeek, ({ placeholder, ...config }) => {
-    console.warn(
-      `react-virtuoso: scrollSeek property is deprecated. Pass scrollSeekConfiguration and specify the placeholder in components.ScrollSeekPlaceholder instead.`
-    )
-    u.publish(gridComponentPropsSystem.components, {
-      ...u.getValue(gridComponentPropsSystem.components),
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      ScrollSeekPlaceholder: placeholder,
-    })
-    u.publish(gridSystem.scrollSeekConfiguration, config)
-  })
-
-  deprecateComponentProp(deprecatedProps.ItemContainer, 'Item', 'ItemContainer')
-  deprecateComponentProp(deprecatedProps.ListContainer, 'List', 'ListContainer')
-  deprecateComponentProp(deprecatedProps.ScrollContainer, 'Scroller', 'ScrollContainer')
-
-  return { ...gridSystem, ...gridComponentPropsSystem, ...deprecatedProps }
+const combinedSystem = /*#__PURE__*/ u.system(([gridSystem, gridComponentPropsSystem]) => {
+  return { ...gridSystem, ...gridComponentPropsSystem }
 }, u.tup(gridSystem, gridComponentPropsSystem))
 
-const GridItems: FC = React.memo(function GridItems() {
+const GridItems: FC = /*#__PURE__*/ React.memo(function GridItems() {
   const gridState = useEmitterValue('gridState')
   const listClassName = useEmitterValue('listClassName')
   const itemClassName = useEmitterValue('itemClassName')
@@ -131,6 +92,7 @@ const GridItems: FC = React.memo(function GridItems() {
       className: listClassName,
       ...contextPropIfNotDomElement(ListComponent, context),
       style: { paddingTop: gridState.offsetTop, paddingBottom: gridState.offsetBottom },
+      'data-test-id': 'virtuoso-item-list',
     },
     gridState.items.map((item) => {
       const key = computeItemKey(item.index, item.data, context)
@@ -213,7 +175,7 @@ const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   )
 }
 
-const GridRoot: FC<GridRootProps> = React.memo(function GridRoot({ ...props }) {
+const GridRoot: FC<GridRootProps> = /*#__PURE__*/ React.memo(function GridRoot({ ...props }) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const customScrollParent = useEmitterValue('customScrollParent')
   const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
@@ -235,7 +197,7 @@ const {
   usePublisher,
   useEmitterValue,
   useEmitter,
-} = systemToComponent(
+} = /*#__PURE__*/ systemToComponent(
   combinedSystem,
   {
     optional: {
@@ -254,13 +216,6 @@ const {
       useWindowScroll: 'useWindowScroll',
       customScrollParent: 'customScrollParent',
       scrollerRef: 'scrollerRef',
-
-      // deprecated
-      item: 'item',
-      ItemContainer: 'ItemContainer',
-      ScrollContainer: 'ScrollContainer',
-      ListContainer: 'ListContainer',
-      scrollSeek: 'scrollSeek',
     },
     methods: {
       scrollTo: 'scrollTo',
@@ -279,13 +234,10 @@ const {
   GridRoot
 )
 
-export type foo<T> = T extends React.ForwardRefExoticComponent<React.RefAttributes<infer Handle>> ? Handle : never
-
 export type GridHandle = RefHandle<typeof Grid>
-export { Grid }
 
-const Scroller = buildScroller({ usePublisher, useEmitterValue, useEmitter })
-const WindowScroller = buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })
+const Scroller = /*#__PURE__*/ buildScroller({ usePublisher, useEmitterValue, useEmitter })
+const WindowScroller = /*#__PURE__*/ buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })
 
 function resolveGapValue(property: string, value: string | undefined, log: Log) {
   if (value !== 'normal' && !value?.endsWith('px')) {
@@ -296,3 +248,5 @@ function resolveGapValue(property: string, value: string | undefined, log: Log) 
   }
   return parseInt(value ?? '0', 10)
 }
+
+export const VirtuosoGrid = Grid as <Context = any>(props: VirtuosoGridProps<Context> & { ref?: Ref<VirtuosoGridHandle> }) => ReactElement

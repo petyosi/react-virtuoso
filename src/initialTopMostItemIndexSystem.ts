@@ -1,4 +1,4 @@
-import * as u from '@virtuoso.dev/urx'
+import * as u from './urx'
 import { empty } from './AATree'
 import { sizeSystem } from './sizeSystem'
 import { domIOSystem } from './domIOSystem'

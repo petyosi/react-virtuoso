@@ -44,7 +44,7 @@ const Item = React.memo<any>(({ item }: { item: { index: number; selected: boole
   return <div style={{ backgroundColor: item.selected ? 'blue' : 'white' }}>Item {item.index}</div>
 })
 
-export default function App() {
+export function Example() {
   const ref = React.createRef<VirtuosoGridHandle>()
   const [items, setItems] = React.useState(() => {
     return Array.from({ length: 1000 }, (_, index) => {

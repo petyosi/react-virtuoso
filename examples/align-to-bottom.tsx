@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Virtuoso } from '../src'
 
-export default function App() {
+export function Example() {
   const [total, setTotal] = React.useState(10)
   return (
     <div style={{ display: 'flex', height: '500px', flexDirection: 'column', border: '1px solid red' }}>

@@ -18,7 +18,7 @@ const getItems = (count: number) => {
   return temp
 }
 
-export default function App() {
+export function Example() {
   const [items, setItems] = useState<number[]>([])
   const [firstItemIndex, setFirstItemIndex] = useState(ITEM_INDEX)
   const [id, setID] = useState(0)

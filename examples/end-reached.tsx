@@ -10,7 +10,7 @@ const itemContent = (_: number, data: string) => {
   return <div style={{ height: 30 }}>{data}</div>
 }
 
-export default function App() {
+export function Example() {
   const [data, setData] = useState(() => generateItems(100, 1))
   const [iter, setIter] = useState(1)
 

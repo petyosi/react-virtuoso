@@ -13,6 +13,6 @@ const ResizingDiv: FC = ({ children }) => {
   return <div style={{ height, transition: 'all 0.5s linear', border: '1px solid blue' }}>{children}</div>
 }
 
-export default function App() {
+export function Example() {
   return <Virtuoso totalCount={100} itemContent={(index) => <ResizingDiv>Item {index}</ResizingDiv>} style={{ height: 300 }} />
 }

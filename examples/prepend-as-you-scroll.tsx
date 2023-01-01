@@ -36,7 +36,7 @@ function generateUsers(length: number, startIndex = 0) {
   return Array.from({ length }).map((_, i) => getUser(i + startIndex))
 }
 
-export default function App() {
+export function Example() {
   const START_INDEX = 10000
   const INITIAL_ITEM_COUNT = 100
 

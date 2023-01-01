@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { listSystem } from '../src/listSystem'
-import { init, getValue, publish, subscribe } from '@virtuoso.dev/urx'
+import { init, getValue, publish, subscribe } from '../src/urx'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 describe('list engine', () => {
   describe('basics', () => {
@@ -56,7 +57,7 @@ describe('list engine', () => {
     it('updates the rows when new sizes are reported', () => {
       const { propsReady, sizeRanges, listState, scrollTop, viewportHeight, totalCount } = init(listSystem)
 
-      const sub = jest.fn()
+      const sub = vi.fn()
       subscribe(listState, sub)
 
       publish(scrollTop, 0)
@@ -84,7 +85,7 @@ describe('list engine', () => {
   })
 
   describe('initial index', () => {
-    it('starts from a specified location', (done) => {
+    it('starts from a specified location', () => {
       const INITIAL_INDEX = 300
       const SIZE = 30
       const { propsReady, initialTopMostItemIndex, listState, scrollTop, scrollTo, viewportHeight, totalCount, sizeRanges } =
@@ -99,27 +100,29 @@ describe('list engine', () => {
         items: [{ index: INITIAL_INDEX, size: 0, offset: 0 }],
       })
 
-      const sub = jest.fn()
+      const sub = vi.fn()
       subscribe(scrollTo, sub)
 
       publish(sizeRanges, [{ startIndex: INITIAL_INDEX, endIndex: INITIAL_INDEX, size: SIZE }])
 
       expect(getValue(listState).items).toHaveLength(0)
 
-      setTimeout(() => {
-        expect(sub).toHaveBeenCalledWith({
-          top: INITIAL_INDEX * SIZE,
-          behavior: 'auto',
-        })
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          expect(sub).toHaveBeenCalledWith({
+            top: INITIAL_INDEX * SIZE,
+            behavior: 'auto',
+          })
 
-        // the UI responds by publishing back through the scrollTop stream
-        publish(scrollTop, INITIAL_INDEX * SIZE)
-        expect(getValue(listState).items).toHaveLength(7)
-        done()
+          // the UI responds by publishing back through the scrollTop stream
+          publish(scrollTop, INITIAL_INDEX * SIZE)
+          expect(getValue(listState).items).toHaveLength(7)
+          resolve(true)
+        })
       })
     })
 
-    it('starts from a specified location with fixed item size', (done) => {
+    it('starts from a specified location with fixed item size', () => {
       const INITIAL_INDEX = 300
       const SIZE = 30
       const { fixedItemHeight, propsReady, initialTopMostItemIndex, listState, scrollTop, scrollTo, viewportHeight, totalCount } =
@@ -135,21 +138,23 @@ describe('list engine', () => {
         items: [],
       })
 
-      const sub = jest.fn()
+      const sub = vi.fn()
       subscribe(scrollTo, sub)
 
       expect(getValue(listState).items).toHaveLength(0)
 
-      setTimeout(() => {
-        expect(sub).toHaveBeenCalledWith({
-          top: INITIAL_INDEX * SIZE,
-          behavior: 'auto',
-        })
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          expect(sub).toHaveBeenCalledWith({
+            top: INITIAL_INDEX * SIZE,
+            behavior: 'auto',
+          })
 
-        // the UI responds by publishing back through the scrollTop stream
-        publish(scrollTop, INITIAL_INDEX * SIZE)
-        expect(getValue(listState).items).toHaveLength(7)
-        done()
+          // the UI responds by publishing back through the scrollTop stream
+          publish(scrollTop, INITIAL_INDEX * SIZE)
+          expect(getValue(listState).items).toHaveLength(7)
+          resolve(true)
+        })
       })
     })
   })
@@ -172,7 +177,7 @@ describe('list engine', () => {
       publish(viewportHeight, VIEWPORT)
       publish(totalCount, TOTAL_COUNT)
 
-      sub = jest.fn()
+      sub = vi.fn()
       subscribe(scrollTo, sub)
 
       publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: SIZE }])
@@ -221,7 +226,7 @@ describe('list engine', () => {
       })
     })
 
-    it('readjusts once when new sizes are reported', (done) => {
+    it('readjusts once when new sizes are reported', () => {
       const DEVIATION = 20
       publish(sti, { index: INDEX, align: 'end' })
 
@@ -232,18 +237,20 @@ describe('list engine', () => {
 
       publish(sr, [{ startIndex: INDEX - 1, endIndex: INDEX - 1, size: SIZE + DEVIATION }])
 
-      setTimeout(() => {
-        expect(sub).toHaveBeenCalledWith({
-          top: INDEX * SIZE - VIEWPORT + SIZE + DEVIATION,
-          behavior: 'auto',
-        })
-        done()
-      }, 20)
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          expect(sub).toHaveBeenCalledWith({
+            top: INDEX * SIZE - VIEWPORT + SIZE + DEVIATION,
+            behavior: 'auto',
+          })
+          resolve(true)
+        }, 20)
+      })
     })
   })
 
   describe('scrolling up after a jump', () => {
-    it('readjusts measurements to avoid jump', (done) => {
+    it('readjusts measurements to avoid jump', () => {
       const INITIAL_INDEX = 300
       const SIZE = 30
       const {
@@ -267,46 +274,48 @@ describe('list engine', () => {
         items: [{ index: INITIAL_INDEX, size: 0, offset: 0 }],
       })
 
-      const sub = jest.fn()
+      const sub = vi.fn()
       subscribe(scrollTo, sub)
 
-      const scrollBySub = jest.fn()
+      const scrollBySub = vi.fn()
       subscribe(scrollBy, scrollBySub)
 
       publish(sizeRanges, [{ startIndex: INITIAL_INDEX, endIndex: INITIAL_INDEX, size: SIZE }])
 
       expect(getValue(listState).items).toHaveLength(0)
 
-      setTimeout(() => {
-        expect(sub).toHaveBeenCalledWith({
-          top: INITIAL_INDEX * SIZE,
-          behavior: 'auto',
-        })
-
+      return new Promise((resolve) => {
         setTimeout(() => {
-          publish(scrollContainerState, {
-            scrollTop: INITIAL_INDEX * SIZE,
-            scrollHeight: 1000 * 30,
-            viewportHeight: 200,
+          expect(sub).toHaveBeenCalledWith({
+            top: INITIAL_INDEX * SIZE,
+            behavior: 'auto',
           })
 
-          publish(scrollContainerState, {
-            scrollTop: INITIAL_INDEX * SIZE - 2,
-            scrollHeight: 1000 * 30,
-            viewportHeight: 200,
-          })
+          setTimeout(() => {
+            publish(scrollContainerState, {
+              scrollTop: INITIAL_INDEX * SIZE,
+              scrollHeight: 1000 * 30,
+              viewportHeight: 200,
+            })
 
-          publish(sizeRanges, [
-            {
-              startIndex: INITIAL_INDEX - 1,
-              endIndex: INITIAL_INDEX - 1,
-              size: SIZE + 40,
-            },
-          ])
+            publish(scrollContainerState, {
+              scrollTop: INITIAL_INDEX * SIZE - 2,
+              scrollHeight: 1000 * 30,
+              viewportHeight: 200,
+            })
 
-          expect(scrollBySub).toHaveBeenCalledWith({ behavior: 'auto', top: 40 })
-          done()
-        }, 2500)
+            publish(sizeRanges, [
+              {
+                startIndex: INITIAL_INDEX - 1,
+                endIndex: INITIAL_INDEX - 1,
+                size: SIZE + 40,
+              },
+            ])
+
+            expect(scrollBySub).toHaveBeenCalledWith({ behavior: 'auto', top: 40 })
+            resolve(true)
+          }, 1000)
+        })
       })
     })
   })
@@ -348,7 +357,7 @@ describe('list engine', () => {
   describe('grouped mode', () => {
     it('creates total count from groupCounts', () => {
       const { totalCount, groupCounts } = init(listSystem)
-      const sub = jest.fn()
+      const sub = vi.fn()
       subscribe(totalCount, sub)
       publish(groupCounts, [10, 10, 10])
       expect(sub).toHaveBeenCalledWith(33)
@@ -497,7 +506,7 @@ describe('list engine', () => {
       publish(headerHeight, 50)
       publish(footerHeight, 40)
       publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
-      const sub = jest.fn()
+      const sub = vi.fn()
       subscribe(totalListHeightChanged, sub)
       publish(propsReady, true)
 
@@ -516,7 +525,7 @@ describe('list engine', () => {
       publish(viewportHeight, 1200)
       publish(totalCount, 5)
       publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
-      const sub = jest.fn()
+      const sub = vi.fn()
       subscribe(paddingTopAddition, sub)
       publish(propsReady, true)
       expect(sub).toHaveBeenCalledWith(1200 - 5 * 30)

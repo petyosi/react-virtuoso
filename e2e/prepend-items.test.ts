@@ -1,9 +1,10 @@
 import { test, expect, Page } from '@playwright/test'
+//@ts-expect-error - type module and playwright
+import { navigateToExample } from './utils.ts'
 
 test.describe('list with prependable items', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:1234/prepend-items')
-    await page.waitForSelector('#test-root')
+  test.beforeEach(async ({ page, baseURL }) => {
+    await navigateToExample(page, baseURL, 'prepend-items')
     await page.waitForTimeout(100)
   })
 

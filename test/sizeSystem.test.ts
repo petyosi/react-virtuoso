@@ -1,6 +1,7 @@
-import { getValue, init, publish, subscribe } from '@virtuoso.dev/urx'
+import { getValue, init, publish, subscribe } from '../src/urx'
 import { AANode, ranges, walk } from '../src/AATree'
 import { initialSizeState, offsetOf, rangesWithinOffsets, sizeStateReducer, sizeSystem } from '../src/sizeSystem'
+import { describe, it, expect, vi } from 'vitest'
 
 function toKV<T>(tree: AANode<T>) {
   return walk(tree).map((node) => [node.k, node.v] as [number, T])
@@ -358,7 +359,7 @@ describe('size engine', () => {
   it('publishes list refreshes', () => {
     const { sizeRanges, totalCount, listRefresh } = init(sizeSystem)
     publish(totalCount, 10)
-    const sub = jest.fn()
+    const sub = vi.fn()
     subscribe(listRefresh, sub)
     expect(sub).toHaveBeenCalledTimes(0)
     publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 1 }])
@@ -478,7 +479,7 @@ describe('size engine', () => {
 
     it('decreasing the first item index unshifts items', () => {
       const { unshiftWith, firstItemIndex } = init(sizeSystem)
-      const sub = jest.fn()
+      const sub = vi.fn()
       subscribe(unshiftWith, sub)
       publish(firstItemIndex, 150)
       publish(firstItemIndex, 100)
@@ -523,7 +524,7 @@ describe('size engine', () => {
 
     it.skip('decreasing the first item index unshifts items', () => {
       const { unshiftWith, firstItemIndex } = init(sizeSystem)
-      const sub = jest.fn()
+      const sub = vi.fn()
       subscribe(unshiftWith, sub)
       publish(firstItemIndex, 150)
       publish(firstItemIndex, 100)

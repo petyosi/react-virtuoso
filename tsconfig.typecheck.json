@@ -2,6 +2,8 @@
   "extends": "./tsconfig.json",
   "include": ["src", "types", "e2e", "test"],
   "compilerOptions": {
+    "jsx": "react",
+    "emitDeclarationOnly": false,
     "rootDir": "./"
   }
 }

@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test'
+//@ts-expect-error - type module and playwright
+import { navigateToExample } from './utils.ts'
 
 test.describe('list with hundred items', () => {
   test.beforeEach(async ({ page, baseURL }) => {
-    await page.goto(`${baseURL}/data`)
+    await navigateToExample(page, baseURL, 'data')
     await page.waitForSelector('[data-test-id=virtuoso-scroller]')
     await page.waitForTimeout(100)
   })

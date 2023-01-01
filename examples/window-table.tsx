@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { TableVirtuoso } from '../src/'
 
-export default function App() {
+export function Example() {
   return (
     <div style={{ paddingTop: 100, paddingBottom: 100 }}>
       <p>red background should match the size of the table</p>

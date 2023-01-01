@@ -11,7 +11,7 @@ const FancyScroller = React.forwardRef(({ children, ...props }, ref: React.Ref<H
   )
 })
 
-export default function App() {
+export function Example() {
   return (
     <Virtuoso
       components={{

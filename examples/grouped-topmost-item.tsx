@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { GroupedVirtuoso } from '../src'
 
-export default function App() {
+export function Example() {
   return (
     <GroupedVirtuoso
       initialTopMostItemIndex={10}

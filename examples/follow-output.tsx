@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useState, useRef, useCallback } from 'react'
 import { Virtuoso } from '../src'
 
-export default function App() {
+export function Example() {
   const [count, setCount] = useState(100)
   const appendInterval = useRef<NodeJS.Timeout>()
   const [listHeight, setListHeight] = useState(300)
@@ -45,7 +45,7 @@ export default function App() {
         itemContent={itemContent}
         style={{ height: listHeight }}
         atBottomStateChange={(atBottom) => {
-          clearInterval(appendInterval.current!)
+          clearInterval(appendInterval.current)
           if (atBottom) {
             appendInterval.current = setInterval(() => {
               // setCount((count) => count + 3)

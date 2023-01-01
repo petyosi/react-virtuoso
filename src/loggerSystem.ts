@@ -1,4 +1,4 @@
-import * as u from '@virtuoso.dev/urx'
+import * as u from './urx'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 declare namespace globalThis {

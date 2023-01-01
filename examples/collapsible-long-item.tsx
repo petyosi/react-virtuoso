@@ -30,7 +30,7 @@ const ExpandedProvider: React.FC = ({ children }) => {
   return <Expanded.Provider value={[expanded as any, setExpanded]}>{children}</Expanded.Provider>
 }
 
-export default function App() {
+export function Example() {
   return (
     <ExpandedProvider>
       <Virtuoso

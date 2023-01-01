@@ -19,8 +19,8 @@ const Image = ({ index }: { index: number }) => {
     </div>
   )
 }
-export default function App() {
-  const [count, setCount] = useState(100)
+export function Example() {
+  const [count] = useState(100)
   const ref = React.useRef<HTMLDivElement>(null)
   const virtuosoRef = React.useRef<VirtuosoHandle>(null)
   const itemContent = useCallback((index: number) => {
@@ -29,7 +29,7 @@ export default function App() {
 
   React.useEffect(() => {
     ref.current!.addEventListener('customLoad', () => {
-      virtuosoRef.current.autoscrollToBottom()
+      virtuosoRef.current?.autoscrollToBottom()
     })
   }, [])
 

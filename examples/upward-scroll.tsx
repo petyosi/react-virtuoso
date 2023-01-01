@@ -6,6 +6,6 @@ function itemContent(index: number) {
   const backgroundColor = index === 7 ? 'red' : 'transparent'
   return <div style={{ height, backgroundColor }}>Item {index}</div>
 }
-export default function App() {
+export function Example() {
   return <Virtuoso totalCount={12} initialTopMostItemIndex={8} itemContent={itemContent} style={{ height: 100 }} />
 }

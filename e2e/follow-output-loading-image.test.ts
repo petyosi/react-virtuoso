@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test'
+//@ts-expect-error - type module and playwright
+import { navigateToExample } from './utils.ts'
 
 test.describe('list with hundred items', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:1234/follow-output-loading-image')
-    await page.waitForSelector('#test-root')
+  test.beforeEach(async ({ page, baseURL }) => {
+    await navigateToExample(page, baseURL, 'follow-output-loading-image')
     await page.waitForTimeout(100)
   })
 
