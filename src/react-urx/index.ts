@@ -30,7 +30,6 @@
  *
  * @packageDocumentation
  */
-import * as React from 'react'
 import {
   ComponentType,
   createContext,
@@ -43,6 +42,8 @@ import {
   useImperativeHandle,
   useState,
   useCallback,
+  useEffect,
+  useLayoutEffect,
 } from 'react'
 import * as u from '../urx'
 import type { Emitter, Publisher, AnySystemSpec, SR, Stream, StatefulStream } from '../urx'
@@ -73,7 +74,7 @@ function omit<O extends Dict<any>, K extends readonly string[]>(keys: K, obj: O)
   return result as Omit<O, K[number]>
 }
 
-const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? React.useLayoutEffect : React.useEffect
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect
 
 /** @internal */
 export type Observable<T> = Emitter<T> | Publisher<T>
@@ -265,9 +266,7 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
   })
 
   const usePublisher = <K extends keyof S>(key: K) => {
-    return useCallback(u.curry2to1(u.publish, React.useContext(Context)[key]), [key]) as (
-      value: S[K] extends Stream<infer R> ? R : never
-    ) => void
+    return useCallback(u.curry2to1(u.publish, useContext(Context)[key]), [key]) as (value: S[K] extends Stream<infer R> ? R : never) => void
   }
 
   /**

@@ -4,7 +4,6 @@
 
 import ReactDOMServer from 'react-dom/server'
 import { JSDOM } from 'jsdom'
-import * as React from 'react'
 import { Virtuoso, GroupedVirtuoso } from '../src/Virtuoso'
 import { VirtuosoGrid } from '../src/VirtuosoGrid'
 import { describe, it, expect } from 'vitest'

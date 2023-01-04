@@ -1,7 +1,19 @@
 import { systemToComponent } from './react-urx'
 import * as u from './urx'
-import * as React from 'react'
-import { ComponentType, createElement, CSSProperties, FC, PropsWithChildren, useContext, ReactElement, Ref } from 'react'
+import {
+  ComponentType,
+  createElement,
+  CSSProperties,
+  FC,
+  PropsWithChildren,
+  useContext,
+  ReactElement,
+  Ref,
+  memo,
+  useState,
+  useEffect,
+  MutableRefObject,
+} from 'react'
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import useScrollTop from './hooks/useScrollTop'
@@ -68,7 +80,7 @@ const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => <div st
 const GROUP_STYLE = { position: positionStickyCssValue(), zIndex: 1, overflowAnchor: 'none' } as const
 const ITEM_STYLE = { overflowAnchor: 'none' } as const
 
-const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = false }: { showTopList?: boolean }) {
+const Items = /*#__PURE__*/ memo(function VirtuosoItems({ showTopList = false }: { showTopList?: boolean }) {
   const listState = useEmitterValue('listState')
 
   const sizeRanges = usePublisher('sizeRanges')
@@ -96,7 +108,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
     customScrollParent
   )
 
-  const [deviation, setDeviation] = React.useState(0)
+  const [deviation, setDeviation] = useState(0)
   useEmitter('deviation', (value) => {
     if (deviation !== value) {
       // ref.current!.style.marginTop = `${value}px`
@@ -214,7 +226,7 @@ export function contextPropIfNotDomElement(element: unknown, context: unknown) {
   return { context }
 }
 
-const Header: FC = /*#__PURE__*/ React.memo(function VirtuosoHeader() {
+const Header: FC = /*#__PURE__*/ memo(function VirtuosoHeader() {
   const Header = useEmitterValue('HeaderComponent')
   const headerHeight = usePublisher('headerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
@@ -223,7 +235,7 @@ const Header: FC = /*#__PURE__*/ React.memo(function VirtuosoHeader() {
   return Header ? createElement(headerFooterTag, { ref }, createElement(Header, contextPropIfNotDomElement(Header, context))) : null
 })
 
-const Footer: FC = /*#__PURE__*/ React.memo(function VirtuosoFooter() {
+const Footer: FC = /*#__PURE__*/ memo(function VirtuosoFooter() {
   const Footer = useEmitterValue('FooterComponent')
   const footerHeight = usePublisher('footerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
@@ -239,7 +251,7 @@ interface Hooks {
 }
 
 export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hooks) {
-  const Scroller: ComponentType<ScrollerProps> = React.memo(function VirtuosoScroller({ style, children, ...props }) {
+  const Scroller: ComponentType<ScrollerProps> = memo(function VirtuosoScroller({ style, children, ...props }) {
     const scrollContainerStateCallback = usePublisher('scrollContainerState')
     const ScrollerComponent = useEmitterValue('ScrollerComponent')!
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
@@ -258,7 +270,7 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
     return createElement(
       ScrollerComponent,
       {
-        ref: scrollerRef as React.MutableRefObject<HTMLDivElement | null>,
+        ref: scrollerRef as MutableRefObject<HTMLDivElement | null>,
         style: { ...scrollerStyle, ...style },
         'data-test-id': 'virtuoso-scroller',
         'data-virtuoso-scroller': true,
@@ -273,7 +285,7 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
 }
 
 export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue }: Hooks) {
-  const Scroller: Components['Scroller'] = React.memo(function VirtuosoWindowScroller({ style, children, ...props }) {
+  const Scroller: Components['Scroller'] = memo(function VirtuosoWindowScroller({ style, children, ...props }) {
     const scrollContainerStateCallback = usePublisher('windowScrollContainerState')
     const ScrollerComponent = useEmitterValue('ScrollerComponent')!
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
@@ -318,7 +330,7 @@ const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const fixedItemHeight = usePublisher('fixedItemHeight')
   const viewportRef = useSize(u.compose(viewportHeight, (el) => correctItemSize(el, 'height')))
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (ctx) {
       viewportHeight(ctx.viewportHeight)
       fixedItemHeight(ctx.itemHeight)
@@ -339,7 +351,7 @@ const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const customScrollParent = useEmitterValue('customScrollParent')
   const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent)
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (ctx) {
       fixedItemHeight(ctx.itemHeight)
       windowViewportRect({ offsetTop: 0, visibleHeight: ctx.viewportHeight, visibleWidth: 100 })
@@ -361,7 +373,7 @@ const TopItemListContainer: FC<PropsWithChildren<unknown>> = ({ children }) => {
   return createElement(TopItemList || 'div', { style, context }, children)
 }
 
-const ListRoot: FC<ListRootProps> = /*#__PURE__*/ React.memo(function VirtuosoRoot(props) {
+const ListRoot: FC<ListRootProps> = /*#__PURE__*/ memo(function VirtuosoRoot(props) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const showTopList = useEmitterValue('topItemsIndexes').length > 0
   const customScrollParent = useEmitterValue('customScrollParent')

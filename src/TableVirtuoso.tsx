@@ -1,7 +1,6 @@
 import { systemToComponent } from './react-urx'
 import * as u from './urx'
-import * as React from 'react'
-import { createElement, FC, PropsWithChildren, ReactElement, Ref, useContext } from 'react'
+import { createElement, FC, PropsWithChildren, ReactElement, Ref, useContext, memo, useState, useEffect } from 'react'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import { ComputeItemKey, ItemContent, FixedHeaderContent, FixedFooterContent, TableComponents, TableRootProps } from './interfaces'
 import { listSystem } from './listSystem'
@@ -71,7 +70,7 @@ const DefaultFillerRow = ({ height }: { height: number }) => (
   </tr>
 )
 
-const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
+const Items = /*#__PURE__*/ memo(function VirtuosoItems() {
   const listState = useEmitterValue('listState')
   const sizeRanges = usePublisher('sizeRanges')
   const useWindowScroll = useEmitterValue('useWindowScroll')
@@ -95,7 +94,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
     customScrollParent
   )
 
-  const [deviation, setDeviation] = React.useState(0)
+  const [deviation, setDeviation] = useState(0)
   useEmitter('deviation', (value) => {
     if (deviation !== value) {
       ref.current!.style.marginTop = `${value}px`
@@ -166,7 +165,7 @@ const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const fixedItemHeight = usePublisher('fixedItemHeight')
   const viewportRef = useSize(u.compose(viewportHeight, (el) => correctItemSize(el, 'height')))
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (ctx) {
       viewportHeight(ctx.viewportHeight)
       fixedItemHeight(ctx.itemHeight)
@@ -187,7 +186,7 @@ const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const customScrollParent = useEmitterValue('customScrollParent')
   const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent)
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (ctx) {
       fixedItemHeight(ctx.itemHeight)
       windowViewportRect({ offsetTop: 0, visibleHeight: ctx.viewportHeight, visibleWidth: 100 })
@@ -201,7 +200,7 @@ const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   )
 }
 
-const TableRoot: FC<TableRootProps> = /*#__PURE__*/ React.memo(function TableVirtuosoRoot(props) {
+const TableRoot: FC<TableRootProps> = /*#__PURE__*/ memo(function TableVirtuosoRoot(props) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const customScrollParent = useEmitterValue('customScrollParent')
   const fixedHeaderHeight = usePublisher('fixedHeaderHeight')
@@ -218,7 +217,7 @@ const TableRoot: FC<TableRootProps> = /*#__PURE__*/ React.memo(function TableVir
   const TheTFoot = useEmitterValue('TableFooterComponent')
 
   const theHead = fixedHeaderContent
-    ? React.createElement(
+    ? createElement(
         TheTHead!,
         {
           key: 'TableHead',
@@ -230,7 +229,7 @@ const TableRoot: FC<TableRootProps> = /*#__PURE__*/ React.memo(function TableVir
       )
     : null
   const theFoot = fixedFooterContent
-    ? React.createElement(
+    ? createElement(
         TheTFoot!,
         {
           key: 'TableFoot',
@@ -245,7 +244,7 @@ const TableRoot: FC<TableRootProps> = /*#__PURE__*/ React.memo(function TableVir
   return (
     <TheScroller {...props}>
       <TheViewport>
-        {React.createElement(TheTable!, { style: { borderSpacing: 0 }, ...contextPropIfNotDomElement(TheTable, context) }, [
+        {createElement(TheTable!, { style: { borderSpacing: 0 }, ...contextPropIfNotDomElement(TheTable, context) }, [
           theHead,
           <Items key="TableBody" />,
           theFoot,

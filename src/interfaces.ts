@@ -1,4 +1,4 @@
-import React, { ComponentPropsWithRef, ComponentType, Key, ReactNode } from 'react'
+import { ComponentPropsWithRef, ComponentType, Key, ReactNode, HTMLProps } from 'react'
 export interface ListRange {
   startIndex: number
   endIndex: number
@@ -8,9 +8,9 @@ export interface ItemContent<D, C> {
   (index: number, data: D, context: C): ReactNode
 }
 
-export type FixedHeaderContent = (() => React.ReactNode) | null
+export type FixedHeaderContent = (() => ReactNode) | null
 
-export type FixedFooterContent = (() => React.ReactNode) | null
+export type FixedFooterContent = (() => ReactNode) | null
 export interface GroupItemContent<D, C> {
   (index: number, groupIndex: number, data: D, context: C): ReactNode
 }
@@ -266,9 +266,9 @@ export interface GroupIndexLocationWithAlign extends LocationOptions {
 
 export type IndexLocationWithAlign = FlatIndexLocationWithAlign | GroupIndexLocationWithAlign
 
-export type ListRootProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data'>
-export type TableRootProps = Omit<React.HTMLProps<HTMLTableElement>, 'ref' | 'data'>
-export type GridRootProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data'>
+export type ListRootProps = Omit<HTMLProps<HTMLDivElement>, 'ref' | 'data'>
+export type TableRootProps = Omit<HTMLProps<HTMLTableElement>, 'ref' | 'data'>
+export type GridRootProps = Omit<HTMLProps<HTMLDivElement>, 'ref' | 'data'>
 
 export interface GridItem<D> {
   index: number
