@@ -20,7 +20,7 @@ export default function useChangedListContentsSizes(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const windowScrolling = (scrollableElement.firstElementChild! as HTMLDivElement).dataset['viewportType']! === 'window'
+    const windowScrolling = (scrollableElement.lastElementChild! as HTMLDivElement).dataset['viewportType']! === 'window'
 
     const scrollTop = customScrollParent
       ? customScrollParent.scrollTop
