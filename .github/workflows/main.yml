@@ -56,7 +56,7 @@ jobs:
       - name: Install dependencies
         run: | 
           pnpm install
-          npx playwright install-deps
+          npx playwright install --with-deps chromium
 
       - name: run lint and tests
         run: |
