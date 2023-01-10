@@ -1,15 +1,27 @@
-import React, { useMemo } from 'react'
-import { GroupedTableVirtuoso } from '../src/'
+---
+id: grouped-table
+title: Grouped Table
+sidebar_label: Grouped Table
+slug: /grouped-table/
+---
+
+The example below shows a simple table grouping mode.
+
+```jsx live
+import { GroupedTableVirtuoso } from 'react-virtuoso'
+import { useMemo, useRef } from 'react'
 
 export default function App() {
+  const ref = useRef()
+
   const groupCounts = useMemo(() => {
-    return Array(1000).fill(10) as number[]
+    return Array(1000).fill(10)
   }, [])
 
   return (
     <GroupedTableVirtuoso
       groupCounts={groupCounts}
-      style={{ height: 700 }}
+      style={{ height: 400 }}
       fixedHeaderContent={() => {
         return (
           <tr style={{ background: 'white', textAlign: 'left' }}>
@@ -41,3 +53,4 @@ export default function App() {
     />
   )
 }
+```
