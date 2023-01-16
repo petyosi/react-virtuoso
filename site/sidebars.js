@@ -11,7 +11,7 @@ module.exports = {
       'initial-index',
       'range-change-callback',
     ],
-    'Grouped Mode': ['grouped-numbers', 'grouped-by-first-letter', 'grouped-with-load-on-demand', 'scroll-to-group'],
+    'Grouped Mode': ['grouped-numbers', 'grouped-by-first-letter', 'grouped-with-load-on-demand', 'scroll-to-group', 'grouped-table'],
     Table: ['hello-table', 'table-fixed-headers', 'mui-table-virtual-scroll', 'table-fixed-columns', 'react-table-integration'],
     Grid: ['grid-responsive-columns'],
     Scenarios: [

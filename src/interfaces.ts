@@ -173,6 +173,11 @@ export interface TableComponents<Data = unknown, Context = unknown> {
   TableBody?: ComponentType<TableBodyProps & { context?: Context }>
 
   /**
+   * Set to customize the group item wrapping element. Use only if you would like to render list from elements different than a `div`.
+   */
+  Group?: ComponentType<GroupProps & { context?: Context }>
+
+  /**
    * Set to render a custom UI when the list is empty.
    */
   EmptyPlaceholder?: ComponentType<{ context?: Context }>
