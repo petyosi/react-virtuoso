@@ -120,9 +120,9 @@ const Items = /*#__PURE__*/ memo(function VirtuosoItems() {
   const paddingTop = listState.offsetTop + paddingTopAddition + deviation
   const paddingBottom = listState.offsetBottom
 
-  const paddingTopEl = paddingTop > 0 ? <FillerRow height={paddingTop} key="padding-top" /> : null
+  const paddingTopEl = paddingTop > 0 ? <FillerRow height={paddingTop} key="padding-top" context={context} /> : null
 
-  const paddingBottomEl = paddingBottom > 0 ? <FillerRow height={paddingBottom} key="padding-bottom" /> : null
+  const paddingBottomEl = paddingBottom > 0 ? <FillerRow height={paddingBottom} key="padding-bottom" context={context} /> : null
 
   const items = listState.items.map((item) => {
     const index = item.originalIndex!
