@@ -248,4 +248,6 @@ function resolveGapValue(property: string, value: string | undefined, log: Log) 
   return parseInt(value ?? '0', 10)
 }
 
-export const VirtuosoGrid = Grid as <Context = any>(props: VirtuosoGridProps<Context> & { ref?: Ref<VirtuosoGridHandle> }) => ReactElement
+export const VirtuosoGrid = Grid as <ItemData = any, Context = any>(
+  props: VirtuosoGridProps<ItemData, Context> & { ref?: Ref<VirtuosoGridHandle> }
+) => ReactElement
