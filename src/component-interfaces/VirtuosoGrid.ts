@@ -20,6 +20,11 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
   data?: readonly D[]
 
   /**
+   * Additional context available in the custom components and content callbacks
+   */
+  context?: C
+
+  /**
    * Use for server-side rendering - if set, the list will render the specified amount of items
    * regardless of the container / item size.
    */
