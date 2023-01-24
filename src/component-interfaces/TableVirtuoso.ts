@@ -1,6 +1,7 @@
 import type {
   ComputeItemKey,
   FixedHeaderContent,
+  FixedFooterContent,
   FlatIndexLocationWithAlign,
   FlatScrollIntoViewLocation,
   FollowOutput,
@@ -18,10 +19,16 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
    * Use the `components` property for advanced customization of the elements rendered by the table.
    */
   components?: TableComponents<D, C>
+
   /**
    * Set the contents of the table header.
    */
   fixedHeaderContent?: FixedHeaderContent
+
+  /**
+   * Set the contents of the table footer.
+   */
+  fixedFooterContent?: FixedFooterContent
 
   /**
    * The total amount of items to be rendered.
