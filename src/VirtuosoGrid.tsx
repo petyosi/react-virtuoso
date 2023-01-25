@@ -1,7 +1,7 @@
 import { RefHandle, systemToComponent } from './react-urx'
 
 import * as u from './urx'
-import { memo, createElement, FC, PropsWithChildren, ReactElement, Ref, useContext, useEffect } from 'react'
+import React from 'react'
 import { gridSystem } from './gridSystem'
 import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
@@ -55,7 +55,7 @@ const combinedSystem = /*#__PURE__*/ u.system(([gridSystem, gridComponentPropsSy
   return { ...gridSystem, ...gridComponentPropsSystem }
 }, u.tup(gridSystem, gridComponentPropsSystem))
 
-const GridItems: FC = /*#__PURE__*/ memo(function GridItems() {
+const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
   const gridState = useEmitterValue('gridState')
   const listClassName = useEmitterValue('listClassName')
   const itemClassName = useEmitterValue('itemClassName')
@@ -84,7 +84,7 @@ const GridItems: FC = /*#__PURE__*/ memo(function GridItems() {
     })
   })
 
-  return createElement(
+  return React.createElement(
     ListComponent,
     {
       ref: listRef,
@@ -96,14 +96,14 @@ const GridItems: FC = /*#__PURE__*/ memo(function GridItems() {
     gridState.items.map((item) => {
       const key = computeItemKey(item.index, item.data, context)
       return isSeeking
-        ? createElement(ScrollSeekPlaceholder, {
+        ? React.createElement(ScrollSeekPlaceholder, {
             key,
             ...contextPropIfNotDomElement(ScrollSeekPlaceholder, context),
             index: item.index,
             height: gridState.itemHeight,
             width: gridState.itemWidth,
           })
-        : createElement(
+        : React.createElement(
             ItemComponent,
             { ...contextPropIfNotDomElement(ItemComponent, context), className: itemClassName, 'data-index': item.index, key },
             itemContent(item.index, item.data, context)
@@ -112,26 +112,30 @@ const GridItems: FC = /*#__PURE__*/ memo(function GridItems() {
   )
 })
 
-const Header: FC = memo(function VirtuosoHeader() {
+const Header: React.FC = React.memo(function VirtuosoHeader() {
   const Header = useEmitterValue('HeaderComponent')
   const headerHeight = usePublisher('headerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
   const ref = useSize((el) => headerHeight(correctItemSize(el, 'height')))
   const context = useEmitterValue('context')
-  return Header ? createElement(headerFooterTag, { ref }, createElement(Header, contextPropIfNotDomElement(Header, context))) : null
+  return Header
+    ? React.createElement(headerFooterTag, { ref }, React.createElement(Header, contextPropIfNotDomElement(Header, context)))
+    : null
 })
 
-const Footer: FC = memo(function VirtuosoGridFooter() {
+const Footer: React.FC = React.memo(function VirtuosoGridFooter() {
   const Footer = useEmitterValue('FooterComponent')
   const footerHeight = usePublisher('footerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
   const ref = useSize((el) => footerHeight(correctItemSize(el, 'height')))
   const context = useEmitterValue('context')
-  return Footer ? createElement(headerFooterTag, { ref }, createElement(Footer, contextPropIfNotDomElement(Footer, context))) : null
+  return Footer
+    ? React.createElement(headerFooterTag, { ref }, React.createElement(Footer, contextPropIfNotDomElement(Footer, context)))
+    : null
 })
 
-const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
-  const ctx = useContext(VirtuosoGridMockContext)
+const Viewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+  const ctx = React.useContext(VirtuosoGridMockContext)
   const itemDimensions = usePublisher('itemDimensions')
   const viewportDimensions = usePublisher('viewportDimensions')
 
@@ -139,7 +143,7 @@ const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
     viewportDimensions(el.getBoundingClientRect())
   })
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (ctx) {
       viewportDimensions({ height: ctx.viewportHeight, width: ctx.viewportWidth })
       itemDimensions({ height: ctx.itemHeight, width: ctx.itemWidth })
@@ -153,14 +157,14 @@ const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   )
 }
 
-const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
-  const ctx = useContext(VirtuosoGridMockContext)
+const WindowViewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+  const ctx = React.useContext(VirtuosoGridMockContext)
   const windowViewportRect = usePublisher('windowViewportRect')
   const itemDimensions = usePublisher('itemDimensions')
   const customScrollParent = useEmitterValue('customScrollParent')
   const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent)
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (ctx) {
       itemDimensions({ height: ctx.itemHeight, width: ctx.itemWidth })
       windowViewportRect({ offsetTop: 0, visibleHeight: ctx.viewportHeight, visibleWidth: ctx.viewportWidth })
@@ -174,7 +178,7 @@ const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   )
 }
 
-const GridRoot: FC<GridRootProps> = /*#__PURE__*/ memo(function GridRoot({ ...props }) {
+const GridRoot: React.FC<GridRootProps> = /*#__PURE__*/ React.memo(function GridRoot({ ...props }) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const customScrollParent = useEmitterValue('customScrollParent')
   const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
@@ -249,5 +253,5 @@ function resolveGapValue(property: string, value: string | undefined, log: Log) 
 }
 
 export const VirtuosoGrid = Grid as <ItemData = any, Context = any>(
-  props: VirtuosoGridProps<ItemData, Context> & { ref?: Ref<VirtuosoGridHandle> }
-) => ReactElement
+  props: VirtuosoGridProps<ItemData, Context> & { ref?: React.Ref<VirtuosoGridHandle> }
+) => React.ReactElement

@@ -1,5 +1,4 @@
-import { useCallback, useState } from 'react'
-import * as React from 'react'
+import React from 'react'
 import { Virtuoso } from '../src'
 import { faker } from '@faker-js/faker'
 
@@ -40,10 +39,10 @@ export function Example() {
   const START_INDEX = 10000
   const INITIAL_ITEM_COUNT = 20
 
-  const [firstItemIndex, setFirstItemIndex] = useState(START_INDEX)
-  const [users, setUsers] = useState(() => generateUsers(INITIAL_ITEM_COUNT, START_INDEX))
+  const [firstItemIndex, setFirstItemIndex] = React.useState(START_INDEX)
+  const [users, setUsers] = React.useState(() => generateUsers(INITIAL_ITEM_COUNT, START_INDEX))
 
-  const prependItems = useCallback(() => {
+  const prependItems = React.useCallback(() => {
     const usersToPrepend = 20
     const nextFirstItemIndex = firstItemIndex - usersToPrepend
 
