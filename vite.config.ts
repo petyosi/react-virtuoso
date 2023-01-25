@@ -3,8 +3,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 const ext = {
-  cjs: 'cjs',
-  es: 'mjs',
+  cjs: 'js',
+  es: 'es.js',
 }
 
 // https://vitejs.dev/config/
