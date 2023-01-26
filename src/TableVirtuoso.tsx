@@ -1,6 +1,6 @@
 import { systemToComponent } from './react-urx'
 import * as u from './urx'
-import { createElement, FC, PropsWithChildren, ReactElement, Ref, useContext, memo, useState, useEffect } from 'react'
+import React from 'react'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import { ComputeItemKey, ItemContent, FixedHeaderContent, FixedFooterContent, TableComponents, TableRootProps } from './interfaces'
 import { listSystem } from './listSystem'
@@ -70,7 +70,7 @@ const DefaultFillerRow = ({ height }: { height: number }) => (
   </tr>
 )
 
-const Items = /*#__PURE__*/ memo(function VirtuosoItems() {
+const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
   const listState = useEmitterValue('listState')
   const sizeRanges = usePublisher('sizeRanges')
   const useWindowScroll = useEmitterValue('useWindowScroll')
@@ -94,7 +94,7 @@ const Items = /*#__PURE__*/ memo(function VirtuosoItems() {
     customScrollParent
   )
 
-  const [deviation, setDeviation] = useState(0)
+  const [deviation, setDeviation] = React.useState(0)
   useEmitter('deviation', (value) => {
     if (deviation !== value) {
       ref.current!.style.marginTop = `${value}px`
@@ -114,7 +114,7 @@ const Items = /*#__PURE__*/ memo(function VirtuosoItems() {
   const context = useEmitterValue('context')
 
   if (statefulTotalCount === 0 && EmptyPlaceholder) {
-    return createElement(EmptyPlaceholder, contextPropIfNotDomElement(EmptyPlaceholder, context))
+    return React.createElement(EmptyPlaceholder, contextPropIfNotDomElement(EmptyPlaceholder, context))
   }
 
   const paddingTop = listState.offsetTop + paddingTopAddition + deviation
@@ -129,7 +129,7 @@ const Items = /*#__PURE__*/ memo(function VirtuosoItems() {
     const key = computeItemKey(index + firstItemIndex, item.data, context)
 
     if (isSeeking) {
-      return createElement(ScrollSeekPlaceholder, {
+      return React.createElement(ScrollSeekPlaceholder, {
         ...contextPropIfNotDomElement(ScrollSeekPlaceholder, context),
         key,
         index: item.index,
@@ -137,7 +137,7 @@ const Items = /*#__PURE__*/ memo(function VirtuosoItems() {
         type: item.type || 'item',
       })
     }
-    return createElement(
+    return React.createElement(
       TableRowComponent,
       {
         ...contextPropIfNotDomElement(TableRowComponent, context),
@@ -152,20 +152,20 @@ const Items = /*#__PURE__*/ memo(function VirtuosoItems() {
     )
   })
 
-  return createElement(
+  return React.createElement(
     TableBodyComponent,
     { ref: callbackRef, 'data-test-id': 'virtuoso-item-list', ...contextPropIfNotDomElement(TableBodyComponent, context) },
     [paddingTopEl, ...items, paddingBottomEl]
   )
 })
 
-const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
-  const ctx = useContext(VirtuosoMockContext)
+const Viewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+  const ctx = React.useContext(VirtuosoMockContext)
   const viewportHeight = usePublisher('viewportHeight')
   const fixedItemHeight = usePublisher('fixedItemHeight')
   const viewportRef = useSize(u.compose(viewportHeight, (el) => correctItemSize(el, 'height')))
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (ctx) {
       viewportHeight(ctx.viewportHeight)
       fixedItemHeight(ctx.itemHeight)
@@ -179,14 +179,14 @@ const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   )
 }
 
-const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
-  const ctx = useContext(VirtuosoMockContext)
+const WindowViewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+  const ctx = React.useContext(VirtuosoMockContext)
   const windowViewportRect = usePublisher('windowViewportRect')
   const fixedItemHeight = usePublisher('fixedItemHeight')
   const customScrollParent = useEmitterValue('customScrollParent')
   const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent)
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (ctx) {
       fixedItemHeight(ctx.itemHeight)
       windowViewportRect({ offsetTop: 0, visibleHeight: ctx.viewportHeight, visibleWidth: 100 })
@@ -200,7 +200,7 @@ const WindowViewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   )
 }
 
-const TableRoot: FC<TableRootProps> = /*#__PURE__*/ memo(function TableVirtuosoRoot(props) {
+const TableRoot: React.FC<TableRootProps> = /*#__PURE__*/ React.memo(function TableVirtuosoRoot(props) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const customScrollParent = useEmitterValue('customScrollParent')
   const fixedHeaderHeight = usePublisher('fixedHeaderHeight')
@@ -217,7 +217,7 @@ const TableRoot: FC<TableRootProps> = /*#__PURE__*/ memo(function TableVirtuosoR
   const TheTFoot = useEmitterValue('TableFooterComponent')
 
   const theHead = fixedHeaderContent
-    ? createElement(
+    ? React.createElement(
         TheTHead!,
         {
           key: 'TableHead',
@@ -229,7 +229,7 @@ const TableRoot: FC<TableRootProps> = /*#__PURE__*/ memo(function TableVirtuosoR
       )
     : null
   const theFoot = fixedFooterContent
-    ? createElement(
+    ? React.createElement(
         TheTFoot!,
         {
           key: 'TableFoot',
@@ -244,7 +244,7 @@ const TableRoot: FC<TableRootProps> = /*#__PURE__*/ memo(function TableVirtuosoR
   return (
     <TheScroller {...props}>
       <TheViewport>
-        {createElement(TheTable!, { style: { borderSpacing: 0 }, ...contextPropIfNotDomElement(TheTable, context) }, [
+        {React.createElement(TheTable!, { style: { borderSpacing: 0 }, ...contextPropIfNotDomElement(TheTable, context) }, [
           theHead,
           <Items key="TableBody" />,
           theFoot,
@@ -318,5 +318,5 @@ const Scroller = /*#__PURE__*/ buildScroller({ usePublisher, useEmitterValue, us
 const WindowScroller = /*#__PURE__*/ buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })
 
 export const TableVirtuoso = Table as <ItemData = any, Context = any>(
-  props: TableVirtuosoProps<ItemData, Context> & { ref?: Ref<TableVirtuosoHandle> }
-) => ReactElement
+  props: TableVirtuosoProps<ItemData, Context> & { ref?: React.Ref<TableVirtuosoHandle> }
+) => React.ReactElement

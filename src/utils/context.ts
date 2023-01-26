@@ -1,11 +1,11 @@
-import { createContext } from 'react'
+import React from 'react'
 
 export interface VirtuosoMockContextValue {
   viewportHeight: number
   itemHeight: number
 }
 
-export const VirtuosoMockContext = createContext<VirtuosoMockContextValue | undefined>(undefined)
+export const VirtuosoMockContext = React.createContext<VirtuosoMockContextValue | undefined>(undefined)
 
 export interface VirtuosoGridMockContextValue {
   viewportHeight: number
@@ -14,4 +14,4 @@ export interface VirtuosoGridMockContextValue {
   itemWidth: number
 }
 
-export const VirtuosoGridMockContext = createContext<VirtuosoGridMockContextValue | undefined>(undefined)
+export const VirtuosoGridMockContext = React.createContext<VirtuosoGridMockContextValue | undefined>(undefined)

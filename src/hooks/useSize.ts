@@ -1,9 +1,9 @@
-import { useRef } from 'react'
+import React from 'react'
 
 export type CallbackRefParam = HTMLElement | null
 
 export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled = true) {
-  const ref = useRef<CallbackRefParam>(null)
+  const ref = React.useRef<CallbackRefParam>(null)
 
   let callbackRef = (_el: CallbackRefParam) => {
     void 0

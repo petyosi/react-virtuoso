@@ -1,11 +1,11 @@
-import { useEffect, useRef, useCallback } from 'react'
+import React from 'react'
 import { useSizeWithElRef } from './useSize'
 import { WindowViewportInfo } from '../interfaces'
 
 export default function useWindowViewportRectRef(callback: (info: WindowViewportInfo) => void, customScrollParent?: HTMLElement) {
-  const viewportInfo = useRef<WindowViewportInfo | null>(null)
+  const viewportInfo = React.useRef<WindowViewportInfo | null>(null)
 
-  const calculateInfo = useCallback(
+  const calculateInfo = React.useCallback(
     (element: HTMLElement | null) => {
       if (element === null || !element.offsetParent) {
         return
@@ -38,11 +38,11 @@ export default function useWindowViewportRectRef(callback: (info: WindowViewport
 
   const { callbackRef, ref } = useSizeWithElRef(calculateInfo)
 
-  const scrollAndResizeEventHandler = useCallback(() => {
+  const scrollAndResizeEventHandler = React.useCallback(() => {
     calculateInfo(ref.current)
   }, [calculateInfo, ref])
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (customScrollParent) {
       customScrollParent.addEventListener('scroll', scrollAndResizeEventHandler)
       const observer = new ResizeObserver(scrollAndResizeEventHandler)

@@ -9,7 +9,11 @@ const ext = {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      jsxRuntime: 'classic',
+    }),
+  ],
   build: {
     minify: 'terser',
     lib: {

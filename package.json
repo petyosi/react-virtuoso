@@ -34,7 +34,7 @@
     "e2e": "playwright test",
     "lint": "eslint src test e2e --ext .ts,.tsx",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
-    "dev": "ladle serve",
+    "dev": "ladle serve --viteConfig ladle.vite.config.ts",
     "prepare": "pnpm run build && husky install",
     "semantic-release": "semantic-release"
   },
