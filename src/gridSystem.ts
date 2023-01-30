@@ -73,6 +73,9 @@ function buildItems<D>(startIndex: number, endIndex: number, data: D[] | undefin
 function gapComparator(prev: Gap, next: Gap) {
   return prev && prev.column === next.column && prev.row === next.row
 }
+function dimensionComparator(prev: ElementDimensions, next: ElementDimensions) {
+  return prev && prev.width === next.width && prev.height === next.height
+}
 export const gridSystem = /*#__PURE__*/ u.system(
   ([
     { overscan, visibleRange, listBoundary },
@@ -119,11 +122,11 @@ export const gridSystem = /*#__PURE__*/ u.system(
           u.duc(totalCount),
           visibleRange,
           u.duc(gap, gapComparator),
-          u.duc(itemDimensions, (prev, next) => prev && prev.width === next.width && prev.height === next.height),
+          u.duc(itemDimensions, dimensionComparator),
+          u.duc(viewportDimensions, dimensionComparator),
           data
         ),
-        u.withLatestFrom(viewportDimensions),
-        u.map(([[totalCount, [startOffset, endOffset], gap, item, data], viewport]) => {
+        u.map(([totalCount, [startOffset, endOffset], gap, item, viewport, data]) => {
           const { row: rowGap, column: columnGap } = gap
           const { height: itemHeight, width: itemWidth } = item
           const { width: viewportWidth } = viewport
