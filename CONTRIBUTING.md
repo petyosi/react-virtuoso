@@ -1,14 +1,14 @@
 # Contributing to React Virtuoso
 
-Want to contribute to React Virtuoso? You will encounter a state management you are not familiar with - it's implemented using [URX](https://urx.virtuoso.dev). 
-Check the examples and the conceptual docs to get the gist of it. 
+Want to contribute to React Virtuoso? You will encounter a state management you are not familiar with - it's implemented using [URX](https://urx.virtuoso.dev).
+Check the examples and the conceptual docs to get the gist of it.
 
 ### How to add fixes and new features
 
-Virtuoso has an extensive unit/e2e test suite. To run the unit tests, use `npm run test`. An end-to-end browser-based test suite is runnable with `npm run e2e`. 
+Virtuoso has an extensive unit/e2e test suite. To run the unit tests, use `pnpm run test`. An end-to-end browser-based test suite is runnable with `pnpm run e2e`.
 
 A convenient way to debug something is to preview the test cases in the browser.
-To do that, run `npm run browse-examples` - it will open a simple UI that lets you browse the components in the `e2e` folder.
+To do that, run `pnpm run dev` - it will open a simple UI that lets you browse the components in the `examples` folder.
 
 ### How to add to the docs
 

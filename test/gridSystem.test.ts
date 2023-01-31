@@ -42,6 +42,15 @@ describe('grid system', () => {
     const itemCount = Math.floor(1000 / 300) * Math.ceil(500 / 200)
 
     expect(getValue(gridState).items).toHaveLength(itemCount)
+
+    publish(viewportDimensions, {
+      width: 2000,
+      height: 500,
+    })
+
+    const newItemCount = Math.floor(2000 / 300) * Math.ceil(500 / 200)
+
+    expect(getValue(gridState).items).toHaveLength(newItemCount)
   })
 
   it('reuses currently rendered items if possible', () => {
