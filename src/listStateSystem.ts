@@ -170,8 +170,11 @@ export const listStateSystem = u.system(
           u.duc(gap),
           data
         ),
-        u.filter(([mount, recalcInProgress]) => {
-          return mount && !recalcInProgress
+        u.filter(([mount, recalcInProgress, , totalCount, , , , , , , data]) => {
+          // When data length changes, it is synced to totalCount, both of which trigger a recalc separately.
+          // Recalc should be skipped then, as the calculation expects both data and totalCount to be in sync.
+          const dataChangeInProgress = data && data.length !== totalCount
+          return mount && !recalcInProgress && !dataChangeInProgress
         }),
         u.map(
           ([
