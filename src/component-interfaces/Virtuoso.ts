@@ -15,6 +15,7 @@ import type {
   ScrollSeekConfiguration,
   SizeFunction,
 } from '../interfaces'
+import { LogLevel } from '../loggerSystem'
 
 export interface VirtuosoProps<D, C> extends ListRootProps {
   /**
@@ -235,6 +236,13 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
    * By default `4`. Redefine to change how much away from the bottom the scroller can be before the list is not considered not at bottom.
    */
   atBottomThreshold?: number
+
+  /**
+   * set to LogLevel.DEBUG to enable various diagnostics in the console, the most useful being the item measurement reports.
+   *
+   * Ensure that you have "all levels" enabled in the browser console too see the messages.
+   */
+  logLevel?: LogLevel
 }
 
 export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'totalCount' | 'itemContent'> {

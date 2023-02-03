@@ -7,6 +7,7 @@ import type {
   ListRange,
   ScrollSeekConfiguration,
 } from '../interfaces'
+import { LogLevel } from '../loggerSystem'
 
 export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
   /**
@@ -115,6 +116,13 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
    * Pass a reference to a scrollable parent element, so that the grid won't wrap in its own.
    */
   customScrollParent?: HTMLElement
+
+  /**
+   * set to LogLevel.DEBUG to enable various diagnostics in the console, the most useful being the item measurement reports.
+   *
+   * Ensure that you have "all levels" enabled in the browser console too see the messages.
+   */
+  logLevel?: LogLevel
 }
 
 export interface VirtuosoGridHandle {
