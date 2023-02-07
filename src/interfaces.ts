@@ -334,10 +334,50 @@ export interface WindowViewportInfo {
   visibleWidth: number
 }
 
+export interface CalculateViewLocationParams {
+  itemTop: number
+  itemBottom: number
+  viewportTop: number
+  viewportBottom: number
+  locationParams: {
+    align?: 'start' | 'center' | 'end'
+    behavior?: 'auto' | 'smooth'
+  } & ({ index: number } | { groupIndex: number })
+}
+
+export type CalculateViewLocation = (params: CalculateViewLocationParams) => IndexLocationWithAlign | number | null
+
 export interface ScrollIntoViewLocationOptions {
   align?: 'start' | 'center' | 'end'
   behavior?: 'auto' | 'smooth'
+  /**
+   * Will be called when the scroll is done, or immediately if no scroll is needed.
+   */
   done?: () => void
+  /**
+   * Use this function to fine-tune the scrollIntoView behavior.
+   * The function receives the item's top and bottom position in the viewport, and the viewport top/bottom.
+   * Return an location object to scroll, or null to prevent scrolling.
+   * Here's the default implementation:
+   * ```ts
+const defaultCalculateViewLocation: CalculateViewLocation = ({
+  itemTop,
+  itemBottom,
+  viewportTop,
+  viewportBottom,
+  locationParams: { behavior, align, ...rest },
+}) => {
+  if (itemTop < viewportTop) {
+    return { ...rest, behavior, align: align ?? 'start' }
+  }
+  if (itemBottom > viewportBottom) {
+    return { ...rest, behavior, align: align ?? 'end' }
+  }
+  return null
+}
+   *```
+   */
+  calculateViewLocation?: CalculateViewLocation
 }
 
 export interface FlatScrollIntoViewLocation extends ScrollIntoViewLocationOptions {
