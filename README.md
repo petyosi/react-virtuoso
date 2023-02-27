@@ -16,7 +16,7 @@
 - [Initial top most item index](//virtuoso.dev/initial-index/);
 - [Scroll to index method](//virtuoso.dev/scroll-to-index/).
 
-For live examples and documentation, check the [documentation website](//virtuoso.dev).
+For live examples and documentation, check the [documentation website](https://virtuoso.dev).
 
 ## Sponsors
 
@@ -66,7 +66,7 @@ If you need to support reordering, [check the React Sortable HOC example](//virt
 
 ## Documentation and Demos
 
-For in-depth documentation and live examples of the supported features and live demos, check the [documentation website](//virtuoso.dev).
+For in-depth documentation and live examples of the supported features and live demos, check the [documentation website](https://virtuoso.dev).
 
 ## Browser support
 
