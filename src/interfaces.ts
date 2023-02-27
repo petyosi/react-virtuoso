@@ -210,9 +210,9 @@ export interface ScrollSeekConfiguration {
    */
   change?: (velocity: number, range: ListRange) => void
   /**
-   * Callback to determine if the list should enter "scroll seek" mode.
+   * Callback to determine if the list should exit "scroll seek" mode.
    */
-  exit: ScrollSeekToggle
+  : ScrollSeekToggle
 }
 
 export type FollowOutputScalarType = boolean | 'smooth' | 'auto'
