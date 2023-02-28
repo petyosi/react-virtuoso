@@ -5,18 +5,18 @@
 **React Virtuoso** is the most powerful React virtual list/table component, full stop. Here's why:
 
 - Variable sized items out of the box; no manual measurements or hard-coding item heights is necessary;
-- Support for [reverse (bottom up) scrolling and prepending items](//virtuoso.dev/prepend-items/) (chat, feeds, etc);
-- [Grouped mode with sticky headers](//virtuoso.dev/grouped-by-first-letter/);
-- [Responsive grid layout](//virtuoso.dev/grid-responsive-columns/);
-- [Table Support](//virtuoso.dev/hello-table/);
-- [Automatic handling of content resize](//virtuoso.dev/auto-resizing/);
-- [Custom Header, Footer, and empty list components](//virtuoso.dev/customize-structure/);
-- [Pinned top items](//virtuoso.dev/top-items/);
-- [Endless scrolling](//virtuoso.dev/endless-scrolling/), [press to load more](//virtuoso.dev/press-to-load-more/);
-- [Initial top most item index](//virtuoso.dev/initial-index/);
-- [Scroll to index method](//virtuoso.dev/scroll-to-index/).
+- Support for [reverse (bottom up) scrolling and prepending items](https://virtuoso.dev/prepend-items/) (chat, feeds, etc);
+- [Grouped mode with sticky headers](https://virtuoso.dev/grouped-by-first-letter/);
+- [Responsive grid layout](https://virtuoso.dev/grid-responsive-columns/);
+- [Table Support](https://virtuoso.dev/hello-table/);
+- [Automatic handling of content resize](https://virtuoso.dev/auto-resizing/);
+- [Custom Header, Footer, and empty list components](https://virtuoso.dev/customize-structure/);
+- [Pinned top items](https://virtuoso.dev/top-items/);
+- [Endless scrolling](https://virtuoso.dev/endless-scrolling/), [press to load more](https://virtuoso.dev/press-to-load-more/);
+- [Initial top most item index](https://virtuoso.dev/initial-index/);
+- [Scroll to index method](https://virtuoso.dev/scroll-to-index/).
 
-For live examples and documentation, check the [documentation website](//virtuoso.dev).
+For live examples and documentation, check the [documentation website](https://virtuoso.dev).
 
 ## Sponsors
 
@@ -40,7 +40,7 @@ const App = () => {
 ReactDOM.render(<App />, document.getElementById('root'))
 ```
 
-## [Grouped Mode](//virtuoso.dev/grouped-by-first-letter/)
+## [Grouped Mode](https://virtuoso.dev/grouped-by-first-letter/)
 
 The `GroupedVirtuoso` component is a variant of the "flat" `Virtuoso`, with the following differences:
 
@@ -49,24 +49,24 @@ The `GroupedVirtuoso` component is a variant of the "flat" `Virtuoso`, with the 
 - In addition the `itemContent` property, the component requires an additional `groupContent` property,
   which renders the **group header**. The `groupContent` callback receives the zero-based group index as a parameter.
 
-## [Grid](//virtuoso.dev/grid-responsive-columns/)
+## [Grid](https://virtuoso.dev/grid-responsive-columns/)
 
 The `VirtuosoGrid` component displays **same sized items** in multiple columns.
 The layout and item sizing is controlled through CSS class properties, which allows you to use media queries, min-width, percentage, etc.
 
-## [Table](//virtuoso.dev/hello-table/)
+## [Table](https://virtuoso.dev/hello-table/)
 
 The `TableVirtuoso` component works just like `Virtuoso`, but with HTML tables.
 It supports window scrolling, sticky headers, sticky columns, and works with React Table and MUI Table.
 
 ## Works With Your UI Library of Choice
 
-You can customize the markup up to your requirements - check [the Material UI list demo](//virtuoso.dev/material-ui-endless-scrolling/).
-If you need to support reordering, [check the React Sortable HOC example](//virtuoso.dev/react-sortable-hoc/).
+You can customize the markup up to your requirements - check [the Material UI list demo](https://virtuoso.dev/material-ui-endless-scrolling/).
+If you need to support reordering, [check the React Sortable HOC example](https://virtuoso.dev/react-sortable-hoc/).
 
 ## Documentation and Demos
 
-For in-depth documentation and live examples of the supported features and live demos, check the [documentation website](//virtuoso.dev).
+For in-depth documentation and live examples of the supported features and live demos, check the [documentation website](https://virtuoso.dev).
 
 ## Browser support
 
