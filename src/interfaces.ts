@@ -212,7 +212,7 @@ export interface ScrollSeekConfiguration {
   /**
    * Callback to determine if the list should exit "scroll seek" mode.
    */
-  : ScrollSeekToggle
+  exit: ScrollSeekToggle
 }
 
 export type FollowOutputScalarType = boolean | 'smooth' | 'auto'
