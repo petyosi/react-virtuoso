@@ -7,6 +7,7 @@ import { ListItem } from './interfaces'
 import { loggerSystem, LogLevel } from './loggerSystem'
 import { simpleMemoize } from './utils/simpleMemoize'
 import { recalcSystem } from './recalcSystem'
+import { find } from './AATree'
 
 const isMobileSafari = simpleMemoize(() => {
   return /iP(ad|od|hone)/i.test(navigator.userAgent) && /WebKit/i.test(navigator.userAgent)
@@ -51,9 +52,9 @@ export const upwardScrollFixSystem = u.system(
           [0, [], 0, 0] as UpwardFixState
         ),
         u.filter(([amount]) => amount !== 0),
-        u.withLatestFrom(scrollTop, scrollDirection, scrollingInProgress, isAtBottom, log),
-        u.filter(([, scrollTop, scrollDirection, scrollingInProgress]) => {
-          return !scrollingInProgress && scrollTop !== 0 && scrollDirection === UP
+        u.withLatestFrom(scrollTop, scrollDirection, scrollingInProgress, isAtBottom, log, recalcInProgress),
+        u.filter(([, scrollTop, scrollDirection, scrollingInProgress, , , recalcInProgress]) => {
+          return !recalcInProgress && !scrollingInProgress && scrollTop !== 0 && scrollDirection === UP
         }),
         u.map(([[amount], , , , , log]) => {
           log('Upward scrolling compensation', { amount }, LogLevel.DEBUG)
@@ -106,7 +107,39 @@ export const upwardScrollFixSystem = u.system(
       u.pipe(
         beforeUnshiftWith,
         u.withLatestFrom(sizes, gap),
-        u.map(([offset, { lastSize }, gap]) => offset * lastSize + offset * gap)
+        u.map(([offset, { lastSize: defaultItemSize, groupIndices, sizeTree }, gap]) => {
+          function getItemOffset(itemCount: number) {
+            return itemCount * (defaultItemSize + gap)
+          }
+          if (groupIndices.length === 0) {
+            return getItemOffset(offset)
+          } else {
+            let amount = 0
+            const defaultGroupSize = find(sizeTree, 0)!
+
+            let recognizedOffsetItems = 0
+            let groupIndex = 0
+            while (recognizedOffsetItems < offset) {
+              // increase once for the group itself
+              recognizedOffsetItems++
+              amount += defaultGroupSize
+
+              let groupItemCount = groupIndices[groupIndex + 1] - groupIndices[groupIndex] - 1
+
+              // if the group is larger than the offset, we have an expanded group. remove the group size, and replace with 1 item.
+              if (recognizedOffsetItems + groupItemCount > offset) {
+                amount -= defaultGroupSize
+                groupItemCount = offset - recognizedOffsetItems + 1
+              }
+
+              recognizedOffsetItems += groupItemCount
+              amount += getItemOffset(groupItemCount)
+              groupIndex++
+            }
+
+            return amount
+          }
+        })
       ),
       (offset) => {
         u.publish(deviation, offset)

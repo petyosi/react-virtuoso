@@ -1,8 +1,8 @@
 import * as u from './urx'
-import { arrayToRanges, AANode, empty, findMaxKeyValue, insert, newTree, Range, rangesWithin, remove, walk } from './AATree'
+import { AANode, arrayToRanges, empty, find, findMaxKeyValue, insert, newTree, Range, rangesWithin, remove, walk } from './AATree'
 import * as arrayBinarySearch from './utils/binaryArraySearch'
 import { correctItemSize } from './utils/correctItemSize'
-import { loggerSystem, Log, LogLevel } from './loggerSystem'
+import { Log, loggerSystem, LogLevel } from './loggerSystem'
 import { recalcSystem } from './recalcSystem'
 import { SizeFunction } from './interfaces'
 
@@ -19,6 +19,18 @@ function rangeIncludes(refRange: SizeRange) {
   return (range: Range<number>) => {
     return range.start === startIndex && (range.end === endIndex || range.end === Infinity) && range.value === size
   }
+}
+
+function affectedGroupCount(offset: number, groupIndices: Array<number>) {
+  let recognizedOffsetItems = 0
+  let groupIndex = 0
+  while (recognizedOffsetItems < offset) {
+    recognizedOffsetItems += groupIndices[groupIndex + 1] - groupIndices[groupIndex] - 1
+    groupIndex++
+  }
+  const offsetIsExact = recognizedOffsetItems === offset
+
+  return groupIndex - (offsetIsExact ? 0 : 1)
 }
 
 export function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[]) {
@@ -283,6 +295,7 @@ export const sizeSystem = u.system(
     const shiftWith = u.stream<number>()
     const firstItemIndex = u.statefulStream(0)
     const groupIndices = u.statefulStream([] as number[])
+
     const fixedItemSize = u.statefulStream<OptionalNumber>(undefined)
     const defaultItemSize = u.statefulStream<OptionalNumber>(undefined)
     const itemSize = u.statefulStream<SizeFunction>((el, field) => correctItemSize(el, SIZE_MAP[field]))
@@ -293,6 +306,19 @@ export const sizeSystem = u.system(
     const sizes = u.statefulStreamFromEmitter(
       u.pipe(sizeRanges, u.withLatestFrom(groupIndices, log, gap), u.scan(sizeStateReducer, initial), u.distinctUntilChanged()),
       initial
+    )
+
+    const prevGroupIndices = u.statefulStreamFromEmitter(
+      u.pipe(
+        groupIndices,
+        u.distinctUntilChanged(),
+        u.scan((prev, curr) => ({ prev: prev.current, current: curr }), {
+          prev: [] as number[],
+          current: [] as number[],
+        }),
+        u.map(({ prev }) => prev)
+      ),
+      []
     )
 
     u.connect(
@@ -321,8 +347,9 @@ export const sizeSystem = u.system(
       u.pipe(
         totalCount,
         u.withLatestFrom(sizes),
-        u.filter(([totalCount, { lastIndex }]) => {
-          return totalCount < lastIndex
+        u.filter(([totalCount, { lastIndex, groupIndices }]) => {
+          // if we have groups, we will take care of it in the
+          return totalCount < lastIndex && groupIndices.length === 0
         }),
         u.map(([totalCount, { lastIndex, lastSize }]) => {
           return [
@@ -387,11 +414,15 @@ export const sizeSystem = u.system(
         u.map((val) => val.diff)
       ),
       (offset) => {
+        const { groupIndices } = u.getValue(sizes)
         if (offset > 0) {
           u.publish(recalcInProgress, true)
-          u.publish(unshiftWith, offset)
+          u.publish(unshiftWith, offset + affectedGroupCount(offset, groupIndices))
         } else if (offset < 0) {
-          u.publish(shiftWith, offset)
+          const prevGroupIndicesValue = u.getValue(prevGroupIndices)
+          if (prevGroupIndicesValue.length > 0) {
+            u.publish(shiftWith, offset - affectedGroupCount(-offset, prevGroupIndicesValue))
+          }
         }
       }
     )
@@ -414,8 +445,71 @@ export const sizeSystem = u.system(
         unshiftWith,
         u.withLatestFrom(sizes),
         u.map(([unshiftWith, sizes]) => {
-          if (sizes.groupIndices.length > 0) {
-            throw new Error('Virtuoso: prepending items does not work with groups')
+          const groupedMode = sizes.groupIndices.length > 0
+          const initialRanges: SizeRange[] = []
+          const defaultSize = sizes.lastSize
+          if (groupedMode) {
+            const firstGroupSize = find(sizes.sizeTree, 0)!
+
+            let prependedGroupItemsCount = 0
+            let groupIndex = 0
+
+            while (prependedGroupItemsCount < unshiftWith) {
+              const theGroupIndex = sizes.groupIndices[groupIndex]
+              const groupItemCount = sizes.groupIndices[groupIndex + 1] - theGroupIndex - 1
+
+              initialRanges.push({
+                startIndex: theGroupIndex,
+                endIndex: theGroupIndex,
+                size: firstGroupSize,
+              })
+
+              initialRanges.push({
+                startIndex: theGroupIndex + 1,
+                endIndex: theGroupIndex + 1 + groupItemCount - 1,
+                size: defaultSize,
+              })
+              groupIndex++
+              prependedGroupItemsCount += groupItemCount + 1
+            }
+
+            const sizeTreeKV = walk(sizes.sizeTree)
+
+            // here, we detect if the first group item size has increased, so that we can delete its value.
+            const firstGroupIsExpanded = prependedGroupItemsCount !== unshiftWith
+
+            if (firstGroupIsExpanded) {
+              // remove the first group item size, already incorporated
+              sizeTreeKV.shift()
+            }
+
+            return sizeTreeKV.reduce(
+              (acc, { k: index, v: size }) => {
+                let ranges: SizeRange[] = acc.ranges
+
+                if (acc.prevSize !== 0) {
+                  ranges = [
+                    ...acc.ranges,
+                    {
+                      startIndex: acc.prevIndex,
+                      endIndex: index + unshiftWith - 1,
+                      size: acc.prevSize,
+                    },
+                  ]
+                }
+
+                return {
+                  ranges,
+                  prevIndex: index + unshiftWith,
+                  prevSize: size,
+                }
+              },
+              {
+                ranges: initialRanges,
+                prevIndex: unshiftWith,
+                prevSize: 0,
+              }
+            ).ranges
           }
 
           return walk(sizes.sizeTree).reduce(
@@ -429,7 +523,7 @@ export const sizeSystem = u.system(
             {
               ranges: [] as SizeRange[],
               prevIndex: 0,
-              prevSize: sizes.lastSize,
+              prevSize: defaultSize,
             }
           ).ranges
         })
@@ -453,18 +547,50 @@ export const sizeSystem = u.system(
         shiftWith,
         u.withLatestFrom(sizes, gap),
         u.map(([shiftWith, sizes, gap]) => {
-          if (sizes.groupIndices.length > 0) {
-            throw new Error('Virtuoso: shifting items does not work with groups')
-          }
+          const groupedMode = sizes.groupIndices.length > 0
+          if (groupedMode) {
+            let newSizeTree = newTree<number>()
+            const prevGroupIndicesValue = u.getValue(prevGroupIndices)
+            let removedItemsCount = 0
+            let groupIndex = 0
+            let groupOffset = 0
 
-          const newSizeTree = walk(sizes.sizeTree).reduce((acc, { k, v }) => {
-            return insert(acc, Math.max(0, k + shiftWith), v)
-          }, newTree<number>())
+            while (removedItemsCount < -shiftWith) {
+              groupOffset = prevGroupIndicesValue[groupIndex]
+              const groupItemCount = prevGroupIndicesValue[groupIndex + 1] - groupOffset - 1
+              groupIndex++
+              removedItemsCount += groupItemCount + 1
+            }
 
-          return {
-            ...sizes,
-            sizeTree: newSizeTree,
-            ...createOffsetTree(sizes.offsetTree, 0, newSizeTree, gap),
+            newSizeTree = walk(sizes.sizeTree).reduce((acc, { k, v }) => {
+              return insert(acc, Math.max(0, k + shiftWith), v)
+            }, newSizeTree)
+
+            // here, we detect if the first group item size has increased, so that we can delete its value.
+            const aGroupIsShrunk = removedItemsCount !== -shiftWith
+
+            if (aGroupIsShrunk) {
+              const firstGroupSize = find(sizes.sizeTree, groupOffset)!
+              newSizeTree = insert(newSizeTree, 0, firstGroupSize)
+              const nextItemSize = findMaxKeyValue(sizes.sizeTree, -shiftWith + 1)[1]!
+              newSizeTree = insert(newSizeTree, 1, nextItemSize)
+            }
+
+            return {
+              ...sizes,
+              sizeTree: newSizeTree,
+              ...createOffsetTree(sizes.offsetTree, 0, newSizeTree, gap),
+            }
+          } else {
+            const newSizeTree = walk(sizes.sizeTree).reduce((acc, { k, v }) => {
+              return insert(acc, Math.max(0, k + shiftWith), v)
+            }, newTree<number>())
+
+            return {
+              ...sizes,
+              sizeTree: newSizeTree,
+              ...createOffsetTree(sizes.offsetTree, 0, newSizeTree, gap),
+            }
           }
         })
       ),

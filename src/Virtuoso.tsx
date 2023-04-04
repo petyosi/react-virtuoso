@@ -21,7 +21,7 @@ export function identity<T>(value: T) {
 const listComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   const itemContent = u.statefulStream<ItemContent<any, any> | GroupItemContent<any, any>>((index: number) => `Item ${index}`)
   const context = u.statefulStream<unknown>(null)
-  const groupContent = u.statefulStream<GroupContent>((index: number) => `Group ${index}`)
+  const groupContent = u.statefulStream<GroupContent<any>>((index: number) => `Group ${index}`)
   const components = u.statefulStream<Components<any>>({})
   const computeItemKey = u.statefulStream<ComputeItemKey<any, any>>(identity)
   const headerFooterTag = u.statefulStream('div')
@@ -160,7 +160,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
             'data-item-index': item.index,
             style: GROUP_STYLE,
           },
-          groupContent(item.index)
+          groupContent(item.index, context)
         )
       } else {
         return React.createElement(
@@ -398,16 +398,16 @@ export const {
     optional: {
       context: 'context',
       followOutput: 'followOutput',
-      firstItemIndex: 'firstItemIndex',
       itemContent: 'itemContent',
       groupContent: 'groupContent',
       overscan: 'overscan',
       increaseViewportBy: 'increaseViewportBy',
       totalCount: 'totalCount',
+      groupCounts: 'groupCounts',
       topItemCount: 'topItemCount',
+      firstItemIndex: 'firstItemIndex',
       initialTopMostItemIndex: 'initialTopMostItemIndex',
       components: 'components',
-      groupCounts: 'groupCounts',
       atBottomThreshold: 'atBottomThreshold',
       atTopThreshold: 'atTopThreshold',
       computeItemKey: 'computeItemKey',

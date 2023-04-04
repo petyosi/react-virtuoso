@@ -20,7 +20,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ESNext",
+    "target": "ESNext"
   },
-  "include": ["src"],
+  "include": ["src"]
 }

@@ -72,6 +72,7 @@ export const listSystem = u.system(
       groupIndices,
       statefulTotalCount,
       gap,
+      sizes,
     },
     { initialTopMostItemIndex, scrolledToInitialItem },
     domIO,
@@ -123,6 +124,7 @@ export const listSystem = u.system(
       ...featureGroup1,
       ...domIO,
       ...log,
+      sizes,
     }
   },
   u.tup(

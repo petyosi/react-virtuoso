@@ -255,12 +255,27 @@ export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 't
   /**
    * Specifies how each each group header gets rendered. The callback receives the zero-based index of the group.
    */
-  groupContent?: GroupContent
+  groupContent?: GroupContent<C>
 
   /**
    * Specifies how each each item gets rendered.
    */
   itemContent?: GroupItemContent<D, C>
+
+  /**
+   * Use when implementing inverse infinite scrolling, decrease the value this property
+   * in combination with a change in `groupCounts` to prepend groups items to the top of the list.
+   * Both new groups and extending the top group is supported.
+   *
+   * The delta of the firstItemIndex should equal the amount of new items introduced, without the group themselves.
+   * As an example, if you prepend 2 groups with 20 and 30 items each, the firstItemIndex should be decreased with 50.
+   *
+   * You can also prepend more items to the first group, for example:
+   * \{ groupCounts: [20, 30], firstItemIndex: 1000 \} can become \{ groupCounts: [10, 30, 30], firstItemIndex: 980 \}
+   *
+   * Warning: the firstItemIndex should **be a positive number**, based on the total amount of items to be displayed.
+   */
+  firstItemIndex?: number
 }
 
 export interface VirtuosoHandle {

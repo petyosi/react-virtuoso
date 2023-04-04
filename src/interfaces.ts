@@ -15,8 +15,8 @@ export interface GroupItemContent<D, C> {
   (index: number, groupIndex: number, data: D, context: C): React.ReactNode
 }
 
-export interface GroupContent {
-  (index: number): React.ReactNode
+export interface GroupContent<C> {
+  (index: number, context: C): React.ReactNode
 }
 
 export type ItemProps<D> = Pick<React.ComponentPropsWithRef<'div'>, 'style' | 'children'> & {

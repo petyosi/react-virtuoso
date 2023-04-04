@@ -2,6 +2,7 @@
 import { listSystem } from '../src/listSystem'
 import { init, getValue, publish, subscribe } from '../src/urx'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { AANode, walk } from '../src/AATree'
 
 describe('list engine', () => {
   describe('basics', () => {
@@ -533,4 +534,90 @@ describe('list engine', () => {
       expect(sub).toHaveBeenCalledWith(1100 - 5 * 30)
     })
   })
+
+  describe('unshifting group items', () => {
+    it('updates the size tree when unshifting with new group counts and decreasing firstItemIndex', () => {
+      const { sizes, groupCounts, firstItemIndex, sizeRanges } = init(listSystem)
+      publish(groupCounts, [3, 3])
+      publish(firstItemIndex, 4000)
+      publish(sizeRanges, [
+        { startIndex: 0, endIndex: 0, size: 30 },
+        { startIndex: 1, endIndex: 1, size: 20 },
+      ])
+
+      publish(sizeRanges, [{ startIndex: 2, endIndex: 2, size: 25 }])
+
+      publish(groupCounts, [3, 5, 3])
+      publish(firstItemIndex, 4000 - 5)
+
+      expect(toKV(getValue(sizes).sizeTree)).toEqual([
+        [0, 30],
+        [1, 20],
+        [4, 30],
+        [5, 20],
+        [8, 25],
+        [9, 20],
+        [10, 30],
+        [11, 20],
+      ])
+    })
+
+    it('shifts the first group size correctly when shifting (increasing firstItemIndex)', () => {
+      const { sizes, groupCounts, firstItemIndex, sizeRanges } = init(listSystem)
+      publish(groupCounts, [3, 3, 3, 3])
+      publish(firstItemIndex, 4000)
+      publish(sizeRanges, [
+        { startIndex: 0, endIndex: 0, size: 30 },
+        { startIndex: 1, endIndex: 1, size: 20 },
+      ])
+
+      publish(sizeRanges, [{ startIndex: 7, endIndex: 7, size: 25 }])
+
+      let theSizeTree = toKV(getValue(sizes).sizeTree)
+
+      publish(groupCounts, [1, 3, 3])
+      publish(firstItemIndex, 4000 + 5)
+
+      theSizeTree = toKV(getValue(sizes).sizeTree)
+
+      expect(theSizeTree).toEqual([
+        [0, 30],
+        [1, 25],
+        [2, 30],
+        [3, 20],
+        [6, 30],
+        [7, 20],
+      ])
+    })
+
+    it('re-creates the size record that the group deletes', () => {
+      const { sizes, groupCounts, firstItemIndex, sizeRanges } = init(listSystem)
+      publish(groupCounts, [3, 3, 3, 3])
+      publish(firstItemIndex, 4000)
+      publish(sizeRanges, [
+        { startIndex: 0, endIndex: 0, size: 30 },
+        { startIndex: 1, endIndex: 1, size: 20 },
+      ])
+
+      let theSizeTree = toKV(getValue(sizes).sizeTree)
+
+      publish(groupCounts, [1, 3, 3])
+      publish(firstItemIndex, 4000 + 5)
+
+      theSizeTree = toKV(getValue(sizes).sizeTree)
+
+      expect(theSizeTree).toEqual([
+        [0, 30],
+        [1, 20],
+        [2, 30],
+        [3, 20],
+        [6, 30],
+        [7, 20],
+      ])
+    })
+  })
 })
+
+function toKV<T>(tree: AANode<T>) {
+  return walk(tree).map((node) => [node.k, node.v] as [number, T])
+}
