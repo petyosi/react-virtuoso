@@ -15,6 +15,7 @@ export default defineConfig({
     }),
   ],
   build: {
+    target: ['es2020', 'edge88', 'firefox78', 'chrome79', 'safari14'],
     minify: 'terser',
     lib: {
       entry: ['src/index.tsx'],
