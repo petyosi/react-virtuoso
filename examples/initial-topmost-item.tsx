@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { IndexLocationWithAlign, Virtuoso } from '../src'
 import { IndexLocation } from '../src/scrollToIndexSystem'
 
-// @ts-expect-error I know
 globalThis['VIRTUOSO_LOG_LEVEL'] = 0
 
 const itemContent = (index: number) => <div style={{ height: index % 2 ? 30 : 20, background: 'white' }}>Item {index}</div>

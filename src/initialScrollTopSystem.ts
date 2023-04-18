@@ -1,10 +1,10 @@
 import * as u from './urx'
-import { totalListHeightSystem } from './totalListHeightSystem'
 import { propsReadySystem } from './propsReadySystem'
 import { domIOSystem } from './domIOSystem'
+import { listStateSystem } from './listStateSystem'
 
 export const initialScrollTopSystem = u.system(
-  ([{ totalListHeight }, { didMount }, { scrollTo }]) => {
+  ([{ didMount }, { scrollTo }, { listState }]) => {
     const initialScrollTop = u.statefulStream(0)
 
     u.subscribe(
@@ -17,11 +17,12 @@ export const initialScrollTopSystem = u.system(
       (location) => {
         u.handleNext(
           u.pipe(
-            totalListHeight,
-            u.filter((val) => val !== 0)
+            listState,
+            u.skip(1),
+            u.filter((state) => state.items.length > 1)
           ),
           () => {
-            setTimeout(() => {
+            requestAnimationFrame(() => {
               u.publish(scrollTo, location)
             })
           }
@@ -33,6 +34,6 @@ export const initialScrollTopSystem = u.system(
       initialScrollTop,
     }
   },
-  u.tup(totalListHeightSystem, propsReadySystem, domIOSystem),
+  u.tup(propsReadySystem, domIOSystem, listStateSystem),
   { singleton: true }
 )

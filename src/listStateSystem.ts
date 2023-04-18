@@ -228,7 +228,7 @@ export const listStateSystem = u.system(
             // If the list hasn't scrolled to the initial item because the initial item was set,
             // render empty list.
             //
-            // This is a condition to be evaluated past the probe check, do not merge
+            // This is a condition to be evaluated after the probe check cycle, do not merge
             // with the totalCount check above
             if (!scrolledToInitialItem) {
               return buildListState([], topItems, totalCount, gap, sizesValue, firstItemIndex)
