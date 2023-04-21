@@ -18,9 +18,8 @@ import { alignToBottomSystem } from './alignToBottomSystem'
 import { windowScrollerSystem } from './windowScrollerSystem'
 import { loggerSystem } from './loggerSystem'
 import { scrollIntoViewSystem } from './scrollIntoViewSystem'
+import { stateLoadSystem } from './stateLoadSystem'
 
-// workaround the growing list of systems below
-// fix this with 4.1 recursive conditional types
 const featureGroup1System = u.system(
   ([
     sizeRange,
@@ -32,6 +31,7 @@ const featureGroup1System = u.system(
     alignToBottom,
     windowScroller,
     scrollIntoView,
+    logger,
   ]) => {
     return {
       ...sizeRange,
@@ -43,6 +43,7 @@ const featureGroup1System = u.system(
       ...alignToBottom,
       ...windowScroller,
       ...scrollIntoView,
+      ...logger,
     }
   },
   u.tup(
@@ -54,7 +55,8 @@ const featureGroup1System = u.system(
     initialScrollTopSystem,
     alignToBottomSystem,
     windowScrollerSystem,
-    scrollIntoViewSystem
+    scrollIntoViewSystem,
+    loggerSystem
   )
 )
 
@@ -76,6 +78,7 @@ export const listSystem = u.system(
     },
     { initialTopMostItemIndex, scrolledToInitialItem },
     domIO,
+    stateLoad,
     followOutput,
     { listState, topItemsIndexes, ...flags },
     { scrollToIndex },
@@ -83,7 +86,6 @@ export const listSystem = u.system(
     { topItemCount },
     { groupCounts },
     featureGroup1,
-    log,
   ]) => {
     u.connect(flags.rangeChanged, featureGroup1.scrollSeekRangeChanged)
     u.connect(
@@ -123,21 +125,21 @@ export const listSystem = u.system(
       // the bag of IO from featureGroup1System
       ...featureGroup1,
       ...domIO,
-      ...log,
       sizes,
+      ...stateLoad,
     }
   },
   u.tup(
     sizeSystem,
     initialTopMostItemIndexSystem,
     domIOSystem,
+    stateLoadSystem,
     followOutputSystem,
     listStateSystem,
     scrollToIndexSystem,
     upwardScrollFixSystem,
     topItemCountSystem,
     groupedListSystem,
-    featureGroup1System,
-    loggerSystem
+    featureGroup1System
   )
 )

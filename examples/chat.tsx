@@ -1,158 +1,194 @@
-import { useRef, useState } from 'react'
-import * as React from 'react'
-import styled from '@emotion/styled'
-import { Virtuoso } from '../src/'
+import React from 'react'
+import { StateSnapshot, Virtuoso, VirtuosoHandle } from '../src/'
 import { faker } from '@faker-js/faker'
+import { produce } from 'immer'
 
-interface BubbleProps {
-  text: string
-  fromUser?: boolean
-  className?: string
+const OWN_USER_ID = '1'
+
+interface Message {
+  id: string
+  message: string
 }
 
-const BubbleWrap = styled.div<{ fromUser?: boolean }>`
-  display: flex;
-  justify-content: ${({ fromUser }) => fromUser && 'flex-end'};
-  width: 100%;
-  padding: 12px 0;
-`
-
-const Content = styled.div<{ fromUser?: boolean }>`
-  background: ${({ fromUser }) => (fromUser ? 'orange' : 'red')};
-  color: white;
-  width: 60%;
-  padding: 12px;
-  border-radius: 4px;
-  word-break: break-word;
-`
-
-function Bubble({ text, fromUser, className }: BubbleProps) {
-  return (
-    <BubbleWrap fromUser={fromUser} className={className}>
-      <Content fromUser={fromUser}>{text}</Content>
-    </BubbleWrap>
-  )
+function generateMessages(length: number): Message[] {
+  return Array.from({ length }, (_) => ({
+    id: faker.datatype.number({ min: 1, max: 2 }).toString(),
+    message: faker.lorem.sentences(),
+  }))
 }
 
-interface ChatListProps {
-  messages: { id: string; message: string }[]
-  userId: string
-  onSend: (message: string) => void
-  onReceive: () => void
-  height?: number
-  placeholder?: string
-}
-
-const Root = styled.div<{ fromUser?: boolean }>`
-  padding: 12px 24px;
-`
-
-const TextWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  height: 100%;
-  margin-top: 12px;
-`
-
-function ChatList({ userId, messages = [], onSend, onReceive, placeholder }: ChatListProps) {
-  const [newMessage, setNewMessage] = useState('')
-  const ref = useRef(null)
-  const isMyOwnMessage = useRef(false)
-  const onSendMessage = () => {
-    isMyOwnMessage.current = true
-    onSend(newMessage)
-    setNewMessage('')
+const initialChannelData = Array.from({ length: 3 }, (_, index) => {
+  return {
+    id: index,
+    name: `Channel ${index}`,
+    messages: generateMessages(130),
   }
+})
 
-  const onReceiveMessage = () => {
-    isMyOwnMessage.current = false
-    onReceive()
-  }
-
-  const row = React.useMemo(
-    () =>
-      (i: number, { message, id }: { message: string; id: string }) => {
-        const fromUser = id === userId
-        return <Bubble key={i} fromUser={fromUser} text={message} />
-      },
-    [userId]
-  )
-
-  return (
-    <Root
-      style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        border: '1px solid red',
-      }}
-    >
-      <Virtuoso
-        ref={ref}
-        style={{ flex: 1 }}
-        initialTopMostItemIndex={messages.length - 1}
-        increaseViewportBy={{ top: 0, bottom: 100 }}
-        followOutput={(isAtBottom) => {
-          if (isMyOwnMessage.current) {
-            // if the user has scrolled away and sends a message, bring him to the bottom instantly
-            return isAtBottom ? 'smooth' : 'auto'
-          } else {
-            // a message from another user has been received - don't pull to bottom unless already there
-            return isAtBottom ? 'smooth' : false
-          }
-        }}
-        itemContent={row}
-        data={messages}
-      />
-      <TextWrapper style={{ flex: 0, minHeight: 30 }}>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            onSendMessage()
-          }}
-        >
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage((e.target as HTMLInputElement).value)}
-            placeholder={placeholder}
-          />
-          <button type="submit">send</button> |
-          <button type="button" onClick={onReceiveMessage}>
-            receive
-          </button>
-        </form>
-      </TextWrapper>
-    </Root>
-  )
-}
-
-const data = Array.from({ length: 130 }, (_) => ({
-  id: faker.datatype.number({ min: 1, max: 2 }).toString(),
-  message: faker.lorem.sentences(),
-}))
+initialChannelData.push({
+  id: 3,
+  name: 'Channel 3',
+  messages: generateMessages(1),
+})
 
 export function Example() {
-  const [messages, setMessages] = React.useState(data)
-  const userId = '1'
+  const [channels, setChannels] = React.useState(initialChannelData)
+  const [currentChannelId, setCurrentChannelId] = React.useState<number | null>(null)
+  const channel = channels.find((x) => x.id === currentChannelId)
+  const virtuosoRef = React.useRef<VirtuosoHandle>(null)
+  const channelStateCache = React.useRef(new Map<number | null, StateSnapshot>())
+  const [newMessage, setNewMessage] = React.useState('')
+  const [isOwnMessage, setIsOwnMessage] = React.useState(false)
+
+  const addMessage = React.useCallback(
+    (message: Message) => {
+      setChannels((channels) => {
+        return produce(channels, (draft) => {
+          const channel = draft.find((x) => x.id === currentChannelId)
+          channel?.messages.push(message)
+        })
+      })
+    },
+    [currentChannelId, channels]
+  )
+
+  const selectChannel = React.useCallback(
+    (id: number) => {
+      if (currentChannelId !== null) {
+        virtuosoRef.current?.getState((snapshot) => {
+          channelStateCache.current.set(currentChannelId, snapshot)
+        })
+      }
+      setCurrentChannelId(id)
+    },
+    [currentChannelId]
+  )
+
+  const followOutput = React.useCallback(
+    (isAtBottom: boolean) => {
+      if (isOwnMessage) {
+        // if the user has scrolled away and sends a message, bring him to the bottom instantly
+        return isAtBottom ? 'smooth' : 'auto'
+      } else {
+        // a message from another user has been received - don't pull to bottom unless already there
+        return isAtBottom ? 'smooth' : false
+      }
+    },
+    [isOwnMessage]
+  )
+
+  const channelState = channelStateCache.current.get(currentChannelId)
+
+  return (
+    <div style={{ display: 'flex' }}>
+      <div style={{ flex: 0, minWidth: 150 }}>
+        <ul>
+          {channels.map((x) => (
+            <li key={x.id}>
+              <button onClick={() => selectChannel(x.id)}>{x.name}</button>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div
+        style={{
+          height: '500px',
+          display: 'flex',
+          minWidth: 300,
+          flex: 1,
+          flexDirection: 'column',
+        }}
+      >
+        {channel ? (
+          <>
+            <h1>{channel.name}</h1>
+
+            <Virtuoso
+              key={`channel-${channel.id}}`}
+              ref={virtuosoRef}
+              context={{ ownUserId: OWN_USER_ID }}
+              restoreStateFrom={channelState}
+              style={{ flex: 1 }}
+              increaseViewportBy={{ top: 0, bottom: 100 }}
+              alignToBottom
+              followOutput={followOutput}
+              itemContent={virtosoItemContent}
+              data={channel.messages}
+              {...(channelState ? {} : { initialTopMostItemIndex: channel.messages.length - 1 })}
+            />
+
+            <div
+              style={{
+                marginTop: 12,
+                flex: 0,
+                minHeight: 30,
+                gap: 8,
+              }}
+            >
+              <form
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: 8,
+                }}
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  setIsOwnMessage(true)
+                  addMessage({ id: OWN_USER_ID, message: newMessage })
+                }}
+              >
+                <input
+                  style={{ flex: 1 }}
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage((e.target as HTMLInputElement).value)}
+                  placeholder="Say hi!"
+                />
+                <button type="submit">send</button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setIsOwnMessage(false)
+                    addMessage({ id: '2', message: faker.lorem.sentences() })
+                  }}
+                >
+                  Receive
+                </button>
+              </form>
+            </div>
+          </>
+        ) : (
+          'Select a channel..'
+        )}
+      </div>
+    </div>
+  )
+}
+
+function virtosoItemContent(_: number, { id, message }: Message, { ownUserId }: { ownUserId: string }) {
+  const fromUser = id === ownUserId
   return (
     <div
       style={{
-        height: '500px',
         display: 'flex',
-        flexDirection: 'column',
+        justifyContent: fromUser ? 'flex-end' : 'flex-start',
+        width: '100%',
+        padding: '12px 0',
       }}
     >
-      <ChatList
-        messages={messages}
-        userId="1"
-        placeholder="Say hi!"
-        onSend={(message) => setMessages((x) => [...x, { id: userId, message }])}
-        onReceive={() => {
-          setMessages((x) => [...x, { id: '2', message: faker.lorem.sentences() }])
+      <div
+        style={{
+          background: fromUser ? 'orange' : 'red',
+          color: 'white',
+          width: '60%',
+          padding: 12,
+          borderRadius: 4,
+          wordBreak: 'break-word',
         }}
-      />
+      >
+        {message}
+      </div>
     </div>
   )
 }

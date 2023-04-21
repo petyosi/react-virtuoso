@@ -38,7 +38,7 @@ test.describe('jagged list with initial topmost item', () => {
   test('sticks the item to the bottom', async ({ page }) => {
     await page.click('#initial-end-80')
 
-    await page.waitForTimeout(100)
+    await page.waitForTimeout(200)
 
     const scrollTop = await page.evaluate(() => {
       const listContainer = document.querySelector('[data-test-id=virtuoso-scroller]') as HTMLElement

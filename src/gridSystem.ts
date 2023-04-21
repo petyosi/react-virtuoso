@@ -161,7 +161,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
     u.connect(
       u.pipe(
         data,
-        u.filter((data) => data !== undefined),
+        u.filter(u.isDefined),
         u.map((data) => data!.length)
       ),
       totalCount

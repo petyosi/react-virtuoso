@@ -1,8 +1,7 @@
 import React from 'react'
 import { Log, LogLevel } from '../loggerSystem'
-import { SizeRange } from '../sizeSystem'
 import { useSizeWithElRef } from './useSize'
-import { SizeFunction, ScrollContainerState } from '../interfaces'
+import { SizeRange, SizeFunction, ScrollContainerState } from '../interfaces'
 export default function useChangedListContentsSizes(
   callback: (ranges: SizeRange[]) => void,
   itemSize: SizeFunction,

@@ -13,6 +13,7 @@ export const alignToBottomSystem = u.system(
         u.map(([, viewportHeight, totalListHeight]) => {
           return Math.max(0, viewportHeight - totalListHeight)
         }),
+        u.throttleTime(0),
         u.distinctUntilChanged()
       ),
       0

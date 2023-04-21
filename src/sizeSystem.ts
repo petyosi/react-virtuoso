@@ -4,13 +4,7 @@ import * as arrayBinarySearch from './utils/binaryArraySearch'
 import { correctItemSize } from './utils/correctItemSize'
 import { Log, loggerSystem, LogLevel } from './loggerSystem'
 import { recalcSystem } from './recalcSystem'
-import { SizeFunction } from './interfaces'
-
-export interface SizeRange {
-  startIndex: number
-  endIndex: number
-  size: number
-}
+import { SizeFunction, SizeRange } from './interfaces'
 
 export type Data = readonly unknown[] | undefined
 
@@ -277,6 +271,15 @@ export function originalIndexFromItemIndex(itemIndex: number, sizes: SizeState) 
 
 export function hasGroups(sizes: SizeState) {
   return !empty(sizes.groupOffsetTree)
+}
+
+export function sizeTreeToRanges(sizeTree: AANode<number>): SizeRange[] {
+  return walk(sizeTree).map(({ k: startIndex, v: size }, index, sizeArray) => {
+    const nextSize = sizeArray[index + 1]
+    const endIndex = nextSize ? nextSize.k - 1 : Infinity
+
+    return { startIndex, endIndex, size }
+  })
 }
 
 type OptionalNumber = number | undefined

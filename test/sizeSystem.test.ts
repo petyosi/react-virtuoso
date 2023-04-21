@@ -1,6 +1,6 @@
 import { getValue, init, publish, subscribe } from '../src/urx'
 import { AANode, ranges, walk } from '../src/AATree'
-import { initialSizeState, offsetOf, rangesWithinOffsets, sizeStateReducer, sizeSystem } from '../src/sizeSystem'
+import { initialSizeState, offsetOf, rangesWithinOffsets, sizeStateReducer, sizeSystem, sizeTreeToRanges } from '../src/sizeSystem'
 import { describe, it, expect, vi } from 'vitest'
 
 function toKV<T>(tree: AANode<T>) {
@@ -583,6 +583,22 @@ describe('ranges within offsets', () => {
     expect(rangesWithinOffsets(offsetTree, 8, 15, 8)).toEqual([
       { start: 8, end: 8, value: { offset: 13, index: 8, size: 1 } },
       { start: 9, end: Infinity, value: { offset: 14, index: 9, size: 2 } },
+    ])
+  })
+})
+
+describe('state save', () => {
+  it('serializes the size tree to ranges', () => {
+    let state = initialSizeState()
+    expect(sizeTreeToRanges(state.sizeTree)).toEqual([])
+    state = sizeStateReducer(state, [[{ startIndex: 0, endIndex: 0, size: 1 }], [], mockLogger, 0])
+    expect(sizeTreeToRanges(state.sizeTree)).toEqual([{ startIndex: 0, endIndex: Infinity, size: 1 }])
+
+    state = sizeStateReducer(state, [[{ startIndex: 3, endIndex: 5, size: 2 }], [], mockLogger, 0])
+    expect(sizeTreeToRanges(state.sizeTree)).toEqual([
+      { startIndex: 0, endIndex: 2, size: 1 },
+      { startIndex: 3, endIndex: 5, size: 2 },
+      { startIndex: 6, endIndex: Infinity, size: 1 },
     ])
   })
 })

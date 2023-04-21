@@ -119,7 +119,7 @@ describe('list engine', () => {
           publish(scrollTop, INITIAL_INDEX * SIZE)
           expect(getValue(listState).items).toHaveLength(7)
           resolve(true)
-        })
+        }, 100)
       })
     })
 
@@ -155,7 +155,7 @@ describe('list engine', () => {
           publish(scrollTop, INITIAL_INDEX * SIZE)
           expect(getValue(listState).items).toHaveLength(7)
           resolve(true)
-        })
+        }, 100)
       })
     })
   })
@@ -316,7 +316,7 @@ describe('list engine', () => {
             expect(scrollBySub).toHaveBeenCalledWith({ behavior: 'auto', top: 40 })
             resolve(true)
           }, 1000)
-        })
+        }, 100)
       })
     })
   })
@@ -529,9 +529,18 @@ describe('list engine', () => {
       const sub = vi.fn()
       subscribe(paddingTopAddition, sub)
       publish(propsReady, true)
-      expect(sub).toHaveBeenCalledWith(1200 - 5 * 30)
-      publish(viewportHeight, 1100)
-      expect(sub).toHaveBeenCalledWith(1100 - 5 * 30)
+
+      // throttling is necessary due to react 18
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          expect(sub).toHaveBeenCalledWith(1200 - 5 * 30)
+          publish(viewportHeight, 1100)
+          setTimeout(() => {
+            expect(sub).toHaveBeenCalledWith(1100 - 5 * 30)
+            resolve(void 0)
+          })
+        })
+      })
     })
   })
 

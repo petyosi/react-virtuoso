@@ -4,7 +4,7 @@ interface NilNode {
 
 const NIL_NODE: NilNode = { lvl: 0 }
 
-interface NodeData<T> {
+export interface NodeData<T> {
   k: number
   v: T
 }

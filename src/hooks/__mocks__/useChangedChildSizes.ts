@@ -1,4 +1,4 @@
-import { SizeRange } from '../../sizeSystem'
+import { SizeRange } from '../../'
 
 type CallbackRefParam = HTMLElement | null
 

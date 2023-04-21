@@ -398,3 +398,16 @@ export interface ScrollContainerState {
 
 /** Calculates the height of `el`, which will be the `Item` element in the DOM. */
 export type SizeFunction = (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number
+
+export interface SizeRange {
+  startIndex: number
+  endIndex: number
+  size: number
+}
+
+export interface StateSnapshot {
+  ranges: SizeRange[]
+  scrollTop: number
+}
+
+export type StateCallback = (state: StateSnapshot) => void

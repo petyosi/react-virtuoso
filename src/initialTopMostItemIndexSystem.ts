@@ -12,10 +12,19 @@ export function getInitialTopMostItemIndexNumber(location: number | FlatIndexLoc
   return index
 }
 
+function skipFrames(frameCount: number, callback: () => void) {
+  if (frameCount == 0) {
+    callback()
+  } else {
+    requestAnimationFrame(() => skipFrames(frameCount - 1, callback))
+  }
+}
+
 export const initialTopMostItemIndexSystem = u.system(
   ([{ sizes, listRefresh, defaultItemSize }, { scrollTop }, { scrollToIndex }, { didMount }]) => {
     const scrolledToInitialItem = u.statefulStream(true)
     const initialTopMostItemIndex = u.statefulStream<number | FlatIndexLocationWithAlign>(0)
+    const scrollScheduled = u.statefulStream(false)
 
     u.connect(
       u.pipe(
@@ -31,17 +40,16 @@ export const initialTopMostItemIndexSystem = u.system(
     u.subscribe(
       u.pipe(
         u.combineLatest(listRefresh, didMount),
-        u.withLatestFrom(scrolledToInitialItem, sizes, defaultItemSize),
-        u.filter(([[, didMount], scrolledToInitialItem, { sizeTree }, defaultItemSize]) => {
-          return didMount && (!empty(sizeTree) || defaultItemSize !== undefined) && !scrolledToInitialItem
+        u.withLatestFrom(scrolledToInitialItem, sizes, defaultItemSize, scrollScheduled),
+        u.filter(([[, didMount], scrolledToInitialItem, { sizeTree }, defaultItemSize, scrollScheduled]) => {
+          return didMount && (!empty(sizeTree) || u.isDefined(defaultItemSize)) && !scrolledToInitialItem && !scrollScheduled
         }),
         u.withLatestFrom(initialTopMostItemIndex)
       ),
       ([, initialTopMostItemIndex]) => {
-        setTimeout(() => {
-          u.handleNext(scrollTop, () => {
-            u.publish(scrolledToInitialItem, true)
-          })
+        u.publish(scrollScheduled, true)
+        skipFrames(2, () => {
+          u.handleNext(scrollTop, () => u.publish(scrolledToInitialItem, true))
           u.publish(scrollToIndex, initialTopMostItemIndex)
         })
       }

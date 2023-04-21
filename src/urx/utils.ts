@@ -89,5 +89,9 @@ export function joinProc(...procs: Proc[]) {
   }
 }
 
+export function isDefined<T>(arg: T): boolean {
+  return arg !== undefined
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export function noop() {}

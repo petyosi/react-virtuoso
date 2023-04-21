@@ -14,6 +14,8 @@ import type {
   ScrollIntoViewLocation,
   ScrollSeekConfiguration,
   SizeFunction,
+  StateSnapshot,
+  StateCallback,
 } from '../interfaces'
 import { LogLevel } from '../loggerSystem'
 
@@ -243,6 +245,13 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
    * Ensure that you have "all levels" enabled in the browser console too see the messages.
    */
   logLevel?: LogLevel
+
+  /**
+   * pass a state obtained from the getState() method to restore the list state - this includes the previously measured item sizes and the scroll location.
+   * Notice that you should still pass the same data and totalCount properties as before, so that the list can match the data with the stored measurements.
+   * This is useful when you want to keep the list state when the component is unmounted and remounted, for example when navigating to a different page.
+   */
+  restoreStateFrom?: StateSnapshot
 }
 
 export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'totalCount' | 'itemContent'> {
@@ -299,6 +308,11 @@ export interface VirtuosoHandle {
    * Use this with combination with follow output if you have images loading in the list. Listen to the image loading and call the method.
    */
   autoscrollToBottom(): void
+
+  /**
+   * Obtains the internal size state of the component, so that it can be restored later. This does not include the data items.
+   */
+  getState(stateCb: StateCallback): void
 }
 
 export interface GroupedVirtuosoHandle {
