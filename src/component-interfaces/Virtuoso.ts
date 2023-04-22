@@ -321,4 +321,9 @@ export interface GroupedVirtuosoHandle {
   scrollTo(location: ScrollToOptions): void
   scrollBy(location: ScrollToOptions): void
   autoscrollToBottom(): void
+
+  /**
+   * Obtains the internal size state of the component, so that it can be restored later. This does not include the data items.
+   */
+  getState(stateCb: StateCallback): void
 }
