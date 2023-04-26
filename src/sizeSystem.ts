@@ -459,7 +459,8 @@ export const sizeSystem = u.system(
 
             while (prependedGroupItemsCount < unshiftWith) {
               const theGroupIndex = sizes.groupIndices[groupIndex]
-              const groupItemCount = sizes.groupIndices[groupIndex + 1] - theGroupIndex - 1
+              const groupItemCount =
+                sizes.groupIndices.length === groupIndex + 1 ? Infinity : sizes.groupIndices[groupIndex + 1] - theGroupIndex - 1
 
               initialRanges.push({
                 startIndex: theGroupIndex,

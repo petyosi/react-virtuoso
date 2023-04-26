@@ -124,7 +124,8 @@ export const upwardScrollFixSystem = u.system(
               recognizedOffsetItems++
               amount += defaultGroupSize
 
-              let groupItemCount = groupIndices[groupIndex + 1] - groupIndices[groupIndex] - 1
+              let groupItemCount =
+                groupIndices.length === groupIndex + 1 ? Infinity : groupIndices[groupIndex + 1] - groupIndices[groupIndex] - 1
 
               // if the group is larger than the offset, we have an expanded group. remove the group size, and replace with 1 item.
               if (recognizedOffsetItems + groupItemCount > offset) {
