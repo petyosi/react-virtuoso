@@ -20,13 +20,15 @@ function generateMessages(length: number): Message[] {
 const initialChannelData = Array.from({ length: 3 }, (_, index) => {
   return {
     id: index,
+    firstItemIndex: 200000,
     name: `Channel ${index}`,
-    messages: generateMessages(130),
+    messages: generateMessages(20),
   }
 })
 
 initialChannelData.push({
   id: 3,
+  firstItemIndex: 200000,
   name: 'Channel 3',
   messages: generateMessages(1),
 })
@@ -51,6 +53,18 @@ export function Example() {
     },
     [currentChannelId, channels]
   )
+
+  const loadOlderMessages = React.useCallback(() => {
+    setTimeout(() => {
+      setChannels((channels) => {
+        return produce(channels, (draft) => {
+          const channel = draft.find((x) => x.id === currentChannelId)!
+          channel.messages.unshift(...generateMessages(20))
+          channel.firstItemIndex -= 20
+        })
+      })
+    }, 1000)
+  }, [currentChannelId, channels])
 
   const selectChannel = React.useCallback(
     (id: number) => {
@@ -114,6 +128,8 @@ export function Example() {
               followOutput={followOutput}
               itemContent={virtosoItemContent}
               data={channel.messages}
+              firstItemIndex={channel.firstItemIndex}
+              startReached={loadOlderMessages}
               {...(channelState ? {} : { initialTopMostItemIndex: channel.messages.length - 1 })}
             />
 
