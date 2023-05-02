@@ -18,27 +18,27 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
   /**
    * Use the `components` property for advanced customization of the elements rendered by the table.
    */
-  components?: TableComponents<D, C>
+  components?: TableComponents<D, C> | undefined
 
   /**
    * Set the contents of the table header.
    */
-  fixedHeaderContent?: FixedHeaderContent
+  fixedHeaderContent?: FixedHeaderContent | undefined
 
   /**
    * Set the contents of the table footer.
    */
-  fixedFooterContent?: FixedFooterContent
+  fixedFooterContent?: FixedFooterContent | undefined
 
   /**
    * The total amount of items to be rendered.
    */
-  totalCount?: number
+  totalCount?: number | undefined
 
   /**
    * The data items to be rendered. If data is set, the total count will be inferred from the length of the array.
    */
-  data?: readonly D[]
+  data?: readonly D[] | undefined
 
   /**
    * Set the overscan property to make the component "chunk" the rendering of new items on scroll.
@@ -46,42 +46,42 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
    * Setting `{ main: number, reverse: number }` lets you extend the list in both the main and the reverse scrollable directions.
    * See the `increaseViewportBy` property for a similar behavior (equivalent to the `overscan` in `react-window`).
    */
-  overscan?: number | { main: number; reverse: number }
+  overscan?: number | { main: number; reverse: number } | undefined
 
   /**
    * Set the increaseViewportBy property to artificially increase the viewport size, causing items to be rendered before outside of the viewport.
    * The property causes the component to render more items than the necessary, but can help with slow loading content.
    * Using `{ top?: number, bottom?: number }` lets you set the increase for each end separately.
    */
-  increaseViewportBy?: number | { top: number; bottom: number }
+  increaseViewportBy?: number | { top: number; bottom: number } | undefined
 
   /**
    * Set to a value between 0 and totalCount - 1 to make the list start scrolled to that item.
    */
-  initialTopMostItemIndex?: number
+  initialTopMostItemIndex?: number | undefined
 
   /**
    * Set this value to offset the initial location of the list.
    * Warning: using this property will still run a render cycle at the scrollTop: 0 list window.
    * If possible, avoid using it and stick to `initialTopMostItemIndex` instead.
    */
-  initialScrollTop?: number
+  initialScrollTop?: number | undefined
 
   /**
    * Use for server-side rendering - if set, the list will render the specified amount of items
    * regardless of the container / item size.
    */
-  initialItemCount?: number
+  initialItemCount?: number | undefined
 
   /**
    * Set the callback to specify the contents of the item.
    */
-  itemContent?: ItemContent<D, C>
+  itemContent?: ItemContent<D, C> | undefined
 
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.
    */
-  computeItemKey?: ComputeItemKey<D, C>
+  computeItemKey?: ComputeItemKey<D, C> | undefined
 
   /**
    * By default, the component assumes the default item height from the first rendered item (rendering it as a "probe").
@@ -92,27 +92,27 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
    * Setting `defaultItemHeight` causes the component to skip the "probe" rendering and use the property
    * value as default height instead.
    */
-  defaultItemHeight?: number
+  defaultItemHeight?: number | undefined
 
   /**
    * Allows customizing the height/width calculation of `Item` elements.
    *
    * The default implementation reads `el.getBoundingClientRect().height` and `el.getBoundingClientRect().width`.
    */
-  itemSize?: SizeFunction
+  itemSize?: SizeFunction | undefined
 
   /**
    * Can be used to improve performance if the rendered items are of known size.
    * Setting it causes the component to skip item measurements.
    */
-  fixedItemHeight?: number
+  fixedItemHeight?: number | undefined
 
   /**
    * Use to display placeholders if the user scrolls fast through the list.
    *
    * Set `components.ScrollSeekPlaceholder` to change the placeholder content.
    */
-  scrollSeekConfiguration?: ScrollSeekConfiguration | false
+  scrollSeekConfiguration?: ScrollSeekConfiguration | false | undefined
 
   /**
    * If set to `true`, the list automatically scrolls to bottom if the total count is changed.
@@ -132,7 +132,7 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
    *  }} />
    * ```
    */
-  followOutput?: FollowOutput
+  followOutput?: FollowOutput | undefined
 
   /**
    * Use when implementing inverse infinite scrolling - decrease the value this property
@@ -140,80 +140,80 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
    *
    * Warning: the firstItemIndex should **be a positive number**, based on the total amount of items to be displayed.
    */
-  firstItemIndex?: number
+  firstItemIndex?: number | undefined
 
   /**
    * Called when the list starts/stops scrolling.
    */
-  isScrolling?: (isScrolling: boolean) => void
+  isScrolling?: (isScrolling: boolean) => void | undefined
 
   /**
    * Gets called when the user scrolls to the end of the list.
    * Receives the last item index as an argument. Can be used to implement endless scrolling.
    */
-  endReached?: (index: number) => void
+  endReached?: (index: number) => void | undefined
 
   /**
    * Called when the user scrolls to the start of the list.
    */
-  startReached?: (index: number) => void
+  startReached?: (index: number) => void | undefined
 
   /**
    * Called with the new set of items each time the list items are rendered due to scrolling.
    */
-  rangeChanged?: (range: ListRange) => void
+  rangeChanged?: (range: ListRange) => void | undefined
 
   /**
    * Called with true / false when the list has reached the bottom / gets scrolled up.
    * Can be used to load newer items, like `tail -f`.
    */
-  atBottomStateChange?: (atBottom: boolean) => void
+  atBottomStateChange?: (atBottom: boolean) => void | undefined
 
   /**
    * Called with `true` / `false` when the list has reached the top / gets scrolled down.
    */
-  atTopStateChange?: (atTop: boolean) => void
+  atTopStateChange?: (atTop: boolean) => void | undefined
 
   /**
    * Called when the total list height is changed due to new items or viewport resize.
    */
-  totalListHeightChanged?: (height: number) => void
+  totalListHeightChanged?: (height: number) => void | undefined
 
   /**
    * Called with the new set of items each time the list items are rendered due to scrolling.
    */
-  itemsRendered?: (items: ListItem<D>[]) => void
+  itemsRendered?: (items: ListItem<D>[]) => void | undefined
 
   /**
    * Setting `alignToBottom` to `true` aligns the items to the bottom of the list if the list is shorter than the viewport.
    * Use `followOutput` property to keep the list aligned when new items are appended.
    */
-  alignToBottom?: boolean
+  alignToBottom?: boolean | undefined
 
   /**
    * Uses the document scroller rather than wrapping the list in its own.
    */
-  useWindowScroll?: boolean
+  useWindowScroll?: boolean | undefined
 
   /**
    * Pass a reference to a scrollable parent element, so that the table won't wrap in its own.
    */
-  customScrollParent?: HTMLElement
+  customScrollParent?: HTMLElement | undefined
 
   /**
    * Provides access to the root DOM element
    */
-  scrollerRef?: (ref: HTMLElement | Window | null) => any
+  scrollerRef?: (ref: HTMLElement | Window | null) => any | undefined
 
   /**
    * By default `0`. Redefine to change how much away from the top the scroller can be before the list is not considered not at top.
    */
-  atTopThreshold?: number
+  atTopThreshold?: number | undefined
 
   /**
    * By default `4`. Redefine to change how much away from the bottom the scroller can be before the list is not considered not at bottom.
    */
-  atBottomThreshold?: number
+  atBottomThreshold?: number | undefined
 }
 
 export interface TableVirtuosoHandle {
