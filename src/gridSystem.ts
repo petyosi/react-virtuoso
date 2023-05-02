@@ -349,6 +349,6 @@ function itemTop(viewport: ElementDimensions, gap: Gap, item: ElementDimensions,
   return top > 0 ? top + gap.row : top
 }
 
-function itemsPerRow(viewportWidth: number, itemWidth: number, gap: number) {
-  return max(1, floor((viewportWidth + gap) / (itemWidth + gap)))
+export function itemsPerRow(viewportWidth: number, itemWidth: number, gap: number) {
+  return max(1, floor((viewportWidth + gap) / (floor(itemWidth) + gap)))
 }

@@ -1,5 +1,5 @@
 import { init, getValue, publish, subscribe } from '../src/urx'
-import { gridSystem } from '../src/gridSystem'
+import { gridSystem, itemsPerRow } from '../src/gridSystem'
 import { describe, it, expect, vi } from 'vitest'
 
 describe('grid system', () => {
@@ -182,5 +182,59 @@ describe('grid system', () => {
     const items = getValue(gridState).items
     expect(items[0].index).toBe(0)
     expect(items[items.length - 1].index).toBe(11)
+  })
+
+  it('correctly calculates items per row', () => {
+    const { itemDimensions, scrollTop, viewportDimensions, gridState, totalCount, gap } = init(gridSystem)
+
+    publish(totalCount, 2000)
+
+    publish(scrollTop, 0)
+
+    publish(gap, {
+      row: 5,
+      column: 5,
+    })
+
+    // Experimentally-determined values that create a rounding error
+
+    publish(viewportDimensions, {
+      width: 335,
+      height: 335,
+    })
+
+    publish(itemDimensions, {
+      width: 108.33333587646484,
+      height: 80,
+    })
+
+    expect(itemsPerRow(getValue(viewportDimensions).width, getValue(itemDimensions).width, getValue(gap).column)).toBe(3)
+    expect(getValue(gridState).items).toHaveLength(12)
+
+    publish(viewportDimensions, {
+      width: 405,
+      height: 505,
+    })
+
+    publish(itemDimensions, {
+      width: 131.6666717529297,
+      height: 80,
+    })
+
+    expect(itemsPerRow(getValue(viewportDimensions).width, getValue(itemDimensions).width, getValue(gap).column)).toBe(3)
+    expect(getValue(gridState).items).toHaveLength(18)
+
+    publish(viewportDimensions, {
+      width: 653,
+      height: 770,
+    })
+
+    publish(itemDimensions, {
+      width: 104.66667175292969,
+      height: 150,
+    })
+
+    expect(itemsPerRow(getValue(viewportDimensions).width, getValue(itemDimensions).width, getValue(gap).column)).toBe(6)
+    expect(getValue(gridState).items).toHaveLength(30)
   })
 })
