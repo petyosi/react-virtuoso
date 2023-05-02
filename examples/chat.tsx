@@ -17,12 +17,21 @@ function generateMessages(length: number): Message[] {
   }))
 }
 
-const initialChannelData = Array.from({ length: 3 }, (_, index) => {
+interface Channel {
+  id: number
+  firstItemIndex: number
+  name: string
+  messages: Message[]
+  newMessageReceived: boolean
+}
+
+const initialChannelData: Channel[] = Array.from({ length: 3 }, (_, index) => {
   return {
     id: index,
     firstItemIndex: 200000,
     name: `Channel ${index}`,
     messages: generateMessages(20),
+    newMessageReceived: false,
   }
 })
 
@@ -31,6 +40,7 @@ initialChannelData.push({
   firstItemIndex: 200000,
   name: 'Channel 3',
   messages: generateMessages(1),
+  newMessageReceived: false,
 })
 
 export function Example() {
@@ -40,14 +50,14 @@ export function Example() {
   const virtuosoRef = React.useRef<VirtuosoHandle>(null)
   const channelStateCache = React.useRef(new Map<number | null, StateSnapshot>())
   const [newMessage, setNewMessage] = React.useState('')
-  const [isOwnMessage, setIsOwnMessage] = React.useState(false)
 
   const addMessage = React.useCallback(
     (message: Message) => {
       setChannels((channels) => {
         return produce(channels, (draft) => {
-          const channel = draft.find((x) => x.id === currentChannelId)
-          channel?.messages.push(message)
+          const channel = draft.find((x) => x.id === currentChannelId)!
+          channel.messages.push(message)
+          channel.newMessageReceived = true
         })
       })
     },
@@ -61,9 +71,11 @@ export function Example() {
           const channel = draft.find((x) => x.id === currentChannelId)!
           channel.messages.unshift(...generateMessages(20))
           channel.firstItemIndex -= 20
+          // reset the flag so that followOutput does not bring the scroll down
+          channel.newMessageReceived = false
         })
       })
-    }, 1000)
+    }, 300)
   }, [currentChannelId, channels])
 
   const selectChannel = React.useCallback(
@@ -80,6 +92,12 @@ export function Example() {
 
   const followOutput = React.useCallback(
     (isAtBottom: boolean) => {
+      // don't follow if messages are being added to the top
+      if (!channel || !channel.newMessageReceived) {
+        return false
+      }
+
+      const isOwnMessage = channel.messages[channel.messages.length - 1]?.id === OWN_USER_ID
       if (isOwnMessage) {
         // if the user has scrolled away and sends a message, bring him to the bottom instantly
         return isAtBottom ? 'smooth' : 'auto'
@@ -88,7 +106,7 @@ export function Example() {
         return isAtBottom ? 'smooth' : false
       }
     },
-    [isOwnMessage]
+    [channel]
   )
 
   const channelState = channelStateCache.current.get(currentChannelId)
@@ -120,7 +138,7 @@ export function Example() {
             <Virtuoso
               key={`channel-${channel.id}}`}
               ref={virtuosoRef}
-              context={{ ownUserId: OWN_USER_ID }}
+              context={{ ownUserId: OWN_USER_ID, channel }}
               restoreStateFrom={channelState}
               style={{ flex: 1 }}
               increaseViewportBy={{ top: 0, bottom: 100 }}
@@ -149,7 +167,6 @@ export function Example() {
                 }}
                 onSubmit={(e) => {
                   e.preventDefault()
-                  setIsOwnMessage(true)
                   addMessage({ id: OWN_USER_ID, message: newMessage })
                 }}
               >
@@ -165,7 +182,6 @@ export function Example() {
                   type="button"
                   onClick={(e) => {
                     e.preventDefault()
-                    setIsOwnMessage(false)
                     addMessage({ id: '2', message: faker.lorem.sentences() })
                   }}
                 >
