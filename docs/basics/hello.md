@@ -3,6 +3,7 @@ id: hello
 title: Virtual List With 100,000 Items
 sidebar_label: 100,000 Items
 slug: /hello/
+sidebar_position: 1
 ---
 
 The Virtuoso component is designed to render huge lists with **unknown item sizes**.

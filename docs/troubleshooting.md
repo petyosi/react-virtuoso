@@ -3,6 +3,7 @@ id: troubleshooting
 title: Troubleshooting React Virtuoso
 sidebar_label: Troubleshooting
 slug: /troubleshooting
+sidebar_position: 2
 ---
 
 React Virtuoso tries to hide as much complexity as possible while maintaining sensible behavior with any configuration. 

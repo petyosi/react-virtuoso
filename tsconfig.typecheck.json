@@ -1,8 +1,13 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src", "types", "e2e", "test"],
+  "include": [
+    "src",
+    "types",
+    "e2e",
+    "test"
+  ],
   "compilerOptions": {
-    "jsx": "react-jsx",
+    "jsx": "react",
     "emitDeclarationOnly": false,
     "rootDir": "./"
   }

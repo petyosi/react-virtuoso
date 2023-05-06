@@ -26,24 +26,11 @@ jobs:
         with:
           run_install: false
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-
       - name: Get pnpm store directory
         id: pnpm-cache
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup yarn cache
-        uses: actions/cache@v3
-        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
 
       - name: Setup pnpm cache
         uses: actions/cache@v3
@@ -95,7 +82,5 @@ jobs:
           GIT_USER: git
           USE_SSH: true
         run: |
-          cd site
-          yarn install --frozen-lockfile
-          yarn build
-          yarn deploy
+          pnpm docs:build
+          pnpm docs:deploy

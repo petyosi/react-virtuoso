@@ -5,8 +5,8 @@ sidebar_label: Virtuoso Grid
 slug: /virtuoso-grid-api-reference/
 ---
 
-import Props from './api/interfaces/_component_interfaces_virtuosogrid_.virtuosogridprops.md'
-import Methods from './api/interfaces/_component_interfaces_virtuosogrid_.virtuosogridhandle.md'
+import Props from '../api/interfaces/VirtuosoGridProps.md'
+import Methods from '../api/interfaces/VirtuosoGridHandle.md'
 
 All properties are optional - by default, the component will render empty. 
 

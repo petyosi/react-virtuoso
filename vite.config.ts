@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import dts from 'vite-plugin-dts'
 
 const ext = {
   cjs: 'cjs',
@@ -9,11 +10,7 @@ const ext = {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    react({
-      jsxRuntime: 'classic',
-    }),
-  ],
+  plugins: [react({ jsxRuntime: 'classic' }), dts({ rollupTypes: true })],
   build: {
     target: ['es2020', 'edge88', 'firefox78', 'chrome79', 'safari14'],
     minify: 'terser',

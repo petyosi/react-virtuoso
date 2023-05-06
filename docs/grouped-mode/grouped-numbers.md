@@ -3,6 +3,7 @@ id: grouped-numbers
 title: Grouped 10,000 numbers
 sidebar_label: Grouped Numbers
 slug: /grouped-numbers/
+sidebar_position: 1
 ---
 
 The example below shows a simple grouping mode - 10,000 items in groups of 10.

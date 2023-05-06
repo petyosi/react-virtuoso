@@ -2,6 +2,7 @@
 id: getting-started
 title: Getting Started with React Virtuoso
 sidebar_label: Getting Started 
+sidebar_position: 1
 slug: /
 ---
 

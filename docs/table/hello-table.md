@@ -3,6 +3,7 @@ id: hello-table
 title: Table Virtuoso Basic Example
 sidebar_label: Basic Example
 slug: /hello-table/
+position: 1
 ---
 
 The `TableVirtuoso` component can display large tables with **unknown** row sizes. It has most of the `Virtuoso` capabilities sans pinning top items. It also supports sticky table headers.

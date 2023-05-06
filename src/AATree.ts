@@ -77,11 +77,11 @@ export function findMaxKeyValue<T>(node: AANode<T>, value: number, field: 'k' | 
     return [-Infinity, undefined]
   }
 
-  if (node[field] === value) {
+  if (Number(node[field]) === value) {
     return [node.k, node.v]
   }
 
-  if (node[field] < value) {
+  if (Number(node[field]) < value) {
     const r = findMaxKeyValue(node.r, value, field)
     if (r[0] === -Infinity) {
       return [node.k, node.v]

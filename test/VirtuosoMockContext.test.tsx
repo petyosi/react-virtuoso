@@ -1,3 +1,4 @@
+import React from 'react'
 import { render } from '@testing-library/react'
 import { Virtuoso, VirtuosoMockContext, TableVirtuoso, VirtuosoGrid, VirtuosoGridMockContext } from '../src'
 import { describe, it, expect } from 'vitest'
