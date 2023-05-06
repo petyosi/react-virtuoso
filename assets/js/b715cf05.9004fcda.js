@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkreact_virtuoso=self.webpackChunkreact_virtuoso||[]).push([[3148],{78:a=>{a.exports=JSON.parse('{"label":"state-management","permalink":"/blog/tags/state-management","allTagsPath":"/blog/tags","count":1}')}}]);

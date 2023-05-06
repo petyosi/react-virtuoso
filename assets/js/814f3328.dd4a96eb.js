@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkreact_virtuoso=self.webpackChunkreact_virtuoso||[]).push([[2535],{5641:t=>{t.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"Why I wrote my own state management for react virtuoso","permalink":"/blog/why-i-wrote-my-own-state-management-for-react-virtuoso"}]}')}}]);

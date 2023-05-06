@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkreact_virtuoso=self.webpackChunkreact_virtuoso||[]).push([[3613],{1325:e=>{e.exports=JSON.parse('{"permalink":"/blog/tags/urx","page":1,"postsPerPage":10,"totalPages":1,"totalCount":1,"blogDescription":"Blog","blogTitle":"Blog"}')}}]);

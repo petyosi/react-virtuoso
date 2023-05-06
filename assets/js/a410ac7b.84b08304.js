@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkreact_virtuoso=self.webpackChunkreact_virtuoso||[]).push([[1781],{7657:a=>{a.exports=JSON.parse('{"label":"urx","permalink":"/blog/tags/urx","allTagsPath":"/blog/tags","count":1}')}}]);
