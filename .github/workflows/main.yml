@@ -82,5 +82,6 @@ jobs:
           GIT_USER: git
           USE_SSH: true
         run: |
+          pnpm build
           pnpm docs:build
           pnpm docs:deploy
