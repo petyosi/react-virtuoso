@@ -92,7 +92,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.11.1",
     "react-table": "^7.8.0",
-    "semantic-release": "^21.0.2",
+    "semantic-release": "^19.0.5",
     "terser": "^5.17.1",
     "tslib": "^2.5.0",
     "typedoc": "^0.24.6",
