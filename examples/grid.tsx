@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { VirtuosoGrid, VirtuosoGridHandle, GridComponents } from '../src'
+import { VirtuosoGrid, VirtuosoGridHandle, GridComponents, LogLevel } from '../src'
 import styled from '@emotion/styled'
 
 const ItemContainer = styled.div`
@@ -46,6 +46,7 @@ export function Example() {
     <>
       <VirtuosoGrid
         ref={ref}
+        logLevel={LogLevel.INFO}
         components={{
           Item: ItemContainer,
           List: ListContainer,

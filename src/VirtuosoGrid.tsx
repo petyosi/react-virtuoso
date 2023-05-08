@@ -219,6 +219,7 @@ const {
       useWindowScroll: 'useWindowScroll',
       customScrollParent: 'customScrollParent',
       scrollerRef: 'scrollerRef',
+      logLevel: 'logLevel',
     },
     methods: {
       scrollTo: 'scrollTo',
