@@ -423,9 +423,11 @@ export const sizeSystem = u.system(
           u.publish(unshiftWith, offset + affectedGroupCount(offset, groupIndices))
         } else if (offset < 0) {
           const prevGroupIndicesValue = u.getValue(prevGroupIndices)
+
           if (prevGroupIndicesValue.length > 0) {
-            u.publish(shiftWith, offset - affectedGroupCount(-offset, prevGroupIndicesValue))
+            offset -= affectedGroupCount(-offset, prevGroupIndicesValue)
           }
+          u.publish(shiftWith, offset)
         }
       }
     )
@@ -553,6 +555,10 @@ export const sizeSystem = u.system(
         u.map(([shiftWith, sizes, gap]) => {
           const groupedMode = sizes.groupIndices.length > 0
           if (groupedMode) {
+            // we can't shift an empty tree
+            if (empty(sizes.sizeTree)) {
+              return sizes
+            }
             let newSizeTree = newTree<number>()
             const prevGroupIndicesValue = u.getValue(prevGroupIndices)
             let removedItemsCount = 0
