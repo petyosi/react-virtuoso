@@ -6,24 +6,29 @@ sidebar_position: 1
 slug: /
 ---
 
-**React Virtuoso** is a family of powerful yet easy-to-use React components that can render enormous data sets.
+**React Virtuoso** is a family of powerful, easy-to-use React components that display large data sets using **virtualized rendering**. Unlike other virtualization solutions, the Virtuoso components automatically handle items with variable sizes and changes in items' sizes. The package includes a flat list (`Virtuoso` ), a grouped list with sticky headers (`GroupedVirtuoso`),  a grid with a responsive layout (`VirtuosoGrid`), and a table (`TableVirtuoso`). The package is tree-shakeable, so your bundle should not be inflated by the components you don't refer to.
 
-Out of the box, Virtuoso:
+## Feature Overview&#x20;
 
-- Handles items with **variable dynamic height**; no manual measurements or hard-coding of item heights necessary;
-- Supports **grouping with sticky headers**;
-- Supports **responsive grid layout**;
-- Automatically handles content resizing;
-- Supports headers and footers.
-- Can **pin the first `N` items** to the top of the list.
+The Virtuoso components support the automatic handling of **items with variable heights**. There's no need for you to hard-code or manually measure item sizes. In addition to automatic handling of the item sizes, the components monitor any changes in the item's sizes (for example, due to content load) and re-adjust the scroll area size. The component container size itself is also monitored, so that the list reacts to browser resizing or sibling elements changing the layout.&#x20;
 
-To start, install `react-virtuoso` in your React project. The package exports the `Virtuoso`,  `TableVirtuoso`, `GroupedVirtuoso`, and `VirtuosoGrid` components.
+A common use case that's thoroughly covered by the components' API is the **bi-directional endless scrolling **or the **press to load **UI** **patterns. The components can be configured to **start from an initial location**, thus skipping the initial rendering (and the potential need of data loading) of the topmost list items. The components expose `startReached` and `endReached`  callback properties, suitable for loading data on demand. After the data has been loaded, You can **append** or **prepend **additional items, while retaining the current scroll location.&#x20;
+
+The list components can **autoscroll to bottom** when new items are appended, making it easy to build interfaces like **chats** or **live log output**.&#x20;
+
+The markup of the components is customizable by passing custom components as props, supporting optional **Header** and **Footer**, or even swapping the **scroller element with a custom one** (usually done for the sake of integrating a third party scrollbar library). The customization API makes it easy to combine the components with your UI library of choice (e.g. Material UI), style the items with css-in-js, or even integrate drag-and-drop through a third party library.&#x20;
+
+To get a better impression of what's possible, examine the examples in the scenarios section of the documentation, and skim through the API reference.&#x20;
+
+## Installation
+
+React virtuoso is distributed as an NPM package, with `react` and `react-dom` being the only peer dependencies. Install `react-virtuoso` in your React project. The package exports the `Virtuoso`,  `TableVirtuoso`, `GroupedVirtuoso`, and `VirtuosoGrid` components.
 
 ```bash
 npm install react-virtuoso
 ```
 
-Add the Component to your application. 
+Add the Component to your application.
 
 ```jsx
 import * as React from 'react'
@@ -59,11 +64,11 @@ export default function App() {
 
 The `GroupedVirtuoso` component is similar to the "flat" `Virtuoso`, with the following differences:
 
-- Instead of `totalCount`, the Component accepts `groupedCounts: number[]`, which specifies the amount of items in each group.
+* Instead of `totalCount`, the Component accepts `groupedCounts: number[]`, which specifies the amount of items in each group.
   For example, passing `[20, 30]` will render two groups with 20 and 30 items each;
-- In addition the `item` render prop, the Component requires an additional `group` render prop,
+* In addition the `item` render prop, the Component requires an additional `group` render prop,
   which renders the **group header**. The `group` callback receives the zero-based group index as a parameter;
-- The `itemContent` render prop gets called with an additional second parameter, `groupIndex: number`.
+* The `itemContent` render prop gets called with an additional second parameter, `groupIndex: number`.
 
 ```jsx live
 import { GroupedVirtuoso } from 'react-virtuoso'
@@ -102,7 +107,6 @@ Check the
 [groups with load on demand](/grouped-with-load-on-demand)
 examples.
 
-
 ### Table
 
 The `TableVirtuoso` component works like the `Virtuoso` one, but with HTML tables. It supports window scrolling, sticky headers, and fixed columns.
@@ -112,7 +116,7 @@ Check the [Basic Table](/hello-table) example for a sample implementation.
 ### Grid
 
 The `VirtuosoGrid` component displays **same sized items** in multiple columns.
-The layout and item sizing is controlled CSS class properties or styled containers, 
+The layout and item sizing is controlled CSS class properties or styled containers,
 which allows you to use media queries, min-width, percentage, etc.
 
 Check the [responsive grid columns](/grid-responsive-columns) example for a sample implementation.
@@ -130,7 +134,7 @@ Check the [footer](/footer), [press load more](/press-to-load-more) and [endless
 ### Pinned Items
 
 The `Virtuoso` component accepts an optional `topItems` property that specifies
-how many items must remain "pinned" at the top of the list. 
+how many items must remain "pinned" at the top of the list.
 Check the [top items](/top-items) example.
 
 ### Scroll to Index
@@ -149,12 +153,12 @@ You can swap the Virtuoso scroller implementation to add custom scroll logic or 
 
 Check the [custom scroll container](/custom-scroll-container) example for a starting point.
 
-## Performance 
+## Performance
 
 Several factors affect the component's performance.
-The first and most important one is the _size of the visible area_.
+The first and most important one is the *size of the visible area*.
 Redrawing more items takes more time and reduces the frame rate.
-To see if this affects you, reduce the component width or height; 
+To see if this affects you, reduce the component width or height;
 Set the `style` property to something like `{{width: '200px'}}`.
 
 Next, if the items are complex or slow to render, use [React.memo](https://reactjs.org/docs/react-api.html#reactmemo) for the `itemContent` contents.
