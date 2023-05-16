@@ -16,7 +16,7 @@ Scroll fast to the bottom of the list to load additional items.
 ```jsx live include-data
 import { Virtuoso } from 'react-virtuoso'
 import { generateUsers } from './data'
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 
 export default function App() {
   const [users, setUsers] = useState(() => [])
