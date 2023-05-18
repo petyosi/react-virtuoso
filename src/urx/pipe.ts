@@ -252,8 +252,8 @@ export function skip<T>(times: number): Operator<T> {
  * ```
  */
 export function throttleTime<T>(interval: number): Operator<T> {
-  let currentValue: T | undefined
-  let timeout: any
+  let currentValue: T | undefined | null = null
+  let timeout: ReturnType<typeof setTimeout> | undefined
 
   return (done) => (value) => {
     currentValue = value
