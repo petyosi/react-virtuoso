@@ -221,7 +221,7 @@ const TableRoot: React.FC<TableRootProps> = /*#__PURE__*/ React.memo(function Ta
         TheTHead!,
         {
           key: 'TableHead',
-          style: { zIndex: 1, position: 'sticky', top: 0 },
+          style: { zIndex: 2, position: 'sticky', top: 0 },
           ref: theadRef,
           ...contextPropIfNotDomElement(TheTHead, context),
         },
