@@ -346,13 +346,14 @@ export const sizeSystem = u.system(
 
     // decreasing the total count should remove any existing entries
     // beyond the last index - do this by publishing the default size as a range over them.
+    // This causes some size loss in for the last items, but it's better than having the wrong measurements
+    // see #896
     u.connect(
       u.pipe(
         totalCount,
         u.withLatestFrom(sizes),
-        u.filter(([totalCount, { lastIndex, groupIndices }]) => {
-          // if we have groups, we will take care of it in the
-          return totalCount < lastIndex && groupIndices.length === 0
+        u.filter(([totalCount, { lastIndex }]) => {
+          return totalCount < lastIndex
         }),
         u.map(([totalCount, { lastIndex, lastSize }]) => {
           return [
