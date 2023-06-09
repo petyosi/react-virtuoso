@@ -8,24 +8,31 @@ export interface GroupIndexesAndCount {
   groupIndices: number[]
 }
 
+function reduceGroup(level: number, acc: GroupIndexesAndCount, count: number | number[]): GroupIndexesAndCount {
+  acc.groupIndices.push(acc.totalCount + level)
+  if (!Array.isArray(count)) {
+    acc.totalCount += count + 1
+  } else {
+    count.reduce(reduceGroup.bind(null, level + 1), acc)
+    acc.totalCount += 1
+  }
+  return acc
+}
+
 export function groupCountsToIndicesAndCount(counts: number[]) {
-  return counts.reduce(
-    (acc, groupCount) => {
-      acc.groupIndices.push(acc.totalCount)
-      acc.totalCount += groupCount + 1
-      return acc
-    },
-    {
-      totalCount: 0,
-      groupIndices: [],
-    } as GroupIndexesAndCount
-  )
+  const r = counts.reduce(reduceGroup.bind(null, 0), {
+    totalCount: 0,
+    groupIndices: [],
+  } as GroupIndexesAndCount)
+
+  return r
 }
 
 export const groupedListSystem = u.system(([{ totalCount, groupIndices, sizes }, { scrollTop, headerHeight }]) => {
   const groupCounts = u.stream<number[]>()
   const topItemsIndexes = u.stream<[number]>()
   const groupIndicesAndCount = u.streamFromEmitter(u.pipe(groupCounts, u.map(groupCountsToIndicesAndCount)))
+
   u.connect(
     u.pipe(
       groupIndicesAndCount,

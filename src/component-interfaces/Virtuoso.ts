@@ -254,12 +254,13 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   restoreStateFrom?: StateSnapshot
 }
 
+type NestedArray<T> = Array<T | NestedArray<T>>
 export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'totalCount' | 'itemContent'> {
   /**
    * Specifies the amount of items in each group (and, actually, how many groups are there).
    * For example, passing [20, 30] will display 2 groups with 20 and 30 items each.
    */
-  groupCounts?: number[]
+  groupCounts?: NestedArray<number>
 
   /**
    * Specifies how each each group header gets rendered. The callback receives the zero-based index of the group.
