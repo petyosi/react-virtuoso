@@ -244,11 +244,11 @@ const TableRoot: React.FC<TableRootProps> = /*#__PURE__*/ React.memo(function Ta
   return (
     <TheScroller {...props}>
       <TheViewport>
-        {React.createElement(TheTable!, { style: { borderSpacing: 0 }, ...contextPropIfNotDomElement(TheTable, context) }, [
-          theHead,
-          <Items key="TableBody" />,
-          theFoot,
-        ])}
+        {React.createElement(
+          TheTable!,
+          { style: { borderSpacing: 0, overflowAnchor: 'none' }, ...contextPropIfNotDomElement(TheTable, context) },
+          [theHead, <Items key="TableBody" />, theFoot]
+        )}
       </TheViewport>
     </TheScroller>
   )
