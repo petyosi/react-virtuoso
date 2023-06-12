@@ -30,13 +30,12 @@ const ItemWrapper = styled.div`
     padding: 20px;
     box-shadow: 0 5px 6px -6px #777;
     background: white;
-  }
 `
 
 const ListContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
-` as GridComponents['List']
+`
 
 export function Example() {
   const ref = React.createRef<VirtuosoGridHandle>()

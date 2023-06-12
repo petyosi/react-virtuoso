@@ -37,7 +37,7 @@ const ListContainer = styled.div`
   flex-wrap: wrap;
   row-gap: 20px;
   column-gap: 20px;
-` as GridComponents['List']
+`
 
 export function Example() {
   const ref = React.createRef<VirtuosoGridHandle>()

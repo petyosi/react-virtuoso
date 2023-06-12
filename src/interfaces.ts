@@ -39,26 +39,27 @@ export type TableProps = Pick<React.ComponentPropsWithRef<'table'>, 'style' | 'c
 /**
  * Passed to the Components.TableBody custom component
  */
-export type TableBodyProps = Pick<React.ComponentPropsWithRef<'tbody'>, 'style' | 'children' | 'ref' | 'className'> & {
+export type TableBodyProps = Pick<React.ComponentPropsWithRef<'tbody'>, 'style' | 'children' | 'className'> & {
   'data-test-id': string
 }
 
 /**
  * Passed to the Components.List custom component
  */
-export type ListProps = Pick<React.ComponentPropsWithRef<'div'>, 'style' | 'children' | 'ref'> & { 'data-test-id': string }
+export type ListProps = Pick<React.ComponentPropsWithRef<'div'>, 'style' | 'children'> & { 'data-test-id': string }
 
 /**
  * Passed to the Components.List custom component
  */
-export type GridListProps = Pick<React.ComponentPropsWithRef<'div'>, 'style' | 'children' | 'ref' | 'className'> & {
+export type GridListProps = Pick<React.ComponentPropsWithRef<'div'>, 'style' | 'children' | 'className'> & {
   'data-test-id': string
+
 }
 
 /**
  * Passed to the Components.Scroller custom component
  */
-export type ScrollerProps = Pick<React.ComponentPropsWithRef<'div'>, 'style' | 'children' | 'tabIndex' | 'ref'> & {
+export type ScrollerProps = Pick<React.ComponentPropsWithRef<'div'>, 'style' | 'children' | 'tabIndex'> & {
   'data-test-id'?: string
   'data-virtuoso-scroller'?: boolean
 }

@@ -31,13 +31,12 @@ const ItemWrapper = styled.div`
     height: 30px;
     padding: 20px;
     background: white;
-  }
 `
 
 const ListContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
-` as GridComponents['List']
+`
 
 export function Example() {
   return (

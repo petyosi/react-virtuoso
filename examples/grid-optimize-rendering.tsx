@@ -32,13 +32,12 @@ const ItemWrapper = styled.div`
     padding: 20px;
     box-shadow: 0 5px 6px -6px #777;
     background: white;
-  }
 `
 
 const ListContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
-` as GridComponents['List']
+`
 
 const Item = React.memo<any>(({ item }: { item: { index: number; selected: boolean } }) => {
   return <div style={{ backgroundColor: item.selected ? 'blue' : 'white' }}>Item {item.index}</div>
