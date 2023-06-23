@@ -150,7 +150,7 @@ export interface TableComponents<Data = unknown, Context = unknown> {
   Table?: React.ComponentType<TableProps & { context?: Context }>
 
   /**
-   * Set to render a fixed header at the top of the table (`thead`). use [[fixedHeaderHeight]] to set the contents
+   * Set to render a fixed header at the top of the table (`thead`). use [[fixedHeaderContent]] to set the contents
    *
    */
   TableHead?: React.ComponentType<Pick<React.ComponentPropsWithRef<'thead'>, 'style' | 'ref'> & { context?: Context }>
