@@ -1,16 +1,18 @@
 import * as u from './urx'
 import { rangeComparator, tupleComparator } from './comparators'
 import { domIOSystem } from './domIOSystem'
-import { FlatIndexLocationWithAlign, GridItem } from './interfaces'
+import { FlatIndexLocationWithAlign, GridIndexLocation, GridItem } from './interfaces'
 import { propsReadySystem } from './propsReadySystem'
 import { scrollSeekSystem } from './scrollSeekSystem'
-import { IndexLocation, normalizeIndexLocation } from './scrollToIndexSystem'
+import { normalizeIndexLocation } from './scrollToIndexSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
 import { loggerSystem } from './loggerSystem'
 import { windowScrollerSystem } from './windowScrollerSystem'
+import { getInitialTopMostItemIndexNumber } from './initialTopMostItemIndexSystem'
+import { skipFrames } from './utils/skipFrames'
 
-export type Data = unknown[] | undefined
+export type Data = unknown[] | null
 
 export interface Gap {
   row: number
@@ -64,10 +66,11 @@ function buildProbeGridState<D = unknown>(items: GridItem<D>[]): GridState {
   }
 }
 
-function buildItems<D>(startIndex: number, endIndex: number, data: D[] | undefined) {
-  return Array.from({ length: endIndex - startIndex + 1 }).map(
-    (_, i) => ({ index: i + startIndex, data: data?.[i + startIndex] } as GridItem<D>)
-  )
+function buildItems<D>(startIndex: number, endIndex: number, data: D[] | null) {
+  return Array.from({ length: endIndex - startIndex + 1 }).map((_, i) => {
+    const dataItem = data === null ? null : data[i + startIndex]
+    return { index: i + startIndex, data: dataItem } as GridItem<D>
+  })
 }
 
 function gapComparator(prev: Gap, next: Gap) {
@@ -76,6 +79,14 @@ function gapComparator(prev: Gap, next: Gap) {
 function dimensionComparator(prev: ElementDimensions, next: ElementDimensions) {
   return prev && prev.width === next.width && prev.height === next.height
 }
+
+export interface GridStateSnapshot {
+  viewport: ElementDimensions
+  item: ElementDimensions
+  gap: Gap
+  scrollTop: number
+}
+
 export const gridSystem = /*#__PURE__*/ u.system(
   ([
     { overscan, visibleRange, listBoundary },
@@ -83,7 +94,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
     stateFlags,
     scrollSeek,
     { propsReady, didMount },
-    { windowViewportRect, windowScrollTo, useWindowScroll, customScrollParent, windowScrollContainerState },
+    { windowViewportRect, useWindowScroll, customScrollParent, windowScrollContainerState, windowScrollTo },
     log,
   ]) => {
     const totalCount = u.statefulStream(0)
@@ -91,81 +102,85 @@ export const gridSystem = /*#__PURE__*/ u.system(
     const gridState = u.statefulStream(INITIAL_GRID_STATE)
     const viewportDimensions = u.statefulStream<ElementDimensions>({ height: 0, width: 0 })
     const itemDimensions = u.statefulStream<ElementDimensions>({ height: 0, width: 0 })
-    const scrollToIndex = u.stream<IndexLocation>()
+    const scrollToIndex = u.stream<GridIndexLocation>()
     const scrollHeight = u.stream<number>()
     const deviation = u.statefulStream(0)
-    const data = u.statefulStream<Data>(undefined)
+    const data = u.statefulStream<Data>(null)
     const gap = u.statefulStream<Gap>({ row: 0, column: 0 })
+    const stateChanged = u.stream<GridStateSnapshot>()
+    const restoreStateFrom = u.stream<GridStateSnapshot | undefined | null>()
+    const stateRestoreInProgress = u.statefulStream(false)
+    const initialTopMostItemIndex = u.statefulStream<GridIndexLocation>(0)
+    const scrolledToInitialItem = u.statefulStream(true)
+    const scrollScheduled = u.statefulStream(false)
 
-    u.connect(
+    u.subscribe(
       u.pipe(
         didMount,
-        u.withLatestFrom(initialItemCount, data),
-        u.filter(([didMount, count]) => didMount && count !== 0),
-        u.map(([, count, data]) => {
-          return {
-            items: buildItems(0, count - 1, data),
-            top: 0,
-            bottom: 0,
-            offsetBottom: 0,
-            offsetTop: 0,
-            itemHeight: 0,
-            itemWidth: 0,
-          }
-        })
+        u.withLatestFrom(initialTopMostItemIndex),
+        u.filter(([_, location]) => !!location)
       ),
-      gridState
+      () => {
+        // console.log('block rendering')
+        u.publish(scrolledToInitialItem, false)
+        // topmost item index takes precedence over initial item count
+        u.publish(initialItemCount, 0)
+      }
     )
 
-    u.connect(
+    u.subscribe(
       u.pipe(
-        u.combineLatest(
-          u.duc(totalCount),
-          visibleRange,
-          u.duc(gap, gapComparator),
-          u.duc(itemDimensions, dimensionComparator),
-          u.duc(viewportDimensions, dimensionComparator),
-          data
-        ),
-        u.map(([totalCount, [startOffset, endOffset], gap, item, viewport, data]) => {
-          const { row: rowGap, column: columnGap } = gap
-          const { height: itemHeight, width: itemWidth } = item
-          const { width: viewportWidth } = viewport
-
-          if (totalCount === 0 || viewportWidth === 0) {
-            return INITIAL_GRID_STATE
-          }
-
-          if (itemWidth === 0) {
-            return buildProbeGridState(buildItems(0, 0, data))
-          }
-
-          const perRow = itemsPerRow(viewportWidth, itemWidth, columnGap)
-
-          let startIndex = perRow * floor((startOffset + rowGap) / (itemHeight + rowGap))
-          let endIndex = perRow * ceil((endOffset + rowGap) / (itemHeight + rowGap)) - 1
-          endIndex = min(totalCount - 1, max(endIndex, perRow - 1))
-          startIndex = min(endIndex, max(0, startIndex))
-
-          const items = buildItems(startIndex, endIndex, data)
-          const { top, bottom } = gridLayout(viewport, gap, item, items)
-          const rowCount = ceil(totalCount / perRow)
-          const totalHeight = rowCount * itemHeight + (rowCount - 1) * rowGap
-          const offsetBottom = totalHeight - bottom
-
-          return { items, offsetTop: top, offsetBottom, top, bottom, itemHeight, itemWidth } as GridState
+        u.combineLatest(didMount, scrolledToInitialItem, itemDimensions, viewportDimensions, initialTopMostItemIndex, scrollScheduled),
+        u.filter(([didMount, scrolledToInitialItem, itemDimensions, viewportDimensions, , scrollScheduled]) => {
+          return didMount && !scrolledToInitialItem && itemDimensions.height !== 0 && viewportDimensions.height !== 0 && !scrollScheduled
         })
       ),
-      gridState
+      ([, , , , initialTopMostItemIndex]) => {
+        u.publish(scrollScheduled, true)
+
+        skipFrames(1, () => {
+          u.publish(scrollToIndex, initialTopMostItemIndex)
+        })
+
+        u.handleNext(u.pipe(scrollTop), () => {
+          // this refreshes the sizeRangeSystem start/endOffset
+          u.publish(listBoundary, [0, 0])
+          // console.log('resume rendering')
+          u.publish(scrolledToInitialItem, true)
+        })
+      }
     )
 
+    // state snapshot takes precedence over initial item count
     u.connect(
       u.pipe(
-        data,
-        u.filter(u.isDefined),
-        u.map((data) => data!.length)
+        restoreStateFrom,
+        u.filter((value) => value !== undefined && value !== null && value.scrollTop > 0),
+        u.mapTo(0)
       ),
-      totalCount
+      initialItemCount
+    )
+
+    u.subscribe(
+      u.pipe(
+        didMount,
+        u.withLatestFrom(restoreStateFrom),
+        u.filter(([, snapshot]) => snapshot !== undefined && snapshot !== null)
+      ),
+      ([, snapshot]) => {
+        if (!snapshot) {
+          return
+        }
+        u.publish(viewportDimensions, snapshot.viewport), u.publish(itemDimensions, snapshot?.item)
+        u.publish(gap, snapshot.gap)
+        if (snapshot.scrollTop > 0) {
+          u.publish(stateRestoreInProgress, true)
+          u.handleNext(u.pipe(scrollTop, u.skip(1)), (_value) => {
+            u.publish(stateRestoreInProgress, false)
+          })
+          u.publish(scrollTo, { top: snapshot.scrollTop })
+        }
+      }
     )
 
     u.connect(
@@ -178,9 +193,119 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
     u.connect(
       u.pipe(
+        u.combineLatest(
+          u.duc(viewportDimensions, dimensionComparator),
+          u.duc(itemDimensions, dimensionComparator),
+          u.duc(gap, (prev, next) => prev && prev.column === next.column && prev.row === next.row),
+          u.duc(scrollTop)
+        ),
+        u.map(([viewport, item, gap, scrollTop]) => ({
+          viewport,
+          item,
+          gap,
+          scrollTop,
+        }))
+      ),
+      stateChanged
+    )
+
+    u.connect(
+      u.pipe(
+        u.combineLatest(
+          u.duc(totalCount),
+          visibleRange,
+          u.duc(gap, gapComparator),
+          u.duc(itemDimensions, dimensionComparator),
+          u.duc(viewportDimensions, dimensionComparator),
+          u.duc(data),
+          u.duc(initialItemCount),
+          u.duc(stateRestoreInProgress),
+          u.duc(scrolledToInitialItem),
+          u.duc(initialTopMostItemIndex)
+        ),
+        u.filter(([, , , , , , , stateRestoreInProgress]) => {
+          return !stateRestoreInProgress
+        }),
+        u.map(
+          ([
+            totalCount,
+            [startOffset, endOffset],
+            gap,
+            item,
+            viewport,
+            data,
+            initialItemCount,
+            ,
+            scrolledToInitialItem,
+            initialTopMostItemIndex,
+          ]) => {
+            const { row: rowGap, column: columnGap } = gap
+            const { height: itemHeight, width: itemWidth } = item
+            const { width: viewportWidth } = viewport
+
+            // don't wipeout the already rendered state if there's an initial item count
+            if (initialItemCount === 0 && (totalCount === 0 || viewportWidth === 0)) {
+              return INITIAL_GRID_STATE
+            }
+
+            if (itemWidth === 0) {
+              const startIndex = getInitialTopMostItemIndexNumber(initialTopMostItemIndex, totalCount)
+              // if the initial item count is set, we don't render the items from the initial item count.
+              const endIndex = startIndex === 0 ? Math.max(initialItemCount - 1, 0) : startIndex
+              return buildProbeGridState(buildItems(startIndex, endIndex, data))
+            }
+
+            const perRow = itemsPerRow(viewportWidth, itemWidth, columnGap)
+
+            let startIndex!: number
+            let endIndex!: number
+
+            // render empty items until the scroller reaches the initial item
+            if (!scrolledToInitialItem) {
+              startIndex = 0
+              endIndex = -1
+            }
+            // we know the dimensions from a restored state, but the offsets are not calculated yet
+            else if (startOffset === 0 && endOffset === 0 && initialItemCount > 0) {
+              startIndex = 0
+              endIndex = initialItemCount - 1
+            } else {
+              startIndex = perRow * floor((startOffset + rowGap) / (itemHeight + rowGap))
+              endIndex = perRow * ceil((endOffset + rowGap) / (itemHeight + rowGap)) - 1
+              endIndex = min(totalCount - 1, max(endIndex, perRow - 1))
+              startIndex = min(endIndex, max(0, startIndex))
+            }
+
+            const items = buildItems(startIndex, endIndex, data)
+            const { top, bottom } = gridLayout(viewport, gap, item, items)
+            const rowCount = ceil(totalCount / perRow)
+            const totalHeight = rowCount * itemHeight + (rowCount - 1) * rowGap
+            const offsetBottom = totalHeight - bottom
+
+            return { items, offsetTop: top, offsetBottom, top, bottom, itemHeight, itemWidth } as GridState
+          }
+        )
+      ),
+      gridState
+    )
+
+    u.connect(
+      u.pipe(
+        data,
+        u.filter((data) => data !== null),
+        u.map((data) => data!.length)
+      ),
+      totalCount
+    )
+
+    u.connect(
+      u.pipe(
         u.combineLatest(viewportDimensions, itemDimensions, gridState, gap),
-        u.map(([viewportDimensions, item, { items }, gap]) => {
-          const { top, bottom } = gridLayout(viewportDimensions, gap, item, items)
+        u.filter(([viewportDimensions, itemDimensions, { items }]) => {
+          return items.length > 0 && itemDimensions.height !== 0 && viewportDimensions.height !== 0
+        }),
+        u.map(([viewportDimensions, itemDimensions, { items }, gap]) => {
+          const { top, bottom } = gridLayout(viewportDimensions, gap, itemDimensions, items)
 
           return [top, bottom] as [number, number]
         }),
@@ -228,14 +353,16 @@ export const gridSystem = /*#__PURE__*/ u.system(
     const rangeChanged = u.streamFromEmitter(
       u.pipe(
         u.duc(gridState),
-        u.filter(({ items }) => items.length > 0),
-        u.map(({ items }) => {
+        u.withLatestFrom(stateRestoreInProgress),
+        u.filter(([{ items }, stateRestoreInProgress]) => items.length > 0 && !stateRestoreInProgress),
+        u.map(([{ items }]) => {
           return {
             startIndex: items[0].index,
             endIndex: items[items.length - 1].index,
           }
         }),
-        u.distinctUntilChanged(rangeComparator)
+        u.distinctUntilChanged(rangeComparator),
+        u.throttleTime(0)
       )
     )
 
@@ -245,7 +372,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
       u.pipe(
         scrollToIndex,
         u.withLatestFrom(viewportDimensions, itemDimensions, totalCount, gap),
-        u.map(([location, viewport, item, totalCount, gap]) => {
+        u.map(([location, viewportDimensions, itemDimensions, totalCount, gap]) => {
           const normalLocation = normalizeIndexLocation(location) as FlatIndexLocationWithAlign
           const { align, behavior, offset } = normalLocation
           let index = normalLocation.index
@@ -255,12 +382,12 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
           index = max(0, index, min(totalCount - 1, index))
 
-          let top = itemTop(viewport, gap, item, index)
+          let top = itemTop(viewportDimensions, gap, itemDimensions, index)
 
           if (align === 'end') {
-            top = round(top - viewport.height + item.height)
+            top = round(top - viewportDimensions.height + itemDimensions.height)
           } else if (align === 'center') {
-            top = round(top - viewport.height / 2 + item.height / 2)
+            top = round(top - viewportDimensions.height / 2 + itemDimensions.height / 2)
           }
 
           if (offset) {
@@ -315,7 +442,9 @@ export const gridSystem = /*#__PURE__*/ u.system(
       headerHeight,
       initialItemCount,
       gap,
+      restoreStateFrom,
       ...scrollSeek,
+      initialTopMostItemIndex,
 
       // output
       gridState,
@@ -324,7 +453,9 @@ export const gridSystem = /*#__PURE__*/ u.system(
       startReached,
       endReached,
       rangeChanged,
+      stateChanged,
       propsReady,
+      stateRestoreInProgress,
       ...log,
     }
   },

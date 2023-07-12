@@ -270,6 +270,8 @@ export interface GroupIndexLocationWithAlign extends LocationOptions {
 
 export type IndexLocationWithAlign = FlatIndexLocationWithAlign | GroupIndexLocationWithAlign
 
+export type GridIndexLocation = FlatIndexLocationWithAlign | number
+
 export type ListRootProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data'>
 export type TableRootProps = Omit<React.HTMLProps<HTMLTableElement>, 'ref' | 'data'>
 export type GridRootProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data'>

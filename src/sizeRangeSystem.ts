@@ -72,7 +72,6 @@ export const sizeRangeSystem = u.system(
             listBottom += headerHeight + fixedHeaderHeight
             listBottom -= deviation
 
-            // console.log({ listTop, scrollTop, stickyHeaderHeight, topViewportAddition })
             if (listTop > scrollTop + stickyHeaderHeight - topViewportAddition) {
               direction = UP
             }

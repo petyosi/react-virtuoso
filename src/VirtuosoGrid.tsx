@@ -70,19 +70,27 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
   const itemDimensions = usePublisher('itemDimensions')
   const gridGap = usePublisher('gap')
   const log = useEmitterValue('log')
+  const stateRestoreInProgress = useEmitterValue('stateRestoreInProgress')
 
   const listRef = useSize((el) => {
     const scrollHeight = el.parentElement!.parentElement!.scrollHeight
     scrollHeightCallback(scrollHeight)
     const firstItem = el.firstChild as HTMLElement
     if (firstItem) {
-      itemDimensions(firstItem.getBoundingClientRect())
+      const { width, height } = firstItem.getBoundingClientRect()
+      itemDimensions({ width, height })
     }
     gridGap({
       row: resolveGapValue('row-gap', getComputedStyle(el).rowGap, log),
       column: resolveGapValue('column-gap', getComputedStyle(el).columnGap, log),
     })
   })
+
+  if (stateRestoreInProgress) {
+    return null
+  }
+
+  //   console.log('rendering items', gridState.items)
 
   return React.createElement(
     ListComponent,
@@ -220,6 +228,8 @@ const {
       customScrollParent: 'customScrollParent',
       scrollerRef: 'scrollerRef',
       logLevel: 'logLevel',
+      restoreStateFrom: 'restoreStateFrom',
+      initialTopMostItemIndex: 'initialTopMostItemIndex',
     },
     methods: {
       scrollTo: 'scrollTo',
@@ -233,6 +243,7 @@ const {
       rangeChanged: 'rangeChanged',
       atBottomStateChange: 'atBottomStateChange',
       atTopStateChange: 'atTopStateChange',
+      stateChanged: 'stateChanged',
     },
   },
   GridRoot

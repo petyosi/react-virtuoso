@@ -5,19 +5,12 @@ import { domIOSystem } from './domIOSystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { propsReadySystem } from './propsReadySystem'
 import { FlatIndexLocationWithAlign } from './interfaces'
+import { skipFrames } from './utils/skipFrames'
 
 export function getInitialTopMostItemIndexNumber(location: number | FlatIndexLocationWithAlign, totalCount: number): number {
   const lastIndex = totalCount - 1
   const index = typeof location === 'number' ? location : location.index === 'LAST' ? lastIndex : location.index
   return index
-}
-
-function skipFrames(frameCount: number, callback: () => void) {
-  if (frameCount == 0) {
-    callback()
-  } else {
-    requestAnimationFrame(() => skipFrames(frameCount - 1, callback))
-  }
 }
 
 export const initialTopMostItemIndexSystem = u.system(
@@ -31,7 +24,6 @@ export const initialTopMostItemIndexSystem = u.system(
         didMount,
         u.withLatestFrom(initialTopMostItemIndex),
         u.filter(([_, location]) => !!location),
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         u.mapTo(false)
       ),
       scrolledToInitialItem
