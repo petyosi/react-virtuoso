@@ -70,6 +70,8 @@ const DefaultFillerRow = ({ height }: { height: number }) => (
   </tr>
 )
 
+const ITEM_STYLE = { overflowAnchor: 'none' } as const
+
 const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
   const listState = useEmitterValue('listState')
   const sizeRanges = usePublisher('sizeRanges')
@@ -146,7 +148,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
         'data-known-size': item.size,
         'data-item-index': item.index,
         item: item.data,
-        style: { overflowAnchor: 'none' },
+        style: ITEM_STYLE,
       },
       itemContent(item.index, item.data, context)
     )
