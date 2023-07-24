@@ -40,7 +40,7 @@ export const initialTopMostItemIndexSystem = u.system(
       ),
       ([, initialTopMostItemIndex]) => {
         u.publish(scrollScheduled, true)
-        skipFrames(2, () => {
+        skipFrames(3, () => {
           u.handleNext(scrollTop, () => u.publish(scrolledToInitialItem, true))
           u.publish(scrollToIndex, initialTopMostItemIndex)
         })

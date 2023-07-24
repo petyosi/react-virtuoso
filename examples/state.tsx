@@ -1,6 +1,5 @@
 import * as React from 'react'
-import { Virtuoso, VirtuosoHandle } from '../src'
-import { StateSnapshot } from '../src/stateLoadSystem'
+import { LogLevel, StateSnapshot, Virtuoso, VirtuosoHandle } from '../src'
 
 export function Example() {
   const ref = React.useRef<VirtuosoHandle>(null)
