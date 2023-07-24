@@ -11,18 +11,9 @@ import { loggerSystem } from './loggerSystem'
 import { windowScrollerSystem } from './windowScrollerSystem'
 import { getInitialTopMostItemIndexNumber } from './initialTopMostItemIndexSystem'
 import { skipFrames } from './utils/skipFrames'
+import { ElementDimensions, Gap, GridStateSnapshot } from './component-interfaces/VirtuosoGrid'
 
 export type Data = unknown[] | null
-
-export interface Gap {
-  row: number
-  column: number
-}
-
-export interface ElementDimensions {
-  width: number
-  height: number
-}
 
 export interface GridLayout {
   top: number
@@ -78,13 +69,6 @@ function gapComparator(prev: Gap, next: Gap) {
 }
 function dimensionComparator(prev: ElementDimensions, next: ElementDimensions) {
   return prev && prev.width === next.width && prev.height === next.height
-}
-
-export interface GridStateSnapshot {
-  viewport: ElementDimensions
-  item: ElementDimensions
-  gap: Gap
-  scrollTop: number
 }
 
 export const gridSystem = /*#__PURE__*/ u.system(

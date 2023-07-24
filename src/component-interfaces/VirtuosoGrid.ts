@@ -1,4 +1,3 @@
-import { GridStateSnapshot } from '../gridSystem'
 import type {
   GridComponents,
   GridComputeItemKey,
@@ -9,6 +8,23 @@ import type {
   ScrollSeekConfiguration,
 } from '../interfaces'
 import { LogLevel } from '../loggerSystem'
+
+export interface Gap {
+  row: number
+  column: number
+}
+
+export interface ElementDimensions {
+  width: number
+  height: number
+}
+
+export interface GridStateSnapshot {
+  viewport: ElementDimensions
+  item: ElementDimensions
+  gap: Gap
+  scrollTop: number
+}
 
 export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
   /**
