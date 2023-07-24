@@ -3,13 +3,13 @@ exports.id = 117;
 exports.ids = [117];
 exports.modules = {
 
-/***/ 3582:
+/***/ 33582:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   S: () => (/* binding */ SandpackClient)
 /* harmony export */ });
-/* harmony import */ var dequal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(434);
+/* harmony import */ var dequal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(89130);
 
 
 var SandpackClient = /** @class */ (function () {
@@ -53,17 +53,17 @@ var SandpackClient = /** @class */ (function () {
 
 /***/ }),
 
-/***/ 4117:
+/***/ 54117:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   SandpackRuntime: () => (/* binding */ SandpackRuntime)
 /* harmony export */ });
-/* harmony import */ var _types_36e5ec0d_mjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9743);
-/* harmony import */ var dequal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(434);
-/* harmony import */ var _base_80a1f760_mjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3582);
-/* harmony import */ var outvariant__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1757);
+/* harmony import */ var _types_36e5ec0d_mjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(29743);
+/* harmony import */ var dequal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(89130);
+/* harmony import */ var _base_80a1f760_mjs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(33582);
+/* harmony import */ var outvariant__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(31757);
 
 
 

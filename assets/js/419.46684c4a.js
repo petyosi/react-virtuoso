@@ -3,13 +3,13 @@ exports.id = 419;
 exports.ids = [419];
 exports.modules = {
 
-/***/ 3582:
+/***/ 33582:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   S: () => (/* binding */ SandpackClient)
 /* harmony export */ });
-/* harmony import */ var dequal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(434);
+/* harmony import */ var dequal__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(89130);
 
 
 var SandpackClient = /** @class */ (function () {
@@ -53,7 +53,7 @@ var SandpackClient = /** @class */ (function () {
 
 /***/ }),
 
-/***/ 8248:
+/***/ 48248:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
@@ -65,8 +65,8 @@ var SandpackClient = /** @class */ (function () {
 /* harmony export */   r: () => (/* binding */ readBuffer),
 /* harmony export */   w: () => (/* binding */ writeBuffer)
 /* harmony export */ });
-/* harmony import */ var outvariant__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1757);
-/* harmony import */ var _types_36e5ec0d_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9743);
+/* harmony import */ var outvariant__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(31757);
+/* harmony import */ var _types_36e5ec0d_mjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(29743);
 
 
 
@@ -321,7 +321,7 @@ var getMessageFromError = function (error) {
 
 /***/ }),
 
-/***/ 5419:
+/***/ 65419:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -333,7 +333,7 @@ __webpack_require__.d(__webpack_exports__, {
 });
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/@codesandbox+sandpack-client@2.6.9/node_modules/@codesandbox/sandpack-client/dist/types-36e5ec0d.mjs
-var types_36e5ec0d = __webpack_require__(9743);
+var types_36e5ec0d = __webpack_require__(29743);
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/@codesandbox+nodebox@0.1.8/node_modules/@codesandbox/nodebox/build/index.mjs
 var __create = Object.create;
 var __defProp = Object.defineProperty;
@@ -1399,13 +1399,13 @@ var PREVIEW_LOADED_MESSAGE_TYPE = "PREVIEW_LOADED";
 
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/@codesandbox+sandpack-client@2.6.9/node_modules/@codesandbox/sandpack-client/dist/base-80a1f760.mjs
-var base_80a1f760 = __webpack_require__(3582);
+var base_80a1f760 = __webpack_require__(33582);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@codesandbox+sandpack-client@2.6.9/node_modules/@codesandbox/sandpack-client/dist/client.utils-7a723432.mjs
-var client_utils_7a723432 = __webpack_require__(8248);
+var client_utils_7a723432 = __webpack_require__(48248);
 // EXTERNAL MODULE: ./node_modules/.pnpm/outvariant@1.4.0/node_modules/outvariant/lib/index.mjs
-var lib = __webpack_require__(1757);
+var lib = __webpack_require__(31757);
 // EXTERNAL MODULE: ./node_modules/.pnpm/dequal@2.0.3/node_modules/dequal/dist/index.mjs
-var dist = __webpack_require__(434);
+var dist = __webpack_require__(89130);
 ;// CONCATENATED MODULE: ./node_modules/.pnpm/@codesandbox+sandpack-client@2.6.9/node_modules/@codesandbox/sandpack-client/dist/clients/node/index.mjs
 
 
