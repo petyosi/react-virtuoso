@@ -1,12 +1,15 @@
 import * as React from 'react'
 import { TableVirtuoso, TableVirtuosoHandle } from '../src/'
 
+import './table-markup.css'
+
 export function Example() {
   const ref = React.useRef<TableVirtuosoHandle>(null)
   return (
     <>
       <TableVirtuoso
         ref={ref}
+        className="table"
         totalCount={1000}
         components={{
           EmptyPlaceholder: () => {

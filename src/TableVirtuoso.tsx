@@ -1,6 +1,6 @@
 import { systemToComponent } from './react-urx'
 import * as u from './urx'
-import React from 'react'
+import React, { Fragment } from 'react'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import { ComputeItemKey, ItemContent, FixedHeaderContent, FixedFooterContent, TableComponents, TableRootProps } from './interfaces'
 import { listSystem } from './listSystem'
@@ -126,9 +126,42 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
 
   const paddingBottomEl = paddingBottom > 0 ? <FillerRow height={paddingBottom} key="padding-bottom" context={context} /> : null
 
-  const items = listState.items.map((item) => {
+  const items = listState.items.map((item, stateIndex) => {
     const index = item.originalIndex!
     const key = computeItemKey(index + firstItemIndex, item.data, context)
+
+    return (
+      <Fragment key={key}>
+        {/* 
+          If a FillerRow is already displayed (paddingTop > 0)
+          and first visible item original index is even (index % 2 == 0)
+          add a second FillerRow with height set to 0
+          to preserve the :nth-child(odd/even) CSS pseudo-selector
+        */}
+        {stateIndex === 0 && paddingTop > 0 && index % 2 == 0 && <FillerRow height={0} key="padding-top" context={context} />}
+        {isSeeking
+          ? React.createElement(ScrollSeekPlaceholder, {
+              ...contextPropIfNotDomElement(ScrollSeekPlaceholder, context),
+              key,
+              index: item.index,
+              height: item.size,
+              type: item.type || 'item',
+            })
+          : React.createElement(
+              TableRowComponent,
+              {
+                ...contextPropIfNotDomElement(TableRowComponent, context),
+                key,
+                'data-index': index,
+                'data-known-size': item.size,
+                'data-item-index': item.index,
+                item: item.data,
+                style: ITEM_STYLE,
+              },
+              itemContent(item.index, item.data, context)
+            )}
+      </Fragment>
+    )
 
     if (isSeeking) {
       return React.createElement(ScrollSeekPlaceholder, {
@@ -139,18 +172,23 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
         type: item.type || 'item',
       })
     }
-    return React.createElement(
-      TableRowComponent,
-      {
-        ...contextPropIfNotDomElement(TableRowComponent, context),
-        key,
-        'data-index': index,
-        'data-known-size': item.size,
-        'data-item-index': item.index,
-        item: item.data,
-        style: ITEM_STYLE,
-      },
-      itemContent(item.index, item.data, context)
+
+    return (
+      <>
+        {React.createElement(
+          TableRowComponent,
+          {
+            ...contextPropIfNotDomElement(TableRowComponent, context),
+            key,
+            'data-index': index,
+            'data-known-size': item.size,
+            'data-item-index': item.index,
+            item: item.data,
+            style: ITEM_STYLE,
+          },
+          itemContent(item.index, item.data, context)
+        )}
+      </>
     )
   })
 
