@@ -162,34 +162,6 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
             )}
       </Fragment>
     )
-
-    if (isSeeking) {
-      return React.createElement(ScrollSeekPlaceholder, {
-        ...contextPropIfNotDomElement(ScrollSeekPlaceholder, context),
-        key,
-        index: item.index,
-        height: item.size,
-        type: item.type || 'item',
-      })
-    }
-
-    return (
-      <>
-        {React.createElement(
-          TableRowComponent,
-          {
-            ...contextPropIfNotDomElement(TableRowComponent, context),
-            key,
-            'data-index': index,
-            'data-known-size': item.size,
-            'data-item-index': item.index,
-            item: item.data,
-            style: ITEM_STYLE,
-          },
-          itemContent(item.index, item.data, context)
-        )}
-      </>
-    )
   })
 
   return React.createElement(
