@@ -2,7 +2,7 @@ import * as u from './urx'
 import { empty, findMaxKeyValue, Range, rangesWithin } from './AATree'
 import { groupedListSystem } from './groupedListSystem'
 import { getInitialTopMostItemIndexNumber, initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
-import { Item, ListItem, ListRange } from './interfaces'
+import { FlatIndexLocationWithAlign, Item, ListItem, ListRange } from './interfaces'
 import { propsReadySystem } from './propsReadySystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
@@ -139,6 +139,36 @@ export function buildListState(
   }
 }
 
+export function buildListStateFromItemCount(
+  itemCount: number,
+  initialTopMostItemIndex: number | FlatIndexLocationWithAlign,
+  sizes: SizeState,
+  firstItemIndex: number,
+  gap: number,
+  data: readonly unknown[]
+) {
+  let includedGroupsCount = 0
+  if (sizes.groupIndices.length > 0) {
+    for (const index of sizes.groupIndices) {
+      if (index - includedGroupsCount >= itemCount) {
+        break
+      }
+      includedGroupsCount++
+    }
+  }
+
+  const adjustedCount = itemCount + includedGroupsCount
+  const initialTopMostItemIndexNumber = getInitialTopMostItemIndexNumber(initialTopMostItemIndex, adjustedCount)
+
+  const items = Array.from({ length: adjustedCount }).map((_, index) => ({
+    index: index + initialTopMostItemIndexNumber,
+    size: 0,
+    offset: 0,
+    data: data[index + initialTopMostItemIndexNumber],
+  }))
+  return buildListState(items, [], adjustedCount, gap, sizes, firstItemIndex)
+}
+
 export const listStateSystem = u.system(
   ([
     { sizes, totalCount, data, firstItemIndex, gap },
@@ -151,6 +181,7 @@ export const listStateSystem = u.system(
     { recalcInProgress },
   ]) => {
     const topItemsIndexes = u.statefulStream<Array<number>>([])
+    const initialItemCount = u.statefulStream(0)
     const itemsRendered = u.stream<ListItems>()
 
     u.connect(groupedListSystem.topItemsIndexes, topItemsIndexes)
@@ -192,13 +223,26 @@ export const listStateSystem = u.system(
           ]) => {
             const sizesValue = sizes
             const { sizeTree, offsetTree } = sizesValue
+            const initialItemCountValue = u.getValue(initialItemCount)
 
-            if (totalCount === 0 || (startOffset === 0 && endOffset === 0)) {
+            if (totalCount === 0) {
               return { ...EMPTY_LIST_STATE, totalCount }
             }
 
+            // no container measruements yet
+            if (startOffset === 0 && endOffset === 0) {
+              if (initialItemCountValue === 0) {
+                return { ...EMPTY_LIST_STATE, totalCount }
+              } else {
+                return buildListStateFromItemCount(initialItemCountValue, initialTopMostItemIndex, sizes, firstItemIndex, gap, data || [])
+              }
+            }
+
             if (empty(sizeTree)) {
-              return buildListState(
+              if (initialItemCountValue > 0) {
+                return null
+              }
+              const state = buildListState(
                 probeItemSet(getInitialTopMostItemIndexNumber(initialTopMostItemIndex, totalCount), sizesValue, data),
                 [],
                 totalCount,
@@ -206,6 +250,7 @@ export const listStateSystem = u.system(
                 sizesValue,
                 firstItemIndex
               )
+              return state
             }
 
             const topItems = [] as Item<any>[]
@@ -367,7 +412,7 @@ export const listStateSystem = u.system(
       )
     )
 
-    return { listState, topItemsIndexes, endReached, startReached, rangeChanged, itemsRendered, ...stateFlags }
+    return { listState, topItemsIndexes, endReached, startReached, rangeChanged, itemsRendered, initialItemCount, ...stateFlags }
   },
   u.tup(
     sizeSystem,
