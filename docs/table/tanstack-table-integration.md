@@ -11,79 +11,68 @@ The following takes the [virtualized rows example of @tanstack/table](https://ta
 
 ```jsx live include-data import=@tanstack/react-table
 import React from "react";
-import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
-  useReactTable,
+  useReactTable
 } from "@tanstack/react-table";
 import { TableVirtuoso } from "react-virtuoso";
 
 import { makeData } from "./data";
 
-interface Person {
-  firstName: string;
-  lastName: string;
-  age: number;
-  visits: number;
-  progress: number;
-  status: "relationship" | "complicated" | "single";
-}
-
 export default function App() {
   const rerender = React.useReducer(() => ({}), {})[1];
 
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState([]);
 
-  const columns = React.useMemo<ColumnDef<Person>[]>(
+  const columns = React.useMemo(
     () => [
       {
         accessorKey: "firstName",
-        cell: (info) => info.getValue(),
+        cell: (info) => info.getValue()
       },
       {
         accessorFn: (row) => row.lastName,
         id: "lastName",
         cell: (info) => info.getValue(),
-        header: () => <span>Last Name</span>,
+        header: () => <span>Last Name</span>
       },
       {
         accessorKey: "age",
         header: () => "Age",
-        size: 50,
+        size: 50
       },
       {
         accessorKey: "visits",
         header: () => <span>Visits</span>,
-        size: 50,
+        size: 50
       },
       {
         accessorKey: "status",
-        header: "Status",
+        header: "Status"
       },
       {
         accessorKey: "progress",
         header: "Profile Progress",
-        size: 80,
-      },
+        size: 80
+      }
     ],
-    [],
+    []
   );
 
-  const [data, setData] = React.useState(() => makeData(50_000));
-  const refreshData = () => setData(() => makeData(50_000));
+  const [data, setData] = React.useState(() => makeData(500));
+  const refreshData = () => setData(() => makeData(500));
 
   const table = useReactTable({
     data,
     columns,
     state: {
-      sorting,
+      sorting
     },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    debugTable: true,
+    getSortedRowModel: getSortedRowModel()
   });
 
   const { rows } = table.getRowModel();
@@ -105,14 +94,14 @@ export default function App() {
                   width: "100%",
                   tableLayout: "fixed",
                   borderCollapse: "collapse",
-                  borderSpacing: 0,
+                  borderSpacing: 0
                 }}
               />
             );
           },
           TableRow: (props) => {
             const index = props["data-index"];
-            const row = rows[index]!;
+            const row = rows[index];
 
             return (
               <tr {...props}>
@@ -123,7 +112,7 @@ export default function App() {
                 ))}
               </tr>
             );
-          },
+          }
         }}
         fixedHeaderContent={() => {
           return table.getHeaderGroups().map((headerGroup) => (
@@ -140,7 +129,7 @@ export default function App() {
                       width: header.getSize(),
                       borderBottom: "1px solid lightgray",
                       padding: "2px 4px",
-                      textAlign: "left",
+                      textAlign: "left"
                     }}
                   >
                     {header.isPlaceholder ? null : (
@@ -150,17 +139,17 @@ export default function App() {
                           style: header.column.getCanSort()
                             ? { cursor: "pointer", userSelect: "none" }
                             : {},
-                          onClick: header.column.getToggleSortingHandler(),
+                          onClick: header.column.getToggleSortingHandler()
                         }}
                       >
                         {flexRender(
                           header.column.columnDef.header,
-                          header.getContext(),
+                          header.getContext()
                         )}
                         {{
                           asc: " 🔼",
-                          desc: " 🔽",
-                        }[header.column.getIsSorted() as string] ?? null}
+                          desc: " 🔽"
+                        }[header.column.getIsSorted()] ?? null}
                       </div>
                     )}
                   </th>
