@@ -12,7 +12,7 @@ module.exports = {
       'range-change-callback',
     ],
     'Grouped Mode': ['grouped-numbers', 'grouped-by-first-letter', 'grouped-with-load-on-demand', 'scroll-to-group'],
-    Table: ['hello-table', 'table-fixed-headers', 'mui-table-virtual-scroll', 'table-fixed-columns', 'react-table-integration'],
+    Table: ['hello-table', 'table-fixed-headers', 'mui-table-virtual-scroll', 'table-fixed-columns', 'tanstack-table-integration'],
     Grid: ['grid-responsive-columns'],
     Scenarios: [
       'press-to-load-more',
