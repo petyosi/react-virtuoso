@@ -266,6 +266,7 @@ const {
   {
     required: {},
     optional: {
+      restoreStateFrom: 'restoreStateFrom',
       context: 'context',
       followOutput: 'followOutput',
       firstItemIndex: 'firstItemIndex',
@@ -300,6 +301,7 @@ const {
       scrollIntoView: 'scrollIntoView',
       scrollTo: 'scrollTo',
       scrollBy: 'scrollBy',
+      getState: 'getState',
     },
     events: {
       isScrolling: 'isScrolling',

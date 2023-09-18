@@ -11,6 +11,8 @@ import type {
   ScrollSeekConfiguration,
   SizeFunction,
   TableComponents,
+  StateSnapshot,
+  StateCallback,
 } from '../interfaces'
 import type { VirtuosoProps } from './Virtuoso'
 
@@ -214,6 +216,12 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
    * By default `4`. Redefine to change how much away from the bottom the scroller can be before the list is not considered not at bottom.
    */
   atBottomThreshold?: number
+  /**
+   * pass a state obtained from the getState() method to restore the list state - this includes the previously measured item sizes and the scroll location.
+   * Notice that you should still pass the same data and totalCount properties as before, so that the list can match the data with the stored measurements.
+   * This is useful when you want to keep the list state when the component is unmounted and remounted, for example when navigating to a different page.
+   */
+  restoreStateFrom?: StateSnapshot
 }
 
 export interface TableVirtuosoHandle {
@@ -221,4 +229,9 @@ export interface TableVirtuosoHandle {
   scrollToIndex(location: number | FlatIndexLocationWithAlign): void
   scrollTo(location: ScrollToOptions): void
   scrollBy(location: ScrollToOptions): void
+
+  /**
+   * Obtains the internal size state of the component, so that it can be restored later. This does not include the data items.
+   */
+  getState(stateCb: StateCallback): void
 }
