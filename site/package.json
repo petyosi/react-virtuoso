@@ -29,7 +29,7 @@
     "faker": "^5.1.0",
     "lodash": "^4.17.21",
     "react-sortable-hoc": "^1.11.0",
-    "react-table": "^7.7.0",
+    "@tanstack/react-table": "^8.9.11",
     "unist-util-map": "^3.0.0"
   },
   "devDependencies": {

@@ -167,7 +167,7 @@ const RenderSandpack = (props) => {
             ...(props['import'] === '@mui/material'
               ? { '@mui/material': 'latest', '@emotion/styled': 'latest', '@emotion/react': 'latest' }
               : {}),
-            ...(props['import'] === 'react-table' ? { 'react-table': 'latest' } : {}),
+            ...(props['import'] === '@tanstack/react-table' ? { '@tanstack/react-table': 'latest' } : {}),
             ...(props['import'] === 'react-sortable-hoc' ? { 'react-sortable-hoc': '^1.11.0' } : {}),
             ...(props['import'] === 'react-beautiful-dnd' ? { 'react-beautiful-dnd': 'latest' } : {}),
             ...(props['import'] === '@emotion/styled' ? { '@emotion/styled': 'latest', '@emotion/react': 'latest' } : {}),
