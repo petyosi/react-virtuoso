@@ -4,7 +4,14 @@ import React from 'react'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import { ComputeItemKey, ItemContent, FixedHeaderContent, FixedFooterContent, TableComponents, TableRootProps } from './interfaces'
 import { listSystem } from './listSystem'
-import { identity, buildScroller, buildWindowScroller, viewportStyle, contextPropIfNotDomElement } from './Virtuoso'
+import {
+  identity,
+  buildScroller,
+  buildWindowScroller,
+  viewportStyle,
+  contextPropIfNotDomElement,
+  itemPropIfNotDomElement,
+} from './Virtuoso'
 import useSize from './hooks/useSize'
 import { correctItemSize } from './utils/correctItemSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
@@ -143,11 +150,11 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
       TableRowComponent,
       {
         ...contextPropIfNotDomElement(TableRowComponent, context),
+        ...itemPropIfNotDomElement(TableRowComponent, item.data),
         key,
         'data-index': index,
         'data-known-size': item.size,
         'data-item-index': item.index,
-        item: item.data,
         style: ITEM_STYLE,
       },
       itemContent(item.index, item.data, context)

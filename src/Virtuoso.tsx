@@ -169,12 +169,12 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
           ItemComponent,
           {
             ...contextPropIfNotDomElement(ItemComponent, context),
+            ...itemPropIfNotDomElement(ItemComponent, item.data),
             key,
             'data-index': index,
             'data-known-size': item.size,
             'data-item-index': item.index,
             'data-item-group-index': item.groupIndex,
-            item: item.data,
             style: ITEM_STYLE,
           },
           hasGroups
@@ -213,6 +213,10 @@ export function contextPropIfNotDomElement(element: unknown, context: unknown) {
     return undefined
   }
   return { context }
+}
+
+export function itemPropIfNotDomElement(element: unknown, item: unknown) {
+  return { item: typeof element === 'string' ? undefined : item }
 }
 
 const Header: React.FC = /*#__PURE__*/ React.memo(function VirtuosoHeader() {
