@@ -134,7 +134,6 @@ exports[`VirtuosoMockContext > List > correctly renders items 1`] = `
           data-index="0"
           data-item-index="0"
           data-known-size="100"
-          item="[object Object]"
           style="overflow-anchor: none;"
         >
           Item 0
@@ -143,7 +142,6 @@ exports[`VirtuosoMockContext > List > correctly renders items 1`] = `
           data-index="1"
           data-item-index="1"
           data-known-size="100"
-          item="[object Object]"
           style="overflow-anchor: none;"
         >
           Item 1
@@ -152,7 +150,6 @@ exports[`VirtuosoMockContext > List > correctly renders items 1`] = `
           data-index="2"
           data-item-index="2"
           data-known-size="100"
-          item="[object Object]"
           style="overflow-anchor: none;"
         >
           Item 2
@@ -181,7 +178,6 @@ exports[`VirtuosoMockContext > List > correctly renders items with useWindowScro
           data-index="0"
           data-item-index="0"
           data-known-size="100"
-          item="[object Object]"
           style="overflow-anchor: none;"
         >
           Item 0
@@ -190,7 +186,6 @@ exports[`VirtuosoMockContext > List > correctly renders items with useWindowScro
           data-index="1"
           data-item-index="1"
           data-known-size="100"
-          item="[object Object]"
           style="overflow-anchor: none;"
         >
           Item 1
@@ -199,7 +194,6 @@ exports[`VirtuosoMockContext > List > correctly renders items with useWindowScro
           data-index="2"
           data-item-index="2"
           data-known-size="100"
-          item="[object Object]"
           style="overflow-anchor: none;"
         >
           Item 2
@@ -232,7 +226,6 @@ exports[`VirtuosoMockContext > Table > correctly renders items 1`] = `
             data-index="0"
             data-item-index="0"
             data-known-size="100"
-            item="[object Object]"
             style="overflow-anchor: none;"
           >
             <td>
@@ -244,7 +237,6 @@ exports[`VirtuosoMockContext > Table > correctly renders items 1`] = `
             data-index="1"
             data-item-index="1"
             data-known-size="100"
-            item="[object Object]"
             style="overflow-anchor: none;"
           >
             <td>
@@ -256,7 +248,6 @@ exports[`VirtuosoMockContext > Table > correctly renders items 1`] = `
             data-index="2"
             data-item-index="2"
             data-known-size="100"
-            item="[object Object]"
             style="overflow-anchor: none;"
           >
             <td>
@@ -296,7 +287,6 @@ exports[`VirtuosoMockContext > Table > correctly renders items with useWindowScr
             data-index="0"
             data-item-index="0"
             data-known-size="100"
-            item="[object Object]"
             style="overflow-anchor: none;"
           >
             <td>
@@ -308,7 +298,6 @@ exports[`VirtuosoMockContext > Table > correctly renders items with useWindowScr
             data-index="1"
             data-item-index="1"
             data-known-size="100"
-            item="[object Object]"
             style="overflow-anchor: none;"
           >
             <td>
@@ -320,7 +309,6 @@ exports[`VirtuosoMockContext > Table > correctly renders items with useWindowScr
             data-index="2"
             data-item-index="2"
             data-known-size="100"
-            item="[object Object]"
             style="overflow-anchor: none;"
           >
             <td>
