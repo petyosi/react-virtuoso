@@ -5,70 +5,56 @@ sidebar_label: React Beautiful DND
 slug: /react-beautiful-dnd/
 ---
 
-The example below integrates React Virtuoso with [React Beautiful DND](https://github.com/atlassian/react-beautiful-dnd).
+The example below integrates React Virtuoso with the maintained fork of [React Beautiful DND](https://github.com/atlassian/react-beautiful-dnd), [hello-pangea/dnd](https://github.com/hello-pangea/dnd).
+The example works with Beautiful DND too, but causes warnings with StrictMode.
 
 ```jsx live import=react-beautiful-dnd
-import React, { useCallback, useEffect, useState } from 'react'
-import ReactDOM from 'react-dom'
-import { Virtuoso } from 'react-virtuoso'
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
+import React, { useEffect, useState } from "react";
+import ReactDOM from "react-dom";
+import { Virtuoso } from "react-virtuoso";
+// Works with react-beautiful-dnd, too, but causes issues with StrictMode
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 // Virtuoso's resize observer can this error,
 // which is caught by DnD and aborts dragging.
-window.addEventListener('error', (e) => {
-  if (e.message === 'ResizeObserver loop completed with undelivered notifications.' || e.message === 'ResizeObserver loop limit exceeded') {
-    e.stopImmediatePropagation()
+window.addEventListener("error", (e) => {
+  if (
+    e.message ===
+      "ResizeObserver loop completed with undelivered notifications." ||
+    e.message === "ResizeObserver loop limit exceeded"
+  ) {
+    e.stopImmediatePropagation();
   }
-})
+});
 
 // Generate our initial big data set
 const initial = Array.from({ length: 1000 }, (_, k) => ({
   id: `id:${k}`,
-  text: `item ${k}`,
-}))
+  text: `item ${k}`
+}));
 
 function reorder(list, startIndex, endIndex) {
-  const result = Array.from(list)
-  const [removed] = result.splice(startIndex, 1)
-  result.splice(endIndex, 0, removed)
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
 
-  return result
+  return result;
 }
 
 function Item({ provided, item, isDragging }) {
   return (
-    <div style={{ paddingBottom: '8px' }}>
+    <div style={{ paddingBottom: "8px" }}>
       <div
         {...provided.draggableProps}
         {...provided.dragHandleProps}
         ref={provided.innerRef}
         style={provided.draggableProps.style}
-        className={`item ${isDragging ? 'is-dragging' : ''}`}
+        className={`item ${isDragging ? "is-dragging" : ""}`}
       >
         {item.text}
       </div>
     </div>
-  )
-}
-
-const HeightPreservingItem = ({ children, ...props }) => {
-  const [size, setSize] = useState(0)
-  const knownSize = props['data-known-size']
-  useEffect(() => {
-    setSize((prevSize) => {
-      return knownSize == 0 ? prevSize : knownSize
-    })
-  }, [knownSize])
-  return (
-    <div
-      {...props}
-      className="height-preserving-container"
-      // check styling in the style tag below
-      style={{ '--child-height': `${size}px`, }}
-    >
-      {children}
-    </div>
-  )
+  );
 }
 
 export default function App() {
@@ -89,46 +75,67 @@ export default function App() {
     [setItems]
   )
 
+  const HeightPreservingItem = React.useCallback(({ children, ...props }) => {
+    const [size, setSize] = useState(0);
+    const knownSize = props["data-known-size"];
+    useEffect(() => {
+      setSize((prevSize) => {
+        return knownSize == 0 ? prevSize : knownSize;
+      });
+    }, [knownSize]);
+    return (
+      <div
+        {...props}
+        className="height-preserving-container"
+        style={{
+          "--child-height": `${size}px`
+        }}
+      >
+        {children}
+      </div>
+    );
+  }, []);
+
   return (
     <div style={{ padding: '1rem' }}>
       <style>
-        {`
-          .height-preserving-container:empty {
-            min-height: calc(var(--child-height));
-            box-sizing: border-box;
-          }
-      `}
-      </style>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable
-          droppableId="droppable"
-          mode="virtual"
-          renderClone={(provided, snapshot, rubric) => (
-            <Item provided={provided} isDragging={snapshot.isDragging} item={items[rubric.source.index]} />
-          )}
-        >
+      {`
+      .height-preserving-container:empty {
+        min-height: calc(var(--child-height));
+        box-sizing: border-box;
+        }
+    `}
+        </style>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable
+            droppableId="droppable"
+            mode="virtual"
+            renderClone={(provided, snapshot, rubric) => (
+              <Item provided={provided} isDragging={snapshot.isDragging} item={items[rubric.source.index]} />
+            )}
+          >
           {(provided) => {
             return (
               <Virtuoso
                 components={{
-                  Item: HeightPreservingItem,
+                  Item: HeightPreservingItem
                 }}
                 scrollerRef={provided.innerRef}
                 data={items}
                 style={{ width: 300, height: 500 }}
                 itemContent={(index, item) => {
                   return (
-                    <Draggable draggableId={item.id} index={index} key={item.id}>
-                      {(provided) => <Item provided={provided} item={item} isDragging={false} />}
+                    <Draggable draggableId={item.id} index={index} key={item.id} >
+                      {(provided) => ( <Item provided={provided} item={item} isDragging={false} />)}
                     </Draggable>
-                  )
+                  );
                 }}
               />
-            )
+            );
           }}
         </Droppable>
       </DragDropContext>
     </div>
-  )
+  );
 }
 ```
