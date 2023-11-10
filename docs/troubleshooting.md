@@ -43,5 +43,5 @@ please reproduce it in codesandbox and post a comment in [Issue #206](https://gi
 
 ## Experiencing something else?
 
-Please [open an issue](https://github.com/petyosi/react-virtuoso/issues/new) with reproduction in codesandbox.
+Please [open an issue](https://github.com/petyosi/react-virtuoso/issues/new/choose) with reproduction in codesandbox.
  
