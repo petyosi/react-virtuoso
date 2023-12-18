@@ -1,16 +1,22 @@
 import { useRef } from 'react'
 
+import { useRcPortalWindowContext } from './useRcPortalWindowContext'
+
 export type CallbackRefParam = HTMLElement | null
 
 export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled = true) {
   const ref = useRef<CallbackRefParam>(null)
+  const { externalWindow = window } = useRcPortalWindowContext()
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let callbackRef = (_el: CallbackRefParam) => {
+    // eslint-disable-next-line no-void
     void 0
   }
 
-  if (typeof ResizeObserver !== 'undefined') {
-    const observer = new ResizeObserver((entries: ResizeObserverEntry[]) => {
+  // TODO: fix after upgrade ts
+  if (typeof externalWindow['ResizeObserver'] !== 'undefined') {
+    const observer = new externalWindow['ResizeObserver']((entries: ResizeObserverEntry[]) => {
       const element = entries[0].target as HTMLElement
       if (element.offsetParent !== null) {
         callback(element)

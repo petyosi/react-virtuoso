@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import * as u from '@virtuoso.dev/urx'
+
+import { domIOSystem } from './domIOSystem'
+import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
+import { FollowOutput, FollowOutputScalarType } from './interfaces'
+import { loggerSystem, LogLevel } from './loggerSystem'
+import { propsReadySystem } from './propsReadySystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
-import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
-import { FollowOutput, FollowOutputScalarType } from './interfaces'
-import { propsReadySystem } from './propsReadySystem'
-import { loggerSystem, LogLevel } from './loggerSystem'
-import { domIOSystem } from './domIOSystem'
 
 function normalizeFollowOutput(follow: FollowOutputScalarType): FollowOutputScalarType {
   if (!follow) {

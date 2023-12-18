@@ -1,8 +1,10 @@
-import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
-
-import * as u from '@virtuoso.dev/urx'
+/* eslint-disable no-console */
 import * as React from 'react'
 import { createElement, FC, PropsWithChildren } from 'react'
+
+import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
+import * as u from '@virtuoso.dev/urx'
+
 import { gridSystem } from './gridSystem'
 import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
@@ -117,7 +119,10 @@ const GridItems: FC = React.memo(function GridItems() {
       ref: listRef,
       className: listClassName,
       ...contextPropIfNotDomElement(ListComponent, context),
-      style: { paddingTop: gridState.offsetTop, paddingBottom: gridState.offsetBottom },
+      style: {
+        paddingTop: gridState.offsetTop,
+        paddingBottom: gridState.offsetBottom,
+      },
     },
     gridState.items.map((item) => {
       const key = computeItemKey(item.index)
@@ -131,7 +136,12 @@ const GridItems: FC = React.memo(function GridItems() {
           })
         : createElement(
             ItemComponent,
-            { ...contextPropIfNotDomElement(ItemComponent, context), className: itemClassName, 'data-index': item.index, key },
+            {
+              ...contextPropIfNotDomElement(ItemComponent, context),
+              className: itemClassName,
+              'data-index': item.index,
+              key,
+            },
             itemContent(item.index, context)
           )
     })
@@ -231,4 +241,8 @@ export type GridHandle = RefHandle<typeof Grid>
 export { Grid }
 
 const Scroller = buildScroller({ usePublisher, useEmitterValue, useEmitter })
-const WindowScroller = buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })
+const WindowScroller = buildWindowScroller({
+  usePublisher,
+  useEmitterValue,
+  useEmitter,
+})

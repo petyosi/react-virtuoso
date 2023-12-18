@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as u from '@virtuoso.dev/urx'
+
 import { domIOSystem } from './domIOSystem'
 
 export const UP = 'up' as const
@@ -155,21 +157,19 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
                 jump: current.scrollTop - scrollTop,
                 changed: true,
               }
-            } else {
-              return {
-                scrollHeight,
-                scrollTop,
-                jump: 0,
-                changed: true,
-              }
             }
-          } else {
             return {
-              scrollTop,
               scrollHeight,
+              scrollTop,
               jump: 0,
-              changed: false,
+              changed: true,
             }
+          }
+          return {
+            scrollTop,
+            scrollHeight,
+            jump: 0,
+            changed: false,
           }
         },
         { scrollHeight: 0, jump: 0, scrollTop: 0, changed: false }
@@ -205,9 +205,15 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
             return { direction: acc.direction, prevScrollTop: scrollTop }
           }
 
-          return { direction: scrollTop < acc.prevScrollTop ? UP : DOWN, prevScrollTop: scrollTop }
+          return {
+            direction: scrollTop < acc.prevScrollTop ? UP : DOWN,
+            prevScrollTop: scrollTop,
+          }
         },
-        { direction: DOWN, prevScrollTop: 0 } as { direction: ScrollDirection; prevScrollTop: number }
+        { direction: DOWN, prevScrollTop: 0 } as {
+          direction: ScrollDirection
+          prevScrollTop: number
+        }
       ),
       u.map((value) => value.direction)
     ),

@@ -1,34 +1,37 @@
+/* eslint-disable no-console */
+import * as React from 'react'
+import { ComponentType, createElement, CSSProperties, FC, PropsWithChildren } from 'react'
+
 import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
 import {
   compose,
   connect,
+  distinctUntilChanged,
   getValue,
   map,
+  noop,
   pipe,
   publish,
   statefulStream,
+  statefulStreamFromEmitter,
   stream,
   Stream,
   subscribe,
   system,
   tup,
   withLatestFrom,
-  statefulStreamFromEmitter,
-  distinctUntilChanged,
-  noop,
 } from '@virtuoso.dev/urx'
-import * as React from 'react'
-import { ComponentType, createElement, CSSProperties, FC, PropsWithChildren } from 'react'
-import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
+
+import { ScrollerProps } from '.'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
+import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 import useScrollTop from './hooks/useScrollTop'
 import useSize from './hooks/useSize'
+import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { Components, ComputeItemKey, GroupContent, GroupItemContent, ItemContent, ListRootProps } from './interfaces'
 import { listSystem } from './listSystem'
-import { positionStickyCssValue } from './utils/positionStickyCssValue'
-import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { correctItemSize } from './utils/correctItemSize'
-import { ScrollerProps } from '.'
+import { positionStickyCssValue } from './utils/positionStickyCssValue'
 
 export function identity<T>(value: T) {
   return value

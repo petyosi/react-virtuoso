@@ -1,10 +1,11 @@
 import * as u from '@virtuoso.dev/urx'
+
 import { domIOSystem } from './domIOSystem'
-import { listStateSystem } from './listStateSystem'
-import { sizeSystem } from './sizeSystem'
-import { UP, stateFlagsSystem } from './stateFlagsSystem'
 import { ListItem } from './interfaces'
+import { listStateSystem } from './listStateSystem'
 import { loggerSystem, LogLevel } from './loggerSystem'
+import { sizeSystem } from './sizeSystem'
+import { stateFlagsSystem, UP } from './stateFlagsSystem'
 
 type UpwardFixState = [number, ListItem<any>[], number, number]
 /**
@@ -23,7 +24,14 @@ export const upwardScrollFixSystem = u.system(
         listState,
         u.withLatestFrom(lastJumpDueToItemResize),
         u.scan(
-          ([, prevItems, prevTotalCount, prevTotalHeight], [{ items, totalCount, bottom, offsetBottom }, lastJumpDueToItemResize]) => {
+          (
+            [, prevItems, prevTotalCount, prevTotalHeight],
+            [
+              // @ts-ignore
+              { items, totalCount, bottom, offsetBottom },
+              lastJumpDueToItemResize,
+            ]
+          ) => {
             const totalHeight = bottom + offsetBottom
 
             let newDev = 0
@@ -71,7 +79,7 @@ export const upwardScrollFixSystem = u.system(
       u.pipe(
         u.combineLatest(u.statefulStreamFromEmitter(isScrolling, false), deviation),
         u.filter(([is, deviation]) => !is && deviation !== 0),
-        u.map(([_, deviation]) => deviation),
+        u.map(([, deviation]) => deviation),
         u.throttleTime(1)
       ),
       (offset) => {

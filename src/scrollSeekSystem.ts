@@ -1,7 +1,7 @@
 import * as u from '@virtuoso.dev/urx'
-import { ListRange } from './interfaces'
+
+import { ListRange, ScrollSeekConfiguration } from './interfaces'
 import { stateFlagsSystem } from './stateFlagsSystem'
-import { ScrollSeekConfiguration } from './interfaces'
 
 export const scrollSeekSystem = u.system(
   ([{ scrollVelocity }]) => {
@@ -13,17 +13,15 @@ export const scrollSeekSystem = u.system(
       u.pipe(
         scrollVelocity,
         u.withLatestFrom(scrollSeekConfiguration, isSeeking, rangeChanged),
-        u.filter(([_, config]) => !!config),
+        u.filter(([, config]) => !!config),
         u.map(([speed, config, isSeeking, range]) => {
           const { exit, enter } = config as ScrollSeekConfiguration
           if (isSeeking) {
             if (exit(speed, range)) {
               return false
             }
-          } else {
-            if (enter(speed, range)) {
-              return true
-            }
+          } else if (enter(speed, range)) {
+            return true
           }
           return isSeeking
         }),
@@ -37,7 +35,12 @@ export const scrollSeekSystem = u.system(
       ([[isSeeking, velocity, range], config]) => isSeeking && config && config.change && config.change(velocity, range)
     )
 
-    return { isSeeking, scrollSeekConfiguration, scrollVelocity, scrollSeekRangeChanged: rangeChanged }
+    return {
+      isSeeking,
+      scrollSeekConfiguration,
+      scrollVelocity,
+      scrollSeekRangeChanged: rangeChanged,
+    }
   },
   u.tup(stateFlagsSystem),
   { singleton: true }
