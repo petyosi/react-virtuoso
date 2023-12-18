@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import * as u from '@virtuoso.dev/urx'
-
 import { findMaxKeyValue } from './AATree'
 import { domIOSystem } from './domIOSystem'
+import { offsetOf, originalIndexFromLocation, sizeSystem } from './sizeSystem'
 import { IndexLocationWithAlign } from './interfaces'
 import { loggerSystem, LogLevel } from './loggerSystem'
-import { offsetOf, originalIndexFromItemIndex, sizeSystem } from './sizeSystem'
 
 export type IndexLocation = number | IndexLocationWithAlign
 
@@ -23,7 +22,8 @@ export function normalizeIndexLocation(location: IndexLocation) {
   if (!result.offset) {
     result.offset = 0
   }
-  return result as Required<IndexLocationWithAlign>
+
+  return result
 }
 
 export const scrollToIndexSystem = u.system(
@@ -65,14 +65,8 @@ export const scrollToIndexSystem = u.system(
           const normalLocation = normalizeIndexLocation(location)
           const { align, behavior, offset } = normalLocation
           const lastIndex = totalCount - 1
-          let index = normalLocation.index
-          if (index === 'LAST') {
-            index = lastIndex
-          }
 
-          index = originalIndexFromItemIndex(index, sizes)
-
-          index = Math.max(0, index, Math.min(lastIndex, index))
+          const index = originalIndexFromLocation(normalLocation, sizes, lastIndex)
 
           let top = offsetOf(index, sizes.offsetTree) + headerHeight
           if (align === 'end') {

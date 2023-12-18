@@ -1,12 +1,12 @@
 import * as u from '@virtuoso.dev/urx'
-
 import { empty } from './AATree'
-import { domIOSystem } from './domIOSystem'
-import { propsReadySystem } from './propsReadySystem'
-import { IndexLocation, scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeSystem } from './sizeSystem'
+import { domIOSystem } from './domIOSystem'
+import { scrollToIndexSystem } from './scrollToIndexSystem'
+import { propsReadySystem } from './propsReadySystem'
+import { FlatIndexLocationWithAlign } from './interfaces'
 
-export function getInitialTopMostItemIndexNumber(location: IndexLocation, totalCount: number): number {
+export function getInitialTopMostItemIndexNumber(location: number | FlatIndexLocationWithAlign, totalCount: number): number {
   const lastIndex = totalCount - 1
   const index = typeof location === 'number' ? location : location.index === 'LAST' ? lastIndex : location.index
   return index
@@ -15,13 +15,12 @@ export function getInitialTopMostItemIndexNumber(location: IndexLocation, totalC
 export const initialTopMostItemIndexSystem = u.system(
   ([{ sizes, listRefresh, defaultItemSize }, { scrollTop }, { scrollToIndex }, { didMount }]) => {
     const scrolledToInitialItem = u.statefulStream(true)
-    const initialTopMostItemIndex = u.statefulStream<IndexLocation>(0)
+    const initialTopMostItemIndex = u.statefulStream<number | FlatIndexLocationWithAlign>(0)
 
     u.connect(
       u.pipe(
         didMount,
         u.withLatestFrom(initialTopMostItemIndex),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         u.filter(([_, location]) => !!location),
         u.mapTo(false)
       ),

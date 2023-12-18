@@ -4,22 +4,24 @@ import { Grid } from './Grid'
 import {
   Components,
   ComputeItemKey,
-  FixedHeaderContent,
   FollowOutput,
   GridComponents,
   GridComputeItemKey,
   GridItemContent,
-  GridRootProps,
   GroupContent,
   GroupItemContent,
   IndexLocationWithAlign,
   ItemContent,
   ListItem,
   ListRange,
-  ListRootProps,
-  ScrollIntoViewLocation,
   ScrollSeekConfiguration,
   TableComponents,
+  FixedHeaderContent,
+  ScrollIntoViewLocation,
+  ListRootProps,
+  GridRootProps,
+  FlatIndexLocationWithAlign,
+  FlatScrollIntoViewLocation,
 } from './interfaces'
 import { List } from './List'
 import { Table } from './Table'
@@ -562,11 +564,11 @@ export interface VirtuosoHandle {
   /**
    * Scrolls the component to the specified item index. See {@link IndexLocationWithAlign} for more options.
    */
-  scrollToIndex(location: number | IndexLocationWithAlign): void
+  scrollToIndex(location: number | FlatIndexLocationWithAlign): void
   /**
    * Scrolls the item into view if necessary. See [the website example](http://virtuoso.dev/keyboard-navigation/) for an implementation.
    */
-  scrollIntoView(location: ScrollIntoViewLocation): void
+  scrollIntoView(location: FlatScrollIntoViewLocation): void
   /**
    * Scrolls the component to the specified location. See [ScrollToOptions (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/ScrollToOptions)
    */
@@ -579,6 +581,7 @@ export interface VirtuosoHandle {
 
 export interface GroupedVirtuosoHandle {
   scrollToIndex(location: number | IndexLocationWithAlign): void
+  scrollIntoView(location: number | ScrollIntoViewLocation): void
   scrollTo(location: ScrollToOptions): void
   scrollBy(location: ScrollToOptions): void
 }
@@ -590,8 +593,8 @@ export interface VirtuosoGridHandle {
 }
 
 export interface TableVirtuosoHandle {
-  scrollIntoView(location: ScrollIntoViewLocation): void
-  scrollToIndex(location: number | IndexLocationWithAlign): void
+  scrollIntoView(location: number | FlatScrollIntoViewLocation): void
+  scrollToIndex(location: number | FlatIndexLocationWithAlign): void
   scrollTo(location: ScrollToOptions): void
   scrollBy(location: ScrollToOptions): void
 }
@@ -601,15 +604,11 @@ export const Virtuoso = List as <ItemData extends unknown = any, Context extends
 ) => ReactElement
 
 export const GroupedVirtuoso = List as <ItemData extends unknown = any, Context extends unknown = any>(
-  props: GroupedVirtuosoProps<ItemData, Context> & {
-    ref?: Ref<GroupedVirtuosoHandle>
-  }
+  props: GroupedVirtuosoProps<ItemData, Context> & { ref?: Ref<GroupedVirtuosoHandle> }
 ) => ReactElement
 
 export const TableVirtuoso = Table as <ItemData extends unknown = any, Context extends unknown = any>(
-  props: TableVirtuosoProps<ItemData, Context> & {
-    ref?: Ref<TableVirtuosoHandle>
-  }
+  props: TableVirtuosoProps<ItemData, Context> & { ref?: Ref<TableVirtuosoHandle> }
 ) => ReactElement
 
 export const VirtuosoGrid = Grid as <Context extends unknown = any>(
