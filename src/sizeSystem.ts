@@ -1,8 +1,10 @@
+/* eslint-disable no-continue */
 import * as u from '@virtuoso.dev/urx'
-import { arrayToRanges, AANode, empty, findMaxKeyValue, insert, newTree, Range, rangesWithin, remove, walk } from './AATree'
+
+import { AANode, arrayToRanges, empty, findMaxKeyValue, insert, newTree, Range, rangesWithin, remove, walk } from './AATree'
+import { Log, loggerSystem, LogLevel } from './loggerSystem'
 import * as arrayBinarySearch from './utils/binaryArraySearch'
 import { correctItemSize } from './utils/correctItemSize'
-import { loggerSystem, Log, LogLevel } from './loggerSystem'
 
 export interface SizeRange {
   startIndex: number
@@ -47,12 +49,11 @@ export function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[]) {
       if (!firstPassDone) {
         shouldInsert = rangeValue !== size
         firstPassDone = true
-      } else {
-        // remove the range if it starts within the new range OR if
-        // it has the same value as it, in order to perform a merge
-        if (endIndex >= rangeStart || size === rangeValue) {
-          sizeTree = remove(sizeTree, rangeStart)
-        }
+      }
+      // remove the range if it starts within the new range OR if
+      // it has the same value as it, in order to perform a merge
+      else if (endIndex >= rangeStart || size === rangeValue) {
+        sizeTree = remove(sizeTree, rangeStart)
       }
 
       // next range
@@ -340,7 +341,7 @@ export const sizeSystem = u.system(
         sizeRanges,
         u.withLatestFrom(sizes),
         u.scan(
-          ({ sizes: oldSizes }, [_, newSizes]) => {
+          ({ sizes: oldSizes }, [, newSizes]) => {
             return {
               changed: newSizes !== oldSizes,
               sizes: newSizes,
@@ -397,7 +398,14 @@ export const sizeSystem = u.system(
           return walk(sizes.sizeTree).reduce(
             (acc, { k: index, v: size }) => {
               return {
-                ranges: [...acc.ranges, { startIndex: acc.prevIndex, endIndex: index + unshiftWith - 1, size: acc.prevSize }],
+                ranges: [
+                  ...acc.ranges,
+                  {
+                    startIndex: acc.prevIndex,
+                    endIndex: index + unshiftWith - 1,
+                    size: acc.prevSize,
+                  },
+                ],
                 prevIndex: index + unshiftWith,
                 prevSize: size,
               }

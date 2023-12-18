@@ -1,14 +1,15 @@
 import * as u from '@virtuoso.dev/urx'
+
 import { empty, findMaxKeyValue, Range, rangesWithin } from './AATree'
+import { rangeComparator, tupleComparator } from './comparators'
 import { groupedListSystem } from './groupedListSystem'
 import { getInitialTopMostItemIndexNumber, initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
 import { Item, ListItem, ListRange } from './interfaces'
 import { propsReadySystem } from './propsReadySystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
-import { Data, originalIndexFromItemIndex, SizeState, sizeSystem, hasGroups, rangesWithinOffsets } from './sizeSystem'
+import { Data, hasGroups, originalIndexFromItemIndex, rangesWithinOffsets, SizeState, sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
-import { rangeComparator, tupleComparator } from './comparators'
 
 export type ListItems = ListItem<unknown>[]
 export interface TopListState {
@@ -57,7 +58,11 @@ function transposeItems(items: Item<any>[], sizes: SizeState, firstItemIndex: nu
   }
 
   if (!hasGroups(sizes)) {
-    return items.map((item) => ({ ...item, index: item.index + firstItemIndex, originalIndex: item.index }))
+    return items.map((item) => ({
+      ...item,
+      index: item.index + firstItemIndex,
+      originalIndex: item.index,
+    }))
   }
 
   const startIndex = items[0].index
@@ -65,7 +70,7 @@ function transposeItems(items: Item<any>[], sizes: SizeState, firstItemIndex: nu
 
   const transposedItems = [] as ListItems
   const groupRanges = rangesWithin(sizes.groupOffsetTree, startIndex, endIndex)
-  let currentRange: Range<number> | undefined = undefined
+  let currentRange: Range<number> | undefined
   let currentGroupIndex = 0
 
   for (const item of items) {
@@ -202,7 +207,12 @@ export const listStateSystem = u.system(
                 const rangeStartIndex = Math.max(range.start, startIndex)
                 const rangeEndIndex = Math.min(range.end, endIndex)
                 for (let i = rangeStartIndex; i <= rangeEndIndex; i++) {
-                  topItems.push({ index: i, size, offset: offset, data: data && data[i] })
+                  topItems.push({
+                    index: i,
+                    size,
+                    offset,
+                    data: data && data[i],
+                  })
                   offset += size
                 }
               }
@@ -250,7 +260,12 @@ export const listStateSystem = u.system(
                     break
                   }
 
-                  result.push({ index: i, size, offset: offset, data: data && data[i] })
+                  result.push({
+                    index: i,
+                    size,
+                    offset,
+                    data: data && data[i],
+                  })
                   offset += size
                 }
               }
@@ -259,7 +274,6 @@ export const listStateSystem = u.system(
             return buildListState(items, topItems, totalCount, sizesValue, firstItemIndex)
           }
         ),
-        //@ts-expect-error filter needs to be fixed
         u.filter((value) => value !== null),
         u.distinctUntilChanged()
       ),
@@ -297,12 +311,12 @@ export const listStateSystem = u.system(
     const endReached = u.streamFromEmitter(
       u.pipe(
         listState,
-        u.filter(({ items }) => items.length > 0),
+        u.filter(({ items }: any) => items.length > 0),
         u.withLatestFrom(totalCount, data),
         u.filter(([{ items }, totalCount]) => items[items.length - 1].originalIndex === totalCount - 1),
         u.map(([, totalCount, data]) => [totalCount - 1, data] as [number, unknown[]]),
         u.distinctUntilChanged(tupleComparator),
-        u.map(([count]) => count as number)
+        u.map(([count]: any) => count as number)
       )
     )
 
@@ -310,7 +324,7 @@ export const listStateSystem = u.system(
       u.pipe(
         listState,
         u.throttleTime(200),
-        u.filter(({ items, topItems }) => {
+        u.filter(({ items, topItems }: any) => {
           return items.length > 0 && items[0].originalIndex === topItems.length
         }),
         u.map(({ items }) => items[0].index),
@@ -321,8 +335,8 @@ export const listStateSystem = u.system(
     const rangeChanged = u.streamFromEmitter(
       u.pipe(
         listState,
-        u.filter(({ items }) => items.length > 0),
-        u.map(({ items }) => {
+        u.filter(({ items }: any) => items.length > 0),
+        u.map(({ items }: any) => {
           return {
             startIndex: items[0].index,
             endIndex: items[items.length - 1].index,
@@ -332,7 +346,15 @@ export const listStateSystem = u.system(
       )
     )
 
-    return { listState, topItemsIndexes, endReached, startReached, rangeChanged, itemsRendered, ...stateFlags }
+    return {
+      listState,
+      topItemsIndexes,
+      endReached,
+      startReached,
+      rangeChanged,
+      itemsRendered,
+      ...stateFlags,
+    }
   },
   u.tup(
     sizeSystem,

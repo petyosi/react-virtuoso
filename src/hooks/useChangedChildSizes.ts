@@ -1,7 +1,10 @@
+import { useRcPortalWindowContext } from './useRcPortalWindowContext'
+/* eslint-disable no-continue */
+import { ScrollContainerState } from '../interfaces'
 import { Log, LogLevel } from '../loggerSystem'
 import { SizeFunction, SizeRange } from '../sizeSystem'
 import { useSizeWithElRef } from './useSize'
-import { ScrollContainerState } from '../interfaces'
+
 export default function useChangedListContentsSizes(
   callback: (ranges: SizeRange[]) => void,
   itemSize: SizeFunction,
@@ -10,6 +13,8 @@ export default function useChangedListContentsSizes(
   log: Log,
   customScrollParent?: HTMLElement
 ) {
+  const { externalWindow = window } = useRcPortalWindowContext()
+
   return useSizeWithElRef((el: HTMLElement) => {
     const ranges = getChangedChildSizes(el.children, itemSize, 'offsetHeight', log)
     let scrollableElement = el.parentElement!
@@ -22,7 +27,7 @@ export default function useChangedListContentsSizes(
       ? customScrollParent.scrollTop
       : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       (scrollableElement.firstElementChild! as HTMLDivElement).dataset['viewportType']! === 'window'
-      ? window.pageYOffset || document.documentElement.scrollTop
+      ? externalWindow.pageYOffset || externalWindow.document.documentElement.scrollTop
       : scrollableElement.scrollTop
 
     scrollContainerStateCallback({
@@ -53,6 +58,7 @@ function getChangedChildSizes(children: HTMLCollection, itemSize: SizeFunction, 
       continue
     }
 
+    // eslint-disable-next-line radix
     const index = parseInt(child.dataset.index!)
     const knownSize = parseFloat(child.dataset.knownSize!)
     const size = itemSize(child, field)

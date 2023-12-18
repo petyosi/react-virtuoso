@@ -1,4 +1,5 @@
 import { ComponentPropsWithRef, ComponentType, Key, ReactNode } from 'react'
+
 export interface ListRange {
   startIndex: number
   endIndex: number
@@ -247,9 +248,9 @@ export interface IndexLocationWithAlign {
   offset?: number
 }
 
-export type ListRootProps = Omit<React.HTMLProps<'div'>, 'ref' | 'data'>
-export type TableRootProps = Omit<React.HTMLProps<'table'>, 'ref' | 'data'>
-export type GridRootProps = Omit<React.HTMLProps<'div'>, 'ref' | 'data'>
+export type ListRootProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data'>
+export type TableRootProps = Omit<React.HTMLProps<HTMLTableElement>, 'ref' | 'data'>
+export type GridRootProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data'>
 
 export interface GridItem {
   'data-index': number

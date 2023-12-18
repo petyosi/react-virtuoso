@@ -1,6 +1,7 @@
 import * as u from '@virtuoso.dev/urx'
-import { listStateSystem } from './listStateSystem'
+
 import { domIOSystem } from './domIOSystem'
+import { listStateSystem } from './listStateSystem'
 
 export const totalListHeightSystem = u.system(
   ([{ footerHeight, headerHeight, fixedHeaderHeight }, { listState }]) => {
