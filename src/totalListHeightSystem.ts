@@ -1,6 +1,7 @@
 import * as u from '@virtuoso.dev/urx'
-import { listStateSystem } from './listStateSystem'
+
 import { domIOSystem } from './domIOSystem'
+import { listStateSystem } from './listStateSystem'
 
 export const totalListHeightSystem = u.system(
   ([{ footerHeight, headerHeight }, { listState }]) => {
@@ -9,6 +10,10 @@ export const totalListHeightSystem = u.system(
       u.pipe(
         u.combineLatest(footerHeight, headerHeight, listState),
         u.map(([footerHeight, headerHeight, listState]) => {
+          // FIXME: this footerHeight, headerHeight calculate is not correct, should find where to apply totalListHeightSystem
+          // console.log('-------- [totalListHeightSystem Log] --------');
+          // console.log(footerHeight, headerHeight, listState);
+          // console.log('---------------- [Log End] ----------------');
           return footerHeight + headerHeight + listState.offsetBottom + listState.bottom
         })
       ),

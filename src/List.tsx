@@ -1,35 +1,38 @@
+/* eslint-disable no-console */
+import * as React from 'react'
+import { ComponentType, createElement, CSSProperties, FC, PropsWithChildren } from 'react'
+
 import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
 import {
   compose,
   connect,
+  distinctUntilChanged,
   getValue,
   map,
+  noop,
   pipe,
   publish,
   statefulStream,
+  statefulStreamFromEmitter,
   stream,
   Stream,
   subscribe,
   system,
   tup,
   withLatestFrom,
-  statefulStreamFromEmitter,
-  distinctUntilChanged,
-  noop,
 } from '@virtuoso.dev/urx'
-import * as React from 'react'
-import { ComponentType, createElement, CSSProperties, FC, PropsWithChildren } from 'react'
-import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
+
+import { ScrollerProps } from '.'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
+import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 import useScrollTop from './hooks/useScrollTop'
 import useSize from './hooks/useSize'
+import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { Components, ComputeItemKey, GroupContent, GroupItemContent, ItemContent, ListRootProps } from './interfaces'
 import { listSystem } from './listSystem'
-import { positionStickyCssValue } from './utils/positionStickyCssValue'
-import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import conditionalFlushSync from './utils/conditionalFlushSync'
 import { correctItemSize } from './utils/correctItemSize'
-import { ScrollerProps } from '.'
+import { positionStickyCssValue } from './utils/positionStickyCssValue'
 
 export function identity<T>(value: T) {
   return value
@@ -150,7 +153,10 @@ const combinedSystem = system(([listSystem, propsSystem]) => {
       `react-virtuoso: scrollSeek property is deprecated. Pass scrollSeekConfiguration and specify the placeholder in components.ScrollSeekPlaceholder instead.`
     )
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    publish(propsSystem.components, { ...getValue(propsSystem.components), ScrollSeekPlaceholder: placeholder })
+    publish(propsSystem.components, {
+      ...getValue(propsSystem.components),
+      ScrollSeekPlaceholder: placeholder,
+    })
     publish(listSystem.scrollSeekConfiguration, config)
   })
 
@@ -165,9 +171,13 @@ const combinedSystem = system(([listSystem, propsSystem]) => {
   return { ...listSystem, ...propsSystem, ...deprecatedProps }
 }, tup(listSystem, listComponentPropsSystem))
 
-const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => <div style={{ height }}></div>
+const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => <div style={{ height }} />
 
-const GROUP_STYLE = { position: positionStickyCssValue(), zIndex: 1, overflowAnchor: 'none' }
+const GROUP_STYLE = {
+  position: positionStickyCssValue(),
+  zIndex: 1,
+  overflowAnchor: 'none',
+}
 const ITEM_STYLE = { overflowAnchor: 'none' }
 
 export const Items = React.memo(function VirtuosoItems({ showTopList = false }: { showTopList?: boolean }) {
@@ -264,23 +274,22 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
           } as any,
           groupContent(item.index)
         )
-      } else {
-        return createElement(
-          ItemComponent,
-          {
-            ...contextPropIfNotDomElement(ItemComponent, context),
-            key,
-            'data-index': index,
-            'data-known-size': item.size,
-            'data-item-index': item.index,
-            'data-item-group-index': item.groupIndex,
-            style: ITEM_STYLE,
-          } as any,
-          hasGroups
-            ? (itemContent as GroupItemContent<any, any>)(item.index, item.groupIndex!, item.data, context)
-            : (itemContent as ItemContent<any, any>)(item.index, item.data, context)
-        )
       }
+      return createElement(
+        ItemComponent,
+        {
+          ...contextPropIfNotDomElement(ItemComponent, context),
+          key,
+          'data-index': index,
+          'data-known-size': item.size,
+          'data-item-index': item.index,
+          'data-item-group-index': item.groupIndex,
+          style: ITEM_STYLE,
+        } as any,
+        hasGroups
+          ? (itemContent as GroupItemContent<any, any>)(item.index, item.groupIndex!, item.data, context)
+          : (itemContent as ItemContent<any, any>)(item.index, item.data, context)
+      )
     })
   )
 })
@@ -380,6 +389,7 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
     const deviation = useEmitterValue('deviation')
     const customScrollParent = useEmitterValue('customScrollParent')
     const context = useEmitterValue('context')
+
     const { scrollerRef, scrollByCallback, scrollToCallback } = useScrollTop(
       scrollContainerStateCallback,
       smoothScrollTargetReached,
@@ -400,7 +410,11 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
     return createElement(
       ScrollerComponent,
       {
-        style: { position: 'relative', ...style, ...(totalListHeight !== 0 ? { height: totalListHeight + deviation } : {}) },
+        style: {
+          position: 'relative',
+          ...style,
+          ...(totalListHeight !== 0 ? { height: totalListHeight + deviation } : {}),
+        },
         'data-virtuoso-scroller': true,
         ...props,
         ...contextPropIfNotDomElement(ScrollerComponent, context),
@@ -445,6 +459,7 @@ const TopItemListContainer: FC<PropsWithChildren<unknown>> = ({ children }) => {
 const ListRoot: FC<ListRootProps> = React.memo(function VirtuosoRoot(props) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const showTopList = useEmitterValue('topItemsIndexes').length > 0
+
   const customScrollParent = useEmitterValue('customScrollParent')
   const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
   const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
@@ -457,7 +472,7 @@ const ListRoot: FC<ListRootProps> = React.memo(function VirtuosoRoot(props) {
       </TheViewport>
       {showTopList && (
         <TopItemListContainer>
-          <Items showTopList={true} />
+          <Items showTopList />
         </TopItemListContainer>
       )}
     </TheScroller>
@@ -546,4 +561,8 @@ export const {
 )
 
 const Scroller = buildScroller({ usePublisher, useEmitterValue, useEmitter })
-const WindowScroller = buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })
+const WindowScroller = buildWindowScroller({
+  usePublisher,
+  useEmitterValue,
+  useEmitter,
+})

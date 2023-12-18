@@ -1,11 +1,12 @@
 import * as u from '@virtuoso.dev/urx'
+
 import { findMaxKeyValue } from './AATree'
 import { domIOSystem } from './domIOSystem'
-import { offsetOf, originalIndexFromItemIndex, sizeSystem } from './sizeSystem'
+import { ScrollIntoViewLocation } from './interfaces'
+import { listStateSystem } from './listStateSystem'
 import { loggerSystem } from './loggerSystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
-import { listStateSystem } from './listStateSystem'
-import { ScrollIntoViewLocation } from './interfaces'
+import { offsetOf, originalIndexFromItemIndex, sizeSystem } from './sizeSystem'
 
 export const scrollIntoViewSystem = u.system(
   ([{ sizes, totalCount }, { scrollTop, viewportHeight, headerHeight, scrollingInProgress }, { scrollToIndex }]) => {
