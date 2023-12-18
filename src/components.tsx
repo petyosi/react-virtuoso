@@ -236,7 +236,7 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   atBottomThreshold?: number
 
   /**
-   * Reduces an edge case blinking visible in React18 by enabling flushSync in certain changes.
+   * No longer necessary after 2.10.2. component should work out of the box.
    */
   react18ConcurrentRendering?: boolean
 }
@@ -450,7 +450,7 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
   atBottomThreshold?: number
 
   /**
-   * Reduces an edge case blinking visible in React18 by enabling flushSync in certain changes.
+   * No longer necessary after 2.10.2. component should work out of the box.
    */
   react18ConcurrentRendering?: boolean
 }

@@ -10,7 +10,6 @@ import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { ComputeItemKey, FixedHeaderContent, ItemContent, TableComponents, TableRootProps } from './interfaces'
 import { buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle } from './List'
 import { listSystem } from './listSystem'
-import conditionalFlushSync from './utils/conditionalFlushSync'
 import { correctItemSize } from './utils/correctItemSize'
 
 const tableComponentPropsSystem = system(() => {
@@ -59,25 +58,18 @@ const combinedSystem = system(([listSystem, propsSystem]) => {
 
 const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => (
   <tr>
-    <td style={{ height }} />
+    <td style={{ height }}></td>
   </tr>
 )
 
 const DefaultFillerRow = ({ height }: { height: number }) => (
   <tr>
-    <td style={{ height, padding: 0, border: 0 }} />
+    <td style={{ height: height, padding: 0, border: 0 }}></td>
   </tr>
 )
 
 export const Items = React.memo(function VirtuosoItems() {
   const listState = useEmitterValue('listState')
-  const [deviation, setDeviation] = React.useState(0)
-  const react18ConcurrentRendering = useEmitterValue('react18ConcurrentRendering')
-  useEmitter('deviation', (value) => {
-    if (deviation !== value) {
-      conditionalFlushSync(react18ConcurrentRendering)(() => setDeviation(value))
-    }
-  })
   const sizeRanges = usePublisher('sizeRanges')
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const customScrollParent = useEmitterValue('customScrollParent')
@@ -90,7 +82,22 @@ export const Items = React.memo(function VirtuosoItems() {
   const itemSize = useEmitterValue('itemSize')
   const log = useEmitterValue('log')
 
-  const ref = useChangedListContentsSizes(sizeRanges, itemSize, trackItemSizes, scrollContainerStateCallback, log, customScrollParent)
+  const { callbackRef, ref } = useChangedListContentsSizes(
+    sizeRanges,
+    itemSize,
+    trackItemSizes,
+    scrollContainerStateCallback,
+    log,
+    customScrollParent
+  )
+
+  const [deviation, setDeviation] = React.useState(0)
+  useEmitter('deviation', (value) => {
+    if (deviation !== value) {
+      ref.current!.style.marginTop = `${value}px`
+      setDeviation(value)
+    }
+  })
   const EmptyPlaceholder = useEmitterValue('EmptyPlaceholder')
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder') || DefaultScrollSeekPlaceholder
   const FillerRow = useEmitterValue('FillerRow') || DefaultFillerRow
@@ -143,11 +150,7 @@ export const Items = React.memo(function VirtuosoItems() {
 
   return createElement(
     TableBodyComponent,
-    {
-      ref,
-      'data-test-id': 'virtuoso-item-list',
-      ...contextPropIfNotDomElement(TableBodyComponent, context),
-    },
+    { ref: callbackRef, 'data-test-id': 'virtuoso-item-list', ...contextPropIfNotDomElement(TableBodyComponent, context) },
     [paddingTopEl, ...items, paddingBottomEl]
   )
 })
@@ -209,14 +212,10 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
   return (
     <TheScroller {...props}>
       <TheViewport>
-        {React.createElement(
-          TheTable!,
-          {
-            style: { borderSpacing: 0 },
-            ...contextPropIfNotDomElement(TheTable, context),
-          } as any,
-          [theHead, <Items key="TableBody" />]
-        )}
+        {React.createElement(TheTable!, { style: { borderSpacing: 0 }, ...contextPropIfNotDomElement(TheTable, context) } as any, [
+          theHead,
+          <Items key="TableBody" />,
+        ])}
       </TheViewport>
     </TheScroller>
   )
@@ -282,8 +281,4 @@ export const {
 )
 
 const Scroller = buildScroller({ usePublisher, useEmitterValue, useEmitter })
-const WindowScroller = buildWindowScroller({
-  usePublisher,
-  useEmitterValue,
-  useEmitter,
-})
+const WindowScroller = buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })

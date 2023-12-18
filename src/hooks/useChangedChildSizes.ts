@@ -3,7 +3,7 @@ import { useRcPortalWindowContext } from './useRcPortalWindowContext'
 import { ScrollContainerState } from '../interfaces'
 import { Log, LogLevel } from '../loggerSystem'
 import { SizeFunction, SizeRange } from '../sizeSystem'
-import useSize from './useSize'
+import { useSizeWithElRef } from './useSize'
 
 export default function useChangedListContentsSizes(
   callback: (ranges: SizeRange[]) => void,
@@ -15,7 +15,7 @@ export default function useChangedListContentsSizes(
 ) {
   const { externalWindow = window } = useRcPortalWindowContext()
 
-  return useSize((el: HTMLElement) => {
+  return useSizeWithElRef((el: HTMLElement) => {
     const ranges = getChangedChildSizes(el.children, itemSize, 'offsetHeight', log)
     let scrollableElement = el.parentElement!
 
