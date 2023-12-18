@@ -36,7 +36,7 @@ export const scrollToIndexSystem = u.system(
     const topListHeight = u.statefulStream(0)
 
     let unsubscribeNextListRefresh: any = null
-    let cleartTimeoutRef: any = null
+    let cleartTimeoutRef: ReturnType<typeof setTimeout> | null = null
     let unsubscribeListRefresh: any = null
 
     function cleanup() {
@@ -106,7 +106,7 @@ export const scrollToIndexSystem = u.system(
               retry(listChanged)
             })
           } else {
-            unsubscribeNextListRefresh = u.handleNext(u.pipe(listRefresh, watchChangesFor(50)), retry)
+            unsubscribeNextListRefresh = u.handleNext(u.pipe(listRefresh, watchChangesFor(150)), retry)
           }
 
           // if the scroll jump is too small, the list won't get rerendered.

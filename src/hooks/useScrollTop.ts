@@ -1,16 +1,12 @@
-import { useCallback, useEffect, useRef } from 'react'
-
+import { useRef, useCallback, useEffect } from 'react'
 import * as u from '@virtuoso.dev/urx'
-
+import { correctItemSize } from '../utils/correctItemSize'
 import { useRcPortalWindowContext } from './useRcPortalWindowContext'
 import { ScrollContainerState } from '../interfaces'
-import { correctItemSize } from '../utils/correctItemSize'
+import { flushSync } from 'react-dom'
+import { approximatelyEqual } from '../utils/approximatelyEqual'
 
 export type ScrollerRef = Window | HTMLElement | null
-
-function approximatelyEqual(num1: number, num2: number) {
-  return Math.abs(num1 - num2) < 1.01
-}
 
 export default function useScrollTop(
   scrollContainerStateCallback: (state: ScrollContainerState) => void,
@@ -21,7 +17,8 @@ export default function useScrollTop(
 ) {
   const scrollerRef = useRef<HTMLElement | null | Window>(null)
   const scrollTopTarget = useRef<any>(null)
-  const timeoutRef = useRef<any>(null)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const shouldFlushSync = useRef(false)
   const { externalWindow = window } = useRcPortalWindowContext()
 
   const handler = useCallback(
@@ -34,11 +31,20 @@ export default function useScrollTop(
       const scrollHeight = (el as any) === externalWindow ? externalWindow.document.documentElement.scrollHeight : el.scrollHeight
       const viewportHeight = (el as any) === externalWindow ? externalWindow.innerHeight : el.offsetHeight
 
-      scrollContainerStateCallback({
-        scrollTop: Math.max(scrollTop, 0),
-        scrollHeight,
-        viewportHeight,
-      })
+      const call = () => {
+        scrollContainerStateCallback({
+          scrollTop: Math.max(scrollTop, 0),
+          scrollHeight,
+          viewportHeight,
+        })
+      }
+
+      if (shouldFlushSync.current) {
+        flushSync(call)
+      } else {
+        call()
+      }
+      shouldFlushSync.current = false
 
       if (scrollTopTarget.current !== null) {
         if (scrollTop === scrollTopTarget.current || scrollTop <= 0 || scrollTop === el.scrollHeight - correctItemSize(el, 'height')) {
@@ -100,11 +106,7 @@ export default function useScrollTop(
     // with the scrollTop
     // scroller is already at this location
     if (approximatelyEqual(offsetHeight, scrollHeight) || location.top === scrollTop) {
-      scrollContainerStateCallback({
-        scrollTop,
-        scrollHeight,
-        viewportHeight: offsetHeight,
-      })
+      scrollContainerStateCallback({ scrollTop, scrollHeight, viewportHeight: offsetHeight })
       if (isSmooth) {
         smoothScrollTargetReached(true)
       }
@@ -130,6 +132,7 @@ export default function useScrollTop(
   }
 
   function scrollByCallback(location: ScrollToOptions) {
+    shouldFlushSync.current = true
     scrollerRef.current!.scrollBy(location)
   }
 

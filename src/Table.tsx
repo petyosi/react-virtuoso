@@ -1,34 +1,32 @@
+import { systemToComponent } from '@virtuoso.dev/react-urx'
+import * as u from '@virtuoso.dev/urx'
 import * as React from 'react'
 import { createElement, FC, PropsWithChildren } from 'react'
-
-import { systemToComponent } from '@virtuoso.dev/react-urx'
-import { compose, distinctUntilChanged, map, noop, pipe, statefulStream, statefulStreamFromEmitter, system, tup } from '@virtuoso.dev/urx'
-
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
-import useSize from './hooks/useSize'
-import useWindowViewportRectRef from './hooks/useWindowViewportRect'
-import { ComputeItemKey, FixedHeaderContent, ItemContent, TableComponents, TableRootProps } from './interfaces'
-import { buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle } from './List'
+import { ComputeItemKey, ItemContent, FixedHeaderContent, TableComponents, TableRootProps } from './interfaces'
 import { listSystem } from './listSystem'
+import { identity, buildScroller, buildWindowScroller, viewportStyle, contextPropIfNotDomElement } from './List'
+import useSize from './hooks/useSize'
 import { correctItemSize } from './utils/correctItemSize'
+import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 
-const tableComponentPropsSystem = system(() => {
-  const itemContent = statefulStream<ItemContent<any, unknown>>((index: number) => <td>Item ${index}</td>)
-  const context = statefulStream<unknown>(null)
-  const fixedHeaderContent = statefulStream<FixedHeaderContent>(null)
-  const components = statefulStream<TableComponents>({})
-  const computeItemKey = statefulStream<ComputeItemKey<any, unknown>>(identity)
-  const scrollerRef = statefulStream<(ref: HTMLElement | Window | null) => void>(noop)
+const tableComponentPropsSystem = u.system(() => {
+  const itemContent = u.statefulStream<ItemContent<any, unknown>>((index: number) => <td>Item ${index}</td>)
+  const context = u.statefulStream<unknown>(null)
+  const fixedHeaderContent = u.statefulStream<FixedHeaderContent>(null)
+  const components = u.statefulStream<TableComponents>({})
+  const computeItemKey = u.statefulStream<ComputeItemKey<any, unknown>>(identity)
+  const scrollerRef = u.statefulStream<(ref: HTMLElement | Window | null) => void>(u.noop)
 
   const distinctProp = <K extends keyof TableComponents>(
     propName: K,
     defaultValue: TableComponents[K] | null | 'thead' | 'table' | 'tbody' | 'tr' | 'div' = null
   ) => {
-    return statefulStreamFromEmitter(
-      pipe(
+    return u.statefulStreamFromEmitter(
+      u.pipe(
         components,
-        map((components) => components[propName]),
-        distinctUntilChanged()
+        u.map((components) => components[propName]),
+        u.distinctUntilChanged()
       ),
       defaultValue
     )
@@ -52,9 +50,9 @@ const tableComponentPropsSystem = system(() => {
   }
 })
 
-const combinedSystem = system(([listSystem, propsSystem]) => {
+const combinedSystem = u.system(([listSystem, propsSystem]) => {
   return { ...listSystem, ...propsSystem }
-}, tup(listSystem, tableComponentPropsSystem))
+}, u.tup(listSystem, tableComponentPropsSystem))
 
 const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => (
   <tr>
@@ -143,7 +141,7 @@ export const Items = React.memo(function VirtuosoItems() {
         'data-known-size': item.size,
         'data-item-index': item.index,
         style: { overflowAnchor: 'none' },
-      } as any,
+      },
       itemContent(item.index, item.data, context)
     )
   })
@@ -163,7 +161,7 @@ export interface Hooks {
 
 const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const viewportHeight = usePublisher('viewportHeight')
-  const viewportRef = useSize(compose(viewportHeight, (el) => correctItemSize(el, 'height')))
+  const viewportRef = useSize(u.compose(viewportHeight, (el) => correctItemSize(el, 'height')))
 
   return (
     <div style={viewportStyle} ref={viewportRef} data-viewport-type="element">
@@ -190,7 +188,7 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
   const fixedHeaderHeight = usePublisher('fixedHeaderHeight')
   const fixedHeaderContent = useEmitterValue('fixedHeaderContent')
   const context = useEmitterValue('context')
-  const theadRef = useSize(compose(fixedHeaderHeight, (el) => correctItemSize(el, 'height')))
+  const theadRef = useSize(u.compose(fixedHeaderHeight, (el) => correctItemSize(el, 'height')))
   const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
   const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
   const TheTable = useEmitterValue('TableComponent')
@@ -204,7 +202,7 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
           style: { zIndex: 1, position: 'sticky', top: 0 },
           ref: theadRef,
           ...contextPropIfNotDomElement(TheTHead, context),
-        } as any,
+        },
         fixedHeaderContent()
       )
     : null
@@ -212,7 +210,7 @@ const TableRoot: FC<TableRootProps> = React.memo(function TableVirtuosoRoot(prop
   return (
     <TheScroller {...props}>
       <TheViewport>
-        {React.createElement(TheTable!, { style: { borderSpacing: 0 }, ...contextPropIfNotDomElement(TheTable, context) } as any, [
+        {React.createElement(TheTable!, { style: { borderSpacing: 0 }, ...contextPropIfNotDomElement(TheTable, context) }, [
           theHead,
           <Items key="TableBody" />,
         ])}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { listSystem } from '../src/listSystem'
 import { init, getValue, publish, subscribe } from '@virtuoso.dev/urx'
 
@@ -254,7 +255,7 @@ describe('list engine', () => {
         viewportHeight,
         totalCount,
         sizeRanges,
-        deviation,
+        scrollBy,
       } = init(listSystem)
 
       publish(initialTopMostItemIndex, INITIAL_INDEX)
@@ -270,7 +271,7 @@ describe('list engine', () => {
       subscribe(scrollTo, sub)
 
       const scrollBySub = jest.fn()
-      subscribe(deviation, scrollBySub)
+      subscribe(scrollBy, scrollBySub)
 
       publish(sizeRanges, [{ startIndex: INITIAL_INDEX, endIndex: INITIAL_INDEX, size: SIZE }])
 
@@ -303,7 +304,7 @@ describe('list engine', () => {
             },
           ])
 
-          expect(scrollBySub).toHaveBeenCalledWith(-40)
+          expect(scrollBySub).toHaveBeenCalledWith({ behavior: 'auto', top: 40 })
           done()
         }, 2500)
       })

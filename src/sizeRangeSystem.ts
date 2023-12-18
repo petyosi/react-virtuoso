@@ -96,8 +96,8 @@ export const sizeRangeSystem = u.system(
             return null
           }
         ),
-        u.filter((value) => value != null),
-        u.distinctUntilChanged(tupleComparator as any)
+        u.filter((value) => value != null) as u.Operator<NumberTuple | null, NumberTuple>,
+        u.distinctUntilChanged(tupleComparator)
       ),
       [0, 0]
     ) as unknown as u.StatefulStream<NumberTuple>

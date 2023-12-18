@@ -147,7 +147,7 @@ export interface TableComponents<Context = unknown> {
    * Set to render a fixed header at the top of the table (`thead`). use [[fixedHeaderHeight]] to set the contents
    *
    */
-  TableHead?: ComponentType<{ context?: Context }>
+  TableHead?: ComponentType<Pick<ComponentPropsWithRef<'thead'>, 'style' | 'ref'> & { context?: Context }>
 
   /**
    * Set to customize the item wrapping element. Default is `tr`.

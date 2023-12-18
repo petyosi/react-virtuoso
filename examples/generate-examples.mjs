@@ -2,12 +2,12 @@ import * as fs from 'fs'
 
 const examples = fs
   .readdirSync('./examples')
-  .filter((name) => name.match(/tsx$/))
+  .filter((name) => /tsx$/.exec(name))
   .filter((name) => name !== 'server.tsx')
 
 const code = `import React, { useEffect } from 'react'
 import * as ReactDOM from 'react-dom'
-// import ReactDOM from 'react-dom/client'
+import ReactDOMClient from 'react-dom/client'
 import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom'
 
 export default function App() {
@@ -53,8 +53,12 @@ export default function App() {
   )
 }
 
-ReactDOM.render(<App />, document.getElementById('root')) //.render(<App />)
-// ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+if (location.search.includes('r18') || navigator.acceptLanguage == 'de-DE') {
+  ReactDOMClient.createRoot(document.getElementById('root')).render(<App />)
+  document.body.style.backgroundColor = 'beige'
+} else {
+  ReactDOM.render(<App />, document.getElementById('root')) //.render(<App />)
+}
 `
 
 const htmlCode = `

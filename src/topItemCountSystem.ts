@@ -1,17 +1,16 @@
-import { connect, filter, map, pipe, statefulStream, system, tup } from '@virtuoso.dev/urx'
-
+import * as u from '@virtuoso.dev/urx'
 import { listStateSystem } from './listStateSystem'
 
-export const topItemCountSystem = system(([{ topItemsIndexes }]) => {
-  const topItemCount = statefulStream(0)
+export const topItemCountSystem = u.system(([{ topItemsIndexes }]) => {
+  const topItemCount = u.statefulStream(0)
 
-  connect(
-    pipe(
+  u.connect(
+    u.pipe(
       topItemCount,
-      filter((length) => length > 0),
-      map((length) => Array.from({ length }).map((_, index) => index))
+      u.filter((length) => length > 0),
+      u.map((length) => Array.from({ length }).map((_, index) => index))
     ),
     topItemsIndexes
   )
   return { topItemCount }
-}, tup(listStateSystem))
+}, u.tup(listStateSystem))

@@ -10,13 +10,13 @@ test.describe('reverse taller than viewport', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:1234/reverse-taller-than-viewport')
     await page.waitForSelector('#test-root')
-    await page.waitForTimeout(100)
+    await page.waitForTimeout(200)
   })
 
   test('compensates for the tall 90th item', async ({ page }) => {
     const scroller = page.locator('[data-test-id=virtuoso-scroller]')
     await scroller.evaluate((el) => el.scrollBy(0, -50))
-    await page.waitForTimeout(200)
+    await page.waitForTimeout(300)
     const scrollTop = await scroller.evaluate((el) => el.scrollTop)
 
     expect(scrollTop).toBe(INITIAL_SCROLL_TOP + SCROLL_DELTA + OUTLIER - DEFAULT_ITEM_HEIGHT)

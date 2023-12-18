@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import * as u from '@virtuoso.dev/urx'
-
 import { domIOSystem } from './domIOSystem'
+import { approximatelyEqual } from './utils/approximatelyEqual'
 
 export const UP = 'up' as const
 export const DOWN = 'down' as const
@@ -64,11 +64,12 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
   const atTopThreshold = u.statefulStream(DEFAULT_AT_TOP_THRESHOLD)
 
   // skip 1 to avoid an initial on/off flick
-  const isScrolling = u.streamFromEmitter(
+  const isScrolling = u.statefulStreamFromEmitter(
     u.pipe(
       u.merge(u.pipe(u.duc(scrollTop), u.skip(1), u.mapTo(true)), u.pipe(u.duc(scrollTop), u.skip(1), u.mapTo(false), u.debounceTime(100))),
       u.distinctUntilChanged()
-    )
+    ),
+    false
   )
 
   const isScrollingBy = u.statefulStreamFromEmitter(
@@ -147,8 +148,8 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
       scrollContainerState,
       u.scan(
         (current, { scrollTop, scrollHeight, viewportHeight }) => {
-          if (current.scrollHeight !== scrollHeight) {
-            const atBottom = scrollTop === scrollHeight - viewportHeight
+          if (!approximatelyEqual(current.scrollHeight, scrollHeight)) {
+            const atBottom = scrollHeight - (scrollTop + viewportHeight) < 1
 
             if (current.scrollTop !== scrollTop && atBottom) {
               return {
@@ -157,19 +158,21 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
                 jump: current.scrollTop - scrollTop,
                 changed: true,
               }
+            } else {
+              return {
+                scrollHeight,
+                scrollTop,
+                jump: 0,
+                changed: true,
+              }
             }
+          } else {
             return {
-              scrollHeight,
               scrollTop,
+              scrollHeight,
               jump: 0,
-              changed: true,
+              changed: false,
             }
-          }
-          return {
-            scrollTop,
-            scrollHeight,
-            jump: 0,
-            changed: false,
           }
         },
         { scrollHeight: 0, jump: 0, scrollTop: 0, changed: false }
@@ -205,21 +208,16 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
             return { direction: acc.direction, prevScrollTop: scrollTop }
           }
 
-          return {
-            direction: scrollTop < acc.prevScrollTop ? UP : DOWN,
-            prevScrollTop: scrollTop,
-          }
+          return { direction: scrollTop < acc.prevScrollTop ? UP : DOWN, prevScrollTop: scrollTop }
         },
-        { direction: DOWN, prevScrollTop: 0 } as {
-          direction: ScrollDirection
-          prevScrollTop: number
-        }
+        { direction: DOWN, prevScrollTop: 0 } as { direction: ScrollDirection; prevScrollTop: number }
       ),
       u.map((value) => value.direction)
     ),
     scrollDirection
   )
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   u.connect(u.pipe(scrollContainerState, u.throttleTime(50), u.mapTo(NONE)), scrollDirection)
 
   const scrollVelocity = u.statefulStream(0)
@@ -228,6 +226,7 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
     u.pipe(
       isScrolling,
       u.filter((value) => !value),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       u.mapTo(0)
     ),
     scrollVelocity

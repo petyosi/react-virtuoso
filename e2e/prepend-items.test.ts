@@ -9,25 +9,26 @@ test.describe('list with prependable items', () => {
 
   async function getScrollTop(page: Page) {
     await page.waitForTimeout(100)
-    return await page.evaluate(() => {
-      const scroller = document.querySelector('#test-root > div > div')
-      return scroller!.scrollTop
-    })
+    return page.locator('data-test-id=virtuoso-scroller').evaluate((el) => el.scrollTop)
   }
 
-  test('keeps the location at where it should be', async ({ page }) => {
+  test('keeps the location at where it should be (2 items)', async ({ page }) => {
     expect(await getScrollTop(page)).toBe(0)
 
-    await page.evaluate(() => {
-      document.querySelector('button')!.click()
-    })
+    await page.locator('data-test-id=prepend-2').click()
 
     expect(await getScrollTop(page)).toBe(2 * 55)
 
-    await page.evaluate(() => {
-      document.querySelector('button')!.click()
-    })
+    await page.locator('data-test-id=prepend-2').click()
 
     expect(await getScrollTop(page)).toBe(4 * 55)
+  })
+
+  test('keeps the location at where it should be (200 items)', async ({ page }) => {
+    expect(await getScrollTop(page)).toBe(0)
+
+    await page.locator('data-test-id=prepend-200').click()
+
+    expect(await getScrollTop(page)).toBe(200 * 55)
   })
 })

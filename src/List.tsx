@@ -1,57 +1,37 @@
-/* eslint-disable no-console */
+import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
+import * as u from '@virtuoso.dev/urx'
 import * as React from 'react'
 import { ComponentType, createElement, CSSProperties, FC, PropsWithChildren } from 'react'
-
-import { RefHandle, systemToComponent } from '@virtuoso.dev/react-urx'
-import {
-  compose,
-  connect,
-  distinctUntilChanged,
-  getValue,
-  map,
-  noop,
-  pipe,
-  publish,
-  statefulStream,
-  statefulStreamFromEmitter,
-  stream,
-  Stream,
-  subscribe,
-  system,
-  tup,
-  withLatestFrom,
-} from '@virtuoso.dev/urx'
-
-import { ScrollerProps } from '.'
-import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
+import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import useScrollTop from './hooks/useScrollTop'
 import useSize from './hooks/useSize'
-import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { Components, ComputeItemKey, GroupContent, GroupItemContent, ItemContent, ListRootProps } from './interfaces'
 import { listSystem } from './listSystem'
-import { correctItemSize } from './utils/correctItemSize'
 import { positionStickyCssValue } from './utils/positionStickyCssValue'
+import useWindowViewportRectRef from './hooks/useWindowViewportRect'
+import { correctItemSize } from './utils/correctItemSize'
+import { ScrollerProps } from '.'
 
 export function identity<T>(value: T) {
   return value
 }
 
-const listComponentPropsSystem = system(() => {
-  const itemContent = statefulStream<ItemContent<any, any> | GroupItemContent<any, any>>((index: number) => `Item ${index}`)
-  const context = statefulStream<unknown>(null)
-  const groupContent = statefulStream<GroupContent>((index: number) => `Group ${index}`)
-  const components = statefulStream<Components<any>>({})
-  const computeItemKey = statefulStream<ComputeItemKey<any, any>>(identity)
-  const headerFooterTag = statefulStream('div')
-  const scrollerRef = statefulStream<(ref: HTMLElement | Window | null) => void>(noop)
+const listComponentPropsSystem = u.system(() => {
+  const itemContent = u.statefulStream<ItemContent<any, any> | GroupItemContent<any, any>>((index: number) => `Item ${index}`)
+  const context = u.statefulStream<unknown>(null)
+  const groupContent = u.statefulStream<GroupContent>((index: number) => `Group ${index}`)
+  const components = u.statefulStream<Components<any>>({})
+  const computeItemKey = u.statefulStream<ComputeItemKey<any, any>>(identity)
+  const headerFooterTag = u.statefulStream('div')
+  const scrollerRef = u.statefulStream<(ref: HTMLElement | Window | null) => void>(u.noop)
 
   const distinctProp = <K extends keyof Components<any>>(propName: K, defaultValue: Components<any>[K] | null | 'div' = null) => {
-    return statefulStreamFromEmitter(
-      pipe(
+    return u.statefulStreamFromEmitter(
+      u.pipe(
         components,
-        map((components) => components[propName]),
-        distinctUntilChanged()
+        u.map((components) => components[propName]),
+        u.distinctUntilChanged()
       ),
       defaultValue
     )
@@ -77,37 +57,37 @@ const listComponentPropsSystem = system(() => {
   }
 })
 
-export function addDeprecatedAlias<T>(prop: Stream<T>, message: string) {
-  const alias = stream<T>()
-  subscribe(alias, () =>
+export function addDeprecatedAlias<T>(prop: u.Stream<T>, message: string) {
+  const alias = u.stream<T>()
+  u.subscribe(alias, () =>
     console.warn(`react-virtuoso: You are using a deprecated property. ${message}`, 'color: red;', 'color: inherit;', 'color: blue;')
   )
-  connect(alias, prop)
+  u.connect(alias, prop)
   return alias
 }
 
-const combinedSystem = system(([listSystem, propsSystem]) => {
+const combinedSystem = u.system(([listSystem, propsSystem]) => {
   const deprecatedProps = {
     item: addDeprecatedAlias(propsSystem.itemContent, 'Rename the %citem%c prop to %citemContent.'),
     group: addDeprecatedAlias(propsSystem.groupContent, 'Rename the %cgroup%c prop to %cgroupContent.'),
     topItems: addDeprecatedAlias(listSystem.topItemCount, 'Rename the %ctopItems%c prop to %ctopItemCount.'),
     itemHeight: addDeprecatedAlias(listSystem.fixedItemHeight, 'Rename the %citemHeight%c prop to %cfixedItemHeight.'),
     scrollingStateChange: addDeprecatedAlias(listSystem.isScrolling, 'Rename the %cscrollingStateChange%c prop to %cisScrolling.'),
-    adjustForPrependedItems: stream<any>(),
-    maxHeightCacheSize: stream<any>(),
-    footer: stream<any>(),
-    header: stream<any>(),
-    HeaderContainer: stream<any>(),
-    FooterContainer: stream<any>(),
-    ItemContainer: stream<any>(),
-    ScrollContainer: stream<any>(),
-    GroupContainer: stream<any>(),
-    ListContainer: stream<any>(),
-    emptyComponent: stream<any>(),
-    scrollSeek: stream<any>(),
+    adjustForPrependedItems: u.stream<any>(),
+    maxHeightCacheSize: u.stream<any>(),
+    footer: u.stream<any>(),
+    header: u.stream<any>(),
+    HeaderContainer: u.stream<any>(),
+    FooterContainer: u.stream<any>(),
+    ItemContainer: u.stream<any>(),
+    ScrollContainer: u.stream<any>(),
+    GroupContainer: u.stream<any>(),
+    ListContainer: u.stream<any>(),
+    emptyComponent: u.stream<any>(),
+    scrollSeek: u.stream<any>(),
   }
 
-  subscribe(deprecatedProps.adjustForPrependedItems, () => {
+  u.subscribe(deprecatedProps.adjustForPrependedItems, () => {
     console.warn(
       `react-virtuoso: adjustForPrependedItems is no longer supported. Use the firstItemIndex property instead - https://virtuoso.dev/prepend-items.`,
       'color: red;',
@@ -116,28 +96,28 @@ const combinedSystem = system(([listSystem, propsSystem]) => {
     )
   })
 
-  subscribe(deprecatedProps.maxHeightCacheSize, () => {
+  u.subscribe(deprecatedProps.maxHeightCacheSize, () => {
     console.warn(`react-virtuoso: maxHeightCacheSize is no longer necessary. Setting it has no effect - remove it from your code.`)
   })
 
-  subscribe(deprecatedProps.HeaderContainer, () => {
+  u.subscribe(deprecatedProps.HeaderContainer, () => {
     console.warn(
       `react-virtuoso: HeaderContainer is deprecated. Use headerFooterTag if you want to change the wrapper of the header component and pass components.Header to change its contents.`
     )
   })
 
-  subscribe(deprecatedProps.FooterContainer, () => {
+  u.subscribe(deprecatedProps.FooterContainer, () => {
     console.warn(
       `react-virtuoso: FooterContainer is deprecated. Use headerFooterTag if you want to change the wrapper of the footer component and pass components.Footer to change its contents.`
     )
   })
 
-  function deprecateComponentProp(stream: Stream<any>, componentName: string, propName: string) {
-    connect(
-      pipe(
+  function deprecateComponentProp(stream: u.Stream<any>, componentName: string, propName: string) {
+    u.connect(
+      u.pipe(
         stream,
-        withLatestFrom(propsSystem.components),
-        map(([comp, components]) => {
+        u.withLatestFrom(propsSystem.components),
+        u.map(([comp, components]) => {
           console.warn(`react-virtuoso: ${propName} property is deprecated. Pass components.${componentName} instead.`)
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           return { ...components, [componentName]: comp }
@@ -147,13 +127,13 @@ const combinedSystem = system(([listSystem, propsSystem]) => {
     )
   }
 
-  subscribe(deprecatedProps.scrollSeek, ({ placeholder, ...config }) => {
+  u.subscribe(deprecatedProps.scrollSeek, ({ placeholder, ...config }) => {
     console.warn(
       `react-virtuoso: scrollSeek property is deprecated. Pass scrollSeekConfiguration and specify the placeholder in components.ScrollSeekPlaceholder instead.`
     )
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    publish(propsSystem.components, { ...getValue(propsSystem.components), ScrollSeekPlaceholder: placeholder })
-    publish(listSystem.scrollSeekConfiguration, config)
+    u.publish(propsSystem.components, { ...u.getValue(propsSystem.components), ScrollSeekPlaceholder: placeholder })
+    u.publish(listSystem.scrollSeekConfiguration, config)
   })
 
   deprecateComponentProp(deprecatedProps.footer, 'Footer', 'footer')
@@ -165,12 +145,12 @@ const combinedSystem = system(([listSystem, propsSystem]) => {
   deprecateComponentProp(deprecatedProps.GroupContainer, 'Group', 'GroupContainer')
 
   return { ...listSystem, ...propsSystem, ...deprecatedProps }
-}, tup(listSystem, listComponentPropsSystem))
+}, u.tup(listSystem, listComponentPropsSystem))
 
 const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => <div style={{ height }}></div>
 
-const GROUP_STYLE = { position: positionStickyCssValue(), zIndex: 1, overflowAnchor: 'none' }
-const ITEM_STYLE = { overflowAnchor: 'none' }
+const GROUP_STYLE = { position: positionStickyCssValue(), zIndex: 1, overflowAnchor: 'none' } as const
+const ITEM_STYLE = { overflowAnchor: 'none' } as const
 
 export const Items = React.memo(function VirtuosoItems({ showTopList = false }: { showTopList?: boolean }) {
   const listState = useEmitterValue('listState')
@@ -189,11 +169,11 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const itemSize = useEmitterValue('itemSize')
   const log = useEmitterValue('log')
 
-  const { callbackRef, ref } = useChangedListContentsSizes(
+  const { callbackRef } = useChangedListContentsSizes(
     sizeRanges,
     itemSize,
     trackItemSizes,
-    showTopList ? noop : scrollContainerStateCallback,
+    showTopList ? u.noop : scrollContainerStateCallback,
     log,
     customScrollParent
   )
@@ -201,7 +181,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const [deviation, setDeviation] = React.useState(0)
   useEmitter('deviation', (value) => {
     if (deviation !== value) {
-      ref.current!.style.marginTop = `${value}px`
+      // ref.current!.style.marginTop = `${value}px`
       setDeviation(value)
     }
   })
@@ -215,8 +195,6 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
   const isSeeking = useEmitterValue('isSeeking')
   const hasGroups = useEmitterValue('groupIndices').length > 0
   const paddingTopAddition = useEmitterValue('paddingTopAddition')
-  const firstItemIndex = useEmitterValue('firstItemIndex')
-  const statefulTotalCount = useEmitterValue('statefulTotalCount')
 
   const containerStyle: CSSProperties = showTopList
     ? {}
@@ -227,7 +205,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
         marginTop: deviation,
       }
 
-  if (!showTopList && statefulTotalCount === 0 && EmptyPlaceholder) {
+  if (!showTopList && listState.totalCount === 0 && EmptyPlaceholder) {
     return createElement(EmptyPlaceholder, contextPropIfNotDomElement(EmptyPlaceholder, context))
   }
 
@@ -241,7 +219,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
     },
     (showTopList ? listState.topItems : listState.items).map((item) => {
       const index = item.originalIndex!
-      const key = computeItemKey(index + firstItemIndex, item.data, context)
+      const key = computeItemKey(index + listState.firstItemIndex, item.data, context)
 
       if (isSeeking) {
         return createElement(ScrollSeekPlaceholder, {
@@ -264,7 +242,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
             'data-known-size': item.size,
             'data-item-index': item.index,
             style: GROUP_STYLE,
-          } as any,
+          },
           groupContent(item.index)
         )
       } else {
@@ -278,7 +256,7 @@ export const Items = React.memo(function VirtuosoItems({ showTopList = false }: 
             'data-item-index': item.index,
             'data-item-group-index': item.groupIndex,
             style: ITEM_STYLE,
-          } as any,
+          },
           hasGroups
             ? (itemContent as GroupItemContent<any, any>)(item.index, item.groupIndex!, item.data, context)
             : (itemContent as ItemContent<any, any>)(item.index, item.data, context)
@@ -294,6 +272,7 @@ export const scrollerStyle: CSSProperties = {
   overflowY: 'auto',
   position: 'relative',
   WebkitOverflowScrolling: 'touch',
+  willChange: 'transform',
 }
 
 export const viewportStyle: CSSProperties = {
@@ -387,7 +366,7 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
       scrollContainerStateCallback,
       smoothScrollTargetReached,
       ScrollerComponent,
-      noop,
+      u.noop,
       customScrollParent
     )
 
@@ -416,7 +395,7 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
 
 const Viewport: FC<PropsWithChildren<unknown>> = ({ children }) => {
   const viewportHeight = usePublisher('viewportHeight')
-  const viewportRef = useSize(compose(viewportHeight, (el) => correctItemSize(el, 'height')))
+  const viewportRef = useSize(u.compose(viewportHeight, (el) => correctItemSize(el, 'height')))
 
   return (
     <div style={viewportStyle} ref={viewportRef} data-viewport-type="element">

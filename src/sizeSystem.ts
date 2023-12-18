@@ -1,10 +1,9 @@
-/* eslint-disable no-continue */
 import * as u from '@virtuoso.dev/urx'
-
-import { AANode, arrayToRanges, empty, findMaxKeyValue, insert, newTree, Range, rangesWithin, remove, walk } from './AATree'
-import { Log, loggerSystem, LogLevel } from './loggerSystem'
+import { arrayToRanges, AANode, empty, findMaxKeyValue, insert, newTree, Range, rangesWithin, remove, walk } from './AATree'
 import * as arrayBinarySearch from './utils/binaryArraySearch'
 import { correctItemSize } from './utils/correctItemSize'
+import { loggerSystem, Log, LogLevel } from './loggerSystem'
+import { recalcSystem } from './recalcSystem'
 
 export interface SizeRange {
   startIndex: number
@@ -49,11 +48,12 @@ export function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[]) {
       if (!firstPassDone) {
         shouldInsert = rangeValue !== size
         firstPassDone = true
-      }
-      // remove the range if it starts within the new range OR if
-      // it has the same value as it, in order to perform a merge
-      else if (endIndex >= rangeStart || size === rangeValue) {
-        sizeTree = remove(sizeTree, rangeStart)
+      } else {
+        // remove the range if it starts within the new range OR if
+        // it has the same value as it, in order to perform a merge
+        if (endIndex >= rangeStart || size === rangeValue) {
+          sizeTree = remove(sizeTree, rangeStart)
+        }
       }
 
       // next range
@@ -274,7 +274,7 @@ const SIZE_MAP = {
 export type SizeFunction = (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number
 
 export const sizeSystem = u.system(
-  ([{ log }]) => {
+  ([{ log }, { recalcInProgress }]) => {
     const sizeRanges = u.stream<SizeRange[]>()
     const totalCount = u.stream<number>()
     const statefulTotalCount = u.statefulStreamFromEmitter(totalCount, 0)
@@ -361,7 +361,7 @@ export const sizeSystem = u.system(
         sizeRanges,
         u.withLatestFrom(sizes),
         u.scan(
-          ({ sizes: oldSizes }, [, newSizes]) => {
+          ({ sizes: oldSizes }, [_, newSizes]) => {
             return {
               changed: newSizes !== oldSizes,
               sizes: newSizes,
@@ -386,6 +386,7 @@ export const sizeSystem = u.system(
       ),
       (offset) => {
         if (offset > 0) {
+          u.publish(recalcInProgress, true)
           u.publish(unshiftWith, offset)
         } else if (offset < 0) {
           u.publish(shiftWith, offset)
@@ -418,14 +419,7 @@ export const sizeSystem = u.system(
           return walk(sizes.sizeTree).reduce(
             (acc, { k: index, v: size }) => {
               return {
-                ranges: [
-                  ...acc.ranges,
-                  {
-                    startIndex: acc.prevIndex,
-                    endIndex: index + unshiftWith - 1,
-                    size: acc.prevSize,
-                  },
-                ],
+                ranges: [...acc.ranges, { startIndex: acc.prevIndex, endIndex: index + unshiftWith - 1, size: acc.prevSize }],
                 prevIndex: index + unshiftWith,
                 prevSize: size,
               }
@@ -497,6 +491,6 @@ export const sizeSystem = u.system(
       itemSize,
     }
   },
-  u.tup(loggerSystem),
+  u.tup(loggerSystem, recalcSystem),
   { singleton: true }
 )
