@@ -1,6 +1,7 @@
 import * as u from '@virtuoso.dev/urx'
-import { totalListHeightSystem } from './totalListHeightSystem'
+
 import { domIOSystem } from './domIOSystem'
+import { totalListHeightSystem } from './totalListHeightSystem'
 
 export const alignToBottomSystem = u.system(
   ([{ viewportHeight }, { totalListHeight }]) => {

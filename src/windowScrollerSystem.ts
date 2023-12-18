@@ -1,6 +1,7 @@
 import * as u from '@virtuoso.dev/urx'
+
 import { domIOSystem } from './domIOSystem'
-import { WindowViewportInfo, ScrollContainerState } from './interfaces'
+import { ScrollContainerState, WindowViewportInfo } from './interfaces'
 
 export const windowScrollerSystem = u.system(([{ scrollTo, scrollContainerState }]) => {
   const windowScrollContainerState = u.stream<ScrollContainerState>()
