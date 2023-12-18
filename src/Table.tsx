@@ -1,14 +1,16 @@
-import { systemToComponent } from '@virtuoso.dev/react-urx'
-import { map, pipe, statefulStream, system, tup, statefulStreamFromEmitter, distinctUntilChanged, noop, compose } from '@virtuoso.dev/urx'
 import * as React from 'react'
 import { createElement, FC, PropsWithChildren } from 'react'
+
+import { systemToComponent } from '@virtuoso.dev/react-urx'
+import { compose, distinctUntilChanged, map, noop, pipe, statefulStream, statefulStreamFromEmitter, system, tup } from '@virtuoso.dev/urx'
+
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
-import { ComputeItemKey, ItemContent, FixedHeaderContent, TableComponents, TableRootProps } from './interfaces'
-import { listSystem } from './listSystem'
-import { identity, buildScroller, buildWindowScroller, viewportStyle, contextPropIfNotDomElement } from './List'
 import useSize from './hooks/useSize'
-import { correctItemSize } from './utils/correctItemSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
+import { ComputeItemKey, FixedHeaderContent, ItemContent, TableComponents, TableRootProps } from './interfaces'
+import { buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle } from './List'
+import { listSystem } from './listSystem'
+import { correctItemSize } from './utils/correctItemSize'
 
 const tableComponentPropsSystem = system(() => {
   const itemContent = statefulStream<ItemContent<any, unknown>>((index: number) => <td>Item ${index}</td>)

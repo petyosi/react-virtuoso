@@ -1,9 +1,10 @@
 import * as u from '@virtuoso.dev/urx'
+
 import { empty } from './AATree'
-import { sizeSystem } from './sizeSystem'
 import { domIOSystem } from './domIOSystem'
-import { IndexLocation, scrollToIndexSystem } from './scrollToIndexSystem'
 import { propsReadySystem } from './propsReadySystem'
+import { IndexLocation, scrollToIndexSystem } from './scrollToIndexSystem'
+import { sizeSystem } from './sizeSystem'
 
 export function getInitialTopMostItemIndexNumber(location: IndexLocation, totalCount: number): number {
   const lastIndex = totalCount - 1
@@ -20,6 +21,7 @@ export const initialTopMostItemIndexSystem = u.system(
       u.pipe(
         didMount,
         u.withLatestFrom(initialTopMostItemIndex),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         u.filter(([_, location]) => !!location),
         u.mapTo(false)
       ),

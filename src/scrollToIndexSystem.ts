@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import * as u from '@virtuoso.dev/urx'
+
 import { findMaxKeyValue } from './AATree'
 import { domIOSystem } from './domIOSystem'
-import { offsetOf, originalIndexFromItemIndex, sizeSystem } from './sizeSystem'
 import { IndexLocationWithAlign } from './interfaces'
 import { loggerSystem, LogLevel } from './loggerSystem'
+import { offsetOf, originalIndexFromItemIndex, sizeSystem } from './sizeSystem'
 
 export type IndexLocation = number | IndexLocationWithAlign
 

@@ -1,4 +1,5 @@
-import { connect, system, map, pipe, statefulStream, tup, filter } from '@virtuoso.dev/urx'
+import { connect, filter, map, pipe, statefulStream, system, tup } from '@virtuoso.dev/urx'
+
 import { listStateSystem } from './listStateSystem'
 
 export const topItemCountSystem = system(([{ topItemsIndexes }]) => {
