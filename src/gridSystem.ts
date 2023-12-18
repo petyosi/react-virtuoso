@@ -1,4 +1,5 @@
 import * as u from '@virtuoso.dev/urx'
+
 import { rangeComparator, tupleComparator } from './comparators'
 import { domIOSystem } from './domIOSystem'
 import { FlatIndexLocationWithAlign } from './interfaces'
@@ -75,8 +76,14 @@ export const gridSystem = u.system(
     const totalCount = u.statefulStream(0)
     const initialItemCount = u.statefulStream(0)
     const gridState = u.statefulStream(INITIAL_GRID_STATE)
-    const viewportDimensions = u.statefulStream<ElementDimensions>({ height: 0, width: 0 })
-    const itemDimensions = u.statefulStream<ElementDimensions>({ height: 0, width: 0 })
+    const viewportDimensions = u.statefulStream<ElementDimensions>({
+      height: 0,
+      width: 0,
+    })
+    const itemDimensions = u.statefulStream<ElementDimensions>({
+      height: 0,
+      width: 0,
+    })
     const scrollToIndex = u.stream<IndexLocation>()
     const scrollHeight = u.stream<number>()
     const deviation = u.statefulStream(0)
@@ -137,7 +144,15 @@ export const gridSystem = u.system(
           const totalHeight = rowCount * itemHeight + (rowCount - 1) * rowGap
           const offsetBottom = totalHeight - bottom
 
-          return { items, offsetTop: top, offsetBottom, top, bottom, itemHeight, itemWidth } as GridState
+          return {
+            items,
+            offsetTop: top,
+            offsetBottom,
+            top,
+            bottom,
+            itemHeight,
+            itemWidth,
+          } as GridState
         })
       ),
       gridState
@@ -248,7 +263,10 @@ export const gridSystem = u.system(
     u.connect(
       u.pipe(
         windowViewportRect,
-        u.map((viewportInfo) => ({ width: viewportInfo.visibleWidth, height: viewportInfo.visibleHeight }))
+        u.map((viewportInfo) => ({
+          width: viewportInfo.visibleWidth,
+          height: viewportInfo.visibleHeight,
+        }))
       ),
       viewportDimensions
     )
