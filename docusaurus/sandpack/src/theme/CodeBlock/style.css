@@ -1,8 +1,13 @@
 .sp-wrapper {
   margin-bottom: 2em;
   position: relative;
-  --sp-layout-height: 600px;
+  --sp-layout-height: 600px !important;
 }
+
+.sp-preview-iframe {
+  height: 600px !important;
+}
+
 .cm-editor {
   background-color: inherit;
 }

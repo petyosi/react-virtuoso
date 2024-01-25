@@ -12,75 +12,77 @@ The styling and the layout of the items is be specified by passing two propertie
 
 Alternatively, you can use styled components and pass them as `components.Item` and `components.List`.
 
-Either way, it is up to you to implement the layout with Flexbox or CSS grid. You can use plain old CSS or CSS in JS - the example uses Emotion.
+Either way, it is up to you to implement the layout with Flexbox or CSS grid. You can use plain old CSS or CSS in JS for the purpose.
 
 ### Responsive Layout
 
-You can safely use media queries, `min-width`, percentages, etc. In the item layout definitions.
-The grid observes the container/item dimensions and recalculates the scroll size accordingly.
+You can safely use media queries, `min-width`, percentages, etc. in the item layout definitions.
+The grid observes the container/item dimensions and recalculates the scroll size accordingly. The example below uses inline styling, but you can easily put the styles in a stylesheet and change the item sizes with media queries.
 
-Load the example below in codesandbox, resize, and scroll around - the items reposition correctly.
+```jsx live
+import { forwardRef } from "react";
+import { VirtuosoGrid } from "react-virtuoso";
 
-```jsx live import=@emotion/styled
-import { VirtuosoGrid } from 'react-virtuoso'
-import styled from '@emotion/styled'
+// Ensure that this stays out of the component, 
+// Otherwise the grid will remount with each render due to new component instances.
+const gridComponents = {
+  List: forwardRef(({ style, children, ...props }, ref) => (
+    <div
+      ref={ref}
+      {...props}
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  )),
+  Item: ({ children, ...props }) => (
+    <div
+      {...props}
+      style={{
+        padding: "0.5rem",
+        width: "33%",
+        display: "flex",
+        flex: "none",
+        alignContent: "stretch",
+        boxSizing: "border-box",
+      }}
+    >
+      {children}
+    </div>
+  )
+}
 
-const ItemContainer = styled.div`
-  padding: 0.5rem;
-  width: 33%;
-  display: flex;
-  flex: none;
-  align-content: stretch;
-  box-sizing: border-box;
-
-  @media (max-width: 1024px) {
-    width: 50%;
-  }
-
-  @media (max-width: 300px) {
-    width: 100%;
-  }
-`
-
-const ItemWrapper = styled.div`
-  flex: 1;
-  text-align: center;
-  font-size: 80%;
-  padding: 1rem 1rem;
-  border: 1px solid var(gray);
-  white-space: nowrap;
-`
-
-const ListContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-`
+const ItemWrapper = ({ children, ...props }) => (
+  <div
+    {...props}
+    style={{
+      display: "flex",
+      flex: 1,
+      textAlign: "center",
+      padding: "1rem 1rem",
+      border: "1px solid gray",
+      whiteSpace: "nowrap",
+    }}
+  >
+    {children}
+  </div>
+);
 
 export default function App() {
   return (
-  <>
-    <VirtuosoGrid
-    style={{ height: 400 }}
-      totalCount={10000}
-      overscan={200}
-      components={{
-        Item: ItemContainer,
-        List: ListContainer,
-        ScrollSeekPlaceholder: ({ height, width, index }) => (
-          <ItemContainer>
-            <ItemWrapper>{'--'}</ItemWrapper>
-          </ItemContainer>
-        ),
-      }}
-      itemContent={index => <ItemWrapper>Item {index}</ItemWrapper>}
-      scrollSeekConfiguration={{
-        enter: velocity => Math.abs(velocity) > 200,
-        exit: velocity => Math.abs(velocity) < 30,
-        change: (_, range) => console.log({ range }),
-      }}
-    />
-    <style>{`html, body, #root { margin: 0; padding: 0 }`}</style>
-  </>
-  )
+    <>
+      <VirtuosoGrid
+        style={{ height: 500 }}
+        totalCount={1000}
+        components={gridComponents}
+        itemContent={(index) => <ItemWrapper>Item {index}</ItemWrapper>}
+      />
+      <style>{`html, body, #root { margin: 0; padding: 0 }`}</style>
+    </>
+  );
 }
 ```
