@@ -363,11 +363,11 @@ const WindowViewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }
 }
 
 const TopItemListContainer: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
-  const TopItemList = useEmitterValue('TopItemListComponent')
+  const TopItemList = useEmitterValue('TopItemListComponent') || 'div'
   const headerHeight = useEmitterValue('headerHeight')
   const style = { ...topItemListStyle, marginTop: `${headerHeight}px` }
   const context = useEmitterValue('context')
-  return React.createElement(TopItemList || 'div', { style, context }, children)
+  return React.createElement(TopItemList, { style, ...contextPropIfNotDomElement(TopItemList, context) }, children)
 }
 
 const ListRoot: React.FC<ListRootProps> = /*#__PURE__*/ React.memo(function VirtuosoRoot(props) {
