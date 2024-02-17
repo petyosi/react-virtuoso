@@ -260,7 +260,25 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
   /**
    * Returns the value emitted from the stream.
    */
-  const useEmitterValue = <K extends keyof S, V = S[K] extends StatefulStream<infer R> ? R : never>(key: K) => {
+  const useEmitterValue18 = <K extends keyof S, V = S[K] extends StatefulStream<infer R> ? R : never>(key: K) => {
+    const system = React.useContext(Context)
+    const source: StatefulStream<V> = system[key]
+
+    const cb = React.useCallback(
+      (c: () => void) => {
+        return u.subscribe(source, c)
+      },
+      [source]
+    )
+
+    return React.useSyncExternalStore(
+      cb,
+      () => u.getValue(source),
+      () => u.getValue(source)
+    )
+  }
+
+  const useEmitterValueLegacy = <K extends keyof S, V = S[K] extends StatefulStream<infer R> ? R : never>(key: K) => {
     const system = React.useContext(Context)
     const source: StatefulStream<V> = system[key]
 
@@ -278,6 +296,8 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
 
     return value
   }
+
+  const useEmitterValue = React.version.startsWith('18') ? useEmitterValue18 : useEmitterValueLegacy
 
   const useEmitter = <K extends keyof S, V = S[K] extends Stream<infer R> ? R : never>(key: K, callback: (value: V) => void) => {
     const context = React.useContext(Context)
