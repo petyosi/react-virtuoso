@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Virtuoso } from '../src'
+import { Virtuoso, TableVirtuoso } from '../src'
 
 export function Example() {
   const [total, setTotal] = React.useState(10)
@@ -20,5 +20,22 @@ export function Example() {
         <button onClick={() => setTotal((val) => val + 2)}>bump</button>
       </div>
     </div>
+  )
+}
+
+export function TableExample() {
+  return (
+    <TableVirtuoso
+      alignToBottom={true}
+      style={{ height: 400, border: '1px solid red' }}
+      data={['foo', 'bar', 'baz']}
+      itemContent={(index, string) => (
+        <>
+          <td>{index}</td>
+          <td style={{ width: 150 }}>{string}</td>
+          <td>{string}</td>
+        </>
+      )}
+    />
   )
 }

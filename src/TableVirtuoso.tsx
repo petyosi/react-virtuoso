@@ -182,7 +182,7 @@ const Viewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   }, [ctx, viewportHeight, fixedItemHeight])
 
   return (
-    <div style={viewportStyle} ref={viewportRef} data-viewport-type="element">
+    <div style={viewportStyle(false)} ref={viewportRef} data-viewport-type="element">
       {children}
     </div>
   )
@@ -203,7 +203,7 @@ const WindowViewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }
   }, [ctx, windowViewportRect, fixedItemHeight])
 
   return (
-    <div ref={viewportRef} style={viewportStyle} data-viewport-type="window">
+    <div ref={viewportRef} style={viewportStyle(false)} data-viewport-type="window">
       {children}
     </div>
   )
