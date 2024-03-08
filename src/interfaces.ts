@@ -19,7 +19,7 @@ export interface GroupContent<C> {
   (index: number, context: C): React.ReactNode
 }
 
-export type ItemProps<D> = Pick<React.ComponentPropsWithRef<'div'>, 'style' | 'children'> & {
+export type ItemProps<D> = Pick<React.ComponentProps<'div'>, 'style' | 'children'> & {
   'data-index': number
   'data-item-index': number
   'data-item-group-index'?: number
@@ -27,41 +27,43 @@ export type ItemProps<D> = Pick<React.ComponentPropsWithRef<'div'>, 'style' | 'c
   item: D
 }
 
-export type GroupProps = Pick<React.ComponentPropsWithRef<'div'>, 'style' | 'children'> & {
+export type GroupProps = Pick<React.ComponentProps<'div'>, 'style' | 'children'> & {
   'data-index': number
   'data-item-index': number
   'data-known-size': number
 }
 
-export type TopItemListProps = Pick<React.ComponentPropsWithRef<'div'>, 'style' | 'children'>
-export type TableProps = Pick<React.ComponentPropsWithRef<'table'>, 'style' | 'children'>
+export type TopItemListProps = Pick<React.ComponentProps<'div'>, 'style' | 'children'>
+export type TableProps = Pick<React.ComponentProps<'table'>, 'style' | 'children'>
 
 /**
  * Passed to the Components.TableBody custom component
  */
-export type TableBodyProps = Pick<React.ComponentPropsWithRef<'tbody'>, 'style' | 'children' | 'ref' | 'className'> & {
+export type TableBodyProps = Pick<React.ComponentProps<'tbody'>, 'style' | 'children' | 'className'> & {
   'data-test-id': string
-}
+} & React.RefAttributes<HTMLTableSectionElement>
 
 /**
  * Passed to the Components.List custom component
  */
-export type ListProps = Pick<React.ComponentPropsWithRef<'div'>, 'style' | 'children' | 'ref'> & { 'data-test-id': string }
+export type ListProps = Pick<React.ComponentProps<'div'>, 'style' | 'children'> & {
+  'data-test-id': string
+} & React.RefAttributes<HTMLDivElement>
 
 /**
  * Passed to the Components.List custom component
  */
-export type GridListProps = Pick<React.ComponentPropsWithRef<'div'>, 'style' | 'children' | 'ref' | 'className'> & {
+export type GridListProps = Pick<React.ComponentProps<'div'>, 'style' | 'children' | 'className'> & {
   'data-test-id': string
-}
+} & React.RefAttributes<HTMLDivElement>
 
 /**
  * Passed to the Components.Scroller custom component
  */
-export type ScrollerProps = Pick<React.ComponentPropsWithRef<'div'>, 'style' | 'children' | 'tabIndex' | 'ref'> & {
+export type ScrollerProps = Pick<React.ComponentProps<'div'>, 'style' | 'children' | 'tabIndex'> & {
   'data-test-id'?: string
   'data-virtuoso-scroller'?: boolean
-}
+} & React.RefAttributes<HTMLDivElement>
 
 /**
  * Passed to the Components.ScrollSeekPlaceholder custom component
@@ -153,12 +155,16 @@ export interface TableComponents<Data = unknown, Context = unknown> {
    * Set to render a fixed header at the top of the table (`thead`). use [[fixedHeaderContent]] to set the contents
    *
    */
-  TableHead?: React.ComponentType<Pick<React.ComponentPropsWithRef<'thead'>, 'style' | 'children' | 'ref'> & { context?: Context }>
+  TableHead?: React.ComponentType<
+    Pick<React.ComponentProps<'thead'>, 'style' | 'children'> & { context?: Context } & React.RefAttributes<HTMLTableSectionElement>
+  >
 
   /**
    * Set to render a fixed footer at the bottom of the table (`tfoot`). use [[fixedFooterContent]] to set the contents
    */
-  TableFoot?: React.ComponentType<Pick<React.ComponentPropsWithRef<'tfoot'>, 'style' | 'children' | 'ref'> & { context?: Context }>
+  TableFoot?: React.ComponentType<
+    Pick<React.ComponentProps<'tfoot'>, 'style' | 'children'> & { context?: Context } & React.RefAttributes<HTMLTableSectionElement>
+  >
 
   /**
    * Set to customize the item wrapping element. Default is `tr`.
