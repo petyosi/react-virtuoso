@@ -102,7 +102,10 @@ export const followOutputSystem = u.system(
         u.withLatestFrom(followOutput, totalCount)
       ),
       ([, followOutput]) => {
-        trapNextSizeIncrease(followOutput !== false)
+        // activate adjustment only if the initial item is already scrolled to
+        if (u.getValue(scrolledToInitialItem)) {
+          trapNextSizeIncrease(followOutput !== false)
+        }
       }
     )
 
