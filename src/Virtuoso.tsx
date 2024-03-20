@@ -112,7 +112,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
   const isSeeking = useEmitterValue('isSeeking')
   const hasGroups = useEmitterValue('groupIndices').length > 0
   const alignToBottom = useEmitterValue('alignToBottom')
-  const scrolledToInitialItem = useEmitterValue('scrolledToInitialItem')
+  const initialItemFinalLocationReached = useEmitterValue('initialItemFinalLocationReached')
 
   const containerStyle: React.CSSProperties = showTopList
     ? {}
@@ -121,7 +121,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
         paddingTop: listState.offsetTop,
         paddingBottom: listState.offsetBottom,
         marginTop: deviation !== 0 ? deviation : alignToBottom ? 'auto' : 0,
-        ...(scrolledToInitialItem ? {} : { visibility: 'hidden' }),
+        ...(initialItemFinalLocationReached ? {} : { visibility: 'hidden' }),
       }
 
   if (!showTopList && listState.totalCount === 0 && EmptyPlaceholder) {

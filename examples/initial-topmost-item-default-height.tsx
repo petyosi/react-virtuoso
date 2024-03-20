@@ -31,6 +31,7 @@ export function BombProps() {
   // const [channelId, setChannelId] = React.useState(1);
   useSuppressResizeObserverError()
   const [bogus, setBogus] = React.useState(0)
+  const [key, setKey] = React.useState(0)
 
   React.useEffect(() => {
     setTimeout(() => {
@@ -45,10 +46,17 @@ export function BombProps() {
         }, 2)
       }, 2)
     }, 2)
-  }, [])
+  }, [key])
 
   return (
     <div className="App">
+      <button
+        onClick={() => {
+          setKey((k) => k + 1)
+        }}
+      >
+        Change channel
+      </button>
       {/*
       <button
         onClick={() => {
@@ -76,6 +84,7 @@ export function BombProps() {
       */}
 
       <Virtuoso
+        key={`channel-${key}`}
         logLevel={LogLevel.DEBUG}
         totalCount={15}
         context={{ bogus }}
@@ -84,7 +93,7 @@ export function BombProps() {
           return (
             <div
               style={{
-                height: index % 2 ? 200 : 100,
+                height: index % 2 ? 450 : 560,
                 background: index % 2 ? 'red' : 'blue',
               }}
             >

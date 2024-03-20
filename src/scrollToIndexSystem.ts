@@ -42,6 +42,7 @@ export const scrollToIndexSystem = u.system(
     { log },
   ]) => {
     const scrollToIndex = u.stream<IndexLocation>()
+    const scrollTargetReached = u.stream<true>()
     const topListHeight = u.statefulStream(0)
 
     let unsubscribeNextListRefresh: any = null
@@ -106,6 +107,7 @@ export const scrollToIndexSystem = u.system(
                 log('retrying to scroll to', { location }, LogLevel.DEBUG)
                 u.publish(scrollToIndex, location)
               } else {
+                u.publish(scrollTargetReached, true)
                 log('list did not change, scroll successful', {}, LogLevel.DEBUG)
               }
             }
@@ -142,6 +144,7 @@ export const scrollToIndexSystem = u.system(
 
     return {
       scrollToIndex,
+      scrollTargetReached,
       topListHeight,
     }
   },

@@ -14,10 +14,10 @@ export function getInitialTopMostItemIndexNumber(location: number | FlatIndexLoc
 }
 
 export const initialTopMostItemIndexSystem = u.system(
-  ([{ sizes, listRefresh, defaultItemSize }, { scrollTop }, { scrollToIndex }, { didMount }]) => {
+  ([{ sizes, listRefresh, defaultItemSize }, { scrollTop }, { scrollToIndex, scrollTargetReached }, { didMount }]) => {
     const scrolledToInitialItem = u.statefulStream(true)
     const initialTopMostItemIndex = u.statefulStream<number | FlatIndexLocationWithAlign>(0)
-    const scrollScheduled = u.statefulStream(false)
+    const initialItemFinalLocationReached = u.statefulStream(true)
 
     u.connect(
       u.pipe(
@@ -28,20 +28,34 @@ export const initialTopMostItemIndexSystem = u.system(
       ),
       scrolledToInitialItem
     )
+    u.connect(
+      u.pipe(
+        didMount,
+        u.withLatestFrom(initialTopMostItemIndex),
+        u.filter(([_, location]) => !!location),
+        u.mapTo(false)
+      ),
+      initialItemFinalLocationReached
+    )
 
     u.subscribe(
       u.pipe(
         u.combineLatest(listRefresh, didMount),
-        u.withLatestFrom(scrolledToInitialItem, sizes, defaultItemSize, scrollScheduled),
+        u.withLatestFrom(scrolledToInitialItem, sizes, defaultItemSize, initialItemFinalLocationReached),
         u.filter(([[, didMount], scrolledToInitialItem, { sizeTree }, defaultItemSize, scrollScheduled]) => {
           return didMount && (!empty(sizeTree) || u.isDefined(defaultItemSize)) && !scrolledToInitialItem && !scrollScheduled
         }),
         u.withLatestFrom(initialTopMostItemIndex)
       ),
       ([, initialTopMostItemIndex]) => {
-        u.publish(scrollScheduled, true)
+        u.handleNext(scrollTargetReached, () => {
+          u.publish(initialItemFinalLocationReached, true)
+        })
+
         skipFrames(3, () => {
-          u.handleNext(scrollTop, () => u.publish(scrolledToInitialItem, true))
+          u.handleNext(scrollTop, () => {
+            u.publish(scrolledToInitialItem, true)
+          })
           u.publish(scrollToIndex, initialTopMostItemIndex)
         })
       }
@@ -50,6 +64,7 @@ export const initialTopMostItemIndexSystem = u.system(
     return {
       scrolledToInitialItem,
       initialTopMostItemIndex,
+      initialItemFinalLocationReached,
     }
   },
   u.tup(sizeSystem, domIOSystem, scrollToIndexSystem, propsReadySystem),
