@@ -280,7 +280,7 @@ export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 't
    * As an example, if you prepend 2 groups with 20 and 30 items each, the firstItemIndex should be decreased with 50.
    *
    * You can also prepend more items to the first group, for example:
-   * \{ groupCounts: [20, 30], firstItemIndex: 1000 \} can become \{ groupCounts: [10, 30, 30], firstItemIndex: 980 \}
+   * `{ groupCounts: [20, 30], firstItemIndex: 1000 }` can become `{ groupCounts: [10, 30, 30], firstItemIndex: 980 }`
    *
    * Warning: the firstItemIndex should **be a positive number**, based on the total amount of items to be displayed.
    */
