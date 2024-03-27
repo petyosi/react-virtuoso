@@ -60,28 +60,3 @@ jobs:
         run: |
           rm -rf dist
           npx semantic-release
-
-      - name: Configure GH Access
-        if: github.ref == 'refs/heads/master'
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          git config --global user.email "underlog@gmail.com"
-          git config --global user.name "Petyo Ivanov"
-          cat <<EOT >> ~/.ssh/config
-          Host github.com
-          HostName github.com
-          IdentityFile ~/.ssh/id_rsa
-          EOT
-
-      - name: Build and deploy docs
-        if: github.ref == 'refs/heads/master'
-        env:
-          GIT_USER: git
-          USE_SSH: true
-        run: |
-          pnpm build
-          pnpm docs:build
-          pnpm docs:deploy

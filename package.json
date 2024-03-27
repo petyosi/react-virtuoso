@@ -35,29 +35,19 @@
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "dev": "LADLE=true ladle serve",
     "prepare": "pnpm run build && husky install",
-    "semantic-release": "semantic-release",
-    "docs:start": "docusaurus start --config docusaurus/docusaurus.config.js",
-    "docs:build": "docusaurus build --config docusaurus/docusaurus.config.js",
-    "docs:deploy": "docusaurus deploy --config docusaurus/docusaurus.config.js"
+    "semantic-release": "semantic-release"
   },
   "peerDependencies": {
     "react": ">=16 || >=17 || >= 18",
     "react-dom": ">=16 || >=17 || >= 18"
   },
   "devDependencies": {
-    "@codesandbox/sandpack-react": "^2.6.3",
-    "@codesandbox/sandpack-themes": "^2.0.21",
     "@commitlint/cli": "^17.6.3",
     "@commitlint/config-conventional": "^17.6.3",
-    "@docusaurus/core": "2.4.0",
-    "@docusaurus/module-type-aliases": "2.4.0",
-    "@docusaurus/plugin-google-gtag": "^2.4.0",
-    "@docusaurus/preset-classic": "2.4.0",
     "@emotion/core": "^11.0.0",
     "@emotion/styled": "^11.10.8",
     "@faker-js/faker": "^7.6.0",
     "@ladle/react": "^2.12.3",
-    "@mdx-js/react": "^1.6.22",
     "@playwright/test": "^1.33.0",
     "@tanstack/react-table": "^8.9.11",
     "@testing-library/react": "^14.0.0",
@@ -71,7 +61,6 @@
     "@typescript-eslint/parser": "^5.59.2",
     "@vitejs/plugin-react": "^4.0.0",
     "clsx": "^1.2.1",
-    "docusaurus-plugin-typedoc": "^0.19.2",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-html": "^7.1.0",
