@@ -61,7 +61,7 @@ export type GridListProps = Pick<React.ComponentProps<'div'>, 'style' | 'childre
  * Passed to the Components.Item custom component
  */
 export type GridItemProps = Pick<React.ComponentProps<'div'>, 'style' | 'children' | 'className'> & {
-  'data-index': number;
+  'data-index': number
 } & React.RefAttributes<HTMLDivElement>
 
 /**
