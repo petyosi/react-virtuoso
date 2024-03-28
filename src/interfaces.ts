@@ -58,6 +58,13 @@ export type GridListProps = Pick<React.ComponentProps<'div'>, 'style' | 'childre
 } & React.RefAttributes<HTMLDivElement>
 
 /**
+ * Passed to the Components.Item custom component
+ */
+export type GridItemProps = Pick<React.ComponentProps<'div'>, 'style' | 'children' | 'className'> & {
+  'data-index': number
+} & React.RefAttributes<HTMLDivElement>
+
+/**
  * Passed to the Components.Scroller custom component
  */
 export type ScrollerProps = Pick<React.ComponentProps<'div'>, 'style' | 'children' | 'tabIndex'> & {
@@ -285,11 +292,6 @@ export type GridRootProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data'
 export interface GridItem<D> {
   index: number
   data?: D
-}
-
-export interface GridItemProps {
-  'data-index': number
-  className?: string
 }
 
 export interface GridComponents<Context = any> {
