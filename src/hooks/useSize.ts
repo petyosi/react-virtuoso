@@ -12,12 +12,12 @@ export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled = t
   if (typeof ResizeObserver !== 'undefined') {
     const observer = React.useMemo(() => {
       return new ResizeObserver((entries: ResizeObserverEntry[]) => {
-        const element = entries[0].target as HTMLElement
-        if (element.offsetParent !== null) {
-          requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const element = entries[0].target as HTMLElement
+          if (element.offsetParent !== null) {
             callback(element)
-          })
-        }
+          }
+        })
       })
     }, [callback])
 
