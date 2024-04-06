@@ -14,9 +14,9 @@ export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled = t
       return new ResizeObserver((entries: ResizeObserverEntry[]) => {
         requestAnimationFrame(() => {
           const element = entries[0].target as HTMLElement
-            if (element.offsetParent !== null) {
-              callback(element)
-            }
+          if (element.offsetParent !== null) {
+            callback(element)
+          }
         })
       })
     }, [callback])
