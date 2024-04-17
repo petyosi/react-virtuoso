@@ -220,7 +220,7 @@ exports[`VirtuosoMockContext > Table > correctly renders items 1`] = `
         style="border-spacing: 0; overflow-anchor: none;"
       >
         <tbody
-          data-test-id="virtuoso-item-list"
+          data-testid="virtuoso-item-list"
         >
           <tr
             data-index="0"
@@ -281,7 +281,7 @@ exports[`VirtuosoMockContext > Table > correctly renders items with useWindowScr
         style="border-spacing: 0; overflow-anchor: none;"
       >
         <tbody
-          data-test-id="virtuoso-item-list"
+          data-testid="virtuoso-item-list"
         >
           <tr
             data-index="0"
