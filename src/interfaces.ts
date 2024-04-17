@@ -40,7 +40,7 @@ export type TableProps = Pick<React.ComponentProps<'table'>, 'style' | 'children
  * Passed to the Components.TableBody custom component
  */
 export type TableBodyProps = Pick<React.ComponentProps<'tbody'>, 'style' | 'children' | 'className'> & {
-  'data-test-id': string
+  'data-testid': string
 } & React.RefAttributes<HTMLTableSectionElement>
 
 /**
