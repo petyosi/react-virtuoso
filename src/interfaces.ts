@@ -54,7 +54,7 @@ export type ListProps = Pick<React.ComponentProps<'div'>, 'style' | 'children'> 
  * Passed to the Components.List custom component
  */
 export type GridListProps = Pick<React.ComponentProps<'div'>, 'style' | 'children' | 'className'> & {
-  'data-test-id': string
+  'data-testid': string
 } & React.RefAttributes<HTMLDivElement>
 
 /**

@@ -99,7 +99,7 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
       className: listClassName,
       ...contextPropIfNotDomElement(ListComponent, context),
       style: { paddingTop: gridState.offsetTop, paddingBottom: gridState.offsetBottom },
-      'data-test-id': 'virtuoso-item-list',
+      'data-testid': 'virtuoso-item-list',
     },
     gridState.items.map((item) => {
       const key = computeItemKey(item.index, item.data, context)

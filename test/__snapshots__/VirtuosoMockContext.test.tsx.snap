@@ -13,7 +13,7 @@ exports[`VirtuosoMockContext > Grid > correctly renders items 1`] = `
     >
       <div
         class="virtuoso-grid-list"
-        data-test-id="virtuoso-item-list"
+        data-testid="virtuoso-item-list"
         style="padding-top: 0px; padding-bottom: 100px;"
       >
         <div
@@ -69,7 +69,7 @@ exports[`VirtuosoMockContext > Grid > correctly renders items with useWindowScro
     >
       <div
         class="virtuoso-grid-list"
-        data-test-id="virtuoso-item-list"
+        data-testid="virtuoso-item-list"
         style="padding-top: 0px; padding-bottom: 100px;"
       >
         <div
