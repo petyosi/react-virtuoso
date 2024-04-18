@@ -134,7 +134,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
       ...contextPropIfNotDomElement(ListComponent, context),
       ref: callbackRef,
       style: containerStyle,
-      'data-test-id': showTopList ? 'virtuoso-top-item-list' : 'virtuoso-item-list',
+      'data-testid': showTopList ? 'virtuoso-top-item-list' : 'virtuoso-item-list',
     },
     (showTopList ? listState.topItems : listState.items).map((item) => {
       const index = item.originalIndex!

@@ -47,7 +47,7 @@ export type TableBodyProps = Pick<React.ComponentProps<'tbody'>, 'style' | 'chil
  * Passed to the Components.List custom component
  */
 export type ListProps = Pick<React.ComponentProps<'div'>, 'style' | 'children'> & {
-  'data-test-id': string
+  'data-testid': string
 } & React.RefAttributes<HTMLDivElement>
 
 /**
