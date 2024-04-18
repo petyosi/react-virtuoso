@@ -134,7 +134,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
       ...contextPropIfNotDomElement(ListComponent, context),
       ref: callbackRef,
       style: containerStyle,
-      'data-test-id': showTopList ? 'virtuoso-top-item-list' : 'virtuoso-item-list',
+      'data-testid': showTopList ? 'virtuoso-top-item-list' : 'virtuoso-item-list',
     },
     (showTopList ? listState.topItems : listState.items).map((item) => {
       const index = item.originalIndex!
@@ -270,7 +270,7 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
       {
         ref: scrollerRef as React.MutableRefObject<HTMLDivElement | null>,
         style: { ...scrollerStyle, ...style },
-        'data-test-id': 'virtuoso-scroller',
+        'data-testid': 'virtuoso-scroller',
         'data-virtuoso-scroller': true,
         tabIndex: 0,
         ...props,

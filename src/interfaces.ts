@@ -47,14 +47,14 @@ export type TableBodyProps = Pick<React.ComponentProps<'tbody'>, 'style' | 'chil
  * Passed to the Components.List custom component
  */
 export type ListProps = Pick<React.ComponentProps<'div'>, 'style' | 'children'> & {
-  'data-test-id': string
+  'data-testid': string
 } & React.RefAttributes<HTMLDivElement>
 
 /**
  * Passed to the Components.List custom component
  */
 export type GridListProps = Pick<React.ComponentProps<'div'>, 'style' | 'children' | 'className'> & {
-  'data-test-id': string
+  'data-testid': string
 } & React.RefAttributes<HTMLDivElement>
 
 /**
@@ -68,7 +68,7 @@ export type GridItemProps = Pick<React.ComponentProps<'div'>, 'style' | 'childre
  * Passed to the Components.Scroller custom component
  */
 export type ScrollerProps = Pick<React.ComponentProps<'div'>, 'style' | 'children' | 'tabIndex'> & {
-  'data-test-id'?: string
+  'data-testid'?: string
   'data-virtuoso-scroller'?: boolean
 } & React.RefAttributes<HTMLDivElement>
 
