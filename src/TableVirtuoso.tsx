@@ -163,7 +163,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
 
   return React.createElement(
     TableBodyComponent,
-    { ref: callbackRef, 'data-test-id': 'virtuoso-item-list', ...contextPropIfNotDomElement(TableBodyComponent, context) },
+    { ref: callbackRef, 'data-testid': 'virtuoso-item-list', ...contextPropIfNotDomElement(TableBodyComponent, context) },
     [paddingTopEl, ...items, paddingBottomEl]
   )
 })
