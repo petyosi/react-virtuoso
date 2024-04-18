@@ -10,7 +10,7 @@ test.describe('list with hundred items', () => {
 
   test('renders only 6 items', async ({ page }) => {
     const itemCount = await page.evaluate(() => {
-      const listContainer = document.querySelector('[data-test-id=virtuoso-item-list]')!
+      const listContainer = document.querySelector('[data-testid=virtuoso-item-list]')!
       return listContainer.childElementCount
     })
     expect(itemCount).toBe(6)
@@ -18,7 +18,7 @@ test.describe('list with hundred items', () => {
 
   test('fills in the scroller', async ({ page }) => {
     const scrollHeight = await page.evaluate(() => {
-      const scroller = document.querySelector('[data-test-id=virtuoso-scroller]')!
+      const scroller = document.querySelector('[data-testid=virtuoso-scroller]')!
       return scroller.scrollHeight
     })
     expect(scrollHeight).toBe(100 * 32 + 99 * 20)

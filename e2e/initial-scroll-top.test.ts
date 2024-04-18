@@ -10,7 +10,7 @@ test.describe('initial scroll top', () => {
   test('starts from 50px', async ({ page }) => {
     await page.waitForTimeout(100)
     const scrollTop = await page.evaluate(() => {
-      const scroller = document.querySelectorAll('[data-test-id=virtuoso-scroller]')[0]
+      const scroller = document.querySelectorAll('[data-testid=virtuoso-scroller]')[0]
       return scroller.scrollTop
     })
 

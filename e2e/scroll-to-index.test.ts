@@ -18,7 +18,7 @@ test.describe('scroll to index', () => {
     await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
-      return document.querySelector('[data-test-id=virtuoso-scroller]')!.scrollTop
+      return document.querySelector('[data-testid=virtuoso-scroller]')!.scrollTop
     })
 
     expect(scrollTop).toBe((30 - 7) * 20 + 7 * 30)
@@ -30,7 +30,7 @@ test.describe('scroll to index', () => {
     await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
-      return document.querySelector('[data-test-id=virtuoso-scroller]')!.scrollTop
+      return document.querySelector('[data-testid=virtuoso-scroller]')!.scrollTop
     })
 
     expect(scrollTop).toBe((30 - 7) * 20 + 7 * 30 + 5)
@@ -42,7 +42,7 @@ test.describe('scroll to index', () => {
     await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
-      return document.querySelector('[data-test-id=virtuoso-scroller]')!.scrollTop
+      return document.querySelector('[data-testid=virtuoso-scroller]')!.scrollTop
     })
     const rendered30s = 11
     expect(scrollTop).toBe((50 - rendered30s) * 20 + rendered30s * 30 - 300 / 2 + 20 / 2)
@@ -54,7 +54,7 @@ test.describe('scroll to index', () => {
     await page.waitForTimeout(100)
 
     const scrollTop = await page.evaluate(() => {
-      return document.querySelector('[data-test-id=virtuoso-scroller]')!.scrollTop
+      return document.querySelector('[data-testid=virtuoso-scroller]')!.scrollTop
     })
 
     const rendered30s = 14

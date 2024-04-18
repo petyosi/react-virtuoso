@@ -9,9 +9,9 @@ test.describe('list with hundred items', () => {
   })
 
   test('scrolls to bottom when image is loaded', async ({ page }) => {
-    await page.locator('data-test-id=add-image').click()
+    await page.locator('data-testid=add-image').click()
     await page.waitForTimeout(800)
-    const scrollTop = await page.locator('data-test-id=virtuoso-scroller').evaluate((el) => el.scrollTop)
+    const scrollTop = await page.locator('data-testid=virtuoso-scroller').evaluate((el) => el.scrollTop)
     expect(scrollTop).toBe(2800)
   })
 })

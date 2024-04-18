@@ -27,13 +27,13 @@ export function Example() {
   )
   return (
     <div>
-      <button data-test-id="prepend-2" onClick={prepend(2)}>
+      <button data-testid="prepend-2" onClick={prepend(2)}>
         Prepend 2 Items
       </button>
-      <button data-test-id="shift-2" onClick={prepend(-2)}>
+      <button data-testid="shift-2" onClick={prepend(-2)}>
         Shift 2 Items
       </button>
-      <button data-test-id="prepend-200" onClick={prepend(200)}>
+      <button data-testid="prepend-200" onClick={prepend(200)}>
         Prepend 200 Items
       </button>
       <Virtuoso totalCount={count} firstItemIndex={firstItemIndex} itemContent={itemContent} style={style} />

@@ -28,7 +28,7 @@ export function Example() {
   return (
     <div>
       <button
-        data-test-id="toggle-last-two"
+        data-testid="toggle-last-two"
         onClick={() => {
           toggleSize(99)
           toggleSize(98)

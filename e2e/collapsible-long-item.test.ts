@@ -5,13 +5,13 @@ import { navigateToExample } from './utils.ts'
 test.describe('list with collapsible long items', () => {
   test.beforeEach(async ({ page, baseURL }) => {
     await navigateToExample(page, baseURL, 'collapsible-long-item')
-    await page.waitForSelector('[data-test-id=virtuoso-scroller]')
+    await page.waitForSelector('[data-testid=virtuoso-scroller]')
     await page.waitForTimeout(200)
   })
 
   test('compensates correctly when collapsing an item', async ({ page }) => {
     await page.evaluate(() => {
-      const scroller = document.querySelector('[data-test-id=virtuoso-scroller]')!
+      const scroller = document.querySelector('[data-testid=virtuoso-scroller]')!
       scroller.scrollBy({ top: -400 })
     })
 
@@ -25,7 +25,7 @@ test.describe('list with collapsible long items', () => {
     await page.waitForTimeout(200)
 
     const scrollTop = await page.evaluate(() => {
-      const scroller = document.querySelector('[data-test-id=virtuoso-scroller]')!
+      const scroller = document.querySelector('[data-testid=virtuoso-scroller]')!
       return scroller.scrollTop
     })
 

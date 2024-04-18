@@ -10,7 +10,7 @@ test.describe('list with scroll seek placeholders', () => {
 
   test('renders grid placeholders when scrolled', async ({ page }) => {
     await page.evaluate(() => {
-      const scroller = document.querySelector('[data-test-id=virtuoso-scroller]')!
+      const scroller = document.querySelector('[data-testid=virtuoso-scroller]')!
       setInterval(() => {
         scroller.scrollBy({ top: 30 })
       }, 10)
@@ -19,7 +19,7 @@ test.describe('list with scroll seek placeholders', () => {
     await page.waitForSelector('div[aria-label=placeholder]')
 
     const [width, height, containerPaddingTop, text, color] = await page.evaluate(() => {
-      const container = document.querySelector('[data-test-id=virtuoso-item-list]') as HTMLElement
+      const container = document.querySelector('[data-testid=virtuoso-item-list]') as HTMLElement
       const item = container.getElementsByTagName('div')[0] as HTMLElement
       return [item.offsetWidth, item.offsetHeight, container.style.paddingTop, item.textContent, item.style.color]
     })

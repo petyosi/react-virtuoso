@@ -11,7 +11,7 @@ test.describe('jagged grouped list', () => {
   test('puts the specified item below the group', async ({ page }) => {
     // we pick the second item, the first should remain under the group header
     const stickyItemIndex = await page.evaluate(() => {
-      const stickyItem = document.querySelector('[data-test-id=virtuoso-item-list] > div:nth-child(2)') as HTMLDivElement
+      const stickyItem = document.querySelector('[data-testid=virtuoso-item-list] > div:nth-child(2)') as HTMLDivElement
       return stickyItem.dataset['itemIndex']
     })
 

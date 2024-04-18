@@ -10,7 +10,7 @@ test.describe('list with a long last item', () => {
 
   test('starts from the last item', async ({ page }) => {
     const paddingTop: string = await page.evaluate(() => {
-      const listContainer = document.querySelector('[data-test-id=virtuoso-item-list]')!
+      const listContainer = document.querySelector('[data-testid=virtuoso-item-list]')!
       return (listContainer as HTMLElement).style.paddingTop
     })
     expect(paddingTop).toBe('7200px')
@@ -18,14 +18,14 @@ test.describe('list with a long last item', () => {
 
   test('compensates on upwards scrolling correctly', async ({ page }) => {
     await page.evaluate(() => {
-      const scroller = document.querySelector('[data-test-id=virtuoso-scroller]')!
+      const scroller = document.querySelector('[data-testid=virtuoso-scroller]')!
       scroller.scrollBy({ top: -2 })
     })
 
     await page.waitForTimeout(200)
 
     const scrollTop = await page.evaluate(() => {
-      return document.querySelector('[data-test-id=virtuoso-scroller]')!.scrollTop
+      return document.querySelector('[data-testid=virtuoso-scroller]')!.scrollTop
     })
 
     // items are 800 and 100px tall.

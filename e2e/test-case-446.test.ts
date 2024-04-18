@@ -11,7 +11,7 @@ test.describe('list with a long last item', () => {
   // the float height was causing a load of item 9
   test('starts from item with index 10', async ({ page }) => {
     const firstItemIndex = await page.evaluate(() => {
-      const listContainer = document.querySelector('[data-test-id=virtuoso-item-list]')!
+      const listContainer = document.querySelector('[data-testid=virtuoso-item-list]')!
       return (listContainer as HTMLElement).firstElementChild!.getAttribute('data-item-index')
     })
     expect(firstItemIndex).toBe('10')

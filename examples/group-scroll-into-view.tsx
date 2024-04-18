@@ -11,10 +11,10 @@ export function Example() {
   }, [])
   return (
     <div>
-      <button data-test-id="scroll-into-view-button" onClick={() => virutoso.current.scrollIntoView({ index: 9 })}>
+      <button data-testid="scroll-into-view-button" onClick={() => virutoso.current.scrollIntoView({ index: 9 })}>
         Scroll index 10 into view
       </button>
-      <button data-test-id="scroll-to-group" onClick={() => virutoso.current.scrollIntoView({ groupIndex: ++g.current })}>
+      <button data-testid="scroll-to-group" onClick={() => virutoso.current.scrollIntoView({ groupIndex: ++g.current })}>
         Scroll to next group
       </button>
       <GroupedVirtuoso

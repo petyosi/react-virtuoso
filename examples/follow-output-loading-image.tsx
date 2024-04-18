@@ -35,7 +35,7 @@ export function Example() {
   return (
     <div ref={ref}>
       <div>
-        <button data-test-id="add-image" onClick={() => setCount((count) => count + 1)}>
+        <button data-testid="add-image" onClick={() => setCount((count) => count + 1)}>
           Append Image
         </button>{' '}
         |{' '}

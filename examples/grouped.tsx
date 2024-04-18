@@ -56,10 +56,10 @@ export function Unshifting() {
 
   return (
     <div>
-      <button data-test-id="prepend-10" onClick={prepend(10)}>
+      <button data-testid="prepend-10" onClick={prepend(10)}>
         Prepend 10 Items
       </button>
-      <button data-test-id="shift-2" onClick={prepend(-2)}>
+      <button data-testid="shift-2" onClick={prepend(-2)}>
         Shift 2 Items
       </button>
 
