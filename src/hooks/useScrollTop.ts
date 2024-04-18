@@ -12,7 +12,8 @@ export default function useScrollTop(
   smoothScrollTargetReached: (yes: true) => void,
   scrollerElement: any,
   scrollerRefCallback: (ref: ScrollerRef) => void = u.noop,
-  customScrollParent?: HTMLElement
+  customScrollParent?: HTMLElement,
+  horizontalDirection?: boolean
 ) {
   const scrollerRef = React.useRef<HTMLElement | null | Window>(null)
   const scrollTopTarget = React.useRef<any>(null)
@@ -22,9 +23,29 @@ export default function useScrollTop(
     (ev: Event) => {
       const el = ev.target as HTMLElement
       const windowScroll = (el as any) === window || (el as any) === document
-      const scrollTop = windowScroll ? window.pageYOffset || document.documentElement.scrollTop : el.scrollTop
-      const scrollHeight = windowScroll ? document.documentElement.scrollHeight : el.scrollHeight
-      const viewportHeight = windowScroll ? window.innerHeight : el.offsetHeight
+      const scrollTop = horizontalDirection
+        ? windowScroll
+          ? window.pageXOffset || document.documentElement.scrollLeft
+          : el.scrollLeft
+        : windowScroll
+        ? window.pageYOffset || document.documentElement.scrollTop
+        : el.scrollTop
+
+      const scrollHeight = horizontalDirection
+        ? windowScroll
+          ? document.documentElement.scrollWidth
+          : el.scrollWidth
+        : windowScroll
+        ? document.documentElement.scrollHeight
+        : el.scrollHeight
+
+      const viewportHeight = horizontalDirection
+        ? windowScroll
+          ? window.innerWidth
+          : el.offsetWidth
+        : windowScroll
+        ? window.innerHeight
+        : el.offsetHeight
 
       const call = () => {
         scrollContainerStateCallback({
@@ -69,7 +90,12 @@ export default function useScrollTop(
 
   function scrollToCallback(location: ScrollToOptions) {
     const scrollerElement = scrollerRef.current
-    if (!scrollerElement || ('offsetHeight' in scrollerElement && scrollerElement.offsetHeight === 0)) {
+    if (
+      !scrollerElement ||
+      (horizontalDirection
+        ? 'offsetWidth' in scrollerElement && scrollerElement.offsetWidth === 0
+        : 'offsetHeight' in scrollerElement && scrollerElement.offsetHeight === 0)
+    ) {
       return
     }
 
@@ -81,13 +107,16 @@ export default function useScrollTop(
 
     if (scrollerElement === window) {
       // this is not a mistake
-      scrollHeight = Math.max(correctItemSize(document.documentElement, 'height'), document.documentElement.scrollHeight)
-      offsetHeight = window.innerHeight
-      scrollTop = document.documentElement.scrollTop
+      scrollHeight = Math.max(
+        correctItemSize(document.documentElement, horizontalDirection ? 'width' : 'height'),
+        horizontalDirection ? document.documentElement.scrollWidth : document.documentElement.scrollHeight
+      )
+      offsetHeight = horizontalDirection ? window.innerWidth : window.innerHeight
+      scrollTop = horizontalDirection ? document.documentElement.scrollLeft : document.documentElement.scrollTop
     } else {
-      scrollHeight = (scrollerElement as HTMLElement).scrollHeight
-      offsetHeight = correctItemSize(scrollerElement as HTMLElement, 'height')
-      scrollTop = (scrollerElement as HTMLElement).scrollTop
+      scrollHeight = (scrollerElement as HTMLElement)[horizontalDirection ? 'scrollWidth' : 'scrollHeight']
+      offsetHeight = correctItemSize(scrollerElement as HTMLElement, horizontalDirection ? 'width' : 'height')
+      scrollTop = (scrollerElement as HTMLElement)[horizontalDirection ? 'scrollLeft' : 'scrollTop']
     }
 
     const maxScrollTop = scrollHeight - offsetHeight
@@ -119,10 +148,17 @@ export default function useScrollTop(
       scrollTopTarget.current = null
     }
 
+    if (horizontalDirection) {
+      location = { left: location.top, behavior: location.behavior }
+    }
+
     scrollerElement.scrollTo(location)
   }
 
   function scrollByCallback(location: ScrollToOptions) {
+    if (horizontalDirection) {
+      location = { left: location.top, behavior: location.behavior }
+    }
     scrollerRef.current!.scrollBy(location)
   }
 
