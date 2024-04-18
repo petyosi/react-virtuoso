@@ -3,7 +3,7 @@
 exports[`VirtuosoMockContext > Grid > correctly renders items 1`] = `
 <div>
   <div
-    data-test-id="virtuoso-scroller"
+    data-testid="virtuoso-scroller"
     data-virtuoso-scroller="true"
     style="height: 100%; outline: none; overflow-y: auto; position: relative;"
     tabindex="0"
@@ -117,7 +117,7 @@ exports[`VirtuosoMockContext > Grid > correctly renders items with useWindowScro
 exports[`VirtuosoMockContext > List > correctly renders items 1`] = `
 <div>
   <div
-    data-test-id="virtuoso-scroller"
+    data-testid="virtuoso-scroller"
     data-virtuoso-scroller="true"
     style="height: 100%; outline: none; overflow-y: auto; position: relative;"
     tabindex="0"
@@ -207,7 +207,7 @@ exports[`VirtuosoMockContext > List > correctly renders items with useWindowScro
 exports[`VirtuosoMockContext > Table > correctly renders items 1`] = `
 <div>
   <div
-    data-test-id="virtuoso-scroller"
+    data-testid="virtuoso-scroller"
     data-virtuoso-scroller="true"
     style="height: 100%; outline: none; overflow-y: auto; position: relative;"
     tabindex="0"

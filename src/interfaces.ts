@@ -68,7 +68,7 @@ export type GridItemProps = Pick<React.ComponentProps<'div'>, 'style' | 'childre
  * Passed to the Components.Scroller custom component
  */
 export type ScrollerProps = Pick<React.ComponentProps<'div'>, 'style' | 'children' | 'tabIndex'> & {
-  'data-test-id'?: string
+  'data-testid'?: string
   'data-virtuoso-scroller'?: boolean
 } & React.RefAttributes<HTMLDivElement>
 

@@ -270,7 +270,7 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
       {
         ref: scrollerRef as React.MutableRefObject<HTMLDivElement | null>,
         style: { ...scrollerStyle, ...style },
-        'data-test-id': 'virtuoso-scroller',
+        'data-testid': 'virtuoso-scroller',
         'data-virtuoso-scroller': true,
         tabIndex: 0,
         ...props,
