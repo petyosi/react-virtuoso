@@ -6,7 +6,6 @@ export function Example() {
   const state = React.useRef<StateSnapshot | undefined>(undefined)
   const [key, setKey] = React.useState(0)
 
-  console.log('Rendering with key', key)
   return (
     <div>
       <button
@@ -17,8 +16,9 @@ export function Example() {
           setKey((value) => value + 1)
         }}
       >
-        Log State
+        Save state and reload
       </button>
+      <button onClick={() => setKey((value) => value + 1)}>Reload</button>
 
       <Virtuoso
         key={key}

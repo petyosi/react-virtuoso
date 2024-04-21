@@ -52,7 +52,7 @@ export const initialTopMostItemIndexSystem = u.system(
           u.publish(initialItemFinalLocationReached, true)
         })
 
-        skipFrames(3, () => {
+        skipFrames(4, () => {
           u.handleNext(scrollTop, () => {
             u.publish(scrolledToInitialItem, true)
           })
