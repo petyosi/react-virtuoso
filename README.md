@@ -95,12 +95,7 @@ To run the tests, use `npm run test`.
 An end-to-end browser-based test suite is runnable with `npm run e2e`, with the pages being `e2e/*.tsx` and the tests `e2e/*.test.ts`.
 
 A convenient way to debug something is to preview the test cases in the browser.
-To do that, run `npm run browse-examples` - it will open a crude UI that lets you browse the components in the `e2e` folder.
-
-### Docs
-
-The documentation site is built with docusaurus and the content is available in the `site/docs` directory.
-The API reference is generated from the doc comments in `src/components.tsx`.
+To do that, run `npm run dev` - it will launch a Ladle server that lets you browse the components in the `examples` folder.
 
 ## License
 
