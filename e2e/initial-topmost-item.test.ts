@@ -1,11 +1,10 @@
 import { test, expect } from '@playwright/test'
-//@ts-expect-error - type module and playwright
-import { navigateToExample } from './utils.ts'
+import { navigateToExample } from './utils.js'
 
 test.describe('jagged list with initial topmost item', () => {
   test.beforeEach(async ({ page, baseURL }) => {
     await navigateToExample(page, baseURL, 'initial-topmost-item')
-    await page.waitForTimeout(100)
+    await page.waitForTimeout(200)
   })
 
   // the real position here would be 1500, but the calc is based on the

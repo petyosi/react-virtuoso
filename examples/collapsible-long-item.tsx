@@ -25,7 +25,7 @@ const Item = ({ index }: { index: number }) => {
   )
 }
 
-const ExpandedProvider: React.FC = ({ children }) => {
+const ExpandedProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [expanded, setExpanded] = React.useState(false)
   return <Expanded.Provider value={[expanded as any, setExpanded]}>{children}</Expanded.Provider>
 }

@@ -48,10 +48,13 @@ describe('system', () => {
       return { c, a }
     }, tup(system1))
 
-    const system4 = system(([{ a: a1, b }, { a: a2, c }]) => {
-      expect(a1).toBe(a2)
-      return { b, c }
-    }, tup(system2, system3))
+    const system4 = system(
+      ([{ a: a1, b }, { a: a2, c }]) => {
+        expect(a1).toBe(a2)
+        return { b, c }
+      },
+      tup(system2, system3)
+    )
 
     init(system4)
   })

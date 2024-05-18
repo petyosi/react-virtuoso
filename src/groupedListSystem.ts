@@ -22,35 +22,38 @@ export function groupCountsToIndicesAndCount(counts: number[]) {
   )
 }
 
-export const groupedListSystem = u.system(([{ totalCount, groupIndices, sizes }, { scrollTop, headerHeight }]) => {
-  const groupCounts = u.stream<number[]>()
-  const topItemsIndexes = u.stream<[number]>()
-  const groupIndicesAndCount = u.streamFromEmitter(u.pipe(groupCounts, u.map(groupCountsToIndicesAndCount)))
-  u.connect(
-    u.pipe(
-      groupIndicesAndCount,
-      u.map((value) => value.totalCount)
-    ),
-    totalCount
-  )
-  u.connect(
-    u.pipe(
-      groupIndicesAndCount,
-      u.map((value) => value.groupIndices)
-    ),
-    groupIndices
-  )
+export const groupedListSystem = u.system(
+  ([{ totalCount, groupIndices, sizes }, { scrollTop, headerHeight }]) => {
+    const groupCounts = u.stream<number[]>()
+    const topItemsIndexes = u.stream<[number]>()
+    const groupIndicesAndCount = u.streamFromEmitter(u.pipe(groupCounts, u.map(groupCountsToIndicesAndCount)))
+    u.connect(
+      u.pipe(
+        groupIndicesAndCount,
+        u.map((value) => value.totalCount)
+      ),
+      totalCount
+    )
+    u.connect(
+      u.pipe(
+        groupIndicesAndCount,
+        u.map((value) => value.groupIndices)
+      ),
+      groupIndices
+    )
 
-  u.connect(
-    u.pipe(
-      u.combineLatest(scrollTop, sizes, headerHeight),
-      u.filter(([_, sizes]) => hasGroups(sizes)),
-      u.map(([scrollTop, state, headerHeight]) => findMaxKeyValue(state.groupOffsetTree, Math.max(scrollTop - headerHeight, 0), 'v')[0]),
-      u.distinctUntilChanged(),
-      u.map((index) => [index])
-    ),
-    topItemsIndexes
-  )
+    u.connect(
+      u.pipe(
+        u.combineLatest(scrollTop, sizes, headerHeight),
+        u.filter(([_, sizes]) => hasGroups(sizes)),
+        u.map(([scrollTop, state, headerHeight]) => findMaxKeyValue(state.groupOffsetTree, Math.max(scrollTop - headerHeight, 0), 'v')[0]),
+        u.distinctUntilChanged(),
+        u.map((index) => [index])
+      ),
+      topItemsIndexes
+    )
 
-  return { groupCounts, topItemsIndexes }
-}, u.tup(sizeSystem, domIOSystem))
+    return { groupCounts, topItemsIndexes }
+  },
+  u.tup(sizeSystem, domIOSystem)
+)

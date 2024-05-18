@@ -51,9 +51,12 @@ const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   }
 })
 
-const combinedSystem = /*#__PURE__*/ u.system(([gridSystem, gridComponentPropsSystem]) => {
-  return { ...gridSystem, ...gridComponentPropsSystem }
-}, u.tup(gridSystem, gridComponentPropsSystem))
+const combinedSystem = /*#__PURE__*/ u.system(
+  ([gridSystem, gridComponentPropsSystem]) => {
+    return { ...gridSystem, ...gridComponentPropsSystem }
+  },
+  u.tup(gridSystem, gridComponentPropsSystem)
+)
 
 const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
   const gridState = useEmitterValue('gridState')
@@ -92,54 +95,66 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
 
   //   console.log('rendering items', gridState.items)
 
-  return React.createElement(
-    ListComponent,
-    {
-      ref: listRef,
-      className: listClassName,
-      ...contextPropIfNotDomElement(ListComponent, context),
-      style: { paddingTop: gridState.offsetTop, paddingBottom: gridState.offsetBottom },
-      'data-testid': 'virtuoso-item-list',
-    },
-    gridState.items.map((item) => {
-      const key = computeItemKey(item.index, item.data, context)
-      return isSeeking
-        ? React.createElement(ScrollSeekPlaceholder, {
-            key,
-            ...contextPropIfNotDomElement(ScrollSeekPlaceholder, context),
-            index: item.index,
-            height: gridState.itemHeight,
-            width: gridState.itemWidth,
-          })
-        : React.createElement(
-            ItemComponent,
-            { ...contextPropIfNotDomElement(ItemComponent, context), className: itemClassName, 'data-index': item.index, key },
-            itemContent(item.index, item.data, context)
+  return (
+    <ListComponent
+      ref={listRef}
+      className={listClassName}
+      style={{ paddingTop: gridState.offsetTop, paddingBottom: gridState.offsetBottom }}
+      data-testid="virtuoso-item-list"
+    >
+      {gridState.items.map((item) => {
+        const key = computeItemKey(item.index, item.data, context)
+        if (isSeeking) {
+          return (
+            <ScrollSeekPlaceholder
+              key={key}
+              {...contextPropIfNotDomElement(ScrollSeekPlaceholder, context)}
+              index={item.index}
+              height={gridState.itemHeight}
+              width={gridState.itemWidth}
+            />
           )
-    })
+        } else {
+          return (
+            <ItemComponent
+              {...contextPropIfNotDomElement(ItemComponent, context)}
+              className={itemClassName}
+              data-index={item.index}
+              key={key}
+            >
+              {itemContent(item.index, item.data, context)}
+            </ItemComponent>
+          )
+        }
+      })}
+    </ListComponent>
   )
 })
 
-const Header: React.FC = React.memo(function VirtuosoHeader() {
+const Header: React.FC = /* @__PURE__ */ React.memo(function VirtuosoHeader() {
   const Header = useEmitterValue('HeaderComponent')
   const headerHeight = usePublisher('headerHeight')
-  const headerFooterTag = useEmitterValue('headerFooterTag')
+  const HeaderFooterWrapper: 'div' = useEmitterValue('headerFooterTag')
   const ref = useSize((el) => headerHeight(correctItemSize(el, 'height')))
   const context = useEmitterValue('context')
-  return Header
-    ? React.createElement(headerFooterTag, { ref }, React.createElement(Header, contextPropIfNotDomElement(Header, context)))
-    : null
+  return Header ? (
+    <HeaderFooterWrapper ref={ref}>
+      <Header {...contextPropIfNotDomElement(Header, context)} />
+    </HeaderFooterWrapper>
+  ) : null
 })
 
-const Footer: React.FC = React.memo(function VirtuosoGridFooter() {
+const Footer: React.FC = /* @__PURE__ */ React.memo(function VirtuosoGridFooter() {
   const Footer = useEmitterValue('FooterComponent')
   const footerHeight = usePublisher('footerHeight')
-  const headerFooterTag = useEmitterValue('headerFooterTag')
+  const HeaderFooterWrapper: 'div' = useEmitterValue('headerFooterTag')
   const ref = useSize((el) => footerHeight(correctItemSize(el, 'height')))
   const context = useEmitterValue('context')
-  return Footer
-    ? React.createElement(headerFooterTag, { ref }, React.createElement(Footer, contextPropIfNotDomElement(Footer, context)))
-    : null
+  return Footer ? (
+    <HeaderFooterWrapper ref={ref}>
+      <Footer {...contextPropIfNotDomElement(Footer, context)} />
+    </HeaderFooterWrapper>
+  ) : null
 })
 
 const Viewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {

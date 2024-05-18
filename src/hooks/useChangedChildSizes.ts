@@ -26,20 +26,20 @@ export default function useChangedListContentsSizes(
       const scrollTop = customScrollParent
         ? customScrollParent.scrollTop
         : windowScrolling
-        ? window.pageYOffset || document.documentElement.scrollTop
-        : scrollableElement.scrollTop
+          ? window.pageYOffset || document.documentElement.scrollTop
+          : scrollableElement.scrollTop
 
       const scrollHeight = customScrollParent
         ? customScrollParent.scrollHeight
         : windowScrolling
-        ? document.documentElement.scrollHeight
-        : scrollableElement.scrollHeight
+          ? document.documentElement.scrollHeight
+          : scrollableElement.scrollHeight
 
       const viewportHeight = customScrollParent
         ? customScrollParent.offsetHeight
         : windowScrolling
-        ? window.innerHeight
-        : scrollableElement.offsetHeight
+          ? window.innerHeight
+          : scrollableElement.offsetHeight
 
       scrollContainerStateCallback({
         scrollTop: Math.max(scrollTop, 0),

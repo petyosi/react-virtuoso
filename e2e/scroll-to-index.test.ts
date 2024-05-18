@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
-//@ts-expect-error - type module and playwright
-import { navigateToExample } from './utils.ts'
+import { navigateToExample } from './utils.js'
 
 test.describe('scroll to index', () => {
   test.beforeEach(async ({ page, baseURL }) => {
@@ -27,7 +26,7 @@ test.describe('scroll to index', () => {
   test('scrolls to the 30 item with 5 offset', async ({ page }) => {
     await page.click('#offset-30')
 
-    await page.waitForTimeout(100)
+    await page.waitForTimeout(300)
 
     const scrollTop = await page.evaluate(() => {
       return document.querySelector('[data-testid=virtuoso-scroller]')!.scrollTop

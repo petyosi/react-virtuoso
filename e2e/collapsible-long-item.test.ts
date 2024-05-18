@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
-//@ts-expect-error - type module and playwright
-import { navigateToExample } from './utils.ts'
+import { navigateToExample } from './utils.js'
 
 test.describe('list with collapsible long items', () => {
   test.beforeEach(async ({ page, baseURL }) => {

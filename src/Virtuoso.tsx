@@ -58,9 +58,12 @@ const listComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   }
 })
 
-const combinedSystem = /*#__PURE__*/ u.system(([listSystem, propsSystem]) => {
-  return { ...listSystem, ...propsSystem }
-}, u.tup(listSystem, listComponentPropsSystem))
+const combinedSystem = /*#__PURE__*/ u.system(
+  ([listSystem, propsSystem]) => {
+    return { ...listSystem, ...propsSystem }
+  },
+  u.tup(listSystem, listComponentPropsSystem)
+)
 
 const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => <div style={{ height }}></div>
 
@@ -125,64 +128,66 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
       }
 
   if (!showTopList && listState.totalCount === 0 && EmptyPlaceholder) {
-    return React.createElement(EmptyPlaceholder, contextPropIfNotDomElement(EmptyPlaceholder, context))
+    return <EmptyPlaceholder {...contextPropIfNotDomElement(EmptyPlaceholder, context)} />
   }
 
-  return React.createElement(
-    ListComponent,
-    {
-      ...contextPropIfNotDomElement(ListComponent, context),
-      ref: callbackRef,
-      style: containerStyle,
-      'data-testid': showTopList ? 'virtuoso-top-item-list' : 'virtuoso-item-list',
-    },
-    (showTopList ? listState.topItems : listState.items).map((item) => {
-      const index = item.originalIndex!
-      const key = computeItemKey(index + listState.firstItemIndex, item.data, context)
+  return (
+    <ListComponent
+      {...contextPropIfNotDomElement(ListComponent, context)}
+      ref={callbackRef}
+      style={containerStyle}
+      data-testid={showTopList ? 'virtuoso-top-item-list' : 'virtuoso-item-list'}
+    >
+      {(showTopList ? listState.topItems : listState.items).map((item) => {
+        const index = item.originalIndex!
+        const key = computeItemKey(index + listState.firstItemIndex, item.data, context)
 
-      if (isSeeking) {
-        return React.createElement(ScrollSeekPlaceholder, {
-          ...contextPropIfNotDomElement(ScrollSeekPlaceholder, context),
-          key,
-          index: item.index,
-          height: item.size,
-          type: item.type || 'item',
-          ...(item.type === 'group' ? {} : { groupIndex: item.groupIndex }),
-        })
-      }
+        if (isSeeking) {
+          return (
+            <ScrollSeekPlaceholder
+              {...contextPropIfNotDomElement(ScrollSeekPlaceholder, context)}
+              key={key}
+              index={item.index}
+              height={item.size}
+              type={item.type || 'item'}
+              {...(item.type === 'group' ? {} : { groupIndex: item.groupIndex })}
+            />
+          )
+        }
 
-      if (item.type === 'group') {
-        return React.createElement(
-          GroupComponent,
-          {
-            ...contextPropIfNotDomElement(GroupComponent, context),
-            key,
-            'data-index': index,
-            'data-known-size': item.size,
-            'data-item-index': item.index,
-            style: GROUP_STYLE,
-          },
-          groupContent(item.index, context)
-        )
-      } else {
-        return React.createElement(
-          ItemComponent,
-          {
-            ...contextPropIfNotDomElement(ItemComponent, context),
-            ...itemPropIfNotDomElement(ItemComponent, item.data),
-            key,
-            'data-index': index,
-            'data-known-size': item.size,
-            'data-item-index': item.index,
-            'data-item-group-index': item.groupIndex,
-            style: ITEM_STYLE,
-          },
-          hasGroups
-            ? (itemContent as GroupItemContent<any, any>)(item.index, item.groupIndex!, item.data, context)
-            : (itemContent as ItemContent<any, any>)(item.index, item.data, context)
-        )
-      }
-    })
+        if (item.type === 'group') {
+          return (
+            <GroupComponent
+              {...contextPropIfNotDomElement(GroupComponent, context)}
+              key={key}
+              data-index={index}
+              data-known-size={item.size}
+              data-item-index={item.index}
+              style={GROUP_STYLE}
+            >
+              {groupContent(item.index, context)}
+            </GroupComponent>
+          )
+        } else {
+          return (
+            <ItemComponent
+              {...contextPropIfNotDomElement(ItemComponent, context)}
+              {...itemPropIfNotDomElement(ItemComponent, item.data)}
+              key={key}
+              data-index={index}
+              data-known-size={item.size}
+              data-item-index={item.index}
+              data-item-group-index={item.groupIndex}
+              style={ITEM_STYLE}
+            >
+              {hasGroups
+                ? (itemContent as GroupItemContent<any, any>)(item.index, item.groupIndex!, item.data, context)
+                : (itemContent as ItemContent<any, any>)(item.index, item.data, context)}
+            </ItemComponent>
+          )
+        }
+      })}
+    </ListComponent>
   )
 })
 
@@ -223,23 +228,27 @@ export function itemPropIfNotDomElement(element: unknown, item: unknown) {
 const Header: React.FC = /*#__PURE__*/ React.memo(function VirtuosoHeader() {
   const Header = useEmitterValue('HeaderComponent')
   const headerHeight = usePublisher('headerHeight')
-  const headerFooterTag = useEmitterValue('headerFooterTag')
+  const HeaderWrapper: 'div' = useEmitterValue('headerFooterTag')
   const ref = useSize((el) => headerHeight(correctItemSize(el, 'height')))
   const context = useEmitterValue('context')
-  return Header
-    ? React.createElement(headerFooterTag, { ref }, React.createElement(Header, contextPropIfNotDomElement(Header, context)))
-    : null
+  return Header ? (
+    <HeaderWrapper ref={ref}>
+      <Header {...contextPropIfNotDomElement(Header, context)} />
+    </HeaderWrapper>
+  ) : null
 })
 
 const Footer: React.FC = /*#__PURE__*/ React.memo(function VirtuosoFooter() {
   const Footer = useEmitterValue('FooterComponent')
   const footerHeight = usePublisher('footerHeight')
-  const headerFooterTag = useEmitterValue('headerFooterTag')
+  const FooterWrapper: 'div' = useEmitterValue('headerFooterTag')
   const ref = useSize((el) => footerHeight(correctItemSize(el, 'height')))
   const context = useEmitterValue('context')
-  return Footer
-    ? React.createElement(headerFooterTag, { ref }, React.createElement(Footer, contextPropIfNotDomElement(Footer, context)))
-    : null
+  return Footer ? (
+    <FooterWrapper ref={ref}>
+      <Footer {...contextPropIfNotDomElement(Footer, context)} />
+    </FooterWrapper>
+  ) : null
 })
 
 interface Hooks {
@@ -265,18 +274,18 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
 
     useEmitter('scrollTo', scrollToCallback)
     useEmitter('scrollBy', scrollByCallback)
-    return React.createElement(
-      ScrollerComponent,
-      {
-        ref: scrollerRef as React.MutableRefObject<HTMLDivElement | null>,
-        style: { ...scrollerStyle, ...style },
-        'data-testid': 'virtuoso-scroller',
-        'data-virtuoso-scroller': true,
-        tabIndex: 0,
-        ...props,
-        ...contextPropIfNotDomElement(ScrollerComponent, context),
-      },
-      children
+    return (
+      <ScrollerComponent
+        ref={scrollerRef as React.MutableRefObject<HTMLDivElement | null>}
+        style={{ ...scrollerStyle, ...style }}
+        data-testid="virtuoso-scroller"
+        data-virtuoso-scroller={true}
+        tabIndex={0}
+        {...props}
+        {...contextPropIfNotDomElement(ScrollerComponent, context)}
+      >
+        {children}
+      </ScrollerComponent>
     )
   })
   return Scroller
@@ -308,17 +317,18 @@ export function buildWindowScroller({ usePublisher, useEmitter, useEmitterValue 
 
     useEmitter('windowScrollTo', scrollToCallback)
     useEmitter('scrollBy', scrollByCallback)
-    return React.createElement(
-      ScrollerComponent,
-      {
-        style: { position: 'relative', ...style, ...(totalListHeight !== 0 ? { height: totalListHeight + deviation } : {}) },
-        'data-virtuoso-scroller': true,
-        ...props,
-        ...contextPropIfNotDomElement(ScrollerComponent, context),
-      },
-      children
+    return (
+      <ScrollerComponent
+        style={{ position: 'relative', ...style, ...(totalListHeight !== 0 ? { height: totalListHeight + deviation } : {}) }}
+        data-virtuoso-scroller={true}
+        {...props}
+        {...contextPropIfNotDomElement(ScrollerComponent, context)}
+      >
+        {children}
+      </ScrollerComponent>
     )
   })
+
   return Scroller
 }
 
@@ -370,7 +380,11 @@ const TopItemListContainer: React.FC<React.PropsWithChildren<unknown>> = ({ chil
   const headerHeight = useEmitterValue('headerHeight')
   const style = { ...topItemListStyle, marginTop: `${headerHeight}px` }
   const context = useEmitterValue('context')
-  return React.createElement(TopItemList, { style, ...contextPropIfNotDomElement(TopItemList, context) }, children)
+  return (
+    <TopItemList style={style} {...contextPropIfNotDomElement(TopItemList, context)}>
+      {children}
+    </TopItemList>
+  )
 }
 
 const ListRoot: React.FC<ListRootProps> = /*#__PURE__*/ React.memo(function VirtuosoRoot(props) {

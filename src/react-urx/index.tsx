@@ -202,10 +202,13 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
   }
 
   function buildEventHandlers(system: ContextValue) {
-    return eventNames.reduce((handlers, eventName) => {
-      handlers[eventName] = u.eventHandler(system[map.events![eventName]])
-      return handlers
-    }, {} as { [key: string]: Emitter<any> })
+    return eventNames.reduce(
+      (handlers, eventName) => {
+        handlers[eventName] = u.eventHandler(system[map.events![eventName]])
+        return handlers
+      },
+      {} as { [key: string]: Emitter<any> }
+    )
   }
 
   /**
@@ -238,23 +241,22 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
 
     React.useImperativeHandle(ref, u.always(buildMethods(system)))
 
-    return React.createElement(
-      Context.Provider,
-      { value: system },
-      Root
-        ? React.createElement(
-            Root as unknown as React.ComponentType,
-            omit([...requiredPropNames, ...optionalPropNames, ...eventNames], props),
-            children
-          )
-        : children
+    const Wrapper = Root as unknown as React.ComponentType<{ children: React.ReactNode }>
+    return (
+      <Context.Provider value={system}>
+        {Wrapper ? <Wrapper {...omit([...requiredPropNames, ...optionalPropNames, ...eventNames], props)}>{children}</Wrapper> : children}
+      </Context.Provider>
     )
   })
 
   const usePublisher = <K extends keyof S>(key: K) => {
-    return React.useCallback(u.curry2to1(u.publish, React.useContext(Context)[key]), [key]) as (
-      value: S[K] extends Stream<infer R> ? R : never
-    ) => void
+    const stream = React.useContext(Context)[key]
+    return React.useCallback(
+      (arg) => {
+        u.publish(stream, arg)
+      },
+      [stream]
+    ) as (value: S[K] extends Stream<infer R> ? R : never) => void
   }
 
   /**

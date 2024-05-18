@@ -3,6 +3,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import dts from 'vite-plugin-dts'
 
+const ReactCompilerConfig = {
+  /* ... */
+}
 const ext = {
   cjs: 'cjs',
   es: 'mjs',
@@ -10,7 +13,14 @@ const ext = {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react({ jsxRuntime: 'classic' }), dts({ rollupTypes: true })],
+  plugins: [
+    react({
+      babel: {
+        // plugins: [['babel-plugin-react-compiler', ReactCompilerConfig]],
+      },
+    }),
+    dts({ rollupTypes: true }),
+  ],
   build: {
     target: ['es2020', 'edge88', 'firefox78', 'chrome79', 'safari14'],
     minify: 'terser',

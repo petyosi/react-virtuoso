@@ -3,9 +3,9 @@ import * as u from './urx'
 import { domIOSystem } from './domIOSystem'
 import { approximatelyEqual } from './utils/approximatelyEqual'
 
-export const UP = 'up' as const
-export const DOWN = 'down' as const
-export const NONE = 'none' as const
+export const UP = 'up'
+export const DOWN = 'down'
+export const NONE = 'none'
 export type ScrollDirection = typeof UP | typeof DOWN | typeof NONE
 
 export interface ListBottomInfo {
@@ -208,7 +208,10 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
             return { direction: acc.direction, prevScrollTop: scrollTop }
           }
 
-          return { direction: scrollTop < acc.prevScrollTop ? UP : DOWN, prevScrollTop: scrollTop }
+          return { direction: scrollTop < acc.prevScrollTop ? UP : DOWN, prevScrollTop: scrollTop } as {
+            direction: ScrollDirection
+            prevScrollTop: number
+          }
         },
         { direction: DOWN, prevScrollTop: 0 } as { direction: ScrollDirection; prevScrollTop: number }
       ),

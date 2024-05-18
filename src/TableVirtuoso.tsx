@@ -61,9 +61,12 @@ const tableComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   }
 })
 
-const combinedSystem = /*#__PURE__*/ u.system(([listSystem, propsSystem]) => {
-  return { ...listSystem, ...propsSystem }
-}, u.tup(listSystem, tableComponentPropsSystem))
+const combinedSystem = /*#__PURE__*/ u.system(
+  ([listSystem, propsSystem]) => {
+    return { ...listSystem, ...propsSystem }
+  },
+  u.tup(listSystem, tableComponentPropsSystem)
+)
 
 const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => (
   <tr>
@@ -123,7 +126,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
   const context = useEmitterValue('context')
 
   if (statefulTotalCount === 0 && EmptyPlaceholder) {
-    return React.createElement(EmptyPlaceholder, contextPropIfNotDomElement(EmptyPlaceholder, context))
+    return <EmptyPlaceholder {...contextPropIfNotDomElement(EmptyPlaceholder, context)} />
   }
 
   const paddingTop = listState.offsetTop + paddingTopAddition + deviation
@@ -138,33 +141,35 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
     const key = computeItemKey(index + firstItemIndex, item.data, context)
 
     if (isSeeking) {
-      return React.createElement(ScrollSeekPlaceholder, {
-        ...contextPropIfNotDomElement(ScrollSeekPlaceholder, context),
-        key,
-        index: item.index,
-        height: item.size,
-        type: item.type || 'item',
-      })
+      return (
+        <ScrollSeekPlaceholder
+          {...contextPropIfNotDomElement(ScrollSeekPlaceholder, context)}
+          key={key}
+          index={item.index}
+          height={item.size}
+          type={item.type || 'item'}
+        />
+      )
     }
-    return React.createElement(
-      TableRowComponent,
-      {
-        ...contextPropIfNotDomElement(TableRowComponent, context),
-        ...itemPropIfNotDomElement(TableRowComponent, item.data),
-        key,
-        'data-index': index,
-        'data-known-size': item.size,
-        'data-item-index': item.index,
-        style: ITEM_STYLE,
-      },
-      itemContent(item.index, item.data, context)
+    return (
+      <TableRowComponent
+        {...contextPropIfNotDomElement(TableRowComponent, context)}
+        {...itemPropIfNotDomElement(TableRowComponent, item.data)}
+        key={key}
+        data-index={index}
+        data-known-size={item.size}
+        data-item-index={item.index}
+        style={ITEM_STYLE}
+      >
+        {itemContent(item.index, item.data, context)}
+      </TableRowComponent>
     )
   })
 
-  return React.createElement(
-    TableBodyComponent,
-    { ref: callbackRef, 'data-testid': 'virtuoso-item-list', ...contextPropIfNotDomElement(TableBodyComponent, context) },
-    [paddingTopEl, ...items, paddingBottomEl]
+  return (
+    <TableBodyComponent ref={callbackRef} data-testid="virtuoso-item-list" {...contextPropIfNotDomElement(TableBodyComponent, context)}>
+      {[paddingTopEl, ...items, paddingBottomEl]}
+    </TableBodyComponent>
   )
 })
 
@@ -221,43 +226,37 @@ const TableRoot: React.FC<TableRootProps> = /*#__PURE__*/ React.memo(function Ta
   const tfootRef = useSize(u.compose(fixedFooterHeight, (el) => correctItemSize(el, 'height')))
   const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
   const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
-  const TheTable = useEmitterValue('TableComponent')
-  const TheTHead = useEmitterValue('TableHeadComponent')
-  const TheTFoot = useEmitterValue('TableFooterComponent')
+  const TheTable = useEmitterValue('TableComponent')!
+  const TheTHead = useEmitterValue('TableHeadComponent')!
+  const TheTFoot = useEmitterValue('TableFooterComponent')!
 
-  const theHead = fixedHeaderContent
-    ? React.createElement(
-        TheTHead!,
-        {
-          key: 'TableHead',
-          style: { zIndex: 2, position: 'sticky', top: 0 },
-          ref: theadRef,
-          ...contextPropIfNotDomElement(TheTHead, context),
-        },
-        fixedHeaderContent()
-      )
-    : null
-  const theFoot = fixedFooterContent
-    ? React.createElement(
-        TheTFoot!,
-        {
-          key: 'TableFoot',
-          style: { zIndex: 1, position: 'sticky', bottom: 0 },
-          ref: tfootRef,
-          ...contextPropIfNotDomElement(TheTFoot, context),
-        },
-        fixedFooterContent()
-      )
-    : null
+  const theHead = fixedHeaderContent ? (
+    <TheTHead
+      key="TableHead"
+      style={{ zIndex: 2, position: 'sticky', top: 0 }}
+      ref={theadRef}
+      {...contextPropIfNotDomElement(TheTHead, context)}
+    >
+      {fixedHeaderContent()}
+    </TheTHead>
+  ) : null
+  const theFoot = fixedFooterContent ? (
+    <TheTFoot
+      key="TableFoot"
+      style={{ zIndex: 1, position: 'sticky', bottom: 0 }}
+      ref={tfootRef}
+      {...contextPropIfNotDomElement(TheTFoot, context)}
+    >
+      {fixedFooterContent()}
+    </TheTFoot>
+  ) : null
 
   return (
     <TheScroller {...props}>
       <TheViewport>
-        {React.createElement(
-          TheTable!,
-          { style: { borderSpacing: 0, overflowAnchor: 'none' }, ...contextPropIfNotDomElement(TheTable, context) },
-          [theHead, <Items key="TableBody" />, theFoot]
-        )}
+        <TheTable style={{ borderSpacing: 0, overflowAnchor: 'none' }} {...contextPropIfNotDomElement(TheTable, context)}>
+          {[theHead, <Items key="TableBody" />, theFoot]}
+        </TheTable>
       </TheViewport>
     </TheScroller>
   )

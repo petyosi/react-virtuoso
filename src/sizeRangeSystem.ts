@@ -5,9 +5,9 @@ import { tupleComparator } from './comparators'
 
 export type NumberTuple = [number, number]
 export type Overscan = number | { main: number; reverse: number }
-export const TOP = 'top' as const
-export const BOTTOM = 'bottom' as const
-export const NONE = 'none' as const
+export const TOP = 'top'
+export const BOTTOM = 'bottom'
+export const NONE = 'none'
 export type ListEnd = typeof TOP | typeof BOTTOM
 export type ViewportIncrease = number | { [k in ListEnd]?: number }
 export type ChangeDirection = typeof UP | typeof DOWN | typeof NONE

@@ -5,7 +5,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: ['./tsconfig.eslint.json'],
   },
-  plugins: ['@typescript-eslint', 'json', 'html'],
+  plugins: ['@typescript-eslint', 'json', 'html', 'react-compiler'],
   extends: [
     'plugin:react/recommended',
     'plugin:@typescript-eslint/recommended',
@@ -14,6 +14,7 @@ module.exports = {
     'plugin:prettier/recommended',
   ],
   rules: {
+    'react-compiler/react-compiler': 'error',
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',

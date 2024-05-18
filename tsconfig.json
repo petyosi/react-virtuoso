@@ -8,7 +8,10 @@
     "importHelpers": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "lib": ["dom", "esnext"],
+    "lib": [
+      "dom",
+      "esnext"
+    ],
     "module": "esnext",
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
@@ -22,5 +25,7 @@
     "strict": true,
     "target": "ESNext"
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }
