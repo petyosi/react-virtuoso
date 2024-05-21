@@ -252,6 +252,16 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
    * This is useful when you want to keep the list state when the component is unmounted and remounted, for example when navigating to a different page.
    */
   restoreStateFrom?: StateSnapshot
+
+  /**
+   * Sets the grid items' className
+   */
+  itemClassName?: string
+
+  /**
+   * Sets the className for the list DOM element
+   */
+  listClassName?: string
 }
 
 export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'totalCount' | 'itemContent'> {

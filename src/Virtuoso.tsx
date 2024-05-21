@@ -21,6 +21,8 @@ export function identity<T>(value: T) {
 const listComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   const itemContent = u.statefulStream<ItemContent<any, any> | GroupItemContent<any, any>>((index: number) => `Item ${index}`)
   const context = u.statefulStream<unknown>(null)
+  const itemClassName = u.statefulStream('virtuoso-item')
+  const listClassName = u.statefulStream('virtuoso-list')
   const groupContent = u.statefulStream<GroupContent<any>>((index: number) => `Group ${index}`)
   const components = u.statefulStream<Components<any>>({})
   const computeItemKey = u.statefulStream<ComputeItemKey<any, any>>(identity)
@@ -44,6 +46,8 @@ const listComponentPropsSystem = /*#__PURE__*/ u.system(() => {
     groupContent,
     components,
     computeItemKey,
+    itemClassName,
+    listClassName,
     headerFooterTag,
     scrollerRef,
     FooterComponent: distinctProp('Footer'),
@@ -69,7 +73,8 @@ const ITEM_STYLE = { overflowAnchor: 'none' } as const
 
 const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = false }: { showTopList?: boolean }) {
   const listState = useEmitterValue('listState')
-
+  const listClassName = useEmitterValue('listClassName')
+  const itemClassName = useEmitterValue('itemClassName')
   const sizeRanges = usePublisher('sizeRanges')
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const customScrollParent = useEmitterValue('customScrollParent')
@@ -133,6 +138,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
     {
       ...contextPropIfNotDomElement(ListComponent, context),
       ref: callbackRef,
+      className: listClassName,
       style: containerStyle,
       'data-testid': showTopList ? 'virtuoso-top-item-list' : 'virtuoso-item-list',
     },
@@ -170,6 +176,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
           {
             ...contextPropIfNotDomElement(ItemComponent, context),
             ...itemPropIfNotDomElement(ItemComponent, item.data),
+            className: itemClassName,
             key,
             'data-index': index,
             'data-known-size': item.size,
@@ -426,6 +433,8 @@ export const {
       itemSize: 'itemSize',
       scrollSeekConfiguration: 'scrollSeekConfiguration',
       headerFooterTag: 'headerFooterTag',
+      listClassName: 'listClassName',
+      itemClassName: 'itemClassName',
       data: 'data',
       initialItemCount: 'initialItemCount',
       initialScrollTop: 'initialScrollTop',

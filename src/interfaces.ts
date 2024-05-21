@@ -19,7 +19,7 @@ export interface GroupContent<C> {
   (index: number, context: C): React.ReactNode
 }
 
-export type ItemProps<D> = Pick<React.ComponentProps<'div'>, 'style' | 'children'> & {
+export type ItemProps<D> = Pick<React.ComponentProps<'div'>, 'style' | 'children' | 'className'> & {
   'data-index': number
   'data-item-index': number
   'data-item-group-index'?: number
@@ -46,7 +46,7 @@ export type TableBodyProps = Pick<React.ComponentProps<'tbody'>, 'style' | 'chil
 /**
  * Passed to the Components.List custom component
  */
-export type ListProps = Pick<React.ComponentProps<'div'>, 'style' | 'children'> & {
+export type ListProps = Pick<React.ComponentProps<'div'>, 'style' | 'children' | 'className'> & {
   'data-testid': string
 } & React.RefAttributes<HTMLDivElement>
 
