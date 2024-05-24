@@ -13,6 +13,7 @@ import type {
   TableComponents,
   StateSnapshot,
   StateCallback,
+  IndexLocationWithAlign,
 } from '../interfaces'
 import type { VirtuosoProps } from './Virtuoso'
 
@@ -59,8 +60,9 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
 
   /**
    * Set to a value between 0 and totalCount - 1 to make the list start scrolled to that item.
+   * Pass in an object to achieve additional effects similar to `scrollToIndex`.
    */
-  initialTopMostItemIndex?: number
+  initialTopMostItemIndex?: number | IndexLocationWithAlign
 
   /**
    * Set this value to offset the initial location of the list.
