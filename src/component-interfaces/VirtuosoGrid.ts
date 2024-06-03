@@ -126,6 +126,12 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
   listClassName?: string
 
   /**
+   * Whether to disable the re-rendering of the grid list on scroll, resize etc.
+   * This is needed for elements like fullscreen video mode which affects element sizes even when you don't want it to.
+   */
+  shouldDisableIntersectionObserverCallback: (el: HTMLElement) => boolean
+
+  /**
    * Sets the grid items' className
    */
   itemClassName?: string

@@ -17,6 +17,7 @@ const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   const components = u.statefulStream<GridComponents>({})
   const context = u.statefulStream<unknown>(null)
   const itemClassName = u.statefulStream('virtuoso-grid-item')
+  const shouldDisableIntersectionObserverCallback = u.statefulStream('shouldDisableIntersectionObserverCallback')
   const listClassName = u.statefulStream('virtuoso-grid-list')
   const computeItemKey = u.statefulStream<GridComputeItemKey<any, any>>(identity)
   const headerFooterTag = u.statefulStream('div')
@@ -40,6 +41,7 @@ const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
     computeItemKey,
     itemClassName,
     listClassName,
+    shouldDisableIntersectionObserverCallback,
     headerFooterTag,
     scrollerRef,
     FooterComponent: distinctProp('Footer'),
@@ -57,6 +59,7 @@ const combinedSystem = /*#__PURE__*/ u.system(([gridSystem, gridComponentPropsSy
 
 const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
   const gridState = useEmitterValue('gridState')
+  const shouldDisableIntersectionObserverCallback = useEmitterValue('shouldDisableIntersectionObserverCallback')
   const listClassName = useEmitterValue('listClassName')
   const itemClassName = useEmitterValue('itemClassName')
   const itemContent = useEmitterValue('itemContent')
@@ -73,6 +76,10 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
   const stateRestoreInProgress = useEmitterValue('stateRestoreInProgress')
 
   const listRef = useSize((el) => {
+    const shouldDisable = shouldDisableIntersectionObserverCallback(el);
+
+    if (shouldDisable) return;
+
     const scrollHeight = el.parentElement!.parentElement!.scrollHeight
     scrollHeightCallback(scrollHeight)
     const firstItem = el.firstChild as HTMLElement
@@ -222,6 +229,7 @@ const {
       initialItemCount: 'initialItemCount',
       scrollSeekConfiguration: 'scrollSeekConfiguration',
       headerFooterTag: 'headerFooterTag',
+      shouldDisableIntersectionObserverCallback: 'shouldDisableIntersectionObserverCallback',
       listClassName: 'listClassName',
       itemClassName: 'itemClassName',
       useWindowScroll: 'useWindowScroll',
