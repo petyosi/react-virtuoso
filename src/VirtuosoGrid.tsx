@@ -17,7 +17,7 @@ const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   const components = u.statefulStream<GridComponents>({})
   const context = u.statefulStream<unknown>(null)
   const itemClassName = u.statefulStream('virtuoso-grid-item')
-  const shouldDisableIntersectionObserverCallback = u.statefulStream('shouldDisableIntersectionObserverCallback')
+  const shouldDisableIntersectionObserverCallback = u.statefulStream<(el: HTMLElement) => boolean>(() => false)
   const listClassName = u.statefulStream('virtuoso-grid-list')
   const computeItemKey = u.statefulStream<GridComputeItemKey<any, any>>(identity)
   const headerFooterTag = u.statefulStream('div')
@@ -76,9 +76,9 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
   const stateRestoreInProgress = useEmitterValue('stateRestoreInProgress')
 
   const listRef = useSize((el) => {
-    const shouldDisable = shouldDisableIntersectionObserverCallback(el);
+    const shouldDisable = shouldDisableIntersectionObserverCallback(el)
 
-    if (shouldDisable) return;
+    if (shouldDisable) return
 
     const scrollHeight = el.parentElement!.parentElement!.scrollHeight
     scrollHeightCallback(scrollHeight)
