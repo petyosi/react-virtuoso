@@ -172,7 +172,7 @@ const Viewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const ctx = React.useContext(VirtuosoMockContext)
   const viewportHeight = usePublisher('viewportHeight')
   const fixedItemHeight = usePublisher('fixedItemHeight')
-  const viewportRef = useSize(u.compose(viewportHeight, (el) => correctItemSize(el, 'height')))
+  const viewportRef = useSize(React.useMemo(() => u.compose(viewportHeight, (el) => correctItemSize(el, 'height')), [viewportHeight]))
 
   React.useEffect(() => {
     if (ctx) {
@@ -217,8 +217,8 @@ const TableRoot: React.FC<TableRootProps> = /*#__PURE__*/ React.memo(function Ta
   const fixedHeaderContent = useEmitterValue('fixedHeaderContent')
   const fixedFooterContent = useEmitterValue('fixedFooterContent')
   const context = useEmitterValue('context')
-  const theadRef = useSize(u.compose(fixedHeaderHeight, (el) => correctItemSize(el, 'height')))
-  const tfootRef = useSize(u.compose(fixedFooterHeight, (el) => correctItemSize(el, 'height')))
+  const theadRef = useSize(React.useMemo(() => u.compose(fixedHeaderHeight, (el) => correctItemSize(el, 'height')), [fixedHeaderHeight]))
+  const tfootRef = useSize(React.useMemo(() => u.compose(fixedFooterHeight, (el) => correctItemSize(el, 'height')), [fixedFooterHeight]))
   const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
   const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
   const TheTable = useEmitterValue('TableComponent')
