@@ -72,19 +72,24 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
   const log = useEmitterValue('log')
   const stateRestoreInProgress = useEmitterValue('stateRestoreInProgress')
 
-  const listRef = useSize((el) => {
-    const scrollHeight = el.parentElement!.parentElement!.scrollHeight
-    scrollHeightCallback(scrollHeight)
-    const firstItem = el.firstChild as HTMLElement
-    if (firstItem) {
-      const { width, height } = firstItem.getBoundingClientRect()
-      itemDimensions({ width, height })
-    }
-    gridGap({
-      row: resolveGapValue('row-gap', getComputedStyle(el).rowGap, log),
-      column: resolveGapValue('column-gap', getComputedStyle(el).columnGap, log),
-    })
-  })
+  const listRef = useSize(
+    React.useMemo(
+      () => (el) => {
+        const scrollHeight = el.parentElement!.parentElement!.scrollHeight
+        scrollHeightCallback(scrollHeight)
+        const firstItem = el.firstChild as HTMLElement
+        if (firstItem) {
+          const { width, height } = firstItem.getBoundingClientRect()
+          itemDimensions({ width, height })
+        }
+        gridGap({
+          row: resolveGapValue('row-gap', getComputedStyle(el).rowGap, log),
+          column: resolveGapValue('column-gap', getComputedStyle(el).columnGap, log),
+        })
+      },
+      [scrollHeightCallback, itemDimensions, gridGap, log]
+    )
+  )
 
   if (stateRestoreInProgress) {
     return null
@@ -124,7 +129,7 @@ const Header: React.FC = React.memo(function VirtuosoHeader() {
   const Header = useEmitterValue('HeaderComponent')
   const headerHeight = usePublisher('headerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
-  const ref = useSize((el) => headerHeight(correctItemSize(el, 'height')))
+  const ref = useSize(React.useMemo(() => (el) => headerHeight(correctItemSize(el, 'height')), [headerHeight]))
   const context = useEmitterValue('context')
   return Header
     ? React.createElement(headerFooterTag, { ref }, React.createElement(Header, contextPropIfNotDomElement(Header, context)))
@@ -135,7 +140,7 @@ const Footer: React.FC = React.memo(function VirtuosoGridFooter() {
   const Footer = useEmitterValue('FooterComponent')
   const footerHeight = usePublisher('footerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
-  const ref = useSize((el) => footerHeight(correctItemSize(el, 'height')))
+  const ref = useSize(React.useMemo(() => (el) => footerHeight(correctItemSize(el, 'height')), [footerHeight]))
   const context = useEmitterValue('context')
   return Footer
     ? React.createElement(headerFooterTag, { ref }, React.createElement(Footer, contextPropIfNotDomElement(Footer, context)))
@@ -147,9 +152,14 @@ const Viewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const itemDimensions = usePublisher('itemDimensions')
   const viewportDimensions = usePublisher('viewportDimensions')
 
-  const viewportRef = useSize((el) => {
-    viewportDimensions(el.getBoundingClientRect())
-  })
+  const viewportRef = useSize(
+    React.useMemo(
+      () => (el: HTMLElement) => {
+        viewportDimensions(el.getBoundingClientRect())
+      },
+      [viewportDimensions]
+    )
+  )
 
   React.useEffect(() => {
     if (ctx) {
