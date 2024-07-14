@@ -9,7 +9,7 @@ import { windowScrollerSystem } from './windowScrollerSystem'
 export const stateLoadSystem = u.system(
   ([
     { sizes, sizeRanges },
-    { scrollTop },
+    { scrollTop, headerHeight },
     { initialTopMostItemIndex },
     { didMount },
     { useWindowScroll, windowScrollContainerState, windowViewportRect },
@@ -24,12 +24,16 @@ export const stateLoadSystem = u.system(
     u.connect(windowViewportRect, statefulWindowViewportRect)
 
     u.subscribe(
-      u.pipe(getState, u.withLatestFrom(sizes, scrollTop, useWindowScroll, statefulWindowScrollContainerState, statefulWindowViewportRect)),
-      ([callback, sizes, scrollTop, useWindowScroll, windowScrollContainerState, windowViewportRect]) => {
+      u.pipe(
+        getState,
+        u.withLatestFrom(sizes, scrollTop, useWindowScroll, statefulWindowScrollContainerState, statefulWindowViewportRect, headerHeight)
+      ),
+      ([callback, sizes, scrollTop, useWindowScroll, windowScrollContainerState, windowViewportRect, headerHeight]) => {
         const ranges = sizeTreeToRanges(sizes.sizeTree)
         if (useWindowScroll && windowScrollContainerState !== null && windowViewportRect !== null) {
           scrollTop = windowScrollContainerState.scrollTop - windowViewportRect.offsetTop
         }
+        scrollTop -= headerHeight
         callback({ ranges, scrollTop })
       }
     )
