@@ -97,6 +97,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
     const initialTopMostItemIndex = u.statefulStream<GridIndexLocation>(0)
     const scrolledToInitialItem = u.statefulStream(true)
     const scrollScheduled = u.statefulStream(false)
+    const horizontalDirection = u.statefulStream(false)
 
     u.subscribe(
       u.pipe(
@@ -429,6 +430,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
       restoreStateFrom,
       ...scrollSeek,
       initialTopMostItemIndex,
+      horizontalDirection,
 
       // output
       gridState,

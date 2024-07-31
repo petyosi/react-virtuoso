@@ -9,11 +9,12 @@ export default function useChangedListContentsSizes(
   scrollContainerStateCallback: (state: ScrollContainerState) => void,
   log: Log,
   gap?: (gap: number) => void,
-  customScrollParent?: HTMLElement
+  customScrollParent?: HTMLElement,
+  horizontalDirection?: boolean
 ) {
   const memoedCallback = React.useCallback(
     (el: HTMLElement) => {
-      const ranges = getChangedChildSizes(el.children, itemSize, 'offsetHeight', log)
+      const ranges = getChangedChildSizes(el.children, itemSize, horizontalDirection ? 'offsetWidth' : 'offsetHeight', log)
       let scrollableElement = el.parentElement!
 
       while (!scrollableElement.dataset['virtuosoScroller']) {
@@ -24,21 +25,39 @@ export default function useChangedListContentsSizes(
       const windowScrolling = (scrollableElement.lastElementChild! as HTMLDivElement).dataset['viewportType']! === 'window'
 
       const scrollTop = customScrollParent
-        ? customScrollParent.scrollTop
+        ? horizontalDirection
+          ? customScrollParent.scrollLeft
+          : customScrollParent.scrollTop
         : windowScrolling
-        ? window.pageYOffset || document.documentElement.scrollTop
+        ? horizontalDirection
+          ? window.pageXOffset || document.documentElement.scrollLeft
+          : window.pageYOffset || document.documentElement.scrollTop
+        : horizontalDirection
+        ? scrollableElement.scrollLeft
         : scrollableElement.scrollTop
 
       const scrollHeight = customScrollParent
-        ? customScrollParent.scrollHeight
+        ? horizontalDirection
+          ? customScrollParent.scrollWidth
+          : customScrollParent.scrollHeight
         : windowScrolling
-        ? document.documentElement.scrollHeight
+        ? horizontalDirection
+          ? document.documentElement.scrollWidth
+          : document.documentElement.scrollHeight
+        : horizontalDirection
+        ? scrollableElement.scrollWidth
         : scrollableElement.scrollHeight
 
       const viewportHeight = customScrollParent
-        ? customScrollParent.offsetHeight
+        ? horizontalDirection
+          ? customScrollParent.offsetWidth
+          : customScrollParent.offsetHeight
         : windowScrolling
-        ? window.innerHeight
+        ? horizontalDirection
+          ? window.innerWidth
+          : window.innerHeight
+        : horizontalDirection
+        ? scrollableElement.offsetWidth
         : scrollableElement.offsetHeight
 
       scrollContainerStateCallback({
@@ -47,7 +66,11 @@ export default function useChangedListContentsSizes(
         viewportHeight,
       })
 
-      gap?.(resolveGapValue('row-gap', getComputedStyle(el).rowGap, log))
+      gap?.(
+        horizontalDirection
+          ? resolveGapValue('column-gap', getComputedStyle(el).columnGap, log)
+          : resolveGapValue('row-gap', getComputedStyle(el).rowGap, log)
+      )
 
       if (ranges !== null) {
         callback(ranges)

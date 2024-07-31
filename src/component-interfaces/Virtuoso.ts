@@ -252,6 +252,11 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
    * This is useful when you want to keep the list state when the component is unmounted and remounted, for example when navigating to a different page.
    */
   restoreStateFrom?: StateSnapshot
+
+  /**
+   * When set, turns the scroller into a horizontal list. The items are positioned with `inline-block`.
+   */
+  horizontalDirection?: boolean
 }
 
 export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'totalCount' | 'itemContent'> {

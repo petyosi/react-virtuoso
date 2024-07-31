@@ -128,7 +128,7 @@ exports[`VirtuosoMockContext > List > correctly renders items 1`] = `
     >
       <div
         data-testid="virtuoso-item-list"
-        style="box-sizing: border-box; padding-top: 0px; padding-bottom: 500px; margin-top: 0px;"
+        style="box-sizing: border-box; margin-top: 0px; padding-top: 0px; padding-bottom: 500px;"
       >
         <div
           data-index="0"
@@ -172,7 +172,7 @@ exports[`VirtuosoMockContext > List > correctly renders items with useWindowScro
     >
       <div
         data-testid="virtuoso-item-list"
-        style="box-sizing: border-box; padding-top: 0px; padding-bottom: 500px; margin-top: 0px;"
+        style="box-sizing: border-box; margin-top: 0px; padding-top: 0px; padding-bottom: 500px;"
       >
         <div
           data-index="0"

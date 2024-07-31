@@ -66,6 +66,7 @@ const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => <div st
 
 const GROUP_STYLE = { position: positionStickyCssValue(), zIndex: 1, overflowAnchor: 'none' } as const
 const ITEM_STYLE = { overflowAnchor: 'none' } as const
+const HORIZONTAL_ITEM_STYLE = { ...ITEM_STYLE, display: 'inline-block', height: '100%' } as const
 
 const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = false }: { showTopList?: boolean }) {
   const listState = useEmitterValue('listState')
@@ -84,6 +85,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
   const itemSize = useEmitterValue('itemSize')
   const log = useEmitterValue('log')
   const listGap = usePublisher('gap')
+  const horizontalDirection = useEmitterValue('horizontalDirection')
 
   const { callbackRef } = useChangedListContentsSizes(
     sizeRanges,
@@ -92,7 +94,8 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
     showTopList ? u.noop : scrollContainerStateCallback,
     log,
     listGap,
-    customScrollParent
+    customScrollParent,
+    horizontalDirection
   )
 
   const [deviation, setDeviation] = React.useState(0)
@@ -118,9 +121,20 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
     ? {}
     : {
         boxSizing: 'border-box',
-        paddingTop: listState.offsetTop,
-        paddingBottom: listState.offsetBottom,
-        marginTop: deviation !== 0 ? deviation : alignToBottom ? 'auto' : 0,
+        ...(horizontalDirection
+          ? {
+              whiteSpace: 'nowrap',
+              display: 'inline-block',
+              height: '100%',
+              paddingLeft: listState.offsetTop,
+              paddingRight: listState.offsetBottom,
+              marginLeft: deviation !== 0 ? deviation : alignToBottom ? 'auto' : 0,
+            }
+          : {
+              marginTop: deviation !== 0 ? deviation : alignToBottom ? 'auto' : 0,
+              paddingTop: listState.offsetTop,
+              paddingBottom: listState.offsetBottom,
+            }),
         ...(initialItemFinalLocationReached ? {} : { visibility: 'hidden' }),
       }
 
@@ -175,7 +189,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
             'data-known-size': item.size,
             'data-item-index': item.index,
             'data-item-group-index': item.groupIndex,
-            style: ITEM_STYLE,
+            style: horizontalDirection ? HORIZONTAL_ITEM_STYLE : ITEM_STYLE,
           },
           hasGroups
             ? (itemContent as GroupItemContent<any, any>)(item.index, item.groupIndex!, item.data, context)
@@ -192,6 +206,12 @@ export const scrollerStyle: React.CSSProperties = {
   overflowY: 'auto',
   position: 'relative',
   WebkitOverflowScrolling: 'touch',
+}
+
+const horizontalScrollerStyle: React.CSSProperties = {
+  outline: 'none',
+  overflowX: 'auto',
+  position: 'relative',
 }
 
 export const viewportStyle: (alignToBottom: boolean) => React.CSSProperties = (alignToBottom) => ({
@@ -255,21 +275,25 @@ export function buildScroller({ usePublisher, useEmitter, useEmitterValue }: Hoo
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
     const scrollerRefCallback = useEmitterValue('scrollerRef')
     const context = useEmitterValue('context')
+    const horizontalDirection = useEmitterValue('horizontalDirection') || false
 
     const { scrollerRef, scrollByCallback, scrollToCallback } = useScrollTop(
       scrollContainerStateCallback,
       smoothScrollTargetReached,
       ScrollerComponent,
-      scrollerRefCallback
+      scrollerRefCallback,
+      undefined,
+      horizontalDirection
     )
 
     useEmitter('scrollTo', scrollToCallback)
     useEmitter('scrollBy', scrollByCallback)
+    const defaultStyle = horizontalDirection ? horizontalScrollerStyle : scrollerStyle
     return React.createElement(
       ScrollerComponent,
       {
         ref: scrollerRef as React.MutableRefObject<HTMLDivElement | null>,
-        style: { ...scrollerStyle, ...style },
+        style: { ...defaultStyle, ...style },
         'data-testid': 'virtuoso-scroller',
         'data-virtuoso-scroller': true,
         tabIndex: 0,
@@ -327,7 +351,13 @@ const Viewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const viewportHeight = usePublisher('viewportHeight')
   const fixedItemHeight = usePublisher('fixedItemHeight')
   const alignToBottom = useEmitterValue('alignToBottom')
-  const viewportRef = useSize(React.useMemo(() => u.compose(viewportHeight, (el) => correctItemSize(el, 'height')), [viewportHeight]))
+
+  const horizontalDirection = useEmitterValue('horizontalDirection')
+  const viewportSizeCallbackMemo = React.useMemo(
+    () => u.compose(viewportHeight, (el: HTMLElement) => correctItemSize(el, horizontalDirection ? 'width' : 'height')),
+    [viewportHeight, horizontalDirection]
+  )
+  const viewportRef = useSize(viewportSizeCallbackMemo)
 
   React.useEffect(() => {
     if (ctx) {
@@ -434,6 +464,7 @@ export const {
       customScrollParent: 'customScrollParent',
       scrollerRef: 'scrollerRef',
       logLevel: 'logLevel',
+      horizontalDirection: 'horizontalDirection',
     },
     methods: {
       scrollToIndex: 'scrollToIndex',
