@@ -100,7 +100,9 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
     scrollContainerStateCallback,
     log,
     undefined,
-    customScrollParent
+    customScrollParent,
+    false,
+    useEmitterValue('skipAnimationFrameInResizeObserver')
   )
 
   const [deviation, setDeviation] = React.useState(0)
@@ -172,7 +174,11 @@ const Viewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const ctx = React.useContext(VirtuosoMockContext)
   const viewportHeight = usePublisher('viewportHeight')
   const fixedItemHeight = usePublisher('fixedItemHeight')
-  const viewportRef = useSize(React.useMemo(() => u.compose(viewportHeight, (el) => correctItemSize(el, 'height')), [viewportHeight]))
+  const viewportRef = useSize(
+    React.useMemo(() => u.compose(viewportHeight, (el) => correctItemSize(el, 'height')), [viewportHeight]),
+    true,
+    useEmitterValue('skipAnimationFrameInResizeObserver')
+  )
 
   React.useEffect(() => {
     if (ctx) {
@@ -193,7 +199,11 @@ const WindowViewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }
   const windowViewportRect = usePublisher('windowViewportRect')
   const fixedItemHeight = usePublisher('fixedItemHeight')
   const customScrollParent = useEmitterValue('customScrollParent')
-  const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent)
+  const viewportRef = useWindowViewportRectRef(
+    windowViewportRect,
+    customScrollParent,
+    useEmitterValue('skipAnimationFrameInResizeObserver')
+  )
 
   React.useEffect(() => {
     if (ctx) {
@@ -217,8 +227,16 @@ const TableRoot: React.FC<TableRootProps> = /*#__PURE__*/ React.memo(function Ta
   const fixedHeaderContent = useEmitterValue('fixedHeaderContent')
   const fixedFooterContent = useEmitterValue('fixedFooterContent')
   const context = useEmitterValue('context')
-  const theadRef = useSize(React.useMemo(() => u.compose(fixedHeaderHeight, (el) => correctItemSize(el, 'height')), [fixedHeaderHeight]))
-  const tfootRef = useSize(React.useMemo(() => u.compose(fixedFooterHeight, (el) => correctItemSize(el, 'height')), [fixedFooterHeight]))
+  const theadRef = useSize(
+    React.useMemo(() => u.compose(fixedHeaderHeight, (el) => correctItemSize(el, 'height')), [fixedHeaderHeight]),
+    true,
+    useEmitterValue('skipAnimationFrameInResizeObserver')
+  )
+  const tfootRef = useSize(
+    React.useMemo(() => u.compose(fixedFooterHeight, (el) => correctItemSize(el, 'height')), [fixedFooterHeight]),
+    true,
+    useEmitterValue('skipAnimationFrameInResizeObserver')
+  )
   const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
   const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
   const TheTable = useEmitterValue('TableComponent')

@@ -2,7 +2,11 @@ import React from 'react'
 import { useSizeWithElRef } from './useSize'
 import { WindowViewportInfo } from '../interfaces'
 
-export default function useWindowViewportRectRef(callback: (info: WindowViewportInfo) => void, customScrollParent?: HTMLElement) {
+export default function useWindowViewportRectRef(
+  callback: (info: WindowViewportInfo) => void,
+  customScrollParent: HTMLElement | undefined,
+  skipAnimationFrame: boolean
+) {
   const viewportInfo = React.useRef<WindowViewportInfo | null>(null)
 
   const calculateInfo = React.useCallback(
@@ -36,7 +40,7 @@ export default function useWindowViewportRectRef(callback: (info: WindowViewport
     [callback, customScrollParent]
   )
 
-  const { callbackRef, ref } = useSizeWithElRef(calculateInfo)
+  const { callbackRef, ref } = useSizeWithElRef(calculateInfo, true, skipAnimationFrame)
 
   const scrollAndResizeEventHandler = React.useCallback(() => {
     calculateInfo(ref.current)

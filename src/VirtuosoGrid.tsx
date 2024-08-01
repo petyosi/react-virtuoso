@@ -88,7 +88,9 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
         })
       },
       [scrollHeightCallback, itemDimensions, gridGap, log]
-    )
+    ),
+    true,
+    false
   )
 
   if (stateRestoreInProgress) {
@@ -129,7 +131,11 @@ const Header: React.FC = React.memo(function VirtuosoHeader() {
   const Header = useEmitterValue('HeaderComponent')
   const headerHeight = usePublisher('headerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
-  const ref = useSize(React.useMemo(() => (el) => headerHeight(correctItemSize(el, 'height')), [headerHeight]))
+  const ref = useSize(
+    React.useMemo(() => (el) => headerHeight(correctItemSize(el, 'height')), [headerHeight]),
+    true,
+    false
+  )
   const context = useEmitterValue('context')
   return Header
     ? React.createElement(headerFooterTag, { ref }, React.createElement(Header, contextPropIfNotDomElement(Header, context)))
@@ -140,7 +146,11 @@ const Footer: React.FC = React.memo(function VirtuosoGridFooter() {
   const Footer = useEmitterValue('FooterComponent')
   const footerHeight = usePublisher('footerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
-  const ref = useSize(React.useMemo(() => (el) => footerHeight(correctItemSize(el, 'height')), [footerHeight]))
+  const ref = useSize(
+    React.useMemo(() => (el) => footerHeight(correctItemSize(el, 'height')), [footerHeight]),
+    true,
+    false
+  )
   const context = useEmitterValue('context')
   return Footer
     ? React.createElement(headerFooterTag, { ref }, React.createElement(Footer, contextPropIfNotDomElement(Footer, context)))
@@ -158,7 +168,9 @@ const Viewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
         viewportDimensions(el.getBoundingClientRect())
       },
       [viewportDimensions]
-    )
+    ),
+    true,
+    false
   )
 
   React.useEffect(() => {
@@ -180,7 +192,7 @@ const WindowViewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }
   const windowViewportRect = usePublisher('windowViewportRect')
   const itemDimensions = usePublisher('itemDimensions')
   const customScrollParent = useEmitterValue('customScrollParent')
-  const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent)
+  const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent, false)
 
   React.useEffect(() => {
     if (ctx) {

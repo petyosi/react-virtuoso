@@ -95,7 +95,8 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
     log,
     listGap,
     customScrollParent,
-    horizontalDirection
+    horizontalDirection,
+    useEmitterValue('skipAnimationFrameInResizeObserver')
   )
 
   const [deviation, setDeviation] = React.useState(0)
@@ -244,7 +245,11 @@ const Header: React.FC = /*#__PURE__*/ React.memo(function VirtuosoHeader() {
   const Header = useEmitterValue('HeaderComponent')
   const headerHeight = usePublisher('headerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
-  const ref = useSize(React.useMemo(() => (el) => headerHeight(correctItemSize(el, 'height')), [headerHeight]))
+  const ref = useSize(
+    React.useMemo(() => (el) => headerHeight(correctItemSize(el, 'height')), [headerHeight]),
+    true,
+    useEmitterValue('skipAnimationFrameInResizeObserver')
+  )
   const context = useEmitterValue('context')
   return Header
     ? React.createElement(headerFooterTag, { ref }, React.createElement(Header, contextPropIfNotDomElement(Header, context)))
@@ -255,7 +260,11 @@ const Footer: React.FC = /*#__PURE__*/ React.memo(function VirtuosoFooter() {
   const Footer = useEmitterValue('FooterComponent')
   const footerHeight = usePublisher('footerHeight')
   const headerFooterTag = useEmitterValue('headerFooterTag')
-  const ref = useSize(React.useMemo(() => (el) => footerHeight(correctItemSize(el, 'height')), [footerHeight]))
+  const ref = useSize(
+    React.useMemo(() => (el) => footerHeight(correctItemSize(el, 'height')), [footerHeight]),
+    true,
+    useEmitterValue('skipAnimationFrameInResizeObserver')
+  )
   const context = useEmitterValue('context')
   return Footer
     ? React.createElement(headerFooterTag, { ref }, React.createElement(Footer, contextPropIfNotDomElement(Footer, context)))
@@ -357,7 +366,7 @@ const Viewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
     () => u.compose(viewportHeight, (el: HTMLElement) => correctItemSize(el, horizontalDirection ? 'width' : 'height')),
     [viewportHeight, horizontalDirection]
   )
-  const viewportRef = useSize(viewportSizeCallbackMemo)
+  const viewportRef = useSize(viewportSizeCallbackMemo, true, useEmitterValue('skipAnimationFrameInResizeObserver'))
 
   React.useEffect(() => {
     if (ctx) {
@@ -378,7 +387,11 @@ const WindowViewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }
   const windowViewportRect = usePublisher('windowViewportRect')
   const fixedItemHeight = usePublisher('fixedItemHeight')
   const customScrollParent = useEmitterValue('customScrollParent')
-  const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent)
+  const viewportRef = useWindowViewportRectRef(
+    windowViewportRect,
+    customScrollParent,
+    useEmitterValue('skipAnimationFrameInResizeObserver')
+  )
   const alignToBottom = useEmitterValue('alignToBottom')
 
   React.useEffect(() => {
@@ -465,6 +478,7 @@ export const {
       scrollerRef: 'scrollerRef',
       logLevel: 'logLevel',
       horizontalDirection: 'horizontalDirection',
+      skipAnimationFrameInResizeObserver: 'skipAnimationFrameInResizeObserver',
     },
     methods: {
       scrollToIndex: 'scrollToIndex',

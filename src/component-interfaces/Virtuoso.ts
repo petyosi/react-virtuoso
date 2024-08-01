@@ -257,6 +257,13 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
    * When set, turns the scroller into a horizontal list. The items are positioned with `inline-block`.
    */
   horizontalDirection?: boolean
+
+  /**
+   * When set, the resize observer used to measure the items will not use `requestAnimationFrame` to report the size changes.
+   * Setting this to true will improve performance and reduce flickering, but will cause benign errors to be reported in the console if the size of the items changes while they are being measured.
+   * See https://github.com/petyosi/react-virtuoso/issues/1049 for more information.
+   */
+  skipAnimationFrameInResizeObserver?: boolean
 }
 
 export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'totalCount' | 'itemContent'> {

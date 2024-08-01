@@ -2,7 +2,7 @@ import React from 'react'
 
 export type CallbackRefParam = HTMLElement | null
 
-export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled = true) {
+export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled: boolean, skipAnimationFrame: boolean) {
   const ref = React.useRef<CallbackRefParam>(null)
 
   let callbackRef = (_el: CallbackRefParam) => {
@@ -12,12 +12,13 @@ export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled = t
   if (typeof ResizeObserver !== 'undefined') {
     const observer = React.useMemo(() => {
       return new ResizeObserver((entries: ResizeObserverEntry[]) => {
-        requestAnimationFrame(() => {
+        const code = () => {
           const element = entries[0].target as HTMLElement
           if (element.offsetParent !== null) {
             callback(element)
           }
-        })
+        }
+        skipAnimationFrame ? code() : requestAnimationFrame(code)
       })
     }, [callback])
 
@@ -37,6 +38,6 @@ export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled = t
   return { ref, callbackRef }
 }
 
-export default function useSize(callback: (e: HTMLElement) => void, enabled = true) {
-  return useSizeWithElRef(callback, enabled).callbackRef
+export default function useSize(callback: (e: HTMLElement) => void, enabled: boolean, skipAnimationFrame: boolean) {
+  return useSizeWithElRef(callback, enabled, skipAnimationFrame).callbackRef
 }

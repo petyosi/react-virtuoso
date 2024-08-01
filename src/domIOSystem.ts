@@ -18,6 +18,7 @@ export const domIOSystem = u.system(
     const scrollBy = u.stream<ScrollToOptions>()
     const scrollingInProgress = u.statefulStream(false)
     const horizontalDirection = u.statefulStream(false)
+    const skipAnimationFrameInResizeObserver = u.statefulStream(false)
 
     u.connect(
       u.pipe(
@@ -49,6 +50,7 @@ export const domIOSystem = u.system(
       scrollHeight,
       smoothScrollTargetReached,
       horizontalDirection,
+      skipAnimationFrameInResizeObserver,
 
       // signals
       scrollTo,
