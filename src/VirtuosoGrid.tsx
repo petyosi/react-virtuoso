@@ -11,6 +11,7 @@ import { Log, LogLevel } from './loggerSystem'
 import { VirtuosoGridHandle, VirtuosoGridProps } from './component-interfaces/VirtuosoGrid'
 import { correctItemSize } from './utils/correctItemSize'
 import { VirtuosoGridMockContext } from './utils/context'
+import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 
 const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   const itemContent = u.statefulStream<GridItemContent<any, any>>((index) => `Item ${index}`)
@@ -33,7 +34,10 @@ const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
     )
   }
 
+  const readyStateChanged = u.statefulStream(false)
+
   return {
+    readyStateChanged,
     context,
     itemContent,
     components,
@@ -71,6 +75,7 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
   const gridGap = usePublisher('gap')
   const log = useEmitterValue('log')
   const stateRestoreInProgress = useEmitterValue('stateRestoreInProgress')
+  const reportReadyState = usePublisher('readyStateChanged')
 
   const listRef = useSize(
     React.useMemo(
@@ -97,7 +102,11 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
     return null
   }
 
-  //   console.log('rendering items', gridState.items)
+  useIsomorphicLayoutEffect(() => {
+    if (gridState.itemHeight > 0 && gridState.itemWidth > 0) {
+      reportReadyState(true)
+    }
+  }, [gridState])
 
   return React.createElement(
     ListComponent,
@@ -266,6 +275,7 @@ const {
       atBottomStateChange: 'atBottomStateChange',
       atTopStateChange: 'atTopStateChange',
       stateChanged: 'stateChanged',
+      readyStateChanged: 'readyStateChanged',
     },
   },
   GridRoot

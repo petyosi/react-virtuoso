@@ -77,3 +77,24 @@ export function Example() {
     </>
   )
 }
+
+export function ReadyStateChanged() {
+  const ref = React.createRef<VirtuosoGridHandle>()
+  const [gridVisible, setGridVisible] = React.useState(false)
+
+  return (
+    <>
+      <VirtuosoGrid
+        ref={ref}
+        readyStateChanged={setGridVisible}
+        components={{
+          Item: ItemContainer,
+          List: ListContainer,
+        }}
+        totalCount={100}
+        itemContent={(index) => <ItemWrapper>Item {index}</ItemWrapper>}
+        style={{ height: 300, width: 1200, visibility: gridVisible ? 'visible' : 'hidden' }}
+      />
+    </>
+  )
+}

@@ -152,6 +152,11 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
    * Pass in an object to achieve additional effects similar to `scrollToIndex`.
    */
   initialTopMostItemIndex?: GridIndexLocation
+
+  /**
+   * invoked with true after the grid has done the initial render and the items have been measured.
+   */
+  readyStateChanged?: (ready: boolean) => void
 }
 
 export interface VirtuosoGridHandle {
