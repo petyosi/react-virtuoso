@@ -86,7 +86,9 @@ export function ReadyStateChanged() {
     <>
       <VirtuosoGrid
         ref={ref}
-        readyStateChanged={setGridVisible}
+        readyStateChanged={(value) => {
+          setGridVisible(value)
+        }}
         components={{
           Item: ItemContainer,
           List: ListContainer,

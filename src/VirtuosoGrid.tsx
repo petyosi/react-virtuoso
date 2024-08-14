@@ -36,8 +36,12 @@ const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
 
   const readyStateChanged = u.statefulStream(false)
 
+  const reportReadyState = u.statefulStream(false)
+  u.connect(u.duc(reportReadyState), readyStateChanged)
+
   return {
     readyStateChanged,
+    reportReadyState,
     context,
     itemContent,
     components,
@@ -75,7 +79,7 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
   const gridGap = usePublisher('gap')
   const log = useEmitterValue('log')
   const stateRestoreInProgress = useEmitterValue('stateRestoreInProgress')
-  const reportReadyState = usePublisher('readyStateChanged')
+  const reportReadyState = usePublisher('reportReadyState')
 
   const listRef = useSize(
     React.useMemo(
