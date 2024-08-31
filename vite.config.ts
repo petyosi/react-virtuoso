@@ -10,7 +10,7 @@ const ext = {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react({ jsxRuntime: 'classic' }), dts({ rollupTypes: true })],
+  plugins: [react({ jsxRuntime: 'automatic' }), dts({ rollupTypes: true })],
   build: {
     target: ['es2020', 'edge88', 'firefox78', 'chrome79', 'safari14'],
     minify: 'terser',

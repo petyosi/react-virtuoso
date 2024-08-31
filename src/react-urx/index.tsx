@@ -238,16 +238,15 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
 
     React.useImperativeHandle(ref, u.always(buildMethods(system)))
 
-    return React.createElement(
-      Context.Provider,
-      { value: system },
-      Root
-        ? React.createElement(
-            Root as unknown as React.ComponentType,
-            omit([...requiredPropNames, ...optionalPropNames, ...eventNames], props),
-            children
-          )
-        : children
+    const RootComponent = Root as React.ComponentType<any>
+    return (
+      <Context.Provider value={system}>
+        {Root ? (
+          <RootComponent {...omit([...requiredPropNames, ...optionalPropNames, ...eventNames], props)}>{children}</RootComponent>
+        ) : (
+          children
+        )}
+      </Context.Provider>
     )
   })
 

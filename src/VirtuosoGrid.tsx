@@ -1,5 +1,4 @@
 import { RefHandle, systemToComponent } from './react-urx'
-
 import * as u from './urx'
 import React from 'react'
 import { gridSystem } from './gridSystem'
@@ -112,62 +111,73 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
     }
   }, [gridState])
 
-  return React.createElement(
-    ListComponent,
-    {
-      ref: listRef,
-      className: listClassName,
-      ...contextPropIfNotDomElement(ListComponent, context),
-      style: { paddingTop: gridState.offsetTop, paddingBottom: gridState.offsetBottom },
-      'data-testid': 'virtuoso-item-list',
-    },
-    gridState.items.map((item) => {
-      const key = computeItemKey(item.index, item.data, context)
-      return isSeeking
-        ? React.createElement(ScrollSeekPlaceholder, {
-            key,
-            ...contextPropIfNotDomElement(ScrollSeekPlaceholder, context),
-            index: item.index,
-            height: gridState.itemHeight,
-            width: gridState.itemWidth,
-          })
-        : React.createElement(
-            ItemComponent,
-            { ...contextPropIfNotDomElement(ItemComponent, context), className: itemClassName, 'data-index': item.index, key },
-            itemContent(item.index, item.data, context)
-          )
-    })
+  return (
+    <ListComponent
+      ref={listRef}
+      className={listClassName}
+      {...contextPropIfNotDomElement(ListComponent, context)}
+      style={{ paddingTop: gridState.offsetTop, paddingBottom: gridState.offsetBottom }}
+      data-testid="virtuoso-item-list"
+    >
+      {gridState.items.map((item) => {
+        const key = computeItemKey(item.index, item.data, context)
+        return isSeeking ? (
+          <ScrollSeekPlaceholder
+            key={key}
+            {...contextPropIfNotDomElement(ScrollSeekPlaceholder, context)}
+            index={item.index}
+            height={gridState.itemHeight}
+            width={gridState.itemWidth}
+          />
+        ) : (
+          <ItemComponent
+            {...contextPropIfNotDomElement(ItemComponent, context)}
+            className={itemClassName}
+            data-index={item.index}
+            key={key}
+          >
+            {itemContent(item.index, item.data, context)}
+          </ItemComponent>
+        )
+      })}
+    </ListComponent>
   )
 })
 
 const Header: React.FC = React.memo(function VirtuosoHeader() {
   const Header = useEmitterValue('HeaderComponent')
   const headerHeight = usePublisher('headerHeight')
-  const headerFooterTag = useEmitterValue('headerFooterTag')
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-unsafe-assignment
+  const HeaderFooterTag = useEmitterValue('headerFooterTag') as any
   const ref = useSize(
     React.useMemo(() => (el) => headerHeight(correctItemSize(el, 'height')), [headerHeight]),
     true,
     false
   )
   const context = useEmitterValue('context')
-  return Header
-    ? React.createElement(headerFooterTag, { ref }, React.createElement(Header, contextPropIfNotDomElement(Header, context)))
-    : null
+  return Header ? (
+    <HeaderFooterTag ref={ref}>
+      <Header {...contextPropIfNotDomElement(Header, context)} />
+    </HeaderFooterTag>
+  ) : null
 })
 
 const Footer: React.FC = React.memo(function VirtuosoGridFooter() {
   const Footer = useEmitterValue('FooterComponent')
   const footerHeight = usePublisher('footerHeight')
-  const headerFooterTag = useEmitterValue('headerFooterTag')
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-type-assertion
+  const HeaderFooterTag = useEmitterValue('headerFooterTag') as any
   const ref = useSize(
     React.useMemo(() => (el) => footerHeight(correctItemSize(el, 'height')), [footerHeight]),
     true,
     false
   )
   const context = useEmitterValue('context')
-  return Footer
-    ? React.createElement(headerFooterTag, { ref }, React.createElement(Footer, contextPropIfNotDomElement(Footer, context)))
-    : null
+  return Footer ? (
+    <HeaderFooterTag ref={ref}>
+      <Footer {...contextPropIfNotDomElement(Footer, context)} />
+    </HeaderFooterTag>
+  ) : null
 })
 
 const Viewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
