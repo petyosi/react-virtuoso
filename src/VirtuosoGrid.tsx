@@ -101,15 +101,15 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
     false
   )
 
-  if (stateRestoreInProgress) {
-    return null
-  }
-
   useIsomorphicLayoutEffect(() => {
     if (gridState.itemHeight > 0 && gridState.itemWidth > 0) {
       reportReadyState(true)
     }
   }, [gridState])
+
+  if (stateRestoreInProgress) {
+    return null
+  }
 
   return (
     <ListComponent
