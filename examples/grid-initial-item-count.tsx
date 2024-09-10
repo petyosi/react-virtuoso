@@ -1,7 +1,6 @@
 import * as React from 'react'
-import { VirtuosoGrid, GridComponents, ListRange } from '../src'
+import { VirtuosoGrid, GridComponents, ListRange, GridStateSnapshot } from '../src'
 import { debounce } from 'lodash'
-import { GridStateSnapshot } from '../src/gridSystem'
 import { createHashRouter, Link, RouterProvider, useParams, useSearchParams } from 'react-router-dom'
 
 function fetchData(page: number) {

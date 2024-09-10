@@ -106,10 +106,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
         u.filter(([_, location]) => !!location)
       ),
       () => {
-        // console.log('block rendering')
         u.publish(scrolledToInitialItem, false)
-        // topmost item index takes precedence over initial item count
-        u.publish(initialItemCount, 0)
       }
     )
 
@@ -235,8 +232,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
             if (itemWidth === 0) {
               const startIndex = getInitialTopMostItemIndexNumber(initialTopMostItemIndex, totalCount)
-              // if the initial item count is set, we don't render the items from the initial item count.
-              const endIndex = startIndex === 0 ? Math.max(initialItemCount - 1, 0) : startIndex
+              const endIndex = Math.max(startIndex + initialItemCount - 1, 0)
               return buildProbeGridState(buildItems(startIndex, endIndex, data))
             }
 

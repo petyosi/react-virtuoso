@@ -26,6 +26,15 @@ describe('SSR List', () => {
 
   it('renders 30 grid items with offset', () => {
     const html = ReactDOMServer.renderToString(
+      <VirtuosoGrid id="root" initialTopMostItemIndex={10} totalCount={20000} initialItemCount={30} />
+    )
+    const { document } = new JSDOM(html).window
+    expect(document.querySelector('#root > div > div')!.childElementCount).toEqual(30)
+    expect(document.querySelector('#root > div > div > div')?.innerHTML).toEqual('Item 10')
+  })
+
+  it('renders 30 items with offset', () => {
+    const html = ReactDOMServer.renderToString(
       <Virtuoso
         id="root"
         data={[
