@@ -79,7 +79,7 @@ const DefaultFillerRow = ({ height }: { height: number }) => (
 
 const ITEM_STYLE = { overflowAnchor: 'none' } as const
 
-const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
+const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = false }: { showTopList?: boolean }) {
   const listState = useEmitterValue('listState')
   const sizeRanges = usePublisher('sizeRanges')
   const useWindowScroll = useEmitterValue('useWindowScroll')
@@ -123,12 +123,51 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
   const firstItemIndex = useEmitterValue('firstItemIndex')
   const statefulTotalCount = useEmitterValue('statefulTotalCount')
   const context = useEmitterValue('context')
+  const fixedHeaderHeight = useEmitterValue('fixedHeaderHeight')
 
   if (statefulTotalCount === 0 && EmptyPlaceholder) {
     return <EmptyPlaceholder {...contextPropIfNotDomElement(EmptyPlaceholder, context)} />
   }
 
-  const paddingTop = listState.offsetTop + paddingTopAddition + deviation
+  const topItems = (showTopList ? listState.topItems : []).map((item) => {
+    const index = item.originalIndex!
+    const key = computeItemKey(index + firstItemIndex, item.data, context)
+    const offsetTop = listState.topItems.reduce((acc, item, itemIndex) => {
+      if (itemIndex < index) {
+        return acc + item.size
+      }
+      return acc
+    }, 0)
+
+    if (isSeeking) {
+      return (
+        <ScrollSeekPlaceholder
+          {...contextPropIfNotDomElement(ScrollSeekPlaceholder, context)}
+          key={key}
+          index={item.index}
+          height={item.size}
+          type={item.type || 'item'}
+        />
+      )
+    }
+    return (
+      <TableRowComponent
+        {...contextPropIfNotDomElement(TableRowComponent, context)}
+        {...itemPropIfNotDomElement(TableRowComponent, item.data)}
+        key={key}
+        data-index={index}
+        data-known-size={item.size}
+        data-item-index={item.index}
+        style={{ overflowAnchor: 'none', position: 'sticky', zIndex: 2, top: fixedHeaderHeight + offsetTop }}
+      >
+        {itemContent(item.index, item.data, context)}
+      </TableRowComponent>
+    )
+  })
+
+  const topItemsSize = (showTopList ? listState.topItems : []).reduce((acc, item) => acc + item.size, 0)
+
+  const paddingTop = listState.offsetTop + paddingTopAddition + deviation - topItemsSize
   const paddingBottom = listState.offsetBottom
 
   const paddingTopEl = paddingTop > 0 ? <FillerRow height={paddingTop} key="padding-top" context={context} /> : null
@@ -168,6 +207,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems() {
   return (
     <TableBodyComponent ref={callbackRef} data-testid="virtuoso-item-list" {...contextPropIfNotDomElement(TableBodyComponent, context)}>
       {paddingTopEl}
+      {topItems}
       {items}
       {paddingBottomEl}
     </TableBodyComponent>
@@ -225,6 +265,7 @@ const WindowViewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }
 
 const TableRoot: React.FC<TableRootProps> = /*#__PURE__*/ React.memo(function TableVirtuosoRoot(props) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
+  const showTopList = useEmitterValue('topItemsIndexes').length > 0
   const customScrollParent = useEmitterValue('customScrollParent')
   const fixedHeaderHeight = usePublisher('fixedHeaderHeight')
   const fixedFooterHeight = usePublisher('fixedFooterHeight')
@@ -276,7 +317,7 @@ const TableRoot: React.FC<TableRootProps> = /*#__PURE__*/ React.memo(function Ta
       <TheViewport>
         <TheTable style={{ borderSpacing: 0, overflowAnchor: 'none' }} {...contextPropIfNotDomElement(TheTable, context)}>
           {theHead}
-          <Items key="TableBody" />
+          <Items key="TableBody" showTopList={showTopList} />
           {theFoot}
         </TheTable>
       </TheViewport>

@@ -17,7 +17,7 @@ import type {
 } from '../interfaces'
 import type { VirtuosoProps } from './Virtuoso'
 
-export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'components' | 'headerFooterTag' | 'topItemCount'> {
+export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'components' | 'headerFooterTag'> {
   /**
    * Use the `components` property for advanced customization of the elements rendered by the table.
    */
@@ -32,6 +32,11 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
    * Set the contents of the table footer.
    */
   fixedFooterContent?: FixedFooterContent
+
+  /**
+   * Set the amount of items to remain fixed at the top of the table.
+   */
+  topItemCount?: number
 
   /**
    * The total amount of items to be rendered.
