@@ -73,7 +73,7 @@ function dimensionComparator(prev: ElementDimensions, next: ElementDimensions) {
 
 export const gridSystem = /*#__PURE__*/ u.system(
   ([
-    { overscan, visibleRange, listBoundary },
+    { overscan, visibleRange, listBoundary, increaseViewportBy },
     { scrollTop, viewportHeight, scrollBy, scrollTo, smoothScrollTargetReached, scrollContainerState, footerHeight, headerHeight },
     stateFlags,
     scrollSeek,
@@ -408,6 +408,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
       scrollTop,
       scrollHeight,
       overscan,
+      increaseViewportBy,
       scrollBy,
       scrollTo,
       scrollToIndex,

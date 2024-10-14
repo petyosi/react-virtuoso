@@ -275,6 +275,7 @@ const {
       logLevel: 'logLevel',
       restoreStateFrom: 'restoreStateFrom',
       initialTopMostItemIndex: 'initialTopMostItemIndex',
+      increaseViewportBy: 'increaseViewportBy',
     },
     methods: {
       scrollTo: 'scrollTo',
