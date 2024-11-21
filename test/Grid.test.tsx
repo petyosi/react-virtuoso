@@ -43,6 +43,24 @@ describe('Grid', () => {
     expect(listParent.textContent).toBe('Item 0')
   })
 
+  it('renders a probe item initially with the initialTopMostItemIndex', () => {
+    act(() => {
+      ReactDOM.createRoot(container).render(<VirtuosoGrid totalCount={20000} initialTopMostItemIndex={10} />)
+    })
+
+    const scroller = container.firstElementChild as any
+    const viewport = scroller.firstElementChild
+    const listParent = viewport.firstElementChild
+
+    act(() => {
+      scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
+      viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
+    })
+
+    expect(listParent.children).toHaveLength(1)
+    expect(listParent.textContent).toBe('Item 10')
+  })
+
   describe('data list', () => {
     let scroller: any
     let viewport: any

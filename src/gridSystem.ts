@@ -232,7 +232,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
             if (itemWidth === 0) {
               const startIndex = getInitialTopMostItemIndexNumber(initialTopMostItemIndex, totalCount)
-              const endIndex = Math.max(startIndex + initialItemCount - 1, 0)
+              const endIndex = startIndex + Math.max(initialItemCount - 1, 0)
               return buildProbeGridState(buildItems(startIndex, endIndex, data))
             }
 
