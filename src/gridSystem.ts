@@ -253,17 +253,21 @@ export const gridSystem = /*#__PURE__*/ u.system(
             } else {
               startIndex = perRow * floor((startOffset + rowGap) / (itemHeight + rowGap))
               endIndex = perRow * ceil((endOffset + rowGap) / (itemHeight + rowGap)) - 1
-              endIndex = min(totalCount - 1, max(endIndex, perRow - 1))
+              endIndex = min((data?.length || totalCount || 0) - 1, max(endIndex, perRow - 1))
               startIndex = min(endIndex, max(0, startIndex))
             }
 
             const items = buildItems(startIndex, endIndex, data)
             const { top, bottom } = gridLayout(viewport, gap, item, items)
-            const rowCount = ceil(totalCount / perRow)
-            const totalHeight = rowCount * itemHeight + (rowCount - 1) * rowGap
-            const offsetBottom = totalHeight - bottom
+            // const rowCount = ceil(totalCount / perRow) // this is the total number of rows based on `totalCount`
+            const rowsVisibleCount = ceil((data?.length || totalCount || 0) / perRow) // number of rows rendered on screen
 
-            return { items, offsetTop: top, offsetBottom, top, bottom, itemHeight, itemWidth } as GridState
+            // const totalHeight = rowCount * itemHeight + (rowCount - 1) * rowGap // this is the total height that the container should occupy
+            const virtualHeight = rowsVisibleCount * itemHeight + (rowsVisibleCount - 1) * rowGap // height visible
+
+            const offsetBottom = virtualHeight - bottom
+
+            return { items, offsetTop: top, offsetBottom, top, bottom, itemHeight, itemWidth, data } as GridState
           }
         )
       ),
@@ -272,9 +276,12 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
     u.connect(
       u.pipe(
-        data,
-        u.filter((data) => data !== null),
-        u.map((data) => data!.length)
+        u.combineLatest(data, totalCount),
+        u.filter(([data]) => data !== null),
+        u.map(([data, totalCount]) => {
+          return Math.max(data!.length, totalCount)
+        }),
+        u.distinctUntilChanged()
       ),
       totalCount
     )
@@ -310,11 +317,23 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
     const endReached = u.streamFromEmitter(
       u.pipe(
-        u.duc(gridState),
-        u.filter(({ items }) => items.length > 0),
+        u.combineLatest(gridState, data),
+        u.filter(([{ items }]) => items.length > 0),
         u.withLatestFrom(totalCount, hasScrolled),
-        u.filter(([{ items }, totalCount, hasScrolled]) => hasScrolled && items[items.length - 1].index === totalCount - 1),
-        u.map(([, totalCount]) => totalCount - 1),
+        u.filter(([[gridState, data], _totalCount, hasScrolled]) => {
+          return (
+            (hasScrolled && gridState.items[gridState.items.length - 1].index === (data?.length || 0) - 1) ||
+            (gridState.bottom !== 0 &&
+              gridState.itemHeight !== 0 &&
+              gridState.offsetBottom === 0 &&
+              gridState.items.length === data?.length &&
+              // gridState.items[gridState.items.length - 1].index < totalCount - 1
+              gridState.items[gridState.items.length - 1].index === (data?.length || 0) - 1)
+          )
+        }),
+        u.map(([[_, data]]) => {
+          return data?.length
+        }),
         u.distinctUntilChanged()
       )
     )
