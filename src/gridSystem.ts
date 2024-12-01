@@ -267,7 +267,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
             const offsetBottom = virtualHeight - bottom
 
-            return { items, offsetTop: top, offsetBottom, top, bottom, itemHeight, itemWidth, data } as GridState
+            return { items, offsetTop: top, offsetBottom, top, bottom, itemHeight, itemWidth } as GridState
           }
         )
       ),
@@ -321,15 +321,17 @@ export const gridSystem = /*#__PURE__*/ u.system(
         u.filter(([{ items }]) => items.length > 0),
         u.withLatestFrom(totalCount, hasScrolled),
         u.filter(([[gridState, data], _totalCount, hasScrolled]) => {
-          return (
-            (hasScrolled && gridState.items[gridState.items.length - 1].index === (data?.length || 0) - 1) ||
-            (gridState.bottom !== 0 &&
-              gridState.itemHeight !== 0 &&
-              gridState.offsetBottom === 0 &&
-              gridState.items.length === data?.length &&
-              // gridState.items[gridState.items.length - 1].index < totalCount - 1
-              gridState.items[gridState.items.length - 1].index === (data?.length || 0) - 1)
-          )
+          const lastIndex = gridState.items[gridState.items.length - 1].index
+          const isLastItemRendered = lastIndex === (data?.length || 0) - 1
+
+          // User has scrolled
+          if (hasScrolled) return isLastItemRendered
+
+          // User has not scrolled, so check whether grid is fully rendered
+          const isFullyRendered =
+            gridState.bottom > 0 && gridState.itemHeight > 0 && gridState.offsetBottom === 0 && gridState.items.length === data?.length
+
+          return isFullyRendered && isLastItemRendered
         }),
         u.map(([[_, data]]) => {
           return data?.length
