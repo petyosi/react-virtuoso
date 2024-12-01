@@ -310,23 +310,23 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
     const endReached = u.streamFromEmitter(
       u.pipe(
-        u.combineLatest(gridState, data),
+        u.combineLatest(gridState, totalCount),
         u.filter(([{ items }]) => items.length > 0),
-        u.withLatestFrom(totalCount, hasScrolled, data),
-        u.filter(([[gridState, data], _totalCount, hasScrolled]) => {
+        u.withLatestFrom(hasScrolled),
+        u.filter(([[gridState, totalCount], hasScrolled]) => {
           const lastIndex = gridState.items[gridState.items.length - 1].index
-          const isLastItemRendered = lastIndex === (data?.length || 0) - 1
+          const isLastItemRendered = lastIndex === totalCount - 1
 
           // User has scrolled
           if (hasScrolled) return isLastItemRendered
 
           // User has not scrolled, so check whether grid is fully rendered
           const isFullyRendered =
-            gridState.bottom > 0 && gridState.itemHeight > 0 && gridState.offsetBottom === 0 && gridState.items.length === data?.length
+            gridState.bottom > 0 && gridState.itemHeight > 0 && gridState.offsetBottom === 0 && gridState.items.length === totalCount
 
           return isFullyRendered && isLastItemRendered
         }),
-        u.map(([_, totalCount]) => {
+        u.map(([[, totalCount]]) => {
           return totalCount - 1
         }),
         u.distinctUntilChanged()
