@@ -253,19 +253,15 @@ export const gridSystem = /*#__PURE__*/ u.system(
             } else {
               startIndex = perRow * floor((startOffset + rowGap) / (itemHeight + rowGap))
               endIndex = perRow * ceil((endOffset + rowGap) / (itemHeight + rowGap)) - 1
-              endIndex = min((data?.length || totalCount || 0) - 1, max(endIndex, perRow - 1))
+              endIndex = min(totalCount - 1, max(endIndex, perRow - 1))
               startIndex = min(endIndex, max(0, startIndex))
             }
 
             const items = buildItems(startIndex, endIndex, data)
             const { top, bottom } = gridLayout(viewport, gap, item, items)
-            // const rowCount = ceil(totalCount / perRow) // this is the total number of rows based on `totalCount`
-            const rowsVisibleCount = ceil((data?.length || totalCount || 0) / perRow) // number of rows rendered on screen
-
-            // const totalHeight = rowCount * itemHeight + (rowCount - 1) * rowGap // this is the total height that the container should occupy
-            const virtualHeight = rowsVisibleCount * itemHeight + (rowsVisibleCount - 1) * rowGap // height visible
-
-            const offsetBottom = virtualHeight - bottom
+            const rowCount = ceil(totalCount / perRow)
+            const totalHeight = rowCount * itemHeight + (rowCount - 1) * rowGap
+            const offsetBottom = totalHeight - bottom
 
             return { items, offsetTop: top, offsetBottom, top, bottom, itemHeight, itemWidth } as GridState
           }
@@ -276,12 +272,9 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
     u.connect(
       u.pipe(
-        u.combineLatest(data, totalCount),
-        u.filter(([data]) => data !== null),
-        u.map(([data, totalCount]) => {
-          return Math.max(data!.length, totalCount)
-        }),
-        u.distinctUntilChanged()
+        data,
+        u.filter((data) => data !== null),
+        u.map((data) => data!.length)
       ),
       totalCount
     )
@@ -319,7 +312,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
       u.pipe(
         u.combineLatest(gridState, data),
         u.filter(([{ items }]) => items.length > 0),
-        u.withLatestFrom(totalCount, hasScrolled),
+        u.withLatestFrom(totalCount, hasScrolled, data),
         u.filter(([[gridState, data], _totalCount, hasScrolled]) => {
           const lastIndex = gridState.items[gridState.items.length - 1].index
           const isLastItemRendered = lastIndex === (data?.length || 0) - 1
@@ -333,8 +326,8 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
           return isFullyRendered && isLastItemRendered
         }),
-        u.map(([[_, data]]) => {
-          return data?.length
+        u.map(([[, data], totalCount]) => {
+          return data?.length || totalCount - 1
         }),
         u.distinctUntilChanged()
       )
