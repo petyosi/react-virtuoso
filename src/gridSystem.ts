@@ -326,8 +326,8 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
           return isFullyRendered && isLastItemRendered
         }),
-        u.map(([[, data], totalCount]) => {
-          return data?.length || totalCount - 1
+        u.map(([_, totalCount]) => {
+          return totalCount - 1
         }),
         u.distinctUntilChanged()
       )
