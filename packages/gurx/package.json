@@ -1,0 +1,48 @@
+{
+  "name": "@virtuoso.dev/gurx",
+  "private": false,
+  "sideEffects": false,
+  "type": "module",
+  "version": "0.0.0-development",
+  "module": "dist/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc && vite build",
+    "test": "vitest",
+    "ci-lint": "biome ci",
+    "lint": "biome check",
+    "typecheck": "tsc --noEmit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mdx-editor/gurx.git"
+  },
+  "files": ["dist"],
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">= 18 || >= 19",
+    "react-dom": ">= 18 || >= 19"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@microsoft/api-extractor": "^7.48.0",
+    "@types/node": "^22.10.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react-swc": "^3.7.2",
+    "@vitest/browser": "3.0.0-beta.3",
+    "playwright": "^1.49.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.1",
+    "vite-plugin-dts": "^4.3.0",
+    "vitest": "3.0.0-beta.3",
+    "vitest-browser-react": "^0.0.4"
+  },
+  "packageManager": "pnpm@8.14.3+sha256.2d0363bb6c314daa67087ef07743eea1ba2e2d360c835e8fec6b5575e4ed9484"
+}
