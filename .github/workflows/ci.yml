@@ -21,8 +21,8 @@ jobs:
       - name: Git config user
         uses: snow-actions/git-config-user@v1.0.0
         with:
-          name: # Service Account's Name
-          email: # Service Account's Email Address
+          name: Virtuoso CI
+          email: petyo+ci@virtuoso.dev
       - uses: actions/setup-node@v3
         with:
           node-version: 16
