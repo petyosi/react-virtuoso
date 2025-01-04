@@ -21,7 +21,8 @@
     {
       "packageName": "@virtuoso.dev/gurx",
       "projectFolder": "packages/gurx",
-      "shouldPublish": true
+      "shouldPublish": true,
+      "versionPolicyName": "virtuosoReleasePolicy"
     }
   ]
 }

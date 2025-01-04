@@ -9,6 +9,10 @@
  * to a set of projects that are specified using the "versionPolicyName" field in rush.json.
  */
 [
+  {
+    "policyName": "virtuosoReleasePolicy",
+    "definitionName": "individualVersion",
+  }
   // {
   //   /**
   //    * (Required) Indicates the kind of version policy being defined ("lockStepVersion" or "individualVersion").
