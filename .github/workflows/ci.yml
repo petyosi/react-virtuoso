@@ -31,6 +31,6 @@ jobs:
       - name: Rush Install
         run: node common/scripts/install-run-rush.js install
       - name: Rush rebuild
-        run: node common/scripts/install-run-rush.js rebuild --verbose --production
+        run: node common/scripts/install-run-rush.js rebuild --verbose
       - name: Rush publish
         run: node common/scripts/install-run-rush.js publish --apply --target-branch v5 --publish --registry https://registry.npmjs.org/ --npm-auth-token "$NPM_TOKEN" --add-commit-details
