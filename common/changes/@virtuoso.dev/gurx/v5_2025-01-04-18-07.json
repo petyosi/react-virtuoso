@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@virtuoso.dev/gurx",
+      "comment": "Initial version publish",
+      "type": "major"
+    }
+  ],
+  "packageName": "@virtuoso.dev/gurx"
+}

@@ -3,7 +3,7 @@
   "private": false,
   "sideEffects": false,
   "type": "module",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "module": "dist/index.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
