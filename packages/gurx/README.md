@@ -37,7 +37,7 @@ A cell/signal has a single instance in a realm that has referred to it. If you s
 Gurx is distributed as an NPM package. Install it with NPM or any of its fancier replacements. Every function and class from the samples is a named export from it. The package ships with TypeScript types, so no need to install an additional types package.
 
 ```sh
-npm install @mdxeditor/gurx
+npm install @virtuoso.dev/gurx
 ```
 
 ## Defining cells and signals

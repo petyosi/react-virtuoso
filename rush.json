@@ -4,7 +4,10 @@
   "pnpmVersion": "8.15.8",
   "nodeSupportedVersionRange": ">=18.20.3 <19.0.0 || >=20.14.0 <21.0.0",
   "gitPolicy": {},
-  "repository": {},
+  "repository": {
+    "url": "git@github.com:petyosi/react-virtuoso.git",
+    "defaultBranch": "v5"
+  },
   "eventHooks": {
     "preRushInstall": [],
     "postRushInstall": [],

@@ -1,12 +1,19 @@
 name: CI
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "v5" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "v5" ]
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      CI: true
+      SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+      USE_SSH: true
+      GIT_USER: petyosi
+      NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -25,3 +32,5 @@ jobs:
         run: node common/scripts/install-run-rush.js install
       - name: Rush rebuild
         run: node common/scripts/install-run-rush.js rebuild --verbose --production
+      - name: Rush publish
+        run: node common/scripts/install-run-rush.js publish --apply --target-branch v5 --publish --registry https://registry.npmjs.org/ --npm-auth-token "$NPM_TOKEN" --add-commit-details
