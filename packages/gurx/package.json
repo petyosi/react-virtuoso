@@ -21,14 +21,13 @@
     "type": "git",
     "url": "https://github.com/petyosi/react-virtuoso.git"
   },
-  "files": ["dist"],
   "license": "MIT",
   "peerDependencies": {
     "react": ">= 18 || >= 19",
     "react-dom": ">= 18 || >= 19"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
+    "@biomejs/biome": "~1.9.4",
     "@microsoft/api-extractor": "^7.48.0",
     "@types/node": "^22.10.1",
     "@types/react": "^18.3.12",
@@ -38,11 +37,15 @@
     "playwright": "^1.49.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "typescript": "^5.7.2",
-    "vite": "^6.0.1",
-    "vite-plugin-dts": "^4.3.0",
+    "typescript": "~5.7.2",
+    "vite": "~6.0.7",
+    "vite-plugin-dts": "~4.4.0",
     "vitest": "3.0.0-beta.3",
     "vitest-browser-react": "^0.0.4"
   },
-  "packageManager": "pnpm@8.14.3+sha256.2d0363bb6c314daa67087ef07743eea1ba2e2d360c835e8fec6b5575e4ed9484"
+  "packageManager": "pnpm@9.15.2+sha512.93e57b0126f0df74ce6bff29680394c0ba54ec47246b9cf321f0121d8d9bb03f750a705f24edc3c1180853afd7c2c3b94196d0a3d53d3e069d9e2793ef11f321",
+  "files": [
+    "dist",
+    "CHANGELOG.md"
+  ]
 }

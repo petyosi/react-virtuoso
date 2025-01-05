@@ -19,6 +19,11 @@
   "variants": [],
   "projects": [
     {
+      "packageName": "@virtuoso.dev/message-list",
+      "projectFolder": "packages/message-list",
+      "shouldPublish": true,
+      "versionPolicyName": "virtuosoReleasePolicy"
+    },{
       "packageName": "@virtuoso.dev/gurx",
       "projectFolder": "packages/gurx",
       "shouldPublish": true,

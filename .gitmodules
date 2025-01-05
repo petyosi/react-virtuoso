@@ -1,0 +1,3 @@
+[submodule "packages/message-list"]
+	path = packages/message-list
+	url = git@github.com:virtuoso-dev/message-list.git

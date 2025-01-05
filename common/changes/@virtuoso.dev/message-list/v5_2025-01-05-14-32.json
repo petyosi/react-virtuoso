@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@virtuoso.dev/message-list",
+      "comment": "Update infrastructure",
+      "type": "none"
+    }
+  ],
+  "packageName": "@virtuoso.dev/message-list"
+}
