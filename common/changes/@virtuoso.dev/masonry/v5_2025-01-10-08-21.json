@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@virtuoso.dev/masonry",
+      "comment": "Switch to @virtuoso.dev/gurx",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@virtuoso.dev/masonry"
+}
