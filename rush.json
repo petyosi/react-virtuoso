@@ -35,6 +35,12 @@
       "projectFolder": "packages/gurx",
       "shouldPublish": true,
       "versionPolicyName": "virtuosoReleasePolicy"
+    },
+    {
+      "packageName": "react-virtuoso",
+      "projectFolder": "packages/react-virtuoso",
+      "shouldPublish": true,
+      "versionPolicyName": "virtuosoReleasePolicy"
     }
   ]
 }

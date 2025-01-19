@@ -1,0 +1,76 @@
+{
+  "name": "react-virtuoso",
+  "version": "4.12.3",
+  "description": "The most powerful virtual list component for React",
+  "private": false,
+  "author": "The Virtuoso team <support@virtuoso.dev>",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "reactjs",
+    "virtual",
+    "endless",
+    "load more",
+    "list",
+    "scrolling",
+    "infinite",
+    "virtualized",
+    "grid",
+    "feed",
+    "chat"
+  ],
+  "homepage": "https://virtuoso.dev/",
+  "bugs": {
+    "email": "support@virtuoso.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/petyosi/react-virtuoso.git"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.cjs",
+        "default": "./dist/index.d.ts"
+      },
+      "default": "./dist/index.mjs"
+    }
+  },
+  "sideEffects": false,
+  "files": ["dist", "CHANGELOG.md"],
+  "scripts": {
+    "build": "tsc && vite build",
+    "dev": "LADLE=true ladle serve",
+    "test": "vitest",
+    "e2e": "npx playwright test",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check",
+    "ci-lint": "biome ci"
+  },
+  "peerDependencies": {
+    "react": ">=16 || >=17 || >= 18 || >= 19",
+    "react-dom": ">=16 || >=17 || >= 18 || >= 19"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@ladle/react": "~5.0.1",
+    "@playwright/test": "^1.48.0",
+    "@types/react": "18",
+    "@types/react-dom": "^18.2.19",
+    "@vitejs/plugin-react-swc": "^3.6.0",
+    "react": "18",
+    "react-dom": "18",
+    "typescript": "~5.7.2",
+    "vite": "~6.0.7",
+    "vite-plugin-dts": "~4.4.0",
+    "vitest": "3.0.0-beta.3"
+  },
+  "engines": {
+    "node": ">=10"
+  }
+}

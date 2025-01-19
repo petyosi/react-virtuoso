@@ -1,0 +1,14 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "extends": ["../../biome.jsonc"],
+  "linter": {
+    "rules": {
+      "style": {
+        "noNonNullAssertion": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "info"
+      }
+    }
+  }
+}
