@@ -3,7 +3,7 @@ import * as React from 'react'
 import { createRef, FC } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 
-import { act } from 'react-dom/test-utils'
+import { act } from 'react'
 import {
   combineLatest,
   connect,

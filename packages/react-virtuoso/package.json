@@ -68,7 +68,10 @@
     "typescript": "~5.7.2",
     "vite": "~6.0.7",
     "vite-plugin-dts": "~4.4.0",
-    "vitest": "3.0.0-beta.3"
+    "vitest": "3.0.0-beta.3",
+    "jsdom": "~26.0.0",
+    "@testing-library/react": "~16.2.0",
+    "@types/jsdom": "~21.1.7"
   },
   "engines": {
     "node": ">=10"

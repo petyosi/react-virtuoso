@@ -6,7 +6,7 @@ import ReactDOM from 'react-dom/client'
 import { VirtuosoGrid } from '../src/VirtuosoGrid'
 
 import { describe, it, beforeEach, afterEach, vi, expect } from 'vitest'
-import { act } from 'react-dom/test-utils'
+import { act } from 'react'
 
 vi.mock('../src/hooks/useSize')
 vi.mock('../src/hooks/useScrollTop')
