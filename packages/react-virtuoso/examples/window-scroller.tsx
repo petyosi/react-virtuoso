@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import { Virtuoso, VirtuosoHandle } from '../src'
 
 export function Example() {
@@ -12,13 +13,19 @@ export function Example() {
           <a href="https://github.com/petyosi/react-virtuoso/issues/524">For details</a>
         </li>
       </ol>
-      <button onClick={() => ref.current!.scrollToIndex(20)}>Scroll</button>
+      <button
+        onClick={() => {
+          ref.current!.scrollToIndex(20)
+        }}
+      >
+        Scroll
+      </button>
       <a href="#foo">Go to foo</a>
       <Virtuoso
-        ref={ref}
-        totalCount={100}
         itemContent={(index) => <div style={{ height: index % 2 ? 50 : 20 }}>Item {index}</div>}
+        ref={ref}
         style={{ border: '1px solid red', height: '300px' }}
+        totalCount={100}
         useWindowScroll={true}
       />
       <div>

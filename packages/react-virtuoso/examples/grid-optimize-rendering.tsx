@@ -1,6 +1,7 @@
-import * as React from 'react'
-import { VirtuosoGrid, GridComponents, VirtuosoGridHandle } from '../src'
 import styled from '@emotion/styled'
+import * as React from 'react'
+
+import { GridComponents, VirtuosoGrid, VirtuosoGridHandle } from '../src'
 
 const ItemContainer = styled.div`
   box-sizing: border-box;
@@ -40,7 +41,7 @@ const ListContainer = styled.div`
   flex-wrap: wrap;
 ` as GridComponents['List']
 
-const Item = React.memo<any>(({ item }: { item: { index: number; selected: boolean } }) => {
+const Item = React.memo(({ item }: { item: { index: number; selected: boolean } }) => {
   return <div style={{ backgroundColor: item.selected ? 'blue' : 'white' }}>Item {item.index}</div>
 })
 
@@ -72,14 +73,14 @@ export function Example() {
   return (
     <>
       <VirtuosoGrid
-        ref={ref}
         components={{
           Item: ItemContainer,
           List: ListContainer,
         }}
-        totalCount={items.length}
         itemContent={itemContent}
+        ref={ref}
         style={{ height: 300, width: 1200 }}
+        totalCount={items.length}
       />
     </>
   )

@@ -1,6 +1,6 @@
-import * as React from 'react'
-import { useState, useCallback, useEffect } from 'react'
-import { Virtuoso } from '../src'
+import { useCallback, useEffect, useState } from 'react'
+
+import { Virtuoso, VirtuosoProps } from '../'
 
 const getRandomArbitrary = (min: number, max: number) => {
   return Math.random() * (max - min) + min
@@ -23,8 +23,8 @@ export function Example() {
   const [firstItemIndex, setFirstItemIndex] = useState(ITEM_INDEX)
   const [id, setID] = useState(0)
   const [, setVisibleRange] = useState({
-    startIndex: 0,
     endIndex: 0,
+    startIndex: 0,
   })
 
   const triggerChange = () => {
@@ -46,23 +46,23 @@ export function Example() {
     }
   }, [id])
 
-  const _rowRenderer = useCallback((_, item) => {
+  const _rowRenderer: VirtuosoProps<number, undefined>['itemContent'] = useCallback((_: number, item: number) => {
     return <div style={{ padding: 20 }}>{item}</div>
   }, [])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+    <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
       <button onClick={triggerChange}>Change item set</button>
       <p>Item size: {items.length}</p>
       <div style={{ height: 300 }}>
         {items.length > 0 && (
           <Virtuoso
-            firstItemIndex={firstItemIndex}
-            data={items}
             components={{ Header: () => <div style={{ height: 10 }} /> }}
+            data={items}
+            firstItemIndex={firstItemIndex}
+            followOutput={'smooth'}
             initialTopMostItemIndex={Math.max(0, items.length - 1)}
             itemContent={_rowRenderer}
-            followOutput={'smooth'}
             rangeChanged={setVisibleRange}
           />
         )}

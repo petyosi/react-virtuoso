@@ -1,24 +1,24 @@
-import * as u from './urx'
+import { alignToBottomSystem } from './alignToBottomSystem'
 import { domIOSystem } from './domIOSystem'
 import { followOutputSystem } from './followOutputSystem'
 import { groupedListSystem } from './groupedListSystem'
 import { initialItemCountSystem } from './initialItemCountSystem'
+import { initialScrollTopSystem } from './initialScrollTopSystem'
 import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
 import { listStateSystem } from './listStateSystem'
+import { loggerSystem } from './loggerSystem'
 import { propsReadySystem } from './propsReadySystem'
+import { scrollIntoViewSystem } from './scrollIntoViewSystem'
 import { scrollSeekSystem } from './scrollSeekSystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
 import { sizeSystem } from './sizeSystem'
+import { stateLoadSystem } from './stateLoadSystem'
 import { topItemCountSystem } from './topItemCountSystem'
 import { totalListHeightSystem } from './totalListHeightSystem'
 import { upwardScrollFixSystem } from './upwardScrollFixSystem'
-import { initialScrollTopSystem } from './initialScrollTopSystem'
-import { alignToBottomSystem } from './alignToBottomSystem'
+import * as u from './urx'
 import { windowScrollerSystem } from './windowScrollerSystem'
-import { loggerSystem } from './loggerSystem'
-import { scrollIntoViewSystem } from './scrollIntoViewSystem'
-import { stateLoadSystem } from './stateLoadSystem'
 
 const featureGroup1System = u.system(
   ([
@@ -63,20 +63,20 @@ const featureGroup1System = u.system(
 export const listSystem = u.system(
   ([
     {
-      totalCount,
-      sizeRanges,
-      fixedItemSize,
-      defaultItemSize,
-      trackItemSizes,
-      itemSize,
       data,
+      defaultItemSize,
       firstItemIndex,
-      groupIndices,
-      statefulTotalCount,
+      fixedItemSize,
       gap,
+      groupIndices,
+      itemSize,
+      sizeRanges,
       sizes,
+      statefulTotalCount,
+      totalCount,
+      trackItemSizes,
     },
-    { initialTopMostItemIndex, scrolledToInitialItem, initialItemFinalLocationReached },
+    { initialItemFinalLocationReached, initialTopMostItemIndex, scrolledToInitialItem },
     domIO,
     stateLoad,
     followOutput,
@@ -97,29 +97,29 @@ export const listSystem = u.system(
     )
 
     return {
-      // input
-      totalCount,
       data,
+      defaultItemHeight: defaultItemSize,
       firstItemIndex,
-      sizeRanges,
+      fixedItemHeight: fixedItemSize,
+      gap,
+      groupCounts,
+      initialItemFinalLocationReached,
       initialTopMostItemIndex,
       scrolledToInitialItem,
-      initialItemFinalLocationReached,
-      topItemsIndexes,
+      sizeRanges,
       topItemCount,
-      groupCounts,
-      fixedItemHeight: fixedItemSize,
-      defaultItemHeight: defaultItemSize,
-      gap,
+      topItemsIndexes,
+      // input
+      totalCount,
       ...followOutput,
 
-      // output
-      statefulTotalCount,
+      groupIndices,
+      itemSize,
       listState,
       scrollToIndex,
+      // output
+      statefulTotalCount,
       trackItemSizes,
-      itemSize,
-      groupIndices,
 
       // exported from stateFlagsSystem
       ...flags,

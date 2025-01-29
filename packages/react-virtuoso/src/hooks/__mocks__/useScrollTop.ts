@@ -11,5 +11,5 @@ export default function useSize(callback: (state: ScrollContainerState) => void)
     }
   }
 
-  return { scrollerRef, scrollByCallback: () => {}, scrollToCallback: () => {} }
+  return { scrollByCallback: () => {}, scrollerRef, scrollToCallback: () => {} }
 }

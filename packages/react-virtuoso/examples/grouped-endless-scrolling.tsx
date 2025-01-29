@@ -1,17 +1,18 @@
-import * as React from 'react'
-import { Components, GroupedVirtuoso } from '../src'
-import { useMemo, useRef, useState, useEffect, useCallback } from 'react'
 import { faker } from '@faker-js/faker'
 import { groupBy } from 'lodash'
+import * as React from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+import { Components, GroupedVirtuoso } from '../src'
 
 const getUser = () => {
   const firstName = faker.name.firstName()
   const lastName = faker.name.lastName()
   return {
-    name: `${firstName} ${lastName}`,
-    initials: `${firstName.substr(0, 1)}${lastName.substr(0, 1)}`,
-    description: faker.company.catchPhrase(),
     avatar: faker.internet.avatar(),
+    description: faker.company.catchPhrase(),
+    initials: `${firstName.substr(0, 1)}${lastName.substr(0, 1)}`,
+    name: `${firstName} ${lastName}`,
   }
 }
 
@@ -60,24 +61,20 @@ const useGroupedUsers = (count: number) => {
   }, [allUsers, endReached, count])
 
   return {
-    loadMore,
     endReached,
     groupCounts,
-    users: loadedUsers.current,
     groups: groups.current,
+    loadMore,
+    users: loadedUsers.current,
   }
 }
 
 const components: Partial<Components> = {
   Footer: () => <div>Footer</div>,
 
-  List: React.forwardRef(({ style, children }, listRef) => {
-    return (
-      <div ref={listRef} style={style}>
-        {children}
-      </div>
-    )
-  }),
+  Group: ({ children, ...props }) => {
+    return <div {...props}>{children}</div>
+  },
 
   Item: ({ children, ...props }) => {
     return (
@@ -87,27 +84,29 @@ const components: Partial<Components> = {
     )
   },
 
-  Group: ({ children, ...props }) => {
-    return <div {...props}>{children}</div>
-  },
+  List: React.forwardRef(({ children, style }, listRef) => {
+    return (
+      <div ref={listRef} style={style}>
+        {children}
+      </div>
+    )
+  }),
 }
 const Style = { height: '350px', width: '300px' }
 
 export function Example() {
-  const { loadMore, groupCounts, users, groups } = useGroupedUsers(12500)
+  const { groupCounts, groups, loadMore, users } = useGroupedUsers(12500)
 
   useEffect(loadMore, [loadMore])
 
   return (
     <GroupedVirtuoso
       components={components}
-      style={Style}
-      groupCounts={groupCounts}
-      groupContent={(index) => <div>Group {groups[index]}</div>}
-      overscan={400}
       endReached={(_) => {
         loadMore()
       }}
+      groupContent={(index) => <div>Group {groups[index]}</div>}
+      groupCounts={groupCounts}
       itemContent={(index) => (
         <div>
           <div>
@@ -119,6 +118,8 @@ export function Example() {
           </div>
         </div>
       )}
+      overscan={400}
+      style={Style}
     />
   )
 }

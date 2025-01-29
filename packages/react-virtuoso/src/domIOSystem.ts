@@ -1,5 +1,5 @@
-import * as u from './urx'
 import { ScrollContainerState } from './interfaces'
+import * as u from './urx'
 
 export const domIOSystem = u.system(
   () => {
@@ -39,27 +39,27 @@ export const domIOSystem = u.system(
     u.connect(scrollTop, statefulScrollTop)
 
     return {
+      deviation,
+      fixedFooterHeight,
+      fixedHeaderHeight,
+      footerHeight,
+      headerHeight,
+      horizontalDirection,
+      scrollBy,
       // input
       scrollContainerState,
-      scrollTop,
-      viewportHeight,
-      headerHeight,
-      fixedHeaderHeight,
-      fixedFooterHeight,
-      footerHeight,
       scrollHeight,
-      smoothScrollTargetReached,
-      horizontalDirection,
-      skipAnimationFrameInResizeObserver,
-
+      scrollingInProgress,
       // signals
       scrollTo,
-      scrollBy,
 
+      scrollTop,
+      skipAnimationFrameInResizeObserver,
+
+      smoothScrollTargetReached,
       // state
       statefulScrollTop,
-      deviation,
-      scrollingInProgress,
+      viewportHeight,
     }
   },
   [],

@@ -1,8 +1,8 @@
-import * as u from './urx'
 import { domIOSystem } from './domIOSystem'
-import { WindowViewportInfo, ScrollContainerState } from './interfaces'
+import { ScrollContainerState, WindowViewportInfo } from './interfaces'
+import * as u from './urx'
 
-export const windowScrollerSystem = u.system(([{ scrollTo, scrollContainerState }]) => {
+export const windowScrollerSystem = u.system(([{ scrollContainerState, scrollTo }]) => {
   const windowScrollContainerState = u.stream<ScrollContainerState>()
   const windowViewportRect = u.stream<WindowViewportInfo>()
   const windowScrollTo = u.stream<ScrollToOptions>()
@@ -12,10 +12,10 @@ export const windowScrollerSystem = u.system(([{ scrollTo, scrollContainerState 
   u.connect(
     u.pipe(
       u.combineLatest(windowScrollContainerState, windowViewportRect),
-      u.map(([{ viewportHeight, scrollTop: windowScrollTop, scrollHeight }, { offsetTop }]) => {
+      u.map(([{ scrollHeight, scrollTop: windowScrollTop, viewportHeight }, { offsetTop }]) => {
         return {
-          scrollTop: Math.max(0, windowScrollTop - offsetTop),
           scrollHeight,
+          scrollTop: Math.max(0, windowScrollTop - offsetTop),
           viewportHeight,
         }
       })
@@ -38,15 +38,15 @@ export const windowScrollerSystem = u.system(([{ scrollTo, scrollContainerState 
   )
 
   return {
+    customScrollParent,
     // config
     useWindowScroll,
-    customScrollParent,
 
     // input
     windowScrollContainerState,
-    windowViewportRect,
-
     // signals
     windowScrollTo,
+
+    windowViewportRect,
   }
 }, u.tup(domIOSystem))

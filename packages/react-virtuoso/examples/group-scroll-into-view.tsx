@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import { GroupedVirtuoso, GroupedVirtuosoHandle } from '../src'
 
 export function Example() {
@@ -11,17 +12,27 @@ export function Example() {
   }, [])
   return (
     <div>
-      <button data-testid="scroll-into-view-button" onClick={() => virutoso.current.scrollIntoView({ index: 9 })}>
+      <button
+        data-testid="scroll-into-view-button"
+        onClick={() => {
+          virutoso.current?.scrollIntoView({ index: 9 })
+        }}
+      >
         Scroll index 10 into view
       </button>
-      <button data-testid="scroll-to-group" onClick={() => virutoso.current.scrollIntoView({ groupIndex: ++g.current })}>
+      <button
+        data-testid="scroll-to-group"
+        onClick={() => {
+          virutoso.current?.scrollIntoView({ groupIndex: ++g.current })
+        }}
+      >
         Scroll to next group
       </button>
       <GroupedVirtuoso
-        ref={virutoso}
+        groupContent={(index) => <div style={{ backgroundColor: 'white', height: '30px' }}>Group {index}</div>}
         groupCounts={groupCounts}
         itemContent={(index) => <div style={{ height: '20px' }}>Item {index}</div>}
-        groupContent={(index) => <div style={{ height: '30px', backgroundColor: 'white' }}>Group {index}</div>}
+        ref={virutoso}
         style={{ height: '300px' }}
       />
     </div>

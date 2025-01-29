@@ -1,5 +1,6 @@
+import { describe, expect, it, vi } from 'vitest'
+
 import { getValue, statefulStream, subscribe } from '../../src/urx'
-import { describe, it, expect, vi } from 'vitest'
 
 describe('behavior stream', () => {
   it('creates a next / subscribe function', () => {

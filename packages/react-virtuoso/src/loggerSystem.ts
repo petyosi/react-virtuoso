@@ -16,19 +16,19 @@ export enum LogLevel {
   WARN,
   ERROR,
 }
+export type Log = (label: string, message: any, level?: LogLevel) => void
+
 export interface LogMessage {
+  label: string
   level: LogLevel
   message: any
-  label: string
 }
-
-export type Log = (label: string, message: any, level?: LogLevel) => void
 
 const CONSOLE_METHOD_MAP = {
   [LogLevel.DEBUG]: 'debug',
+  [LogLevel.ERROR]: 'error',
   [LogLevel.INFO]: 'log',
   [LogLevel.WARN]: 'warn',
-  [LogLevel.ERROR]: 'error',
 } as const
 
 const getGlobalThis = () => (typeof globalThis === 'undefined' ? window : globalThis)
@@ -37,7 +37,7 @@ export const loggerSystem = u.system(
   () => {
     const logLevel = u.statefulStream<LogLevel>(LogLevel.ERROR)
     const log = u.statefulStream<Log>((label: string, message: any, level: LogLevel = LogLevel.INFO) => {
-      const currentLevel = getGlobalThis()['VIRTUOSO_LOG_LEVEL'] ?? u.getValue(logLevel)
+      const currentLevel = getGlobalThis().VIRTUOSO_LOG_LEVEL ?? u.getValue(logLevel)
       if (level >= currentLevel) {
         // eslint-disable-next-line no-console
         console[CONSOLE_METHOD_MAP[level]](

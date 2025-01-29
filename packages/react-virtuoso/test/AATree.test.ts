@@ -1,8 +1,16 @@
 /* eslint @typescript-eslint/explicit-function-return-type: 0 */
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import * as AA from '../src/AATree'
 import { AANode } from '../src/AATree'
+
+function partition(array: number[], predicate: (input: number) => boolean) {
+  const result: [number[], number[]] = [[], []]
+  return array.reduce((result, value) => {
+    result[predicate(value) ? 0 : 1].push(value)
+    return result
+  }, result)
+}
 
 function range(start: number, end: number) {
   const result = [] as number[]
@@ -25,34 +33,14 @@ function shuffle(array: number[]) {
   return result
 }
 
-function partition(array: number[], predicate: (input: number) => boolean) {
-  const result: [number[], number[]] = [[], []]
-  return array.reduce((result, value) => {
-    result[predicate(value) ? 0 : 1].push(value)
-    return result
-  }, result)
-}
-
 const RANGE_END = 100
-
-function numbersToAATree(numbers: number[]): AANode<number> {
-  return numbers.reduce((tree: AANode<number>, n) => {
-    return AA.insert(tree, n, n)
-  }, AA.newTree<number>())
-}
-
-function keyMatchesValues(numbers: number[], tree: AANode<number>): void {
-  numbers.forEach((n) => {
-    expect(AA.find(tree, n)).toStrictEqual(n)
-  })
-}
 
 function isInvariant(node: AANode<any>): boolean {
   if (AA.empty(node)) {
     return true
   }
 
-  const { l: left, r: right, lvl: level } = node
+  const { l: left, lvl: level, r: right } = node
 
   if (level !== left.lvl + 1) {
     return false
@@ -63,6 +51,18 @@ function isInvariant(node: AANode<any>): boolean {
   } else {
     return isInvariant(left) && isInvariant(right)
   }
+}
+
+function keyMatchesValues(numbers: number[], tree: AANode<number>): void {
+  numbers.forEach((n) => {
+    expect(AA.find(tree, n)).toStrictEqual(n)
+  })
+}
+
+function numbersToAATree(numbers: number[]): AANode<number> {
+  return numbers.reduce((tree: AANode<number>, n) => {
+    return AA.insert(tree, n, n)
+  }, AA.newTree<number>())
 }
 
 describe('AATree', () => {
@@ -121,17 +121,17 @@ describe('AATree', () => {
     const tree = numbersToAATree([0, 4, 10, 15, 20])
 
     expect(AA.rangesWithin(tree, 3, 22)).toEqual([
-      { start: 0, end: 3, value: 0 },
-      { start: 4, end: 9, value: 4 },
-      { start: 10, end: 14, value: 10 },
-      { start: 15, end: 19, value: 15 },
-      { start: 20, end: Infinity, value: 20 },
+      { end: 3, start: 0, value: 0 },
+      { end: 9, start: 4, value: 4 },
+      { end: 14, start: 10, value: 10 },
+      { end: 19, start: 15, value: 15 },
+      { end: Infinity, start: 20, value: 20 },
     ])
   })
 
   it('produces ranges for a collapsed range', () => {
     const tree = numbersToAATree([0, 1, 2, 3, 4])
-    expect(AA.rangesWithin(tree, 3, 3)).toEqual([{ start: 3, end: Infinity, value: 3 }])
+    expect(AA.rangesWithin(tree, 3, 3)).toEqual([{ end: Infinity, start: 3, value: 3 }])
   })
 
   it('finds the largest number that does not exceed a given value', () => {

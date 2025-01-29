@@ -1,7 +1,8 @@
 import React from 'react'
+
+import { ScrollContainerState, SizeFunction, SizeRange } from '../interfaces'
 import { Log, LogLevel } from '../loggerSystem'
 import { useSizeWithElRef } from './useSize'
-import { SizeRange, SizeFunction, ScrollContainerState } from '../interfaces'
 export default function useChangedListContentsSizes(
   callback: (ranges: SizeRange[]) => void,
   itemSize: SizeFunction,
@@ -18,52 +19,52 @@ export default function useChangedListContentsSizes(
       const ranges = getChangedChildSizes(el.children, itemSize, horizontalDirection ? 'offsetWidth' : 'offsetHeight', log)
       let scrollableElement = el.parentElement!
 
-      while (!scrollableElement.dataset['virtuosoScroller']) {
+      while (!scrollableElement.dataset.virtuosoScroller) {
         scrollableElement = scrollableElement.parentElement!
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const windowScrolling = (scrollableElement.lastElementChild! as HTMLDivElement).dataset['viewportType']! === 'window'
+      // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion
+      const windowScrolling = (scrollableElement.lastElementChild! as HTMLDivElement).dataset.viewportType! === 'window'
 
       const scrollTop = customScrollParent
         ? horizontalDirection
           ? customScrollParent.scrollLeft
           : customScrollParent.scrollTop
         : windowScrolling
-        ? horizontalDirection
-          ? window.pageXOffset || document.documentElement.scrollLeft
-          : window.pageYOffset || document.documentElement.scrollTop
-        : horizontalDirection
-        ? scrollableElement.scrollLeft
-        : scrollableElement.scrollTop
+          ? horizontalDirection
+            ? window.pageXOffset || document.documentElement.scrollLeft
+            : window.pageYOffset || document.documentElement.scrollTop
+          : horizontalDirection
+            ? scrollableElement.scrollLeft
+            : scrollableElement.scrollTop
 
       const scrollHeight = customScrollParent
         ? horizontalDirection
           ? customScrollParent.scrollWidth
           : customScrollParent.scrollHeight
         : windowScrolling
-        ? horizontalDirection
-          ? document.documentElement.scrollWidth
-          : document.documentElement.scrollHeight
-        : horizontalDirection
-        ? scrollableElement.scrollWidth
-        : scrollableElement.scrollHeight
+          ? horizontalDirection
+            ? document.documentElement.scrollWidth
+            : document.documentElement.scrollHeight
+          : horizontalDirection
+            ? scrollableElement.scrollWidth
+            : scrollableElement.scrollHeight
 
       const viewportHeight = customScrollParent
         ? horizontalDirection
           ? customScrollParent.offsetWidth
           : customScrollParent.offsetHeight
         : windowScrolling
-        ? horizontalDirection
-          ? window.innerWidth
-          : window.innerHeight
-        : horizontalDirection
-        ? scrollableElement.offsetWidth
-        : scrollableElement.offsetHeight
+          ? horizontalDirection
+            ? window.innerWidth
+            : window.innerHeight
+          : horizontalDirection
+            ? scrollableElement.offsetWidth
+            : scrollableElement.offsetHeight
 
       scrollContainerStateCallback({
-        scrollTop: Math.max(scrollTop, 0),
         scrollHeight,
+        scrollTop: Math.max(scrollTop, 0),
         viewportHeight,
       })
 
@@ -95,7 +96,7 @@ function getChangedChildSizes(children: HTMLCollection, itemSize: SizeFunction, 
   for (let i = 0; i < length; i++) {
     const child = children.item(i) as HTMLElement
 
-    if (!child || child.dataset.index === undefined) {
+    if (child.dataset.index === undefined) {
       continue
     }
 
@@ -113,7 +114,7 @@ function getChangedChildSizes(children: HTMLCollection, itemSize: SizeFunction, 
 
     const lastResult = results[results.length - 1]
     if (results.length === 0 || lastResult.size !== size || lastResult.endIndex !== index - 1) {
-      results.push({ startIndex: index, endIndex: index, size })
+      results.push({ endIndex: index, size, startIndex: index })
     } else {
       results[results.length - 1].endIndex++
     }

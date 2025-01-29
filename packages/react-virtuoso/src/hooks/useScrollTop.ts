@@ -1,11 +1,12 @@
 import React from 'react'
-import * as u from '../urx'
-import { correctItemSize } from '../utils/correctItemSize'
-import { ScrollContainerState } from '../interfaces'
 import ReactDOM from 'react-dom'
-import { approximatelyEqual } from '../utils/approximatelyEqual'
 
-export type ScrollerRef = Window | HTMLElement | null
+import { ScrollContainerState } from '../interfaces'
+import * as u from '../urx'
+import { approximatelyEqual } from '../utils/approximatelyEqual'
+import { correctItemSize } from '../utils/correctItemSize'
+
+export type ScrollerRef = HTMLElement | null | Window
 
 export default function useScrollTop(
   scrollContainerStateCallback: (state: ScrollContainerState) => void,
@@ -17,7 +18,7 @@ export default function useScrollTop(
 ) {
   const scrollerRef = React.useRef<HTMLElement | null | Window>(null)
   const scrollTopTarget = React.useRef<any>(null)
-  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+  const timeoutRef = React.useRef<null | ReturnType<typeof setTimeout>>(null)
 
   const handler = React.useCallback(
     (ev: Event) => {
@@ -28,29 +29,29 @@ export default function useScrollTop(
           ? window.pageXOffset || document.documentElement.scrollLeft
           : el.scrollLeft
         : windowScroll
-        ? window.pageYOffset || document.documentElement.scrollTop
-        : el.scrollTop
+          ? window.pageYOffset || document.documentElement.scrollTop
+          : el.scrollTop
 
       const scrollHeight = horizontalDirection
         ? windowScroll
           ? document.documentElement.scrollWidth
           : el.scrollWidth
         : windowScroll
-        ? document.documentElement.scrollHeight
-        : el.scrollHeight
+          ? document.documentElement.scrollHeight
+          : el.scrollHeight
 
       const viewportHeight = horizontalDirection
         ? windowScroll
           ? window.innerWidth
           : el.offsetWidth
         : windowScroll
-        ? window.innerHeight
-        : el.offsetHeight
+          ? window.innerHeight
+          : el.offsetHeight
 
       const call = () => {
         scrollContainerStateCallback({
-          scrollTop: Math.max(scrollTop, 0),
           scrollHeight,
+          scrollTop: Math.max(scrollTop, 0),
           viewportHeight,
         })
       }
@@ -79,7 +80,7 @@ export default function useScrollTop(
     const localRef = customScrollParent ? customScrollParent : scrollerRef.current!
 
     scrollerRefCallback(customScrollParent ? customScrollParent : scrollerRef.current)
-    handler({ target: localRef, suppressFlushSync: true } as unknown as Event)
+    handler({ suppressFlushSync: true, target: localRef } as unknown as Event)
     localRef.addEventListener('scroll', handler, { passive: true })
 
     return () => {
@@ -126,7 +127,7 @@ export default function useScrollTop(
     // with the scrollTop
     // scroller is already at this location
     if (approximatelyEqual(offsetHeight, scrollHeight) || location.top === scrollTop) {
-      scrollContainerStateCallback({ scrollTop, scrollHeight, viewportHeight: offsetHeight })
+      scrollContainerStateCallback({ scrollHeight, scrollTop, viewportHeight: offsetHeight })
       if (isSmooth) {
         smoothScrollTargetReached(true)
       }
@@ -149,7 +150,7 @@ export default function useScrollTop(
     }
 
     if (horizontalDirection) {
-      location = { left: location.top, behavior: location.behavior }
+      location = { behavior: location.behavior, left: location.top }
     }
 
     scrollerElement.scrollTo(location)
@@ -157,10 +158,10 @@ export default function useScrollTop(
 
   function scrollByCallback(location: ScrollToOptions) {
     if (horizontalDirection) {
-      location = { left: location.top, behavior: location.behavior }
+      location = { behavior: location.behavior, left: location.top }
     }
     scrollerRef.current!.scrollBy(location)
   }
 
-  return { scrollerRef, scrollByCallback, scrollToCallback }
+  return { scrollByCallback, scrollerRef, scrollToCallback }
 }

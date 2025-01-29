@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import { Virtuoso } from '../src'
 
 export function Example() {
@@ -17,13 +18,19 @@ export function Example() {
             {item} {index}
           </div>
         )}
-        style={{ height: '50px', width: '350px', border: 'solid thin gray' }}
+        style={{ border: 'solid thin gray', height: '50px', width: '350px' }}
       />
 
-      <button onClick={() => setItems([...items, 'another'])}>add item</button>
+      <button
+        onClick={() => {
+          setItems([...items, 'another'])
+        }}
+      >
+        add item
+      </button>
 
       <h3>non virtualized</h3>
-      <div style={{ height: '50px', width: '350px', border: 'solid thin gray' }}>
+      <div style={{ border: 'solid thin gray', height: '50px', width: '350px' }}>
         {items.map((item, index) => (
           <div key={index}>
             {item} {index}

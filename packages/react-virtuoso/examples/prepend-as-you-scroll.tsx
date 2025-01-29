@@ -1,9 +1,9 @@
-import * as React from 'react'
-import { Virtuoso } from '../src'
 import { faker } from '@faker-js/faker'
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
-const generated: Array<ReturnType<typeof user>> = []
+import { Virtuoso } from '../src'
+
+const generated: ReturnType<typeof user>[] = []
 
 export function toggleBg(index: number) {
   return index % 2 ? '#f5f5f5' : 'white'
@@ -14,13 +14,13 @@ export function user(index = 0) {
   const lastName = faker.name.lastName()
 
   return {
-    index: index + 1,
     bgColor: toggleBg(index),
-    name: `${firstName} ${lastName}`,
+    description: faker.lorem.sentence(10),
+    index: index + 1,
     initials: `${firstName.substring(0, 1)}${lastName.substring(0, 1)}`,
     jobTitle: faker.name.jobTitle(),
-    description: faker.lorem.sentence(10),
     longText: faker.lorem.paragraphs(1),
+    name: `${firstName} ${lastName}`,
   }
 }
 
@@ -30,10 +30,6 @@ export const getUser = (index: number) => {
   }
 
   return generated[index]
-}
-
-function generateUsers(length: number, startIndex = 0) {
-  return Array.from({ length }).map((_, i) => getUser(i + startIndex))
 }
 
 export function Example() {
@@ -57,12 +53,10 @@ export function Example() {
 
   return (
     <Virtuoso
-      style={{ height: 400 }}
-      firstItemIndex={firstItemIndex}
-      initialTopMostItemIndex={INITIAL_ITEM_COUNT - 1}
       data={users}
-      startReached={prependItems}
-      increaseViewportBy={{ top: 1500, bottom: 0 }}
+      firstItemIndex={firstItemIndex}
+      increaseViewportBy={{ bottom: 0, top: 1500 }}
+      initialTopMostItemIndex={INITIAL_ITEM_COUNT - 1}
       itemContent={(_, user) => {
         return (
           <div style={{ backgroundColor: user.bgColor, padding: '1rem 0.5rem' }}>
@@ -73,6 +67,12 @@ export function Example() {
           </div>
         )
       }}
+      startReached={prependItems}
+      style={{ height: 400 }}
     />
   )
+}
+
+function generateUsers(length: number, startIndex = 0) {
+  return Array.from({ length }).map((_, i) => getUser(i + startIndex))
 }

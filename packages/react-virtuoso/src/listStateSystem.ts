@@ -1,32 +1,32 @@
-import * as u from './urx'
 import { empty, findMaxKeyValue, Range, rangesWithin } from './AATree'
+import { rangeComparator, tupleComparator } from './comparators'
 import { groupedListSystem } from './groupedListSystem'
 import { getInitialTopMostItemIndexNumber, initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
 import { FlatIndexLocationWithAlign, Item, ListItem, ListRange } from './interfaces'
 import { propsReadySystem } from './propsReadySystem'
+import { recalcSystem } from './recalcSystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
-import { Data, originalIndexFromItemIndex, SizeState, sizeSystem, hasGroups, rangesWithinOffsets } from './sizeSystem'
+import { Data, hasGroups, originalIndexFromItemIndex, rangesWithinOffsets, SizeState, sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
-import { rangeComparator, tupleComparator } from './comparators'
-import { recalcSystem } from './recalcSystem'
+import * as u from './urx'
 
 export type ListItems = ListItem<unknown>[]
+export interface ListState {
+  bottom: number
+  firstItemIndex: number
+  items: ListItems
+  offsetBottom: number
+  offsetTop: number
+  top: number
+  topItems: ListItems
+  topListHeight: number
+  totalCount: number
+}
+
 export interface TopListState {
   items: ListItems
   listHeight: number
-}
-
-export interface ListState {
-  items: ListItems
-  topItems: ListItems
-  topListHeight: number
-  offsetTop: number
-  offsetBottom: number
-  top: number
-  bottom: number
-  totalCount: number
-  firstItemIndex: number
 }
 
 function probeItemSet(index: number, sizes: SizeState, data: Data) {
@@ -35,23 +35,89 @@ function probeItemSet(index: number, sizes: SizeState, data: Data) {
     const groupIndex = findMaxKeyValue(sizes.groupOffsetTree, itemIndex)[0]
 
     return [
-      { index: groupIndex, size: 0, offset: 0 },
-      { index: itemIndex, size: 0, offset: 0, data: data && data[0] },
+      { index: groupIndex, offset: 0, size: 0 },
+      { data: data?.[0], index: itemIndex, offset: 0, size: 0 },
     ]
   }
-  return [{ index, size: 0, offset: 0, data: data && data[0] }]
+  return [{ data: data?.[0], index, offset: 0, size: 0 }]
 }
 
 const EMPTY_LIST_STATE: ListState = {
-  items: [] as ListItems,
-  topItems: [] as ListItems,
-  offsetTop: 0,
-  offsetBottom: 0,
-  top: 0,
   bottom: 0,
+  firstItemIndex: 0,
+  items: [] as ListItems,
+  offsetBottom: 0,
+  offsetTop: 0,
+  top: 0,
+  topItems: [] as ListItems,
   topListHeight: 0,
   totalCount: 0,
-  firstItemIndex: 0,
+}
+
+export function buildListState(
+  items: Item<any>[],
+  topItems: Item<any>[],
+  totalCount: number,
+  gap: number,
+  sizes: SizeState,
+  firstItemIndex: number
+): ListState {
+  const { lastIndex, lastOffset, lastSize } = sizes
+  let offsetTop = 0
+  let bottom = 0
+
+  if (items.length > 0) {
+    offsetTop = items[0].offset
+    const lastItem = items[items.length - 1]
+    bottom = lastItem.offset + lastItem.size
+  }
+
+  const itemCount = totalCount - lastIndex
+  const total = lastOffset + itemCount * lastSize + (itemCount - 1) * gap
+  const top = offsetTop
+  const offsetBottom = total - bottom
+
+  return {
+    bottom,
+    firstItemIndex,
+    items: transposeItems(items, sizes, firstItemIndex),
+    offsetBottom,
+    offsetTop,
+    top,
+    topItems: transposeItems(topItems, sizes, firstItemIndex),
+    topListHeight: topItems.reduce((height, item) => item.size + height, 0),
+    totalCount,
+  }
+}
+
+export function buildListStateFromItemCount(
+  itemCount: number,
+  initialTopMostItemIndex: FlatIndexLocationWithAlign | number,
+  sizes: SizeState,
+  firstItemIndex: number,
+  gap: number,
+  data: readonly unknown[]
+) {
+  let includedGroupsCount = 0
+  if (sizes.groupIndices.length > 0) {
+    for (const index of sizes.groupIndices) {
+      if (index - includedGroupsCount >= itemCount) {
+        break
+      }
+      includedGroupsCount++
+    }
+  }
+
+  const adjustedCount = itemCount + includedGroupsCount
+  const initialTopMostItemIndexNumber = getInitialTopMostItemIndexNumber(initialTopMostItemIndex, adjustedCount)
+
+  const items = Array.from({ length: adjustedCount }).map((_, index) => ({
+    data: data[index + initialTopMostItemIndexNumber],
+    index: index + initialTopMostItemIndexNumber,
+    offset: 0,
+    size: 0,
+  }))
+  return buildListState(items, [], adjustedCount, gap, sizes, firstItemIndex)
 }
 
 function transposeItems(items: Item<any>[], sizes: SizeState, firstItemIndex: number): ListItems {
@@ -77,110 +143,44 @@ function transposeItems(items: Item<any>[], sizes: SizeState, firstItemIndex: nu
       currentGroupIndex = sizes.groupIndices.indexOf(currentRange.start)
     }
 
-    let transposedItem: { type: 'group'; index: number } | { index: number; groupIndex: number }
+    let transposedItem: { groupIndex: number; index: number } | { index: number; type: 'group' }
 
     if (item.index === currentRange.start) {
       transposedItem = {
-        type: 'group' as const,
         index: currentGroupIndex,
+        type: 'group' as const,
       }
     } else {
       transposedItem = {
-        index: item.index - (currentGroupIndex + 1) + firstItemIndex,
         groupIndex: currentGroupIndex,
+        index: item.index - (currentGroupIndex + 1) + firstItemIndex,
       }
     }
 
     transposedItems.push({
       ...transposedItem,
-      size: item.size,
+      data: item.data,
       offset: item.offset,
       originalIndex: item.index,
-      data: item.data,
+      size: item.size,
     })
   }
 
   return transposedItems
 }
 
-export function buildListState(
-  items: Item<any>[],
-  topItems: Item<any>[],
-  totalCount: number,
-  gap: number,
-  sizes: SizeState,
-  firstItemIndex: number
-): ListState {
-  const { lastSize, lastOffset, lastIndex } = sizes
-  let offsetTop = 0
-  let bottom = 0
-
-  if (items.length > 0) {
-    offsetTop = items[0].offset
-    const lastItem = items[items.length - 1]
-    bottom = lastItem.offset + lastItem.size
-  }
-
-  const itemCount = totalCount - lastIndex
-  const total = lastOffset + itemCount * lastSize + (itemCount - 1) * gap
-  const top = offsetTop
-  const offsetBottom = total - bottom
-
-  return {
-    items: transposeItems(items, sizes, firstItemIndex),
-    topItems: transposeItems(topItems, sizes, firstItemIndex),
-    topListHeight: topItems.reduce((height, item) => item.size + height, 0),
-    offsetTop,
-    offsetBottom,
-    top,
-    bottom,
-    totalCount,
-    firstItemIndex,
-  }
-}
-
-export function buildListStateFromItemCount(
-  itemCount: number,
-  initialTopMostItemIndex: number | FlatIndexLocationWithAlign,
-  sizes: SizeState,
-  firstItemIndex: number,
-  gap: number,
-  data: readonly unknown[]
-) {
-  let includedGroupsCount = 0
-  if (sizes.groupIndices.length > 0) {
-    for (const index of sizes.groupIndices) {
-      if (index - includedGroupsCount >= itemCount) {
-        break
-      }
-      includedGroupsCount++
-    }
-  }
-
-  const adjustedCount = itemCount + includedGroupsCount
-  const initialTopMostItemIndexNumber = getInitialTopMostItemIndexNumber(initialTopMostItemIndex, adjustedCount)
-
-  const items = Array.from({ length: adjustedCount }).map((_, index) => ({
-    index: index + initialTopMostItemIndexNumber,
-    size: 0,
-    offset: 0,
-    data: data[index + initialTopMostItemIndexNumber],
-  }))
-  return buildListState(items, [], adjustedCount, gap, sizes, firstItemIndex)
-}
-
 export const listStateSystem = u.system(
   ([
-    { sizes, totalCount, data, firstItemIndex, gap },
+    { data, firstItemIndex, gap, sizes, totalCount },
     groupedListSystem,
-    { visibleRange, listBoundary, topListHeight: rangeTopListHeight },
-    { scrolledToInitialItem, initialTopMostItemIndex },
+    { listBoundary, topListHeight: rangeTopListHeight, visibleRange },
+    { initialTopMostItemIndex, scrolledToInitialItem },
     { topListHeight },
     stateFlags,
     { didMount },
     { recalcInProgress },
   ]) => {
-    const topItemsIndexes = u.statefulStream<Array<number>>([])
+    const topItemsIndexes = u.statefulStream<number[]>([])
     const initialItemCount = u.statefulStream(0)
     const itemsRendered = u.stream<ListItems>()
 
@@ -222,7 +222,7 @@ export const listStateSystem = u.system(
             data,
           ]) => {
             const sizesValue = sizes
-            const { sizeTree, offsetTree } = sizesValue
+            const { offsetTree, sizeTree } = sizesValue
             const initialItemCountValue = u.getValue(initialItemCount)
 
             if (totalCount === 0) {
@@ -264,7 +264,7 @@ export const listStateSystem = u.system(
                 const rangeStartIndex = Math.max(range.start, startIndex)
                 const rangeEndIndex = Math.min(range.end, endIndex)
                 for (let i = rangeStartIndex; i <= rangeEndIndex; i++) {
-                  topItems.push({ index: i, size, offset: offset, data: data && data[i] })
+                  topItems.push({ data: data?.[i], index: i, offset: offset, size })
                   offset += size
                 }
               }
@@ -313,7 +313,7 @@ export const listStateSystem = u.system(
                     break
                   }
 
-                  result.push({ index: i, size, offset: offset, data: data && data[i] })
+                  result.push({ data: data?.[i], index: i, offset: offset, size })
                   offset += size + gap
                 }
               }
@@ -404,15 +404,15 @@ export const listStateSystem = u.system(
           }
 
           return {
-            startIndex: items[startIndex].index,
             endIndex: items[endIndex].index,
+            startIndex: items[startIndex].index,
           } as ListRange
         }),
         u.distinctUntilChanged(rangeComparator)
       )
     )
 
-    return { listState, topItemsIndexes, endReached, startReached, rangeChanged, itemsRendered, initialItemCount, ...stateFlags }
+    return { endReached, initialItemCount, itemsRendered, listState, rangeChanged, startReached, topItemsIndexes, ...stateFlags }
   },
   u.tup(
     sizeSystem,

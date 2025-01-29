@@ -2,11 +2,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import * as React from 'react'
-import ReactDOM from 'react-dom/client'
-import { VirtuosoGrid } from '../src/VirtuosoGrid'
-
-import { describe, it, beforeEach, afterEach, vi, expect } from 'vitest'
 import { act } from 'react'
+import ReactDOM from 'react-dom/client'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { VirtuosoGrid } from '../src/VirtuosoGrid'
 
 vi.mock('../src/hooks/useSize')
 vi.mock('../src/hooks/useScrollTop')
@@ -35,7 +35,7 @@ describe('Grid', () => {
     const listParent = viewport.firstElementChild
 
     act(() => {
-      scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
+      scroller.triggerScroll({ scrollHeight: 700, scrollTop: 0, viewportHeight: 200 })
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
     })
 
@@ -45,7 +45,7 @@ describe('Grid', () => {
 
   it('renders a probe item initially with the initialTopMostItemIndex', () => {
     act(() => {
-      ReactDOM.createRoot(container).render(<VirtuosoGrid totalCount={20000} initialTopMostItemIndex={10} />)
+      ReactDOM.createRoot(container).render(<VirtuosoGrid initialTopMostItemIndex={10} totalCount={20000} />)
     })
 
     const scroller = container.firstElementChild as any
@@ -53,7 +53,7 @@ describe('Grid', () => {
     const listParent = viewport.firstElementChild
 
     act(() => {
-      scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
+      scroller.triggerScroll({ scrollHeight: 700, scrollTop: 0, viewportHeight: 200 })
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
     })
 
@@ -77,7 +77,7 @@ describe('Grid', () => {
       listParent = viewport.firstElementChild
 
       act(() => {
-        scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
+        scroller.triggerScroll({ scrollHeight: 700, scrollTop: 0, viewportHeight: 200 })
         viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
       })
     })
@@ -94,7 +94,13 @@ describe('Grid', () => {
       return (
         <>
           <VirtuosoGrid data={data} itemContent={(_: number, item: { name: string }) => item.name} />
-          <button onClick={() => setData([{ name: 'Item 0' }])}>Set Data</button>
+          <button
+            onClick={() => {
+              setData([{ name: 'Item 0' }])
+            }}
+          >
+            Set Data
+          </button>
         </>
       )
     }
@@ -108,7 +114,7 @@ describe('Grid', () => {
     const listParent = viewport.firstElementChild
 
     act(() => {
-      scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
+      scroller.triggerScroll({ scrollHeight: 700, scrollTop: 0, viewportHeight: 200 })
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
       container.querySelector('button')!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     })
@@ -128,7 +134,13 @@ describe('Grid', () => {
               return item.name
             }}
           />
-          <button onClick={() => setData([{ name: 'Item 1' }])}>Set Data</button>
+          <button
+            onClick={() => {
+              setData([{ name: 'Item 1' }])
+            }}
+          >
+            Set Data
+          </button>
         </>
       )
     }
@@ -142,7 +154,7 @@ describe('Grid', () => {
     const listParent = viewport.firstElementChild
 
     act(() => {
-      scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
+      scroller.triggerScroll({ scrollHeight: 700, scrollTop: 0, viewportHeight: 200 })
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
       container.querySelector('button')!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     })

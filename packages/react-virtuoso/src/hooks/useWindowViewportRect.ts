@@ -1,22 +1,23 @@
 import React from 'react'
-import { useSizeWithElRef } from './useSize'
+
 import { WindowViewportInfo } from '../interfaces'
+import { useSizeWithElRef } from './useSize'
 
 export default function useWindowViewportRectRef(
   callback: (info: WindowViewportInfo) => void,
   customScrollParent: HTMLElement | undefined,
   skipAnimationFrame: boolean
 ) {
-  const viewportInfo = React.useRef<WindowViewportInfo | null>(null)
+  const viewportInfo = React.useRef<null | WindowViewportInfo>(null)
 
   const calculateInfo = React.useCallback(
     (element: HTMLElement | null) => {
-      if (element === null || !element.offsetParent) {
+      if (!element?.offsetParent) {
         return
       }
       const rect = element.getBoundingClientRect()
       const visibleWidth = rect.width
-      let visibleHeight: number, offsetTop: number
+      let offsetTop: number, visibleHeight: number
 
       if (customScrollParent) {
         const customScrollParentRect = customScrollParent.getBoundingClientRect()

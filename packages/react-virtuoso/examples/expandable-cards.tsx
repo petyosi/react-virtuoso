@@ -1,24 +1,23 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import * as React from 'react'
 import { useState } from 'react'
+
 import { Virtuoso } from '../src'
 
 const Row = (props: any) => {
-  const { rowIndex, expanded, setExpanded } = props
+  const { expanded, rowIndex, setExpanded } = props
   const [ex, setEx] = useState(expanded)
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   const color = Math.floor(Math.abs(Math.sin(rowIndex) * 16777215) % 16777215).toString(16)
   return (
     <div style={{}}>
       <div
-        style={{
-          background: 'grey',
-          padding: '40px 0px',
-          border: '4px solid black',
-        }}
         onClick={() => {
           setExpanded(!expanded)
           setEx(!ex)
+        }}
+        style={{
+          background: 'grey',
+          border: '4px solid black',
+          padding: '40px 0px',
         }}
       >
         This is row #{rowIndex} rendered at {Date.now()}
@@ -34,20 +33,18 @@ const Row = (props: any) => {
     </div>
   )
 }
-interface IExpanded {
-  [key: number]: boolean
-}
+type IExpanded = Record<number, boolean>
 export function Example() {
   const [expanded, setExpanded] = useState<IExpanded>({})
 
   const itemContent = (rowIndex: number) => (
     <Row
-      rowIndex={rowIndex}
       expanded={!!expanded[rowIndex]}
+      rowIndex={rowIndex}
       setExpanded={(expanded: boolean) => {
         setExpanded((old) => Object.assign(old, { [rowIndex]: expanded }))
       }}
     />
   )
-  return <Virtuoso style={{ height: 900 }} totalCount={500} itemContent={itemContent} initialTopMostItemIndex={100} />
+  return <Virtuoso initialTopMostItemIndex={100} itemContent={itemContent} style={{ height: 900 }} totalCount={500} />
 }

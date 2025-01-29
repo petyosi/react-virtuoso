@@ -1,9 +1,10 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
+
 //@ts-expect-error - type module and playwright
 import { navigateToExample } from './utils.ts'
 
 test.describe('scroll to index', () => {
-  test.beforeEach(async ({ page, baseURL }) => {
+  test.beforeEach(async ({ baseURL, page }) => {
     await navigateToExample(page, baseURL, 'scroll-to-index')
     await page.reload()
     await page.waitForTimeout(100)

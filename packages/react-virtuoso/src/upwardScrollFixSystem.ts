@@ -1,13 +1,13 @@
-import * as u from './urx'
-import { domIOSystem } from './domIOSystem'
-import { listStateSystem } from './listStateSystem'
-import { sizeSystem } from './sizeSystem'
-import { UP, stateFlagsSystem } from './stateFlagsSystem'
-import { ListItem } from './interfaces'
-import { loggerSystem, LogLevel } from './loggerSystem'
-import { simpleMemoize } from './utils/simpleMemoize'
-import { recalcSystem } from './recalcSystem'
 import { find } from './AATree'
+import { domIOSystem } from './domIOSystem'
+import { ListItem } from './interfaces'
+import { listStateSystem } from './listStateSystem'
+import { loggerSystem, LogLevel } from './loggerSystem'
+import { recalcSystem } from './recalcSystem'
+import { sizeSystem } from './sizeSystem'
+import { stateFlagsSystem, UP } from './stateFlagsSystem'
+import * as u from './urx'
+import { simpleMemoize } from './utils/simpleMemoize'
 
 const isMobileSafari = simpleMemoize(() => {
   return /iP(ad|od|hone)/i.test(navigator.userAgent) && /WebKit/i.test(navigator.userAgent)
@@ -19,10 +19,10 @@ type UpwardFixState = [number, ListItem<any>[], number, number]
  */
 export const upwardScrollFixSystem = u.system(
   ([
-    { scrollBy, scrollTop, deviation, scrollingInProgress },
-    { isScrolling, isAtBottom, scrollDirection, lastJumpDueToItemResize },
+    { deviation, scrollBy, scrollingInProgress, scrollTop },
+    { isAtBottom, isScrolling, lastJumpDueToItemResize, scrollDirection },
     { listState },
-    { beforeUnshiftWith, shiftWithOffset, sizes, gap },
+    { beforeUnshiftWith, gap, shiftWithOffset, sizes },
     { log },
     { recalcInProgress },
   ]) => {
@@ -31,7 +31,7 @@ export const upwardScrollFixSystem = u.system(
         listState,
         u.withLatestFrom(lastJumpDueToItemResize),
         u.scan(
-          ([, prevItems, prevTotalCount, prevTotalHeight], [{ items, totalCount, bottom, offsetBottom }, lastJumpDueToItemResize]) => {
+          ([, prevItems, prevTotalCount, prevTotalHeight], [{ bottom, items, offsetBottom, totalCount }, lastJumpDueToItemResize]) => {
             const totalHeight = bottom + offsetBottom
 
             let newDev = 0
@@ -65,11 +65,11 @@ export const upwardScrollFixSystem = u.system(
 
     function scrollByWith(offset: number) {
       if (offset > 0) {
-        u.publish(scrollBy, { top: -offset, behavior: 'auto' })
+        u.publish(scrollBy, { behavior: 'auto', top: -offset })
         u.publish(deviation, 0)
       } else {
         u.publish(deviation, 0)
-        u.publish(scrollBy, { top: -offset, behavior: 'auto' })
+        u.publish(scrollBy, { behavior: 'auto', top: -offset })
       }
     }
 
@@ -107,7 +107,7 @@ export const upwardScrollFixSystem = u.system(
       u.pipe(
         beforeUnshiftWith,
         u.withLatestFrom(sizes, gap),
-        u.map(([offset, { lastSize: defaultItemSize, groupIndices, sizeTree }, gap]) => {
+        u.map(([offset, { groupIndices, lastSize: defaultItemSize, sizeTree }, gap]) => {
           function getItemOffset(itemCount: number) {
             return itemCount * (defaultItemSize + gap)
           }

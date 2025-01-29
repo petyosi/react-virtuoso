@@ -1,24 +1,23 @@
-import * as React from 'react'
 import { Virtuoso } from '../src/'
 
 export function Example() {
   return (
     <Virtuoso
-      computeItemKey={(key) => `item-${key}`}
-      totalCount={1000}
-      itemContent={(index) => <div style={{ height: 30 }}>Item {index}</div>}
-      style={{ height: 300 }}
-      scrollSeekConfiguration={{
-        enter: (velocity) => Math.abs(velocity) > 200,
-        exit: (velocity) => Math.abs(velocity) < 30,
-      }}
       components={{
         ScrollSeekPlaceholder: ({ height, index }) => (
-          <div aria-label="placeholder" style={{ height, color: 'red' }}>
+          <div aria-label="placeholder" style={{ color: 'red', height }}>
             Placeholder {index}
           </div>
         ),
       }}
+      computeItemKey={(key) => `item-${key}`}
+      itemContent={(index) => <div style={{ height: 30 }}>Item {index}</div>}
+      scrollSeekConfiguration={{
+        enter: (velocity) => Math.abs(velocity) > 200,
+        exit: (velocity) => Math.abs(velocity) < 30,
+      }}
+      style={{ height: 300 }}
+      totalCount={1000}
     />
   )
 }

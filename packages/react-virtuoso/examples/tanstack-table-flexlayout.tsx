@@ -1,14 +1,15 @@
-import * as React from 'react'
-import { getCoreRowModel, ColumnDef, useReactTable } from '@tanstack/react-table'
-import { FillerRowProps, TableVirtuoso } from '../src'
-import { ScrollSeekPlaceholderProps } from '../dist'
+import { ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import { flexRender } from '@tanstack/react-table'
+import * as React from 'react'
 
-const items: Array<ReturnType<typeof item>> = []
+import { ScrollSeekPlaceholderProps } from '../'
+import { FillerRowProps, TableVirtuoso } from '../src'
+
+const items: ReturnType<typeof item>[] = []
 function item(index: number) {
   return {
-    id: index + 1,
     content: `Table ${index}`,
+    id: index + 1,
   }
 }
 
@@ -25,18 +26,18 @@ const generateData = (length: number, startIndex = 0) => {
 }
 
 export function Example() {
-  const columns = React.useMemo<ColumnDef<{ id: number; content: string }>[]>(
+  const columns = React.useMemo<ColumnDef<{ content: string; id: number }>[]>(
     () => [
       {
-        header: () => 'Id',
         accessorKey: 'id',
         cell: (info) => info.getValue(),
+        header: () => 'Id',
       },
       {
-        header: () => 'Table item',
         accessorKey: 'content',
         cell: (info) => info.getValue(),
         footer: () => 'Footer element',
+        header: () => 'Table item',
       },
     ],
     []
@@ -45,8 +46,8 @@ export function Example() {
   const [data] = React.useState(() => generateData(500))
 
   const table = useReactTable({
-    data,
     columns,
+    data,
     getCoreRowModel: getCoreRowModel(),
   })
 
@@ -55,25 +56,27 @@ export function Example() {
   return (
     <>
       <TableVirtuoso
-        totalCount={500}
         components={{
+          EmptyPlaceholder: () => <tr>Empty</tr>,
+          FillerRow: ({ height }: FillerRowProps) => <tr style={{ height }} />,
+          ScrollSeekPlaceholder: ({ height }: ScrollSeekPlaceholderProps) => <tr style={{ border: 0, height, padding: 0 }} />,
           Table: ({ style, ...props }) => {
             return (
               <table
                 {...props}
                 style={{
                   ...style,
-                  width: '100%',
-                  tableLayout: 'fixed',
                   borderCollapse: 'collapse',
                   borderSpacing: 0,
+                  tableLayout: 'fixed',
+                  width: '100%',
                 }}
               />
             )
           },
           TableRow: (props) => {
             const index = props['data-index']
-            const row = rows[index]!
+            const row = rows[index]
 
             return (
               <tr {...props}>
@@ -83,19 +86,32 @@ export function Example() {
               </tr>
             )
           },
-          ScrollSeekPlaceholder: ({ height }: ScrollSeekPlaceholderProps) => <tr style={{ height, padding: 0, border: 0 }} />,
-          FillerRow: ({ height }: FillerRowProps) => <tr style={{ height }} />,
-          EmptyPlaceholder: () => <tr>Empty</tr>,
         }}
-        style={{ height: 700 }}
+        fixedFooterContent={() => {
+          return table.getFooterGroups().map((footerGroup) => (
+            <tr key={footerGroup.id}>
+              {footerGroup.headers.map((footer) => (
+                <td
+                  colSpan={footer.colSpan}
+                  key={footer.id}
+                  style={{
+                    width: footer.getSize(),
+                  }}
+                >
+                  {footer.isPlaceholder ? null : flexRender(footer.column.columnDef.header, footer.getContext())}
+                </td>
+              ))}
+            </tr>
+          ))
+        }}
         fixedHeaderContent={() => {
           return table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
                   <th
-                    key={header.id}
                     colSpan={header.colSpan}
+                    key={header.id}
                     style={{
                       width: header.getSize(),
                     }}
@@ -107,23 +123,8 @@ export function Example() {
             </tr>
           ))
         }}
-        fixedFooterContent={() => {
-          return table.getFooterGroups().map((footerGroup) => (
-            <tr key={footerGroup.id}>
-              {footerGroup.headers.map((footer) => (
-                <td
-                  key={footer.id}
-                  colSpan={footer.colSpan}
-                  style={{
-                    width: footer.getSize(),
-                  }}
-                >
-                  {footer.isPlaceholder ? null : flexRender(footer.column.columnDef.header, footer.getContext())}
-                </td>
-              ))}
-            </tr>
-          ))
-        }}
+        style={{ height: 700 }}
+        totalCount={500}
       />
     </>
   )

@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import { Virtuoso, VirtuosoHandle } from '../src'
 
 export function Example() {
@@ -8,7 +9,7 @@ export function Example() {
 
   const keyDownCallback = React.useCallback(
     (e: KeyboardEvent) => {
-      let nextIndex: number | null = null
+      let nextIndex: null | number = null
 
       if (e.code === 'ArrowUp') {
         nextIndex = Math.max(0, currentItemIndex - 1)
@@ -18,11 +19,11 @@ export function Example() {
 
       if (nextIndex !== null) {
         ref.current!.scrollIntoView({
-          index: nextIndex,
           behavior: 'auto',
           done: () => {
-            setCurrentItemIndex(nextIndex!)
+            setCurrentItemIndex(nextIndex)
           },
+          index: nextIndex,
         })
         e.preventDefault()
       }
@@ -31,8 +32,9 @@ export function Example() {
   )
 
   const scrollerRef = React.useCallback(
-    (element: HTMLElement | Window | null) => {
+    (element: HTMLElement | null | Window) => {
       if (element) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         element.addEventListener('keydown', keyDownCallback as any)
         listRef.current = element as HTMLElement
       } else {
@@ -44,15 +46,15 @@ export function Example() {
 
   return (
     <Virtuoso
-      ref={ref}
-      scrollerRef={scrollerRef}
-      totalCount={100}
       itemContent={(index) => (
-        <div style={{ height: index % 2 ? 30 : 20, background: 'white', color: index === currentItemIndex ? 'red' : 'black' }}>
+        <div style={{ background: 'white', color: index === currentItemIndex ? 'red' : 'black', height: index % 2 ? 30 : 20 }}>
           Item {index}
         </div>
       )}
+      ref={ref}
+      scrollerRef={scrollerRef}
       style={{ height: 300 }}
+      totalCount={100}
     />
   )
 }

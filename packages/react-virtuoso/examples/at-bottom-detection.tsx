@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import { Virtuoso } from '../src/'
 
 export function Example() {
@@ -9,7 +10,12 @@ export function Example() {
       return (
         <div>
           <div>Item {index}</div>
-          <button style={{ height: !!toggle[index] ? 100 : 50 }} onClick={() => setToggle((map) => ({ ...map, [index]: !map[index] }))}>
+          <button
+            onClick={() => {
+              setToggle((map) => ({ ...map, [index]: !map[index] }))
+            }}
+            style={{ height: toggle[index] ? 100 : 50 }}
+          >
             Toggle
           </button>
         </div>
@@ -52,13 +58,13 @@ export function Example() {
         Add two quickly
       </button>
       <Virtuoso
-        totalCount={count}
-        itemContent={itemContent}
-        followOutput={'auto'}
-        increaseViewportBy={{ top: 0, bottom: 30 }}
-        initialTopMostItemIndex={99}
         defaultItemHeight={100}
+        followOutput={'auto'}
+        increaseViewportBy={{ bottom: 30, top: 0 }}
+        initialTopMostItemIndex={99}
+        itemContent={itemContent}
         style={{ height: 800 }}
+        totalCount={count}
       />
     </div>
   )

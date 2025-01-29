@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
+
 /**
  * Streams are the basic building blocks of a reactive system. Think of them as the system permanent "data tubes".
  *
@@ -34,73 +34,9 @@
  * @packageDocumentation
  */
 
-import { Emitter, StatefulStream, Stream, Subscription, Unsubscribe, subscribe, connect } from './actions'
-import { RESET, PUBLISH, SUBSCRIBE, VALUE } from './constants'
-import { tap, noop } from './utils'
-
-/**
- * Constructs a new stateless stream.
- * ```ts
- * const foo = stream<number>();
- * ```
- * @typeParam T the type of values to publish in the stream.
- * @returns a [[Stream]]
- */
-export function stream<T>(): Stream<T> {
-  const subscriptions = [] as Subscription<T>[]
-
-  return ((action: PUBLISH | SUBSCRIBE | RESET, arg: any) => {
-    switch (action) {
-      case RESET:
-        subscriptions.splice(0, subscriptions.length)
-        return
-      case SUBSCRIBE:
-        subscriptions.push(arg as Subscription<T>)
-        return () => {
-          const indexOf = subscriptions.indexOf(arg as Subscription<T>)
-          if (indexOf > -1) {
-            subscriptions.splice(indexOf, 1)
-          }
-        }
-      case PUBLISH:
-        subscriptions.slice().forEach((subscription) => {
-          subscription(arg as T)
-        })
-        return
-      default:
-        throw new Error(`unrecognized action ${action}`)
-    }
-  }) as Stream<T>
-}
-
-/**
- * Constructs a new stateful stream.
- * ```ts
- * const foo = statefulStream(42);
- * ```
- * @param initial the initial value in the stream.
- * @typeParam T the type of values to publish in the stream. If omitted, the function infers it from the initial value.
- * @returns a [[StatefulStream]]
- */
-export function statefulStream<T>(initial: T): StatefulStream<T> {
-  let value: T = initial
-  const innerSubject = stream<T>()
-
-  return ((action: PUBLISH | SUBSCRIBE | RESET | VALUE, arg: any) => {
-    switch (action) {
-      case SUBSCRIBE:
-        const subscription = arg as Subscription<T>
-        subscription(value)
-        break
-      case PUBLISH:
-        value = arg as T
-        break
-      case VALUE:
-        return value
-    }
-    return innerSubject(action as any, arg)
-  }) as StatefulStream<T>
-}
+import { connect, Emitter, StatefulStream, Stream, subscribe, Subscription, Unsubscribe } from './actions'
+import { PUBLISH, RESET, SUBSCRIBE, VALUE } from './constants'
+import { noop, tap } from './utils'
 
 /**
  * Event handlers are special emitters which can have **at most one active subscription**.
@@ -121,11 +57,11 @@ export function statefulStream<T>(initial: T): StatefulStream<T> {
  * @returns the single-subscription emitter.
  */
 export function eventHandler<T>(emitter: Emitter<T>) {
-  let unsub: Unsubscribe | undefined
+  let unsub: undefined | Unsubscribe
   let currentSubscription: any
-  const cleanup = () => unsub && unsub()
+  const cleanup = () => unsub?.()
 
-  return function (action: SUBSCRIBE | RESET, subscription?: Subscription<T>) {
+  return function (action: RESET | SUBSCRIBE, subscription?: Subscription<T>) {
     switch (action) {
       case SUBSCRIBE:
         if (subscription) {
@@ -144,48 +80,39 @@ export function eventHandler<T>(emitter: Emitter<T>) {
         cleanup()
         currentSubscription = null
         return
-      default:
-        throw new Error(`unrecognized action ${action}`)
     }
   } as Emitter<T>
 }
 
 /**
- * Creates and connects a "junction" stream to the specified emitter. Often used with [[pipe]], to avoid the multiple evaluation of operator sets.
- *
+ * Constructs a new stateful stream.
  * ```ts
- * const foo = stream<number>();
- *
- * const fooX2 = pipe(
- *   foo,
- *   map((value) => {
- *     console.log(`multiplying ${value}`);
- *     return value * 2;
- *   })
- * );
- *
- * subscribe(fooX2, (value) => console.log(value));
- * subscribe(fooX2, (value) => console.log(value));
- *
- * publish(foo, 42); // executes the map operator twice for each subscription.
- *
- * const sharedFooX2 = streamFromEmitter(pipe(
- *   foo,
- *   map((value) => {
- *     console.log(`shared multiplying ${value}`);
- *     return value * 2;
- *   })
- * ));
- *
- * subscribe(sharedFooX2, (value) => console.log(value));
- * subscribe(sharedFooX2, (value) => console.log(value));
- *
- * publish(foo, 42);
- *```
- * @returns the resulting stream.
+ * const foo = statefulStream(42);
+ * ```
+ * @param initial the initial value in the stream.
+ * @typeParam T the type of values to publish in the stream. If omitted, the function infers it from the initial value.
+ * @returns a [[StatefulStream]]
  */
-export function streamFromEmitter<T>(emitter: Emitter<T>): Stream<T> {
-  return tap(stream<T>(), (stream) => connect(emitter, stream))
+export function statefulStream<T>(initial: T): StatefulStream<T> {
+  let value: T = initial
+  const innerSubject = stream<T>()
+
+  // @ts-ignore
+  return ((action: PUBLISH | RESET | SUBSCRIBE | VALUE, arg: any) => {
+    switch (action) {
+      case PUBLISH:
+        value = arg as T
+        break
+      case SUBSCRIBE: {
+        const subscription = arg as Subscription<T>
+        subscription(value)
+        break
+      }
+      case VALUE:
+        return value
+    }
+    innerSubject(action as any, arg)
+  }) as StatefulStream<T>
 }
 
 /**
@@ -225,4 +152,75 @@ export function streamFromEmitter<T>(emitter: Emitter<T>): Stream<T> {
  */
 export function statefulStreamFromEmitter<T>(emitter: Emitter<T>, initial: T): StatefulStream<T> {
   return tap(statefulStream(initial), (stream) => connect(emitter, stream))
+}
+
+/**
+ * Constructs a new stateless stream.
+ * ```ts
+ * const foo = stream<number>();
+ * ```
+ * @typeParam T the type of values to publish in the stream.
+ * @returns a [[Stream]]
+ */
+export function stream<T>(): Stream<T> {
+  const subscriptions = [] as Subscription<T>[]
+
+  return ((action: PUBLISH | RESET | SUBSCRIBE, arg: any) => {
+    switch (action) {
+      case PUBLISH:
+        subscriptions.slice().forEach((subscription) => {
+          subscription(arg as T)
+        })
+        return
+      case RESET:
+        subscriptions.splice(0, subscriptions.length)
+        return
+      case SUBSCRIBE:
+        subscriptions.push(arg as Subscription<T>)
+        return () => {
+          const indexOf = subscriptions.indexOf(arg as Subscription<T>)
+          if (indexOf > -1) {
+            subscriptions.splice(indexOf, 1)
+          }
+        }
+    }
+  }) as Stream<T>
+}
+
+/**
+ * Creates and connects a "junction" stream to the specified emitter. Often used with [[pipe]], to avoid the multiple evaluation of operator sets.
+ *
+ * ```ts
+ * const foo = stream<number>();
+ *
+ * const fooX2 = pipe(
+ *   foo,
+ *   map((value) => {
+ *     console.log(`multiplying ${value}`);
+ *     return value * 2;
+ *   })
+ * );
+ *
+ * subscribe(fooX2, (value) => console.log(value));
+ * subscribe(fooX2, (value) => console.log(value));
+ *
+ * publish(foo, 42); // executes the map operator twice for each subscription.
+ *
+ * const sharedFooX2 = streamFromEmitter(pipe(
+ *   foo,
+ *   map((value) => {
+ *     console.log(`shared multiplying ${value}`);
+ *     return value * 2;
+ *   })
+ * ));
+ *
+ * subscribe(sharedFooX2, (value) => console.log(value));
+ * subscribe(sharedFooX2, (value) => console.log(value));
+ *
+ * publish(foo, 42);
+ *```
+ * @returns the resulting stream.
+ */
+export function streamFromEmitter<T>(emitter: Emitter<T>): Stream<T> {
+  return tap(stream<T>(), (stream) => connect(emitter, stream))
 }

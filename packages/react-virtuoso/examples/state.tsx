@@ -1,9 +1,6 @@
 import * as React from 'react'
-import { StateSnapshot, Virtuoso, VirtuosoHandle } from '../src'
 
-function Header() {
-  return <div>Header</div>
-}
+import { StateSnapshot, Virtuoso, VirtuosoHandle } from '../src'
 
 export function Example() {
   const ref = React.useRef<VirtuosoHandle>(null)
@@ -22,20 +19,30 @@ export function Example() {
       >
         Save state and reload
       </button>
-      <button onClick={() => setKey((value) => value + 1)}>Reload</button>
+      <button
+        onClick={() => {
+          setKey((value) => value + 1)
+        }}
+      >
+        Reload
+      </button>
 
       <Virtuoso
-        key={key}
-        ref={ref}
-        restoreStateFrom={state.current}
-        computeItemKey={(key: number) => `item-${key.toString()}`}
         components={{
           Header,
         }}
-        totalCount={100}
+        computeItemKey={(key: number) => `item-${key.toString()}`}
         itemContent={(index) => <div style={{ height: index % 2 ? 30 : 20 }}>Item {index}</div>}
+        key={key}
+        ref={ref}
+        restoreStateFrom={state.current}
         style={{ height: 300 }}
+        totalCount={100}
       />
     </div>
   )
+}
+
+function Header() {
+  return <div>Header</div>
 }

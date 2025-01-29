@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import { GroupedVirtuoso } from '../src'
 
 const firstGroupCountMock = 2
@@ -26,15 +27,15 @@ export function Example() {
   return (
     <div>
       <GroupedVirtuoso
+        alignToBottom
         context={{ data }}
+        groupContent={(index) => <div style={{ backgroundColor: 'blue', color: '#fff', height: '30px' }}>Group: {index}</div>}
         // groupCounts={[data.length]}
         groupCounts={groupCounts}
         itemContent={(index, _, __, { data }) => {
           return <div style={{ height: '20px' }}>{data[index]?.id}</div>
         }}
-        groupContent={(index) => <div style={{ height: '30px', color: '#fff', backgroundColor: 'blue' }}>Group: {index}</div>}
-        style={{ height: '300px', border: '1px dashed #ccc' }}
-        alignToBottom
+        style={{ border: '1px dashed #ccc', height: '300px' }}
       />
       <button onClick={addLastItem}>add last item</button>
       <button onClick={removeLastItem}>remove last item</button>

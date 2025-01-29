@@ -1,10 +1,9 @@
-import * as React from 'react'
 import { Virtuoso } from '../src'
 
 export function Example() {
   return (
     <Virtuoso
-      totalCount={100}
+      initialTopMostItemIndex={99}
       itemContent={(index) => (
         <div style={{ border: '1px solid black' }}>
           Item {index}
@@ -15,8 +14,8 @@ export function Example() {
           </div>
         </div>
       )}
-      initialTopMostItemIndex={99}
       style={{ height: 300 }}
+      totalCount={100}
     />
   )
 }

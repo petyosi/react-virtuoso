@@ -1,8 +1,9 @@
-import { BOTTOM, getOverscan, TOP, sizeRangeSystem } from '../src/sizeRangeSystem'
-import { init, getValue, publish, subscribe, system, tup } from '../src/urx'
+import { describe, expect, it, vi } from 'vitest'
+
 import { domIOSystem } from '../src/domIOSystem'
+import { BOTTOM, getOverscan, sizeRangeSystem, TOP } from '../src/sizeRangeSystem'
 import { DOWN, UP } from '../src/stateFlagsSystem'
-import { describe, it, expect, vi } from 'vitest'
+import { getValue, init, publish, subscribe, system, tup } from '../src/urx'
 
 void getValue
 void publish
@@ -28,7 +29,7 @@ describe('overscan calculation', () => {
 describe('extend viewport by', () => {
   it('increases the calculated range statically', () => {
     const sys = system(([a, b]) => ({ ...a, ...b }), tup(sizeRangeSystem, domIOSystem))
-    const { listBoundary, visibleRange, increaseViewportBy, scrollTop, viewportHeight } = init(sys)
+    const { increaseViewportBy, listBoundary, scrollTop, viewportHeight, visibleRange } = init(sys)
     const spy = vi.fn()
     subscribe(visibleRange, spy)
     publish(scrollTop, 0)
@@ -41,12 +42,12 @@ describe('extend viewport by', () => {
 
   it('allows separate config for each list end', () => {
     const sys = system(([a, b]) => ({ ...a, ...b }), tup(sizeRangeSystem, domIOSystem))
-    const { listBoundary, visibleRange, increaseViewportBy, scrollTop, viewportHeight } = init(sys)
+    const { increaseViewportBy, listBoundary, scrollTop, viewportHeight, visibleRange } = init(sys)
     const spy = vi.fn()
     subscribe(visibleRange, spy)
     publish(scrollTop, 200)
     publish(viewportHeight, 200)
-    publish(increaseViewportBy, { top: 50, bottom: 100 })
+    publish(increaseViewportBy, { bottom: 100, top: 50 })
     publish(listBoundary, [0, 0])
 
     expect(spy).toHaveBeenCalledWith([150, 500])

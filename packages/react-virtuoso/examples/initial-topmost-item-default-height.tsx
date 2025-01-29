@@ -1,31 +1,9 @@
 import * as React from 'react'
+
 import { LogLevel, Virtuoso } from '../src'
 
 //
-const itemContent = (index: number) => <div style={{ height: index % 2 ? 30 : 20, background: 'white' }}>Item {index}</div>
-
-export function Example() {
-  return (
-    <div>
-      <h2>Randomly buggy in safari, container height gets reported later</h2>
-      <Virtuoso totalCount={100} defaultItemHeight={30} itemContent={itemContent} initialTopMostItemIndex={60} style={{ height: 300 }} />
-    </div>
-  )
-}
-
-function useSuppressResizeObserverError() {
-  React.useEffect(() => {
-    const cb = (e: ErrorEvent) => {
-      if (e.message === 'ResizeObserver loop completed with undelivered notifications.') {
-        e.preventDefault()
-      }
-    }
-    window.addEventListener('error', cb)
-    return () => {
-      window.removeEventListener('error', cb)
-    }
-  }, [])
-}
+const itemContent = (index: number) => <div style={{ background: 'white', height: index % 2 ? 30 : 20 }}>Item {index}</div>
 
 export function BombProps() {
   // const [channelId, setChannelId] = React.useState(1);
@@ -84,29 +62,52 @@ export function BombProps() {
       */}
 
       <Virtuoso
-        key={`channel-${key}`}
-        logLevel={LogLevel.DEBUG}
-        totalCount={15}
+        alignToBottom={true}
         context={{ bogus }}
         defaultItemHeight={50}
+        followOutput="auto"
+        increaseViewportBy={100}
+        initialTopMostItemIndex={14}
         itemContent={(index: number) => {
           return (
             <div
               style={{
-                height: index % 2 ? 450 : 560,
                 background: index % 2 ? 'red' : 'blue',
+                height: index % 2 ? 450 : 560,
               }}
             >
               Item {index}
             </div>
           )
         }}
-        initialTopMostItemIndex={14}
-        alignToBottom={true}
-        followOutput="auto"
-        increaseViewportBy={100}
+        key={`channel-${key}`}
+        logLevel={LogLevel.DEBUG}
         style={{ height: 800 }}
+        totalCount={15}
       />
     </div>
   )
+}
+
+export function Example() {
+  return (
+    <div>
+      <h2>Randomly buggy in safari, container height gets reported later</h2>
+      <Virtuoso defaultItemHeight={30} initialTopMostItemIndex={60} itemContent={itemContent} style={{ height: 300 }} totalCount={100} />
+    </div>
+  )
+}
+
+function useSuppressResizeObserverError() {
+  React.useEffect(() => {
+    const cb = (e: ErrorEvent) => {
+      if (e.message === 'ResizeObserver loop completed with undelivered notifications.') {
+        e.preventDefault()
+      }
+    }
+    window.addEventListener('error', cb)
+    return () => {
+      window.removeEventListener('error', cb)
+    }
+  }, [])
 }

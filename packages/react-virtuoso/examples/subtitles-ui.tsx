@@ -1,16 +1,17 @@
 import * as React from 'react'
-import { Virtuoso, VirtuosoHandle, CalculateViewLocation } from '../src'
 
-const calculateViewLocation: CalculateViewLocation = ({ itemTop, itemBottom, viewportTop, viewportBottom, locationParams }) => {
+import { CalculateViewLocation, Virtuoso, VirtuosoHandle } from '../src'
+
+const calculateViewLocation: CalculateViewLocation = ({ itemBottom, itemTop, locationParams, viewportBottom, viewportTop }) => {
   const instantScrollThreshold = 500
   const padding = 50
   if (itemTop < viewportTop + padding && itemTop > padding) {
     const behavior = viewportTop - itemTop > instantScrollThreshold ? 'auto' : 'smooth'
-    return { ...locationParams, behavior, align: 'start', offset: -padding }
+    return { ...locationParams, align: 'start', behavior, offset: -padding }
   }
   if (itemBottom > viewportBottom - padding) {
     const behavior = itemBottom - viewportBottom > instantScrollThreshold ? 'auto' : 'smooth'
-    return { ...locationParams, behavior, align: 'start', offset: -padding }
+    return { ...locationParams, align: 'start', behavior, offset: -padding }
   }
   return null
 }
@@ -34,7 +35,9 @@ export function Example() {
     }
 
     document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
+    return () => {
+      document.removeEventListener('keydown', handler)
+    }
   }, [])
 
   const intervalRef = React.useRef<ReturnType<typeof setInterval>>()
@@ -56,12 +59,12 @@ export function Example() {
       autoScrollFlagRef.current++
 
       virtuosoRef.current?.scrollIntoView({
-        index,
         calculateViewLocation,
         done: () => {
           setOutOfSync(false)
           autoScrollFlagRef.current--
         },
+        index,
       })
     },
     [virtuosoRef]
@@ -86,24 +89,24 @@ export function Example() {
 
       <div style={{ position: 'relative' }}>
         <Virtuoso
-          onScroll={() => {
-            if (autoScrollFlagRef.current === 0) {
-              setOutOfSync(true)
-            }
-          }}
           context={{ currentSubtitle }}
-          ref={virtuosoRef}
-          totalCount={MAX_INDEX}
           itemContent={(index, _, { currentSubtitle }) => (
             <div style={{ paddingLeft: '1ex' }}>
               {index === currentSubtitle ? <span style={{ marginLeft: '-1ex' }}>&gt;</span> : null}Line {index}
             </div>
           )}
+          onScroll={() => {
+            if (autoScrollFlagRef.current === 0) {
+              setOutOfSync(true)
+            }
+          }}
+          ref={virtuosoRef}
           style={{ height: 500 }}
+          totalCount={MAX_INDEX}
         />
 
         {outOfSync && (
-          <button style={{ position: 'absolute', top: 10, right: 10 }} onClick={syncBack}>
+          <button onClick={syncBack} style={{ position: 'absolute', right: 10, top: 10 }}>
             Catch up
           </button>
         )}

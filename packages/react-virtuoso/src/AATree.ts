@@ -4,58 +4,54 @@ interface NilNode {
 
 const NIL_NODE: NilNode = { lvl: 0 }
 
+export type AANode<T> = NilNode | NonNilAANode<T>
+
 export interface NodeData<T> {
   k: number
   v: T
 }
 
-interface NonNilAANode<T> {
-  k: number
-  v: T
-  lvl: number
-  l: NonNilAANode<T> | NilNode
-  r: NonNilAANode<T> | NilNode
-}
-
 export interface Range<T> {
-  start: number
   end: number
+  start: number
   value: T
 }
 
-export type AANode<T> = NilNode | NonNilAANode<T>
+interface NonNilAANode<T> {
+  k: number
+  l: NilNode | NonNilAANode<T>
+  lvl: number
+  r: NilNode | NonNilAANode<T>
+  v: T
+}
 
-function newAANode<T>(k: number, v: T, lvl: number, l: AANode<T> = NIL_NODE, r: AANode<T> = NIL_NODE): NonNilAANode<T> {
-  return { k, v, lvl, l, r }
+export function arrayToRanges<T, V>(
+  items: T[],
+  parser: (item: T) => { index: number; value: V }
+): { end: number; start: number; value: V }[] {
+  const length = items.length
+  if (length === 0) {
+    return []
+  }
+
+  let { index: start, value } = parser(items[0])
+
+  const result = []
+
+  for (let i = 1; i < length; i++) {
+    const { index: nextIndex, value: nextValue } = parser(items[i])
+    result.push({ end: nextIndex - 1, start, value })
+
+    start = nextIndex
+    value = nextValue
+  }
+
+  result.push({ end: Infinity, start, value })
+  return result
 }
 
 export function empty(node: AANode<any>): node is NilNode {
   return node === NIL_NODE
-}
-
-export function newTree<T>(): AANode<T> {
-  return NIL_NODE
-}
-
-export function remove<T>(node: AANode<T>, key: number): AANode<T> {
-  if (empty(node)) return NIL_NODE
-
-  const { k, l, r } = node
-
-  if (key === k) {
-    if (empty(l)) {
-      return r
-    } else if (empty(r)) {
-      return l
-    } else {
-      const [lastKey, lastValue] = last(l)
-      return adjust(clone(node, { k: lastKey, v: lastValue, l: deleteLast(l) }))
-    }
-  } else if (key < k) {
-    return adjust(clone(node, { l: remove(l, key) }))
-  } else {
-    return adjust(clone(node, { r: remove(r, key) }))
-  }
 }
 
 export function find<T>(node: AANode<T>, key: number): T | undefined {
@@ -106,12 +102,64 @@ export function insert<T>(node: AANode<T>, k: number, v: T): NonNilAANode<T> {
   }
 }
 
+export function keys(node: AANode<any>): number[] {
+  if (empty(node)) {
+    return []
+  }
+  return [...keys(node.l), node.k, ...keys(node.r)]
+}
+
+export function newTree<T>(): AANode<T> {
+  return NIL_NODE
+}
+
+export function ranges<T>(node: AANode<T>): Range<T>[] {
+  return toRanges(walk(node))
+}
+
+export function rangesWithin<T>(node: AANode<T>, startIndex: number, endIndex: number): Range<T>[] {
+  if (empty(node)) {
+    return []
+  }
+  const adjustedStart = findMaxKeyValue(node, startIndex)[0]
+  return toRanges(walkWithin(node, adjustedStart, endIndex))
+}
+
+export function remove<T>(node: AANode<T>, key: number): AANode<T> {
+  if (empty(node)) return NIL_NODE
+
+  const { k, l, r } = node
+
+  if (key === k) {
+    if (empty(l)) {
+      return r
+    } else if (empty(r)) {
+      return l
+    } else {
+      const [lastKey, lastValue] = last(l)
+      return adjust(clone(node, { k: lastKey, l: deleteLast(l), v: lastValue }))
+    }
+  } else if (key < k) {
+    return adjust(clone(node, { l: remove(l, key) }))
+  } else {
+    return adjust(clone(node, { r: remove(r, key) }))
+  }
+}
+
+export function walk<T>(node: AANode<T>): NodeData<T>[] {
+  if (empty(node)) {
+    return []
+  }
+
+  return [...walk(node.l), { k: node.k, v: node.v }, ...walk(node.r)]
+}
+
 export function walkWithin<T>(node: AANode<T>, start: number, end: number): NodeData<T>[] {
   if (empty(node)) {
     return []
   }
 
-  const { k, v, l, r } = node
+  const { k, l, r, v } = node
   let result: NodeData<T>[] = []
   if (k > start) {
     result = result.concat(walkWithin(l, start, end))
@@ -128,42 +176,8 @@ export function walkWithin<T>(node: AANode<T>, start: number, end: number): Node
   return result
 }
 
-export function walk<T>(node: AANode<T>): NodeData<T>[] {
-  if (empty(node)) {
-    return []
-  }
-
-  return [...walk(node.l), { k: node.k, v: node.v }, ...walk(node.r)]
-}
-
-function last<T>(node: NonNilAANode<T>): [number, T] {
-  return empty(node.r) ? [node.k, node.v] : last(node.r)
-}
-
-function deleteLast<T>(node: NonNilAANode<T>): AANode<T> {
-  return empty(node.r) ? node.l : adjust(clone(node, { r: deleteLast(node.r) }))
-}
-
-function clone<T>(node: NonNilAANode<T>, args: Partial<NonNilAANode<T>>): NonNilAANode<T> {
-  return newAANode(
-    args.k !== undefined ? args.k : node.k,
-    args.v !== undefined ? args.v : node.v,
-    args.lvl !== undefined ? args.lvl : node.lvl,
-    args.l !== undefined ? args.l : node.l,
-    args.r !== undefined ? args.r : node.r
-  )
-}
-
-function isSingle(node: AANode<any>) {
-  return empty(node) || node.lvl > node.r.lvl
-}
-
-function rebalance<T>(node: NonNilAANode<T>): NonNilAANode<T> {
-  return split(skew(node))
-}
-
 function adjust<T>(node: NonNilAANode<T>): NonNilAANode<T> {
-  const { l, r, lvl } = node
+  const { l, lvl, r } = node
   if (r.lvl >= lvl - 1 && l.lvl >= lvl - 1) {
     return node
   } else if (lvl > r.lvl + 1) {
@@ -173,11 +187,11 @@ function adjust<T>(node: NonNilAANode<T>): NonNilAANode<T> {
       if (!empty(l) && !empty(l.r)) {
         return clone(l.r, {
           l: clone(l, { r: l.r.l }),
+          lvl: lvl,
           r: clone(node, {
             l: l.r.r,
             lvl: lvl - 1,
           }),
-          lvl: lvl,
         })
       } else {
         throw new Error('Unexpected empty nodes')
@@ -193,11 +207,11 @@ function adjust<T>(node: NonNilAANode<T>): NonNilAANode<T> {
 
         return clone(rl, {
           l: clone(node, {
-            r: rl.l,
             lvl: lvl - 1,
+            r: rl.l,
           }),
-          r: split(clone(r, { l: rl.r, lvl: rlvl })),
           lvl: rl.lvl + 1,
+          r: split(clone(r, { l: rl.r, lvl: rlvl })),
         })
       } else {
         throw new Error('Unexpected empty nodes')
@@ -206,62 +220,48 @@ function adjust<T>(node: NonNilAANode<T>): NonNilAANode<T> {
   }
 }
 
-export function keys(node: AANode<any>): number[] {
-  if (empty(node)) {
-    return []
-  }
-  return [...keys(node.l), node.k, ...keys(node.r)]
+function clone<T>(node: NonNilAANode<T>, args: Partial<NonNilAANode<T>>): NonNilAANode<T> {
+  return newAANode(
+    args.k !== undefined ? args.k : node.k,
+    args.v !== undefined ? args.v : node.v,
+    args.lvl !== undefined ? args.lvl : node.lvl,
+    args.l !== undefined ? args.l : node.l,
+    args.r !== undefined ? args.r : node.r
+  )
 }
 
-export function ranges<T>(node: AANode<T>): Range<T>[] {
-  return toRanges(walk(node))
+function deleteLast<T>(node: NonNilAANode<T>): AANode<T> {
+  return empty(node.r) ? node.l : adjust(clone(node, { r: deleteLast(node.r) }))
 }
 
-export function rangesWithin<T>(node: AANode<T>, startIndex: number, endIndex: number): Range<T>[] {
-  if (empty(node)) {
-    return []
-  }
-  const adjustedStart = findMaxKeyValue(node, startIndex)[0]
-  return toRanges(walkWithin(node, adjustedStart, endIndex))
+function isSingle(node: AANode<any>) {
+  return empty(node) || node.lvl > node.r.lvl
 }
 
-export function arrayToRanges<T, V>(
-  items: T[],
-  parser: (item: T) => { index: number; value: V }
-): Array<{ start: number; end: number; value: V }> {
-  const length = items.length
-  if (length === 0) {
-    return []
-  }
-
-  let { index: start, value } = parser(items[0])
-
-  const result = []
-
-  for (let i = 1; i < length; i++) {
-    const { index: nextIndex, value: nextValue } = parser(items[i])
-    result.push({ start, end: nextIndex - 1, value })
-
-    start = nextIndex
-    value = nextValue
-  }
-
-  result.push({ start, end: Infinity, value })
-  return result
+function last<T>(node: NonNilAANode<T>): [number, T] {
+  return empty(node.r) ? [node.k, node.v] : last(node.r)
 }
 
-function toRanges<T>(nodes: NodeData<T>[]): Range<T>[] {
-  return arrayToRanges(nodes, ({ k: index, v: value }) => ({ index, value }))
+function newAANode<T>(k: number, v: T, lvl: number, l: AANode<T> = NIL_NODE, r: AANode<T> = NIL_NODE): NonNilAANode<T> {
+  return { k, l, lvl, r, v }
 }
 
-function split<T>(node: NonNilAANode<T>): NonNilAANode<T> {
-  const { r, lvl } = node
-
-  return !empty(r) && !empty(r.r) && r.lvl === lvl && r.r.lvl === lvl ? clone(r, { l: clone(node, { r: r.l }), lvl: lvl + 1 }) : node
+function rebalance<T>(node: NonNilAANode<T>): NonNilAANode<T> {
+  return split(skew(node))
 }
 
 function skew<T>(node: NonNilAANode<T>): NonNilAANode<T> {
   const { l } = node
 
   return !empty(l) && l.lvl === node.lvl ? clone(l, { r: clone(node, { l: l.r }) }) : node
+}
+
+function split<T>(node: NonNilAANode<T>): NonNilAANode<T> {
+  const { lvl, r } = node
+
+  return !empty(r) && !empty(r.r) && r.lvl === lvl && r.r.lvl === lvl ? clone(r, { l: clone(node, { r: r.l }), lvl: lvl + 1 }) : node
+}
+
+function toRanges<T>(nodes: NodeData<T>[]): Range<T>[] {
+  return arrayToRanges(nodes, ({ k: index, v: value }) => ({ index, value }))
 }

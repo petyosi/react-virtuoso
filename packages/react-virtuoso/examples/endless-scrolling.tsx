@@ -1,5 +1,5 @@
-import * as React from 'react'
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+
 import { Virtuoso } from '../src'
 
 function generateItems(length: number, startIndex: number) {
@@ -21,7 +21,9 @@ export function Example() {
 
   useEffect(() => {
     const timeout = loadMore()
-    return () => clearTimeout(timeout)
+    return () => {
+      clearTimeout(timeout)
+    }
   }, [loadMore])
 
   return (

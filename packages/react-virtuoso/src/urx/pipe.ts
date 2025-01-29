@@ -1,3 +1,5 @@
+import { Emitter, reset, subscribe, Subscription } from './actions'
+import { RESET, SUBSCRIBE } from './constants'
 /**
  *
  * Stream values can be transformed and controlled by {@link pipe | **piping**} through **operators**.
@@ -18,8 +20,13 @@
  * @packageDocumentation
  */
 import { compose, thrush } from './utils'
-import { Emitter, subscribe, Subscription, reset } from './actions'
-import { SUBSCRIBE, RESET } from './constants'
+
+/**
+ * A function which determines if two values are equal.
+ * Implement custom comparators when [[distinctUntilChanged]] needs to work on non-primitive objects.
+ * @returns true if values should be considered equal.
+ */
+export type Comparator<T> = (previous: T, next: T) => boolean
 
 /**
  * Operators can transform and control the flow of values.
@@ -39,79 +46,51 @@ import { SUBSCRIBE, RESET } from './constants'
  * publish(foo, 42)
  * ```
  */
-export interface Operator<Input, Output = Input> {
-  (done: (value: Output) => void): (value: Input) => void
-}
+export type Operator<Input, Output = Input> = (done: (value: Output) => void) => (value: Input) => void
 
 /** @internal */
 type CombineOperatorsReturnType<I, O> = (subscriber: (value: O) => void) => (value: I) => void
 
 /** @internal */
-function combineOperators<I>(...operators: Operator<any, any>[]): CombineOperatorsReturnType<I, any> {
-  return (subscriber: (value: any) => void) => {
-    return operators.reduceRight(thrush, subscriber)
-  }
-}
-
-/** @internal */
 type O<I, OP> = Operator<I, OP>
 
 /**
- * Creates a new emitter from the passed one by piping its values through one or more operators.
- * Operators can perform various actions like filter values, pull values from other emitters, or compute new values.
+ * Debounces flowing values at the provided interval in milliseconds.
+ * [Throttle VS Debounce in SO](https://stackoverflow.com/questions/25991367/difference-between-throttling-and-debouncing-a-function).
  *
  * ```ts
- * const foo = stream<number>()
+ *  const foo = stream<number>()
+ *  publish(foo, 1)
  *
- * // create an emitter that first adds 2 to the passed value, then multiplies it by * 2
- * const bar = pipe(foo, map(value => value + 2), map(value => value * 2))
- * subscribe(bar, value => console.log(value))
- * publish(foo, 2) // outputs 8
+ *  setTimeout(() => publish(foo, 2), 20)
+ *  setTimeout(() => publish(foo, 3), 20)
+ *
+ *  subscribe(pipe(foo, debounceTime(50)), val => {
+ *    console.log(value); // 3
+ *  })
  * ```
- * #### Sharing Subscription Calculations
- *
- * `pipe` acts as a proxy for the source emitter, and re-runs the operators for each subscription to the derived emitter.
- * Use [[streamFromEmitter]] or [[statefulStreamFromEmitter]] to avoid that.
  */
-export function pipe<T>(s: Emitter<T>): Emitter<T> // prettier-ignore
-export function pipe<T, O1>(s: Emitter<T>, o1: O<T, O1>): Emitter<O1> // prettier-ignore
-export function pipe<T, O1, O2>(s: Emitter<T>, ...o: [O<T, O1>, O<O1, O2>]): Emitter<O2> // prettier-ignore
-export function pipe<T, O1, O2, O3>(s: Emitter<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>]): Emitter<O3> // prettier-ignore
-export function pipe<T, O1, O2, O3, O4>(s: Emitter<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>]): Emitter<O4> // prettier-ignore
-export function pipe<T, O1, O2, O3, O4, O5>(s: Emitter<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>]): Emitter<O5> // prettier-ignore
-export function pipe<T, O1, O2, O3, O4, O5, O6>(s: Emitter<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>]): Emitter<O6> // prettier-ignore
-export function pipe<T, O1, O2, O3, O4, O5, O6, O7>(s: Emitter<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>]): Emitter<O7> // prettier-ignore
-export function pipe<T>(source: Emitter<T>, ...operators: O<any, any>[]): Emitter<any> {
-  // prettier-ignore
-  const project = combineOperators(...operators)
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return ((action: SUBSCRIBE | RESET, subscription: Subscription<any>) => {
-    switch (action) {
-      case SUBSCRIBE:
-        return subscribe(source, project(subscription))
-      case RESET:
-        reset(source)
-        return
+export function debounceTime<T>(interval: number): Operator<T> {
+  let currentValue: T | undefined
+  let timeout: ReturnType<typeof setTimeout> | undefined
+
+  return (done) => (value) => {
+    currentValue = value
+    if (timeout) {
+      clearTimeout(timeout)
     }
-  }) as Emitter<any>
-}
 
-/**
- * A function which determines if two values are equal.
- * Implement custom comparators when [[distinctUntilChanged]] needs to work on non-primitive objects.
- * @returns true if values should be considered equal.
- */
-export interface Comparator<T> {
-  (previous: T, next: T): boolean
+    timeout = setTimeout(() => {
+      done(currentValue!)
+    }, interval)
+  }
 }
-
 /**
  * The default [[Comparator]] for [[distinctUntilChanged]] and [[duc]].
  */
 export function defaultComparator<T>(previous: T, next: T) {
   return previous === next
 }
-
 /**
  * Filters out identical values. Pass an optional [[Comparator]] if you need to filter non-primitive values.
  * ```ts
@@ -135,7 +114,6 @@ export function distinctUntilChanged<T>(comparator: Comparator<T> = defaultCompa
     }
   }
 }
-
 /**
  * Filters out values for which the predicator does not return `true`-ish.
  * ```ts
@@ -154,10 +132,11 @@ export function distinctUntilChanged<T>(comparator: Comparator<T> = defaultCompa
  */
 export function filter<T>(predicate: (value: T) => boolean): Operator<T> {
   return (done) => (value) => {
-    predicate(value) && done(value)
+    if (predicate(value)) {
+      done(value)
+    }
   }
 }
-
 /**
  * Maps values using the provided project function.
  * ```ts
@@ -175,7 +154,6 @@ export function filter<T>(predicate: (value: T) => boolean): Operator<T> {
 export function map<T, K>(project: (value: T) => K): Operator<T, K> {
   return (done) => compose(done, project)
 }
-
 /**
  * Maps values to the hard-coded value.
  * ```ts
@@ -191,7 +169,54 @@ export function map<T, K>(project: (value: T) => K): Operator<T, K> {
  * ```
  */
 export function mapTo<T>(value: T): Operator<unknown, T> {
-  return (done) => () => done(value)
+  return (done) => () => {
+    done(value)
+  }
+}
+/**
+ * Creates a new emitter from the passed one by piping its values through one or more operators.
+ * Operators can perform various actions like filter values, pull values from other emitters, or compute new values.
+ *
+ * ```ts
+ * const foo = stream<number>()
+ *
+ * // create an emitter that first adds 2 to the passed value, then multiplies it by * 2
+ * const bar = pipe(foo, map(value => value + 2), map(value => value * 2))
+ * subscribe(bar, value => console.log(value))
+ * publish(foo, 2) // outputs 8
+ * ```
+ * #### Sharing Subscription Calculations
+ *
+ * `pipe` acts as a proxy for the source emitter, and re-runs the operators for each subscription to the derived emitter.
+ * Use [[streamFromEmitter]] or [[statefulStreamFromEmitter]] to avoid that.
+ */
+export function pipe<T>(s: Emitter<T>): Emitter<T> // prettier-ignore
+export function pipe<T, O1>(s: Emitter<T>, o1: O<T, O1>): Emitter<O1> // prettier-ignore
+export function pipe<T, O1, O2>(s: Emitter<T>, ...o: [O<T, O1>, O<O1, O2>]): Emitter<O2> // prettier-ignore
+
+export function pipe<T, O1, O2, O3>(s: Emitter<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>]): Emitter<O3> // prettier-ignore
+
+export function pipe<T, O1, O2, O3, O4>(s: Emitter<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>]): Emitter<O4> // prettier-ignore
+
+export function pipe<T, O1, O2, O3, O4, O5>(s: Emitter<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>]): Emitter<O5> // prettier-ignore
+
+export function pipe<T, O1, O2, O3, O4, O5, O6>(s: Emitter<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>]): Emitter<O6> // prettier-ignore
+
+export function pipe<T, O1, O2, O3, O4, O5, O6, O7>(s: Emitter<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>]): Emitter<O7> // prettier-ignore
+
+export function pipe<T>(source: Emitter<T>, ...operators: O<any, any>[]): Emitter<any> {
+  // prettier-ignore
+  const project = combineOperators(...operators)
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return ((action: RESET | SUBSCRIBE, subscription: Subscription<any>) => {
+    switch (action) {
+      case RESET:
+        reset(source)
+        return
+      case SUBSCRIBE:
+        return subscribe(source, project(subscription))
+    }
+  }) as Emitter<any>
 }
 
 /**
@@ -210,7 +235,9 @@ export function mapTo<T>(value: T): Operator<unknown, T> {
  * ```
  */
 export function scan<T, K>(scanner: (current: T, value: K) => T, initial: T): Operator<K, T> {
-  return (done) => (value) => done((initial = scanner(initial, value)))
+  return (done) => (value) => {
+    done((initial = scanner(initial, value)))
+  }
 }
 
 /**
@@ -231,7 +258,11 @@ export function scan<T, K>(scanner: (current: T, value: K) => T, initial: T): Op
  */
 export function skip<T>(times: number): Operator<T> {
   return (done) => (value) => {
-    times > 0 ? times-- : done(value)
+    if (times > 0) {
+      times--
+    } else {
+      done(value)
+    }
   }
 }
 
@@ -252,7 +283,7 @@ export function skip<T>(times: number): Operator<T> {
  * ```
  */
 export function throttleTime<T>(interval: number): Operator<T> {
-  let currentValue: T | undefined | null = null
+  let currentValue: null | T | undefined = null
   let timeout: ReturnType<typeof setTimeout> | undefined
 
   return (done) => (value) => {
@@ -264,38 +295,6 @@ export function throttleTime<T>(interval: number): Operator<T> {
 
     timeout = setTimeout(() => {
       timeout = undefined
-      done(currentValue!)
-    }, interval)
-  }
-}
-
-/**
- * Debounces flowing values at the provided interval in milliseconds.
- * [Throttle VS Debounce in SO](https://stackoverflow.com/questions/25991367/difference-between-throttling-and-debouncing-a-function).
- *
- * ```ts
- *  const foo = stream<number>()
- *  publish(foo, 1)
- *
- *  setTimeout(() => publish(foo, 2), 20)
- *  setTimeout(() => publish(foo, 3), 20)
- *
- *  subscribe(pipe(foo, debounceTime(50)), val => {
- *    console.log(value); // 3
- *  })
- * ```
- */
-export function debounceTime<T>(interval: number): Operator<T> {
-  let currentValue: T | undefined
-  let timeout: ReturnType<typeof setTimeout>
-
-  return (done) => (value) => {
-    currentValue = value
-    if (timeout) {
-      clearTimeout(timeout)
-    }
-
-    timeout = setTimeout(() => {
       done(currentValue!)
     }, interval)
   }
@@ -324,6 +323,7 @@ export function debounceTime<T>(interval: number): Operator<T> {
  * ```
  */
 export function withLatestFrom<T, R1>(...s: [Emitter<R1>]): Operator<T, [T, R1]> // prettier-ignore
+
 export function withLatestFrom<T, R1, R2>(...s: [Emitter<R1>, Emitter<R2>]): Operator<T, [T, R1, R2]> // prettier-ignore
 export function withLatestFrom<T, R1, R2, R3>( ...s: [Emitter<R1>, Emitter<R2>, Emitter<R3>]): Operator<T, [T, R1, R2, R3]> // prettier-ignore
 export function withLatestFrom<T, R1, R2, R3, R4>( ...s: [Emitter<R1>, Emitter<R2>, Emitter<R3>, Emitter<R4>]): Operator<T, [T, R1, R2, R3, R4]> // prettier-ignore
@@ -333,7 +333,7 @@ export function withLatestFrom<T, R1, R2, R3, R4, R5, R6, R7>( ...s: [Emitter<R1
 export function withLatestFrom(...sources: Emitter<any>[]): Operator<any, any> {
   const values = new Array(sources.length)
   let called = 0
-  let pendingCall: null | (() => void) = null
+  let pendingCall: (() => void) | null = null
   const allCalled = Math.pow(2, sources.length) - 1
 
   sources.forEach((source, index) => {
@@ -351,11 +351,19 @@ export function withLatestFrom(...sources: Emitter<any>[]): Operator<any, any> {
   })
 
   return (done) => (value) => {
-    const call = () => done([value].concat(values))
+    const call = () => {
+      done([value].concat(values))
+    }
     if (called === allCalled) {
       call()
     } else {
       pendingCall = call
     }
+  }
+}
+/** @internal */
+function combineOperators<I>(...operators: Operator<any, any>[]): CombineOperatorsReturnType<I, any> {
+  return (subscriber: (value: any) => void) => {
+    return operators.reduceRight(thrush, subscriber)
   }
 }

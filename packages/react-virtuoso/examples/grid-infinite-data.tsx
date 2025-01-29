@@ -1,5 +1,5 @@
-import * as React from 'react'
 import { useState } from 'react'
+
 import { VirtuosoGrid } from '../src'
 
 function generateItems(length: number) {
@@ -26,7 +26,7 @@ export function Example() {
         border: '1px solid',
       }}
     >
-      <VirtuosoGrid data={data} itemContent={itemContent} style={{ height: 300 }} endReached={loadMore} />
+      <VirtuosoGrid data={data} endReached={loadMore} itemContent={itemContent} style={{ height: 300 }} />
     </div>
   )
 }

@@ -1,6 +1,6 @@
-import * as React from 'react'
-import { GridComponents, VirtuosoGrid } from '../src'
 import styled from '@emotion/styled'
+
+import { GridComponents, VirtuosoGrid } from '../src'
 
 const ItemContainer = styled.div`
   box-sizing: border-box;
@@ -21,23 +21,23 @@ const ListContainer = styled.div`
 export function Example() {
   return (
     <VirtuosoGrid
-      computeItemKey={(key) => `item-${key}`}
-      totalCount={10000}
-      itemContent={(index) => <div>Item {index}</div>}
-      style={{ height: 300, width: 600 }}
-      scrollSeekConfiguration={{
-        enter: (velocity) => Math.abs(velocity) > 200,
-        exit: (velocity) => Math.abs(velocity) < 30,
-      }}
       components={{
         Item: ItemContainer,
         List: ListContainer,
-        ScrollSeekPlaceholder: ({ index, width, height }) => (
-          <div aria-label="placeholder" style={{ height, width, color: 'red' }}>
+        ScrollSeekPlaceholder: ({ height, index, width }) => (
+          <div aria-label="placeholder" style={{ color: 'red', height, width }}>
             Placeholder {index}
           </div>
         ),
       }}
+      computeItemKey={(key) => `item-${key}`}
+      itemContent={(index) => <div>Item {index}</div>}
+      scrollSeekConfiguration={{
+        enter: (velocity) => Math.abs(velocity) > 200,
+        exit: (velocity) => Math.abs(velocity) < 30,
+      }}
+      style={{ height: 300, width: 600 }}
+      totalCount={10000}
     />
   )
 }

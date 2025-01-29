@@ -1,5 +1,6 @@
-import { system, init, statefulStream, tup } from '../../src/urx'
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
+
+import { init, statefulStream, system, tup } from '../../src/urx'
 
 describe('system', () => {
   it('run executes the factory', () => {
@@ -22,7 +23,7 @@ describe('system', () => {
     })
 
     const eng2 = system(([{ a }]) => {
-      return { b, a }
+      return { a, b }
     }, tup(eng))
 
     expect(init(eng2)).toMatchObject({ a, b })
@@ -40,18 +41,21 @@ describe('system', () => {
 
     const system2 = system(([{ a }]) => {
       const b = statefulStream(0)
-      return { b, a }
+      return { a, b }
     }, tup(system1))
 
     const system3 = system(([{ a }]) => {
       const c = statefulStream(0)
-      return { c, a }
+      return { a, c }
     }, tup(system1))
 
-    const system4 = system(([{ a: a1, b }, { a: a2, c }]) => {
-      expect(a1).toBe(a2)
-      return { b, c }
-    }, tup(system2, system3))
+    const system4 = system(
+      ([{ a: a1, b }, { a: a2, c }]) => {
+        expect(a1).toBe(a2)
+        return { b, c }
+      },
+      tup(system2, system3)
+    )
 
     init(system4)
   })

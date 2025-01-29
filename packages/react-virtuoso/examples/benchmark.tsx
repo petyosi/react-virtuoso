@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { Virtuoso } from '../src'
 
 const CONTENT = {
@@ -12,5 +11,5 @@ const itemContent = (index: number) => (
 )
 
 export function Example() {
-  return <Virtuoso totalCount={100000} initialTopMostItemIndex={99999} itemContent={itemContent} style={{ height: '500px' }} />
+  return <Virtuoso initialTopMostItemIndex={99999} itemContent={itemContent} style={{ height: '500px' }} totalCount={100000} />
 }

@@ -1,5 +1,6 @@
-import { merge, stream, publish, subscribe } from '../../src/urx'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+import { merge, publish, stream, subscribe } from '../../src/urx'
 
 describe('merge', () => {
   it('emits values from both emitters', () => {

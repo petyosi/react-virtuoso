@@ -1,9 +1,10 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
+
 //@ts-expect-error - type module and playwright
 import { navigateToExample } from './utils.ts'
 
 test.describe('list with collapsible long items', () => {
-  test.beforeEach(async ({ page, baseURL }) => {
+  test.beforeEach(async ({ baseURL, page }) => {
     await navigateToExample(page, baseURL, 'collapsible-long-item')
     await page.waitForSelector('[data-testid=virtuoso-scroller]')
     await page.waitForTimeout(200)
@@ -18,7 +19,7 @@ test.describe('list with collapsible long items', () => {
     await page.waitForTimeout(500)
 
     await page.evaluate(() => {
-      const button = document.querySelector('[data-index="90"] button') as HTMLButtonElement
+      const button = document.querySelector('[data-index="90"] button') as HTMLElement
       button.click()
     })
 

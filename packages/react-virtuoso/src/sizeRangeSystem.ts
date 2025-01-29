@@ -1,16 +1,16 @@
-import * as u from './urx'
-import { domIOSystem } from './domIOSystem'
-import { UP, DOWN, ScrollDirection } from './stateFlagsSystem'
 import { tupleComparator } from './comparators'
+import { domIOSystem } from './domIOSystem'
+import { DOWN, ScrollDirection, UP } from './stateFlagsSystem'
+import * as u from './urx'
 
 export type NumberTuple = [number, number]
 export type Overscan = number | { main: number; reverse: number }
-export const TOP = 'top' as const
-export const BOTTOM = 'bottom' as const
-export const NONE = 'none' as const
-export type ListEnd = typeof TOP | typeof BOTTOM
-export type ViewportIncrease = number | { [k in ListEnd]?: number }
-export type ChangeDirection = typeof UP | typeof DOWN | typeof NONE
+export const TOP = 'top'
+export const BOTTOM = 'bottom'
+export const NONE = 'none'
+export type ChangeDirection = typeof DOWN | typeof NONE | typeof UP
+export type ListEnd = typeof BOTTOM | typeof TOP
+export type ViewportIncrease = number | Partial<Record<ListEnd, number>>
 
 export function getOverscan(overscan: Overscan, end: ListEnd, direction: ScrollDirection) {
   if (typeof overscan === 'number') {
@@ -25,11 +25,11 @@ export function getOverscan(overscan: Overscan, end: ListEnd, direction: ScrollD
 }
 
 function getViewportIncrease(value: ViewportIncrease, end: ListEnd) {
-  return typeof value === 'number' ? value : value[end] || 0
+  return typeof value === 'number' ? value : (value[end] ?? 0)
 }
 
 export const sizeRangeSystem = u.system(
-  ([{ scrollTop, viewportHeight, deviation, headerHeight, fixedHeaderHeight }]) => {
+  ([{ deviation, fixedHeaderHeight, headerHeight, scrollTop, viewportHeight }]) => {
     const listBoundary = u.stream<NumberTuple>()
     const topListHeight = u.statefulStream(0)
     const increaseViewportBy = u.statefulStream<ViewportIncrease>(0)
@@ -95,18 +95,18 @@ export const sizeRangeSystem = u.system(
             return null
           }
         ),
-        u.filter((value) => value != null) as u.Operator<NumberTuple | null, NumberTuple>,
+        u.filter((value) => value != null) as u.Operator<null | NumberTuple, NumberTuple>,
         u.distinctUntilChanged(tupleComparator)
       ),
       [0, 0]
     ) as unknown as u.StatefulStream<NumberTuple>
 
     return {
+      increaseViewportBy,
       // input
       listBoundary,
       overscan,
       topListHeight,
-      increaseViewportBy,
 
       // output
       visibleRange,

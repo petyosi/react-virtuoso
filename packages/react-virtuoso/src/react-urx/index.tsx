@@ -31,13 +31,13 @@
  * @packageDocumentation
  */
 import React from 'react'
+
+import type { AnySystemSpec, Emitter, Publisher, SR, StatefulStream, Stream } from '../urx'
+
 import * as u from '../urx'
-import type { Emitter, Publisher, AnySystemSpec, SR, Stream, StatefulStream } from '../urx'
 
 /** @internal */
-interface Dict<T> {
-  [key: string]: T
-}
+type Dict<T> = Record<string, T>
 
 /** @internal */
 function omit<O extends Dict<any>, K extends readonly string[]>(keys: K, obj: O): Omit<O, K[number]> {
@@ -52,7 +52,7 @@ function omit<O extends Dict<any>, K extends readonly string[]>(keys: K, obj: O)
   }
 
   for (const prop in obj) {
-    if (!index.hasOwnProperty(prop)) {
+    if (!Object.hasOwn(index, prop)) {
       result[prop] = obj[prop]
     }
   }
@@ -63,39 +63,22 @@ function omit<O extends Dict<any>, K extends readonly string[]>(keys: K, obj: O)
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? React.useLayoutEffect : React.useEffect
 
 /** @internal */
-export type Observable<T> = Emitter<T> | Publisher<T>
-
-/**
- * Describes the mapping between the system streams and the component properties.
- * Each property uses the keys as the names of the properties and the values as the corresponding stream names.
- * @typeParam SS the type of the system.
- */
-export interface SystemPropsMap<SS extends AnySystemSpec, K = keyof SR<SS>, D = { [key: string]: K }> {
-  /**
-   * Specifies the required component properties.
-   */
-  required?: D
-  /**
-   * Specifies the optional component properties.
-   */
-  optional?: D
-  /**
-   * Specifies the component methods, if any. Streams are converted to methods with a single argument.
-   * When invoked, the method publishes the value of the argument to the specified stream.
-   */
-  methods?: D
-  /**
-   * Specifies the component "event" properties, if any.
-   * Event properties accept callback functions which get executed when the stream emits a new value.
-   */
-  events?: D
+export type MethodsFromPropMap<E extends AnySystemSpec, M extends SystemPropsMap<E>> = {
+  [K in Extract<keyof M['methods'], string>]: M['methods'][K] extends string
+    ? SR<E>[M['methods'][K]] extends Observable<infer R>
+      ? (value: R) => void
+      : never
+    : never
 }
 
 /** @internal */
+export type Observable<T> = Emitter<T> | Publisher<T>
+
+/** @internal */
 export type PropsFromPropMap<E extends AnySystemSpec, M extends SystemPropsMap<E>> = {
-  [K in Extract<keyof M['required'], string>]: M['required'][K] extends string
-    ? SR<E>[M['required'][K]] extends Observable<infer R>
-      ? R
+  [K in Extract<keyof M['events'], string>]?: M['events'][K] extends string
+    ? SR<E>[M['events'][K]] extends Observable<infer R>
+      ? (value: R) => void
       : never
     : never
 } & {
@@ -105,18 +88,9 @@ export type PropsFromPropMap<E extends AnySystemSpec, M extends SystemPropsMap<E
       : never
     : never
 } & {
-  [K in Extract<keyof M['events'], string>]?: M['events'][K] extends string
-    ? SR<E>[M['events'][K]] extends Observable<infer R>
-      ? (value: R) => void
-      : never
-    : never
-}
-
-/** @internal */
-export type MethodsFromPropMap<E extends AnySystemSpec, M extends SystemPropsMap<E>> = {
-  [K in Extract<keyof M['methods'], string>]: M['methods'][K] extends string
-    ? SR<E>[M['methods'][K]] extends Observable<infer R>
-      ? (value: R) => void
+  [K in Extract<keyof M['required'], string>]: M['required'][K] extends string
+    ? SR<E>[M['required'][K]] extends Observable<infer R>
+      ? R
       : never
     : never
 }
@@ -137,6 +111,32 @@ export type MethodsFromPropMap<E extends AnySystemSpec, M extends SystemPropsMap
  * @typeParam T the type of the component
  */
 export type RefHandle<T> = T extends React.ForwardRefExoticComponent<React.RefAttributes<infer Handle>> ? Handle : never
+
+/**
+ * Describes the mapping between the system streams and the component properties.
+ * Each property uses the keys as the names of the properties and the values as the corresponding stream names.
+ * @typeParam SS the type of the system.
+ */
+export interface SystemPropsMap<SS extends AnySystemSpec, K = keyof SR<SS>, D = Record<string, K>> {
+  /**
+   * Specifies the component "event" properties, if any.
+   * Event properties accept callback functions which get executed when the stream emits a new value.
+   */
+  events?: D
+  /**
+   * Specifies the component methods, if any. Streams are converted to methods with a single argument.
+   * When invoked, the method publishes the value of the argument to the specified stream.
+   */
+  methods?: D
+  /**
+   * Specifies the optional component properties.
+   */
+  optional?: D
+  /**
+   * Specifies the required component properties.
+   */
+  required?: D
+}
 
 /**
  * Converts a system spec to React component by mapping the system streams to component properties, events and methods. Returns hooks for querying and modifying
@@ -170,8 +170,8 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
   type CompMethods = MethodsFromPropMap<SS, M>
 
   function applyPropsToSystem(system: ContextValue, props: any) {
-    if (system['propsReady']) {
-      u.publish(system['propsReady'], false)
+    if (system.propsReady) {
+      u.publish(system.propsReady, false)
     }
 
     for (const requiredPropName of requiredPropNames) {
@@ -186,8 +186,8 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
       }
     }
 
-    if (system['propsReady']) {
-      u.publish(system['propsReady'], true)
+    if (system.propsReady) {
+      u.publish(system.propsReady, true)
     }
   }
 
@@ -202,21 +202,23 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
   }
 
   function buildEventHandlers(system: ContextValue) {
-    return eventNames.reduce((handlers, eventName) => {
+    return eventNames.reduce<Record<string, Emitter<any>>>((handlers, eventName) => {
       handlers[eventName] = u.eventHandler(system[map.events![eventName]])
       return handlers
-    }, {} as { [key: string]: Emitter<any> })
+    }, {})
   }
 
   /**
    * A React component generated from an urx system
    */
-  // eslint-disable-next-line react/display-name
+
   const Component = React.forwardRef<CompMethods, CompProps>((propsWithChildren, ref) => {
     const { children, ...props } = propsWithChildren as any
 
     const [system] = React.useState(() => {
-      return u.tap(u.init(systemSpec), (system) => applyPropsToSystem(system, props))
+      return u.tap(u.init(systemSpec), (system) => {
+        applyPropsToSystem(system, props)
+      })
     })
 
     const [handlers] = React.useState(u.curry1to0(buildEventHandlers, system))
@@ -306,8 +308,8 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
 
   return {
     Component,
-    usePublisher,
-    useEmitterValue,
     useEmitter,
+    useEmitterValue,
+    usePublisher,
   }
 }

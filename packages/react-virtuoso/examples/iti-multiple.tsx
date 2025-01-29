@@ -1,7 +1,6 @@
-import * as React from 'react'
 import { Virtuoso } from '../src'
 
-const itemContent = (index: number) => <div style={{ height: index % 2 ? 30 : 20, background: 'white' }}>Item {index}</div>
+const itemContent = (index: number) => <div style={{ background: 'white', height: index % 2 ? 30 : 20 }}>Item {index}</div>
 
 export function App() {
   const data = Array(50)
@@ -15,16 +14,16 @@ export function App() {
           .fill(undefined)
           .map((_, i) => (
             <Virtuoso
-              key={i}
-              style={{
-                flex: 1,
-                height: 400,
-                border: '2px black solid',
-              }}
               data={data}
-              itemContent={(_, i) => <div style={{ backgroundColor: i == 0 ? 'red' : 'transparent' }}>{i}</div>}
               //initialScrollTop={200}
               initialTopMostItemIndex={5}
+              itemContent={(_, i) => <div style={{ backgroundColor: i == 0 ? 'red' : 'transparent' }}>{i}</div>}
+              key={i}
+              style={{
+                border: '2px black solid',
+                flex: 1,
+                height: 400,
+              }}
             />
           ))}
       </div>
@@ -39,11 +38,11 @@ export function Example() {
         {Array.from({ length: 30 }).map((_, key) => {
           return (
             <Virtuoso
-              key={key}
-              totalCount={100}
-              itemContent={itemContent}
               initialTopMostItemIndex={20}
-              style={{ height: 300, minWidth: '3rem', fontSize: '7px', flex: 1 }}
+              itemContent={itemContent}
+              key={key}
+              style={{ flex: 1, fontSize: '7px', height: 300, minWidth: '3rem' }}
+              totalCount={100}
             />
           )
         })}

@@ -1,7 +1,7 @@
-import * as u from './urx'
-import { propsReadySystem } from './propsReadySystem'
 import { domIOSystem } from './domIOSystem'
 import { listStateSystem } from './listStateSystem'
+import { propsReadySystem } from './propsReadySystem'
+import * as u from './urx'
 
 export const initialScrollTopSystem = u.system(
   ([{ didMount }, { scrollTo }, { listState }]) => {

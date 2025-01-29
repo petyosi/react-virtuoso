@@ -1,24 +1,23 @@
-/* eslint-disable react/display-name */
 import * as React from 'react'
 import { act } from 'react'
 import { createRef, FC } from 'react'
 import { createRoot, Root } from 'react-dom/client'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { RefHandle, systemToComponent } from '../../src/react-urx'
 import {
   combineLatest,
   connect,
-  system,
+  duc,
+  filter,
   map,
   pipe,
   statefulStream,
   statefulStreamFromEmitter,
   stream,
   streamFromEmitter,
-  filter,
-  duc,
+  system,
 } from '../../src/urx'
-import { systemToComponent, RefHandle } from '../../src/react-urx'
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 //@ts-expect-error why :(
 global.IS_REACT_ACT_ENVIRONMENT = true
@@ -33,7 +32,9 @@ describe('components from system', () => {
     container = document.createElement('div')
     document.body.appendChild(container)
     root = createRoot(container)
-    render = (children) => root.render(children)
+    render = (children) => {
+      root.render(children)
+    }
   })
 
   afterEach(() => {
@@ -51,7 +52,7 @@ describe('components from system', () => {
       const depot = statefulStream(10)
       connect(prop, depot)
 
-      return { prop, depot }
+      return { depot, prop }
     })
 
   describe('prop mapping', () => {
@@ -199,8 +200,8 @@ describe('components from system', () => {
     const { Component: Comp, useEmitterValue } = systemToComponent(
       e,
       {
-        methods: { meth: 'meth' },
         events: { methCalledDouble: 'methCalledDouble' },
+        methods: { meth: 'meth' },
       },
       Root
     )
@@ -209,7 +210,7 @@ describe('components from system', () => {
     const sub = vi.fn()
 
     act(() => {
-      render(<Comp ref={ref} methCalledDouble={sub} />)
+      render(<Comp methCalledDouble={sub} ref={ref} />)
     })
     act(() => {
       ref.current!.meth(30)
@@ -279,7 +280,7 @@ describe('components from system', () => {
           map((value) => value * 2)
         )
       )
-      return { prop, doubleProp }
+      return { doubleProp, prop }
     })
 
     const Root: FC = () => {
@@ -290,8 +291,8 @@ describe('components from system', () => {
     const { Component: Comp, useEmitterValue } = systemToComponent(
       e,
       {
-        required: { prop: 'prop' },
         events: { doubleProp: 'doubleProp' },
+        required: { prop: 'prop' },
       },
       Root
     )
@@ -299,7 +300,7 @@ describe('components from system', () => {
     const sub = vi.fn()
 
     act(() => {
-      render(<Comp prop={20} doubleProp={sub} />)
+      render(<Comp doubleProp={sub} prop={20} />)
     })
 
     expect(container?.textContent).toBe('20')
@@ -320,7 +321,7 @@ describe('components from system', () => {
         )
       )
 
-      return { prop, prop2, combinedProp, propsReady }
+      return { combinedProp, prop, prop2, propsReady }
     })
 
     const Root: FC = () => {
@@ -331,8 +332,8 @@ describe('components from system', () => {
     const { Component: Comp, useEmitterValue } = systemToComponent(
       e,
       {
-        required: { prop: 'prop', prop2: 'prop2' },
         events: { combinedProp: 'combinedProp' },
+        required: { prop: 'prop', prop2: 'prop2' },
       },
       Root
     )
@@ -340,14 +341,14 @@ describe('components from system', () => {
     const sub = vi.fn()
 
     act(() => {
-      render(<Comp prop={3} prop2={4} combinedProp={sub} />)
+      render(<Comp combinedProp={sub} prop={3} prop2={4} />)
     })
 
     expect(sub).toHaveBeenCalledWith(12)
     expect(sub).toHaveBeenCalledTimes(1)
 
     act(() => {
-      render(<Comp prop={5} prop2={6} combinedProp={sub} />)
+      render(<Comp combinedProp={sub} prop={5} prop2={6} />)
     })
 
     expect(sub).toHaveBeenCalledWith(30)

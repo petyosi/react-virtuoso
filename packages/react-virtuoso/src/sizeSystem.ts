@@ -1,37 +1,58 @@
-import * as u from './urx'
 import { AANode, arrayToRanges, empty, find, findMaxKeyValue, insert, newTree, Range, rangesWithin, remove, walk } from './AATree'
-import * as arrayBinarySearch from './utils/binaryArraySearch'
-import { correctItemSize } from './utils/correctItemSize'
+import { SizeFunction, SizeRange } from './interfaces'
 import { Log, loggerSystem, LogLevel } from './loggerSystem'
 import { recalcSystem } from './recalcSystem'
-import { SizeFunction, SizeRange } from './interfaces'
+import * as u from './urx'
+import * as arrayBinarySearch from './utils/binaryArraySearch'
+import { correctItemSize } from './utils/correctItemSize'
 
 export type Data = readonly unknown[] | undefined
 
-function rangeIncludes(refRange: SizeRange) {
-  const { size, startIndex, endIndex } = refRange
-  return (range: Range<number>) => {
-    return range.start === startIndex && (range.end === endIndex || range.end === Infinity) && range.value === size
-  }
+export type FlatOrGroupedLocation = { groupIndex: number } | { index: 'LAST' | number }
+
+export interface OffsetPoint {
+  index: number
+  offset: number
+  size: number
 }
 
-function affectedGroupCount(offset: number, groupIndices: Array<number>) {
-  let recognizedOffsetItems = 0
-  let groupIndex = 0
-  while (recognizedOffsetItems < offset) {
-    recognizedOffsetItems += groupIndices[groupIndex + 1] - groupIndices[groupIndex] - 1
-    groupIndex++
-  }
-  const offsetIsExact = recognizedOffsetItems === offset
+export interface SizeState {
+  groupIndices: number[]
+  groupOffsetTree: AANode<number>
+  lastIndex: number
+  lastOffset: number
+  lastSize: number
+  offsetTree: OffsetPoint[]
+  sizeTree: AANode<number>
+}
 
-  return groupIndex - (offsetIsExact ? 0 : 1)
+type OptionalNumber = number | undefined
+
+export function hasGroups(sizes: SizeState) {
+  return !empty(sizes.groupOffsetTree)
+}
+
+export function indexComparator({ index: itemIndex }: OffsetPoint, index: number) {
+  return index === itemIndex ? 0 : index < itemIndex ? -1 : 1
+}
+
+export function initialSizeState(): SizeState {
+  return {
+    groupIndices: [],
+    groupOffsetTree: newTree<number>(),
+    lastIndex: 0,
+    lastOffset: 0,
+    lastSize: 0,
+    offsetTree: [],
+    sizeTree: newTree<number>(),
+  }
 }
 
 export function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[]) {
   let syncStart = empty(sizeTree) ? 0 : Infinity
 
   for (const range of ranges) {
-    const { size, startIndex, endIndex } = range
+    const { endIndex, size, startIndex } = range
     syncStart = Math.min(syncStart, startIndex)
 
     if (empty(sizeTree)) {
@@ -50,7 +71,7 @@ export function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[]) {
 
     let firstPassDone = false
     let shouldInsert = false
-    for (const { start: rangeStart, end: rangeEnd, value: rangeValue } of overlappingRanges) {
+    for (const { end: rangeEnd, start: rangeStart, value: rangeValue } of overlappingRanges) {
       // previous range
       if (!firstPassDone) {
         shouldInsert = rangeValue !== size
@@ -78,65 +99,131 @@ export function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[]) {
   return [sizeTree, syncStart] as const
 }
 
-export interface OffsetPoint {
-  offset: number
-  size: number
-  index: number
-}
-
-export interface SizeState {
-  sizeTree: AANode<number>
-  offsetTree: Array<OffsetPoint>
-  groupOffsetTree: AANode<number>
-  lastIndex: number
-  lastOffset: number
-  lastSize: number
-  groupIndices: number[]
-}
-
-export function initialSizeState(): SizeState {
-  return {
-    offsetTree: [],
-    sizeTree: newTree<number>(),
-    groupOffsetTree: newTree<number>(),
-    lastIndex: 0,
-    lastOffset: 0,
-    lastSize: 0,
-    groupIndices: [],
-  }
-}
-
-export function indexComparator({ index: itemIndex }: OffsetPoint, index: number) {
-  return index === itemIndex ? 0 : index < itemIndex ? -1 : 1
+export function isGroupLocation(location: FlatOrGroupedLocation): location is { groupIndex: number } {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  return typeof (location as any).groupIndex !== 'undefined'
 }
 
 export function offsetComparator({ offset: itemOffset }: OffsetPoint, offset: number) {
   return offset === itemOffset ? 0 : offset < itemOffset ? -1 : 1
 }
 
-function offsetPointParser(point: OffsetPoint) {
-  return { index: point.index, value: point }
+export function offsetOf(index: number, tree: OffsetPoint[], gap: number) {
+  if (tree.length === 0) {
+    return 0
+  }
+
+  const { index: startIndex, offset, size } = arrayBinarySearch.findClosestSmallerOrEqual(tree, index, indexComparator)
+  const itemCount = index - startIndex
+  const top = size * itemCount + (itemCount - 1) * gap + offset
+  return top > 0 ? top + gap : top
+}
+
+export function originalIndexFromItemIndex(itemIndex: number, sizes: SizeState) {
+  if (!hasGroups(sizes)) {
+    return itemIndex
+  }
+
+  let groupOffset = 0
+  while (sizes.groupIndices[groupOffset] <= itemIndex + groupOffset) {
+    groupOffset++
+  }
+  // we find the real item index, offsetting it by the number of group items before it
+  return itemIndex + groupOffset
+}
+
+export function originalIndexFromLocation(location: FlatOrGroupedLocation, sizes: SizeState, lastIndex: number) {
+  if (isGroupLocation(location)) {
+    // return the index of the first item below the index
+    return sizes.groupIndices[location.groupIndex] + 1
+  } else {
+    const numericIndex = location.index === 'LAST' ? lastIndex : location.index
+    let result = originalIndexFromItemIndex(numericIndex, sizes)
+    result = Math.max(0, result, Math.min(lastIndex, result))
+    return result
+  }
 }
 
 export function rangesWithinOffsets(
-  tree: Array<OffsetPoint>,
+  tree: OffsetPoint[],
   startOffset: number,
   endOffset: number,
   minStartIndex = 0
-): Array<{
-  start: number
+): {
   end: number
+  start: number
   value: {
-    size: number
-    offset: number
     index: number
+    offset: number
+    size: number
   }
-}> {
+}[] {
   if (minStartIndex > 0) {
     startOffset = Math.max(startOffset, arrayBinarySearch.findClosestSmallerOrEqual(tree, minStartIndex, indexComparator).offset)
   }
 
   return arrayToRanges(arrayBinarySearch.findRange(tree, startOffset, endOffset, offsetComparator), offsetPointParser)
+}
+
+export function sizeStateReducer(state: SizeState, [ranges, groupIndices, log, gap]: [SizeRange[], number[], Log, number]) {
+  if (ranges.length > 0) {
+    log('received item sizes', ranges, LogLevel.DEBUG)
+  }
+  const sizeTree = state.sizeTree
+  let newSizeTree: AANode<number> = sizeTree
+  let syncStart = 0
+
+  // We receive probe item results from a group probe,
+  // which should always pass an item and a group
+  // the results contain two ranges, which we consider to mean that groups and items have different size
+  if (groupIndices.length > 0 && empty(sizeTree) && ranges.length === 2) {
+    const groupSize = ranges[0].size
+    const itemSize = ranges[1].size
+    newSizeTree = groupIndices.reduce((tree, groupIndex) => {
+      return insert(insert(tree, groupIndex, groupSize), groupIndex + 1, itemSize)
+    }, newSizeTree)
+  } else {
+    ;[newSizeTree, syncStart] = insertRanges(newSizeTree, ranges)
+  }
+
+  if (newSizeTree === sizeTree) {
+    return state
+  }
+
+  const { lastIndex, lastOffset, lastSize, offsetTree: newOffsetTree } = createOffsetTree(state.offsetTree, syncStart, newSizeTree, gap)
+
+  return {
+    groupIndices,
+    groupOffsetTree: groupIndices.reduce((tree, index) => {
+      return insert(tree, index, offsetOf(index, newOffsetTree, gap))
+    }, newTree<number>()),
+    lastIndex,
+    lastOffset,
+    lastSize,
+    offsetTree: newOffsetTree,
+    sizeTree: newSizeTree,
+  }
+}
+
+export function sizeTreeToRanges(sizeTree: AANode<number>): SizeRange[] {
+  return walk(sizeTree).map(({ k: startIndex, v: size }, index, sizeArray) => {
+    const nextSize = sizeArray[index + 1]
+    const endIndex = nextSize ? nextSize.k - 1 : Infinity
+
+    return { endIndex, size, startIndex }
+  })
+}
+
+function affectedGroupCount(offset: number, groupIndices: number[]) {
+  let recognizedOffsetItems = 0
+  let groupIndex = 0
+  while (recognizedOffsetItems < offset) {
+    recognizedOffsetItems += groupIndices[groupIndex + 1] - groupIndices[groupIndex] - 1
+    groupIndex++
+  }
+  const offsetIsExact = recognizedOffsetItems === offset
+
+  return groupIndex - (offsetIsExact ? 0 : 1)
 }
 
 function createOffsetTree(prevOffsetTree: OffsetPoint[], syncStart: number, sizeTree: AANode<number>, gap: number) {
@@ -168,9 +255,9 @@ function createOffsetTree(prevOffsetTree: OffsetPoint[], syncStart: number, size
     const indexOffset = startIndex - prevIndex
     const aOffset = indexOffset * prevSize + prevOffset + indexOffset * gap
     offsetTree.push({
+      index: startIndex,
       offset: aOffset,
       size: value,
-      index: startIndex,
     })
     prevIndex = startIndex
     prevOffset = aOffset
@@ -178,111 +265,23 @@ function createOffsetTree(prevOffsetTree: OffsetPoint[], syncStart: number, size
   }
 
   return {
-    offsetTree,
     lastIndex: prevIndex,
     lastOffset: prevOffset,
     lastSize: prevSize,
+    offsetTree,
   }
 }
 
-export function sizeStateReducer(state: SizeState, [ranges, groupIndices, log, gap]: [SizeRange[], number[], Log, number]) {
-  if (ranges.length > 0) {
-    log('received item sizes', ranges, LogLevel.DEBUG)
-  }
-  const sizeTree = state.sizeTree
-  let newSizeTree: AANode<number> = sizeTree
-  let syncStart = 0
-
-  // We receive probe item results from a group probe,
-  // which should always pass an item and a group
-  // the results contain two ranges, which we consider to mean that groups and items have different size
-  if (groupIndices.length > 0 && empty(sizeTree) && ranges.length === 2) {
-    const groupSize = ranges[0].size
-    const itemSize = ranges[1].size
-    newSizeTree = groupIndices.reduce((tree, groupIndex) => {
-      return insert(insert(tree, groupIndex, groupSize), groupIndex + 1, itemSize)
-    }, newSizeTree)
-  } else {
-    ;[newSizeTree, syncStart] = insertRanges(newSizeTree, ranges)
-  }
-
-  if (newSizeTree === sizeTree) {
-    return state
-  }
-
-  const { offsetTree: newOffsetTree, lastIndex, lastSize, lastOffset } = createOffsetTree(state.offsetTree, syncStart, newSizeTree, gap)
-
-  return {
-    sizeTree: newSizeTree,
-    offsetTree: newOffsetTree,
-    lastIndex,
-    lastOffset,
-    lastSize,
-    groupOffsetTree: groupIndices.reduce((tree, index) => {
-      return insert(tree, index, offsetOf(index, newOffsetTree, gap))
-    }, newTree<number>()),
-    groupIndices,
-  }
+function offsetPointParser(point: OffsetPoint) {
+  return { index: point.index, value: point }
 }
 
-export function offsetOf(index: number, tree: Array<OffsetPoint>, gap: number) {
-  if (tree.length === 0) {
-    return 0
-  }
-
-  const { offset, index: startIndex, size } = arrayBinarySearch.findClosestSmallerOrEqual(tree, index, indexComparator)
-  const itemCount = index - startIndex
-  const top = size * itemCount + (itemCount - 1) * gap + offset
-  return top > 0 ? top + gap : top
-}
-
-export type FlatOrGroupedLocation = { index: number | 'LAST' } | { groupIndex: number }
-
-export function isGroupLocation(location: FlatOrGroupedLocation): location is { groupIndex: number } {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  return typeof (location as any).groupIndex !== 'undefined'
-}
-
-export function originalIndexFromLocation(location: FlatOrGroupedLocation, sizes: SizeState, lastIndex: number) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  if (isGroupLocation(location)) {
-    // return the index of the first item below the index
-    return sizes.groupIndices[location.groupIndex] + 1
-  } else {
-    const numericIndex = location.index === 'LAST' ? lastIndex : location.index
-    let result = originalIndexFromItemIndex(numericIndex, sizes)
-    result = Math.max(0, result, Math.min(lastIndex, result))
-    return result
+function rangeIncludes(refRange: SizeRange) {
+  const { endIndex, size, startIndex } = refRange
+  return (range: Range<number>) => {
+    return range.start === startIndex && (range.end === endIndex || range.end === Infinity) && range.value === size
   }
 }
-
-export function originalIndexFromItemIndex(itemIndex: number, sizes: SizeState) {
-  if (!hasGroups(sizes)) {
-    return itemIndex
-  }
-
-  let groupOffset = 0
-  while (sizes.groupIndices[groupOffset] <= itemIndex + groupOffset) {
-    groupOffset++
-  }
-  // we find the real item index, offsetting it by the number of group items before it
-  return itemIndex + groupOffset
-}
-
-export function hasGroups(sizes: SizeState) {
-  return !empty(sizes.groupOffsetTree)
-}
-
-export function sizeTreeToRanges(sizeTree: AANode<number>): SizeRange[] {
-  return walk(sizeTree).map(({ k: startIndex, v: size }, index, sizeArray) => {
-    const nextSize = sizeArray[index + 1]
-    const endIndex = nextSize ? nextSize.k - 1 : Infinity
-
-    return { startIndex, endIndex, size }
-  })
-}
-
-type OptionalNumber = number | undefined
 
 const SIZE_MAP = {
   offsetHeight: 'height',
@@ -315,9 +314,9 @@ export const sizeSystem = u.system(
       u.pipe(
         groupIndices,
         u.distinctUntilChanged(),
-        u.scan((prev, curr) => ({ prev: prev.current, current: curr }), {
-          prev: [] as number[],
+        u.scan((prev, curr) => ({ current: curr, prev: prev.current }), {
           current: [] as number[],
+          prev: [] as number[],
         }),
         u.map(({ prev }) => prev)
       ),
@@ -358,9 +357,9 @@ export const sizeSystem = u.system(
         u.map(([totalCount, { lastIndex, lastSize }]) => {
           return [
             {
-              startIndex: totalCount,
               endIndex: lastIndex,
               size: lastSize,
+              startIndex: totalCount,
             },
           ] as SizeRange[]
         })
@@ -384,7 +383,7 @@ export const sizeSystem = u.system(
         u.filter((value) => {
           return value !== undefined && empty(u.getValue(sizes).sizeTree)
         }),
-        u.map((size) => [{ startIndex: 0, endIndex: 0, size }] as SizeRange[])
+        u.map((size) => [{ endIndex: 0, size, startIndex: 0 }] as SizeRange[])
       ),
       sizeRanges
     )
@@ -466,15 +465,15 @@ export const sizeSystem = u.system(
                 sizes.groupIndices.length === groupIndex + 1 ? Infinity : sizes.groupIndices[groupIndex + 1] - theGroupIndex - 1
 
               initialRanges.push({
-                startIndex: theGroupIndex,
                 endIndex: theGroupIndex,
                 size: firstGroupSize,
+                startIndex: theGroupIndex,
               })
 
               initialRanges.push({
-                startIndex: theGroupIndex + 1,
                 endIndex: theGroupIndex + 1 + groupItemCount - 1,
                 size: defaultSize,
+                startIndex: theGroupIndex + 1,
               })
               groupIndex++
               prependedGroupItemsCount += groupItemCount + 1
@@ -498,23 +497,23 @@ export const sizeSystem = u.system(
                   ranges = [
                     ...acc.ranges,
                     {
-                      startIndex: acc.prevIndex,
                       endIndex: index + unshiftWith - 1,
                       size: acc.prevSize,
+                      startIndex: acc.prevIndex,
                     },
                   ]
                 }
 
                 return {
-                  ranges,
                   prevIndex: index + unshiftWith,
                   prevSize: size,
+                  ranges,
                 }
               },
               {
-                ranges: initialRanges,
                 prevIndex: unshiftWith,
                 prevSize: 0,
+                ranges: initialRanges,
               }
             ).ranges
           }
@@ -522,15 +521,15 @@ export const sizeSystem = u.system(
           return walk(sizes.sizeTree).reduce(
             (acc, { k: index, v: size }) => {
               return {
-                ranges: [...acc.ranges, { startIndex: acc.prevIndex, endIndex: index + unshiftWith - 1, size: acc.prevSize }],
                 prevIndex: index + unshiftWith,
                 prevSize: size,
+                ranges: [...acc.ranges, { endIndex: index + unshiftWith - 1, size: acc.prevSize, startIndex: acc.prevIndex }],
               }
             },
             {
-              ranges: [] as SizeRange[],
               prevIndex: 0,
               prevSize: defaultSize,
+              ranges: [] as SizeRange[],
             }
           ).ranges
         })
@@ -609,26 +608,26 @@ export const sizeSystem = u.system(
     )
 
     return {
+      beforeUnshiftWith,
       // input
       data,
-      totalCount,
-      sizeRanges,
-      groupIndices,
       defaultItemSize,
+      firstItemIndex,
       fixedItemSize,
-      unshiftWith,
+      gap,
+      groupIndices,
+      itemSize,
+      listRefresh,
       shiftWith,
       shiftWithOffset,
-      beforeUnshiftWith,
-      firstItemIndex,
-      gap,
+      sizeRanges,
 
       // output
       sizes,
-      listRefresh,
       statefulTotalCount,
+      totalCount,
       trackItemSizes,
-      itemSize,
+      unshiftWith,
     }
   },
   u.tup(loggerSystem, recalcSystem),

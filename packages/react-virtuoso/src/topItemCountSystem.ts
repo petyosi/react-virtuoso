@@ -1,5 +1,5 @@
-import * as u from './urx'
 import { listStateSystem } from './listStateSystem'
+import * as u from './urx'
 
 export const topItemCountSystem = u.system(([{ topItemsIndexes }]) => {
   const topItemCount = u.statefulStream(0)

@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
+
 import { Virtuoso, VirtuosoHandle } from '../src'
 
 const Image = ({ index }: { index: number }) => {
@@ -13,7 +14,7 @@ const Image = ({ index }: { index: number }) => {
     }
   })
   return (
-    <div style={{ height: 30 }} ref={ref}>
+    <div ref={ref} style={{ height: 30 }}>
       Item {index}
     </div>
   )
@@ -28,25 +29,30 @@ export function Example() {
 
   React.useEffect(() => {
     ref.current!.addEventListener('customLoad', () => {
-      virtuosoRef.current.autoscrollToBottom()
+      virtuosoRef.current?.autoscrollToBottom()
     })
   }, [])
 
   return (
     <div ref={ref}>
       <div>
-        <button data-testid="add-image" onClick={() => setCount((count) => count + 1)}>
+        <button
+          data-testid="add-image"
+          onClick={() => {
+            setCount((count) => count + 1)
+          }}
+        >
           Append Image
         </button>{' '}
         |{' '}
       </div>
       <Virtuoso
-        ref={virtuosoRef}
-        totalCount={count}
-        initialTopMostItemIndex={99}
         followOutput={'auto'}
+        initialTopMostItemIndex={99}
         itemContent={itemContent}
+        ref={virtuosoRef}
         style={{ height: 500 }}
+        totalCount={count}
       />
     </div>
   )

@@ -1,6 +1,6 @@
 import { domIOSystem } from './domIOSystem'
 import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
-import { StateSnapshot, StateCallback, ScrollContainerState, WindowViewportInfo } from './interfaces'
+import { ScrollContainerState, StateCallback, StateSnapshot, WindowViewportInfo } from './interfaces'
 import { propsReadySystem } from './propsReadySystem'
 import { sizeSystem, sizeTreeToRanges } from './sizeSystem'
 import * as u from './urx'
@@ -8,8 +8,8 @@ import { windowScrollerSystem } from './windowScrollerSystem'
 
 export const stateLoadSystem = u.system(
   ([
-    { sizes, sizeRanges },
-    { scrollTop, headerHeight },
+    { sizeRanges, sizes },
+    { headerHeight, scrollTop },
     { initialTopMostItemIndex },
     { didMount },
     { useWindowScroll, windowScrollContainerState, windowViewportRect },
@@ -17,8 +17,8 @@ export const stateLoadSystem = u.system(
     const getState = u.stream<StateCallback>()
     const restoreStateFrom = u.statefulStream<StateSnapshot | undefined>(undefined)
 
-    const statefulWindowScrollContainerState = u.statefulStream<ScrollContainerState | null>(null)
-    const statefulWindowViewportRect = u.statefulStream<WindowViewportInfo | null>(null)
+    const statefulWindowScrollContainerState = u.statefulStream<null | ScrollContainerState>(null)
+    const statefulWindowViewportRect = u.statefulStream<null | WindowViewportInfo>(null)
 
     u.connect(windowScrollContainerState, statefulWindowScrollContainerState)
     u.connect(windowViewportRect, statefulWindowViewportRect)
@@ -62,5 +62,5 @@ export const stateLoadSystem = u.system(
 )
 
 function locationFromSnapshot(snapshot: StateSnapshot | undefined) {
-  return { offset: snapshot!.scrollTop, index: 0, align: 'start' }
+  return { align: 'start', index: 0, offset: snapshot!.scrollTop }
 }

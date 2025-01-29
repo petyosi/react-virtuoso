@@ -1,5 +1,6 @@
-import { map, handleNext, statefulStream, connect, pipe, publish, subscribe, stream } from '../../src/urx'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+import { connect, handleNext, map, pipe, publish, statefulStream, stream, subscribe } from '../../src/urx'
 
 describe('connect', () => {
   it('subscribes a publisher to the emitter', () => {

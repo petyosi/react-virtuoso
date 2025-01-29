@@ -1,5 +1,6 @@
-import { eventHandler, publish, reset, stream, subscribe, statefulStream } from '../../src/urx'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+import { eventHandler, publish, reset, statefulStream, stream, subscribe } from '../../src/urx'
 
 describe('event handler', () => {
   it('creates a single handler subscriber for a stream', () => {

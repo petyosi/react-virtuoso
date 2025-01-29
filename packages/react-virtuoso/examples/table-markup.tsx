@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import { TableVirtuoso, TableVirtuosoHandle } from '../src/'
 
 export function Example() {
@@ -6,8 +7,6 @@ export function Example() {
   return (
     <>
       <TableVirtuoso
-        ref={ref}
-        totalCount={1000}
         components={{
           EmptyPlaceholder: () => {
             return (
@@ -19,27 +18,26 @@ export function Example() {
             )
           },
         }}
-        style={{ height: 700 }}
-        fixedHeaderContent={() => {
+        fixedFooterContent={() => {
           return (
             <tr style={{ background: 'white' }}>
-              <th key={1} style={{ height: 150, border: '1px solid black', background: 'white' }}>
-                TH 1
+              <th key={1} style={{ background: 'white', border: '1px solid black', height: 150 }}>
+                Footer TH 1
               </th>
-              <th key={2} style={{ height: 150, border: '1px solid black', background: 'white' }}>
-                TH meh
+              <th key={2} style={{ background: 'white', border: '1px solid black', height: 150 }}>
+                Footer TH meh
               </th>
             </tr>
           )
         }}
-        fixedFooterContent={() => {
+        fixedHeaderContent={() => {
           return (
             <tr style={{ background: 'white' }}>
-              <th key={1} style={{ height: 150, border: '1px solid black', background: 'white' }}>
-                Footer TH 1
+              <th key={1} style={{ background: 'white', border: '1px solid black', height: 150 }}>
+                TH 1
               </th>
-              <th key={2} style={{ height: 150, border: '1px solid black', background: 'white' }}>
-                Footer TH meh
+              <th key={2} style={{ background: 'white', border: '1px solid black', height: 150 }}>
+                TH meh
               </th>
             </tr>
           )
@@ -52,12 +50,15 @@ export function Example() {
             </>
           )
         }}
+        ref={ref}
+        style={{ height: 700 }}
+        totalCount={1000}
       />
       <button
         onClick={() =>
           ref.current?.scrollToIndex({
-            index: 900,
             align: 'start',
+            index: 900,
           })
         }
       >
@@ -66,8 +67,8 @@ export function Example() {
       <button
         onClick={() =>
           ref.current?.scrollToIndex({
-            index: 900,
             align: 'end',
+            index: 900,
           })
         }
       >
@@ -77,8 +78,8 @@ export function Example() {
       <button
         onClick={() =>
           ref.current?.scrollToIndex({
-            index: 900,
             align: 'center',
+            index: 900,
           })
         }
       >

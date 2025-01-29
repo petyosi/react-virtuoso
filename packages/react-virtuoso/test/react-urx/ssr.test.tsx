@@ -1,12 +1,13 @@
+import { JSDOM } from 'jsdom'
+import * as React from 'react'
+import ReactDOMServer from 'react-dom/server'
+import { describe, expect, it } from 'vitest'
+
+import { systemToComponent } from '../../src/react-urx'
 /**
  * @jest-environment node
  */
 import { connect, statefulStream, stream, system } from '../../src/urx'
-import { JSDOM } from 'jsdom'
-import * as React from 'react'
-import ReactDOMServer from 'react-dom/server'
-import { systemToComponent } from '../../src/react-urx'
-import { describe, it, expect } from 'vitest'
 
 const simpleSystem = () =>
   system(() => {
@@ -14,7 +15,7 @@ const simpleSystem = () =>
     const depot = statefulStream(10)
     connect(prop, depot)
 
-    return { prop, depot }
+    return { depot, prop }
   })
 
 const Root: React.FC<{ id: string }> = ({ id }) => {

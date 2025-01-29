@@ -1,6 +1,6 @@
+import react from '@vitejs/plugin-react-swc'
 /// <reference types="vitest" />
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
 import dts from 'vite-plugin-dts'
 
 const ext = {
@@ -10,21 +10,22 @@ const ext = {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), dts({ rollupTypes: true })],
   build: {
-    target: ['es2020', 'edge88', 'firefox78', 'chrome79', 'safari14'],
-    minify: 'terser',
     lib: {
       entry: ['src/index.tsx'],
-      formats: ['es', 'cjs'],
+      //@ts-expect-error not sure why
       fileName: (format) => `index.${ext[format]}`,
+      formats: ['es', 'cjs'],
     },
+    minify: 'terser',
     rollupOptions: {
       external: ['react', 'react-dom', 'react/jsx-runtime', '@virtuoso.dev/urx', '@virtuoso.dev/react-urx'],
     },
+    target: ['es2020', 'edge88', 'firefox78', 'chrome79', 'safari14'],
   },
+  plugins: [react(), dts({ rollupTypes: true })],
   test: {
-    include: ['test/**/*.test.{ts,tsx}'],
     environment: 'jsdom',
+    include: ['test/**/*.test.{ts,tsx}'],
   },
 })

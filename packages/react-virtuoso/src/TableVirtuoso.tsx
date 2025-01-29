@@ -1,22 +1,23 @@
+import React from 'react'
+
+import { TableVirtuosoHandle, TableVirtuosoProps } from './component-interfaces/TableVirtuoso'
+import useChangedListContentsSizes from './hooks/useChangedChildSizes'
+import useSize from './hooks/useSize'
+import useWindowViewportRectRef from './hooks/useWindowViewportRect'
+import { ComputeItemKey, FixedFooterContent, FixedHeaderContent, ItemContent, TableComponents, TableRootProps } from './interfaces'
+import { listSystem } from './listSystem'
 import { systemToComponent } from './react-urx'
 import * as u from './urx'
-import React from 'react'
-import useChangedListContentsSizes from './hooks/useChangedChildSizes'
-import { ComputeItemKey, ItemContent, FixedHeaderContent, FixedFooterContent, TableComponents, TableRootProps } from './interfaces'
-import { listSystem } from './listSystem'
+import { VirtuosoMockContext } from './utils/context'
+import { correctItemSize } from './utils/correctItemSize'
 import {
-  identity,
   buildScroller,
   buildWindowScroller,
-  viewportStyle,
   contextPropIfNotDomElement,
+  identity,
   itemPropIfNotDomElement,
+  viewportStyle,
 } from './Virtuoso'
-import useSize from './hooks/useSize'
-import { correctItemSize } from './utils/correctItemSize'
-import useWindowViewportRectRef from './hooks/useWindowViewportRect'
-import { VirtuosoMockContext } from './utils/context'
-import { TableVirtuosoHandle, TableVirtuosoProps } from './component-interfaces/TableVirtuoso'
 
 const tableComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   const itemContent = u.statefulStream<ItemContent<any, unknown>>((index: number) => <td>Item ${index}</td>)
@@ -25,11 +26,11 @@ const tableComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   const fixedFooterContent = u.statefulStream<FixedFooterContent>(null)
   const components = u.statefulStream<TableComponents>({})
   const computeItemKey = u.statefulStream<ComputeItemKey<any, unknown>>(identity)
-  const scrollerRef = u.statefulStream<(ref: HTMLElement | Window | null) => void>(u.noop)
+  const scrollerRef = u.statefulStream<(ref: HTMLElement | null | Window) => void>(u.noop)
 
   const distinctProp = <K extends keyof TableComponents>(
     propName: K,
-    defaultValue: TableComponents[K] | null | 'thead' | 'tfoot' | 'table' | 'tbody' | 'tr' | 'div' = null
+    defaultValue: 'div' | 'table' | 'tbody' | 'tfoot' | 'thead' | 'tr' | null | TableComponents[K] = null
   ) => {
     return u.statefulStreamFromEmitter(
       u.pipe(
@@ -42,28 +43,31 @@ const tableComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   }
 
   return {
-    context,
-    itemContent,
-    fixedHeaderContent,
-    fixedFooterContent,
     components,
     computeItemKey,
-    scrollerRef,
-    TableComponent: distinctProp('Table', 'table'),
-    TableHeadComponent: distinctProp('TableHead', 'thead'),
-    TableFooterComponent: distinctProp('TableFoot', 'tfoot'),
-    TableBodyComponent: distinctProp('TableBody', 'tbody'),
-    TableRowComponent: distinctProp('TableRow', 'tr'),
-    ScrollerComponent: distinctProp('Scroller', 'div'),
+    context,
     EmptyPlaceholder: distinctProp('EmptyPlaceholder'),
-    ScrollSeekPlaceholder: distinctProp('ScrollSeekPlaceholder'),
     FillerRow: distinctProp('FillerRow'),
+    fixedFooterContent,
+    fixedHeaderContent,
+    itemContent,
+    ScrollerComponent: distinctProp('Scroller', 'div'),
+    scrollerRef,
+    ScrollSeekPlaceholder: distinctProp('ScrollSeekPlaceholder'),
+    TableBodyComponent: distinctProp('TableBody', 'tbody'),
+    TableComponent: distinctProp('Table', 'table'),
+    TableFooterComponent: distinctProp('TableFoot', 'tfoot'),
+    TableHeadComponent: distinctProp('TableHead', 'thead'),
+    TableRowComponent: distinctProp('TableRow', 'tr'),
   }
 })
 
-const combinedSystem = /*#__PURE__*/ u.system(([listSystem, propsSystem]) => {
-  return { ...listSystem, ...propsSystem }
-}, u.tup(listSystem, tableComponentPropsSystem))
+const combinedSystem = /*#__PURE__*/ u.system(
+  ([listSystem, propsSystem]) => {
+    return { ...listSystem, ...propsSystem }
+  },
+  u.tup(listSystem, tableComponentPropsSystem)
+)
 
 const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => (
   <tr>
@@ -73,7 +77,7 @@ const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => (
 
 const DefaultFillerRow = ({ height }: { height: number }) => (
   <tr>
-    <td style={{ height: height, padding: 0, border: 0 }}></td>
+    <td style={{ border: 0, height: height, padding: 0 }}></td>
   </tr>
 )
 
@@ -108,9 +112,9 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
       return (
         <ScrollSeekPlaceholder
           {...contextPropIfNotDomElement(ScrollSeekPlaceholder, context)}
-          key={key}
-          index={item.index}
           height={item.size}
+          index={item.index}
+          key={key}
           type={item.type || 'item'}
         />
       )
@@ -119,11 +123,11 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
       <TableRowComponent
         {...contextPropIfNotDomElement(TableRowComponent, context)}
         {...itemPropIfNotDomElement(TableRowComponent, item.data)}
-        key={key}
         data-index={index}
-        data-known-size={item.size}
         data-item-index={item.index}
-        style={showTopList ? { overflowAnchor: 'none', position: 'sticky', zIndex: 2, top: fixedHeaderHeight + offsetTop } : ITEM_STYLE}
+        data-known-size={item.size}
+        key={key}
+        style={showTopList ? { overflowAnchor: 'none', position: 'sticky', top: fixedHeaderHeight + offsetTop, zIndex: 2 } : ITEM_STYLE}
       >
         {itemContent(item.index, item.data, context)}
       </TableRowComponent>
@@ -182,12 +186,12 @@ const TableBody = /*#__PURE__*/ React.memo(function TableVirtuosoBody() {
   const paddingTop = listState.offsetTop + paddingTopAddition + deviation - topItemsSize
   const paddingBottom = listState.offsetBottom
 
-  const paddingTopEl = paddingTop > 0 ? <FillerRow height={paddingTop} key="padding-top" context={context} /> : null
+  const paddingTopEl = paddingTop > 0 ? <FillerRow context={context} height={paddingTop} key="padding-top" /> : null
 
-  const paddingBottomEl = paddingBottom > 0 ? <FillerRow height={paddingBottom} key="padding-bottom" context={context} /> : null
+  const paddingBottomEl = paddingBottom > 0 ? <FillerRow context={context} height={paddingBottom} key="padding-bottom" /> : null
 
   return (
-    <TableBodyComponent ref={callbackRef} data-testid="virtuoso-item-list" {...contextPropIfNotDomElement(TableBodyComponent, context)}>
+    <TableBodyComponent data-testid="virtuoso-item-list" ref={callbackRef} {...contextPropIfNotDomElement(TableBodyComponent, context)}>
       {paddingTopEl}
       {showTopList && <Items showTopList={true} />}
       <Items />
@@ -196,7 +200,7 @@ const TableBody = /*#__PURE__*/ React.memo(function TableVirtuosoBody() {
   )
 })
 
-const Viewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+const Viewport: React.FC<React.PropsWithChildren> = ({ children }) => {
   const ctx = React.useContext(VirtuosoMockContext)
   const viewportHeight = usePublisher('viewportHeight')
   const fixedItemHeight = usePublisher('fixedItemHeight')
@@ -214,13 +218,13 @@ const Viewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   }, [ctx, viewportHeight, fixedItemHeight])
 
   return (
-    <div style={viewportStyle(false)} ref={viewportRef} data-viewport-type="element">
+    <div data-viewport-type="element" ref={viewportRef} style={viewportStyle(false)}>
       {children}
     </div>
   )
 }
 
-const WindowViewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+const WindowViewport: React.FC<React.PropsWithChildren> = ({ children }) => {
   const ctx = React.useContext(VirtuosoMockContext)
   const windowViewportRect = usePublisher('windowViewportRect')
   const fixedItemHeight = usePublisher('fixedItemHeight')
@@ -239,7 +243,7 @@ const WindowViewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }
   }, [ctx, windowViewportRect, fixedItemHeight])
 
   return (
-    <div ref={viewportRef} style={viewportStyle(false)} data-viewport-type="window">
+    <div data-viewport-type="window" ref={viewportRef} style={viewportStyle(false)}>
       {children}
     </div>
   )
@@ -275,8 +279,8 @@ const TableRoot: React.FC<TableRootProps> = /*#__PURE__*/ React.memo(function Ta
   const theHead = fixedHeaderContent ? (
     <TheTHead
       key="TableHead"
-      style={{ zIndex: 2, position: 'sticky', top: 0 }}
       ref={theadRef}
+      style={{ position: 'sticky', top: 0, zIndex: 2 }}
       {...contextPropIfNotDomElement(TheTHead, context)}
     >
       {fixedHeaderContent()}
@@ -285,8 +289,8 @@ const TableRoot: React.FC<TableRootProps> = /*#__PURE__*/ React.memo(function Ta
   const theFoot = fixedFooterContent ? (
     <TheTFoot
       key="TableFoot"
-      style={{ zIndex: 1, position: 'sticky', bottom: 0 }}
       ref={tfootRef}
+      style={{ bottom: 0, position: 'sticky', zIndex: 1 }}
       {...contextPropIfNotDomElement(TheTFoot, context)}
     >
       {fixedFooterContent()}
@@ -308,68 +312,68 @@ const TableRoot: React.FC<TableRootProps> = /*#__PURE__*/ React.memo(function Ta
 
 const {
   Component: Table,
-  usePublisher,
-  useEmitterValue,
   useEmitter,
+  useEmitterValue,
+  usePublisher,
 } = /*#__PURE__*/ systemToComponent(
   combinedSystem,
   {
-    required: {},
-    optional: {
-      restoreStateFrom: 'restoreStateFrom',
-      context: 'context',
-      followOutput: 'followOutput',
-      firstItemIndex: 'firstItemIndex',
-      itemContent: 'itemContent',
-      fixedHeaderContent: 'fixedHeaderContent',
-      fixedFooterContent: 'fixedFooterContent',
-      overscan: 'overscan',
-      increaseViewportBy: 'increaseViewportBy',
-      totalCount: 'totalCount',
-      topItemCount: 'topItemCount',
-      initialTopMostItemIndex: 'initialTopMostItemIndex',
-      components: 'components',
-      groupCounts: 'groupCounts',
-      atBottomThreshold: 'atBottomThreshold',
-      atTopThreshold: 'atTopThreshold',
-      computeItemKey: 'computeItemKey',
-      defaultItemHeight: 'defaultItemHeight',
-      fixedItemHeight: 'fixedItemHeight',
-      itemSize: 'itemSize',
-      scrollSeekConfiguration: 'scrollSeekConfiguration',
-      data: 'data',
-      initialItemCount: 'initialItemCount',
-      initialScrollTop: 'initialScrollTop',
-      alignToBottom: 'alignToBottom',
-      useWindowScroll: 'useWindowScroll',
-      customScrollParent: 'customScrollParent',
-      scrollerRef: 'scrollerRef',
-      logLevel: 'logLevel',
-    },
-    methods: {
-      scrollToIndex: 'scrollToIndex',
-      scrollIntoView: 'scrollIntoView',
-      scrollTo: 'scrollTo',
-      scrollBy: 'scrollBy',
-      getState: 'getState',
-    },
     events: {
-      isScrolling: 'isScrolling',
-      endReached: 'endReached',
-      startReached: 'startReached',
-      rangeChanged: 'rangeChanged',
       atBottomStateChange: 'atBottomStateChange',
       atTopStateChange: 'atTopStateChange',
-      totalListHeightChanged: 'totalListHeightChanged',
-      itemsRendered: 'itemsRendered',
+      endReached: 'endReached',
       groupIndices: 'groupIndices',
+      isScrolling: 'isScrolling',
+      itemsRendered: 'itemsRendered',
+      rangeChanged: 'rangeChanged',
+      startReached: 'startReached',
+      totalListHeightChanged: 'totalListHeightChanged',
     },
+    methods: {
+      getState: 'getState',
+      scrollBy: 'scrollBy',
+      scrollIntoView: 'scrollIntoView',
+      scrollTo: 'scrollTo',
+      scrollToIndex: 'scrollToIndex',
+    },
+    optional: {
+      alignToBottom: 'alignToBottom',
+      atBottomThreshold: 'atBottomThreshold',
+      atTopThreshold: 'atTopThreshold',
+      components: 'components',
+      computeItemKey: 'computeItemKey',
+      context: 'context',
+      customScrollParent: 'customScrollParent',
+      data: 'data',
+      defaultItemHeight: 'defaultItemHeight',
+      firstItemIndex: 'firstItemIndex',
+      fixedFooterContent: 'fixedFooterContent',
+      fixedHeaderContent: 'fixedHeaderContent',
+      fixedItemHeight: 'fixedItemHeight',
+      followOutput: 'followOutput',
+      groupCounts: 'groupCounts',
+      increaseViewportBy: 'increaseViewportBy',
+      initialItemCount: 'initialItemCount',
+      initialScrollTop: 'initialScrollTop',
+      initialTopMostItemIndex: 'initialTopMostItemIndex',
+      itemContent: 'itemContent',
+      itemSize: 'itemSize',
+      logLevel: 'logLevel',
+      overscan: 'overscan',
+      restoreStateFrom: 'restoreStateFrom',
+      scrollerRef: 'scrollerRef',
+      scrollSeekConfiguration: 'scrollSeekConfiguration',
+      topItemCount: 'topItemCount',
+      totalCount: 'totalCount',
+      useWindowScroll: 'useWindowScroll',
+    },
+    required: {},
   },
   TableRoot
 )
 
-const Scroller = /*#__PURE__*/ buildScroller({ usePublisher, useEmitterValue, useEmitter })
-const WindowScroller = /*#__PURE__*/ buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })
+const Scroller = /*#__PURE__*/ buildScroller({ useEmitter, useEmitterValue, usePublisher })
+const WindowScroller = /*#__PURE__*/ buildWindowScroller({ useEmitter, useEmitterValue, usePublisher })
 
 export const TableVirtuoso = Table as <ItemData = any, Context = any>(
   props: TableVirtuosoProps<ItemData, Context> & { ref?: React.Ref<TableVirtuosoHandle> }

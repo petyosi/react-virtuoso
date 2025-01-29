@@ -1,33 +1,18 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-import * as u from './urx'
 import { domIOSystem } from './domIOSystem'
+import * as u from './urx'
 import { approximatelyEqual } from './utils/approximatelyEqual'
 
-export const UP = 'up' as const
-export const DOWN = 'down' as const
-export const NONE = 'none' as const
-export type ScrollDirection = typeof UP | typeof DOWN | typeof NONE
-
-export interface ListBottomInfo {
-  bottom: number
-  offsetBottom: number
-}
-
+export const UP = 'up'
+export const DOWN = 'down'
+export const NONE = 'none'
 export interface AtBottomParams {
   offsetBottom: number
+  scrollHeight: number
   scrollTop: number
   viewportHeight: number
-  scrollHeight: number
 }
 
-export type NotAtBottomReason =
-  | 'SIZE_INCREASED'
-  | 'NOT_SHOWING_LAST_ITEM'
-  | 'VIEWPORT_HEIGHT_DECREASING'
-  | 'SCROLLING_UPWARDS'
-  | 'NOT_FULLY_SCROLLED_TO_LAST_ITEM_BOTTOM'
-
-export type AtBottomReason = 'SIZE_DECREASED' | 'SCROLLED_DOWN'
+export type AtBottomReason = 'SCROLLED_DOWN' | 'SIZE_DECREASED'
 
 export type AtBottomState =
   | {
@@ -37,25 +22,39 @@ export type AtBottomState =
     }
   | {
       atBottom: true
-      state: AtBottomParams
       atBottomBecause: AtBottomReason
       scrollTopDelta: number
+      state: AtBottomParams
     }
+
+export interface ListBottomInfo {
+  bottom: number
+  offsetBottom: number
+}
+
+export type NotAtBottomReason =
+  | 'NOT_FULLY_SCROLLED_TO_LAST_ITEM_BOTTOM'
+  | 'NOT_SHOWING_LAST_ITEM'
+  | 'SCROLLING_UPWARDS'
+  | 'SIZE_INCREASED'
+  | 'VIEWPORT_HEIGHT_DECREASING'
+
+export type ScrollDirection = typeof DOWN | typeof NONE | typeof UP
 
 const INITIAL_BOTTOM_STATE = {
   atBottom: false,
   notAtBottomBecause: 'NOT_SHOWING_LAST_ITEM',
   state: {
     offsetBottom: 0,
+    scrollHeight: 0,
     scrollTop: 0,
     viewportHeight: 0,
-    scrollHeight: 0,
   },
 } as AtBottomState
 
 const DEFAULT_AT_TOP_THRESHOLD = 0
 
-export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, viewportHeight, headerHeight, footerHeight, scrollBy }]) => {
+export const stateFlagsSystem = u.system(([{ footerHeight, headerHeight, scrollBy, scrollContainerState, scrollTop, viewportHeight }]) => {
   const isAtBottom = u.statefulStream(false)
   const isAtTop = u.statefulStream(true)
   const atBottomStateChange = u.stream<boolean>()
@@ -93,16 +92,16 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
   const atBottomState = u.streamFromEmitter(
     u.pipe(
       u.combineLatest(scrollContainerState, u.duc(viewportHeight), u.duc(headerHeight), u.duc(footerHeight), u.duc(atBottomThreshold)),
-      u.scan((current, [{ scrollTop, scrollHeight }, viewportHeight, _headerHeight, _footerHeight, atBottomThreshold]) => {
+      u.scan((current, [{ scrollHeight, scrollTop }, viewportHeight, _headerHeight, _footerHeight, atBottomThreshold]) => {
         const isAtBottom = scrollTop + viewportHeight - scrollHeight > -atBottomThreshold
         const state = {
-          viewportHeight,
-          scrollTop,
           scrollHeight,
+          scrollTop,
+          viewportHeight,
         }
 
         if (isAtBottom) {
-          let atBottomBecause: 'SIZE_DECREASED' | 'SCROLLED_DOWN'
+          let atBottomBecause: 'SCROLLED_DOWN' | 'SIZE_DECREASED'
           let scrollTopDelta: number
           if (scrollTop > current.state.scrollTop) {
             atBottomBecause = 'SCROLLED_DOWN'
@@ -113,9 +112,9 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
           }
           return {
             atBottom: true,
-            state,
             atBottomBecause,
             scrollTopDelta,
+            state,
           } as AtBottomState
         }
 
@@ -147,35 +146,35 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
     u.pipe(
       scrollContainerState,
       u.scan(
-        (current, { scrollTop, scrollHeight, viewportHeight }) => {
+        (current, { scrollHeight, scrollTop, viewportHeight }) => {
           if (!approximatelyEqual(current.scrollHeight, scrollHeight)) {
             const atBottom = scrollHeight - (scrollTop + viewportHeight) < 1
 
             if (current.scrollTop !== scrollTop && atBottom) {
               return {
+                changed: true,
+                jump: current.scrollTop - scrollTop,
                 scrollHeight,
                 scrollTop,
-                jump: current.scrollTop - scrollTop,
-                changed: true,
               }
             } else {
               return {
+                changed: true,
+                jump: 0,
                 scrollHeight,
                 scrollTop,
-                jump: 0,
-                changed: true,
               }
             }
           } else {
             return {
-              scrollTop,
-              scrollHeight,
-              jump: 0,
               changed: false,
+              jump: 0,
+              scrollHeight,
+              scrollTop,
             }
           }
         },
-        { scrollHeight: 0, jump: 0, scrollTop: 0, changed: false }
+        { changed: false, jump: 0, scrollHeight: 0, scrollTop: 0 }
       ),
       u.filter((value) => value.changed),
       u.map((value) => value.jump)
@@ -208,7 +207,10 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
             return { direction: acc.direction, prevScrollTop: scrollTop }
           }
 
-          return { direction: scrollTop < acc.prevScrollTop ? UP : DOWN, prevScrollTop: scrollTop }
+          return { direction: scrollTop < acc.prevScrollTop ? UP : DOWN, prevScrollTop: scrollTop } as {
+            direction: ScrollDirection
+            prevScrollTop: number
+          }
         },
         { direction: DOWN, prevScrollTop: 0 } as { direction: ScrollDirection; prevScrollTop: number }
       ),
@@ -217,7 +219,6 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
     scrollDirection
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   u.connect(u.pipe(scrollContainerState, u.throttleTime(50), u.mapTo(NONE)), scrollDirection)
 
   const scrollVelocity = u.statefulStream(0)
@@ -226,7 +227,7 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
     u.pipe(
       isScrolling,
       u.filter((value) => !value),
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
       u.mapTo(0)
     ),
     scrollVelocity
@@ -245,16 +246,16 @@ export const stateFlagsSystem = u.system(([{ scrollContainerState, scrollTop, vi
   )
 
   return {
-    isScrolling,
-    isAtTop,
-    isAtBottom,
     atBottomState,
-    atTopStateChange,
     atBottomStateChange,
-    scrollDirection,
     atBottomThreshold,
+    atTopStateChange,
     atTopThreshold,
-    scrollVelocity,
+    isAtBottom,
+    isAtTop,
+    isScrolling,
     lastJumpDueToItemResize,
+    scrollDirection,
+    scrollVelocity,
   }
 }, u.tup(domIOSystem))

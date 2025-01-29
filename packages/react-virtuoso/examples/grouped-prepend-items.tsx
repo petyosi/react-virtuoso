@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import { GroupedVirtuoso } from '../src'
 
 function generateRandomString(length: number) {
@@ -61,15 +62,15 @@ export function PrependWhenStartReached() {
   return (
     <div>
       <GroupedVirtuoso
-        firstItemIndex={firstItemIndex}
-        startReached={prepend(ITEMS_PER_PREPEND)}
-        initialTopMostItemIndex={INITIAL_TOPMOST_ITEM_INDEX}
         context={{ groupTitles }}
-        groupCounts={groupCounts}
-        itemContent={(index) => <div style={{ height: '20px' }}>Item {index}</div>}
+        firstItemIndex={firstItemIndex}
         groupContent={(index, { groupTitles }) => (
-          <div style={{ height: '30px', backgroundColor: '#f5f5f5' }}>Group {groupTitles[index]}</div>
+          <div style={{ backgroundColor: '#f5f5f5', height: '30px' }}>Group {groupTitles[index]}</div>
         )}
+        groupCounts={groupCounts}
+        initialTopMostItemIndex={INITIAL_TOPMOST_ITEM_INDEX}
+        itemContent={(index) => <div style={{ height: '20px' }}>Item {index}</div>}
+        startReached={prepend(ITEMS_PER_PREPEND)}
         style={{ height: '300px' }}
       />
     </div>

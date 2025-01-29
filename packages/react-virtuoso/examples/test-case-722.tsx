@@ -1,12 +1,12 @@
-import * as React from 'react'
 import { useState } from 'react'
+
 import { Virtuoso } from '../src'
 
 const TOTAL_COUNT = 233
 const PAGE_COUNT = 30
 
 // scroll up to 143, should load as expected. - https://github.com/petyosi/react-virtuoso/issues/722
-const SHORT_IDX = {
+const SHORT_IDX: Record<number, boolean> = {
   13: true,
   20: true,
   22: true,
@@ -52,8 +52,8 @@ const SHORT_IDX = {
   151: true,
   152: true,
   157: true,
-  159: true,
   158: true,
+  159: true,
 
   160: true,
   161: true,
@@ -73,14 +73,14 @@ export function Example() {
   return (
     <div className="App">
       <Virtuoso
-        startReached={prepend}
-        useWindowScroll
-        overscan={0}
         firstItemIndex={TOTAL_COUNT - loadedCount}
-        totalCount={loadedCount}
         itemContent={(index) => {
           return <div style={{ height: SHORT_IDX[index] ? '15px' : '150px' }}>{index}</div>
         }}
+        overscan={0}
+        startReached={prepend}
+        totalCount={loadedCount}
+        useWindowScroll
       />
     </div>
   )

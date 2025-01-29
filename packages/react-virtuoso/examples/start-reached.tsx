@@ -1,6 +1,6 @@
-import * as React from 'react'
+import { useCallback, useState } from 'react'
+
 import { Virtuoso } from '../src'
-import { useState, useCallback } from 'react'
 
 const START_INDEX = 10000
 const INITIAL_ITEM_COUNT = 100
@@ -25,8 +25,8 @@ export function Example() {
     return (
       <div
         style={{
-          padding: '1rem 0.5rem',
           border: '1px solid #ccc',
+          padding: '1rem 0.5rem',
         }}
       >
         Item {index + 1}
@@ -38,14 +38,14 @@ export function Example() {
     <div>
       <Virtuoso
         components={{
-          Header: () => <div style={{ textAlign: 'center', padding: '1rem' }}>Loading...</div>,
+          Header: () => <div style={{ padding: '1rem', textAlign: 'center' }}>Loading...</div>,
         }}
-        style={{ width: '200px', height: '600px' }}
         data={items}
         firstItemIndex={firstItemIndex}
         initialTopMostItemIndex={INITIAL_ITEM_COUNT - 1}
-        startReached={prependItems}
         itemContent={itemContent}
+        startReached={prependItems}
+        style={{ height: '600px', width: '200px' }}
       />
     </div>
   )

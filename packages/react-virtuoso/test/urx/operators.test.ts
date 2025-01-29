@@ -1,19 +1,20 @@
+import { describe, expect, it, vi } from 'vitest'
+
 import {
+  debounceTime,
+  distinctUntilChanged,
   filter,
   map,
   mapTo,
   pipe,
-  scan,
-  withLatestFrom,
-  skip,
-  distinctUntilChanged,
-  debounceTime,
-  statefulStream,
   publish,
+  scan,
+  skip,
+  statefulStream,
   stream,
   subscribe,
+  withLatestFrom,
 } from '../../src/urx'
-import { describe, it, expect, vi } from 'vitest'
 
 describe('pipe', () => {
   it('map transforms the output', () => {
@@ -104,8 +105,12 @@ describe('pipe', () => {
     const s1 = stream<number>()
 
     publish(s1, 1)
-    setTimeout(() => publish(s1, 2), 20)
-    setTimeout(() => publish(s1, 3), 20)
+    setTimeout(() => {
+      publish(s1, 2)
+    }, 20)
+    setTimeout(() => {
+      publish(s1, 3)
+    }, 20)
 
     return new Promise<void>((resolve) => {
       subscribe(pipe(s1, debounceTime(50)), (val) => {

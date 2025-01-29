@@ -1,12 +1,13 @@
 import * as React from 'react'
+
 import { GroupedVirtuoso } from '../src'
 
 export function Example() {
   return (
     <GroupedVirtuoso
+      groupContent={(index) => <div style={{ backgroundColor: 'gray', height: '30px' }}>Group {index}</div>}
       groupCounts={Array.from({ length: 20 }).fill(3) as number[]}
       itemContent={(index) => <div style={{ height: '20px' }}>Item {index}</div>}
-      groupContent={(index) => <div style={{ height: '30px', backgroundColor: 'gray' }}>Group {index}</div>}
       style={{ height: '300px' }}
     />
   )
@@ -35,6 +36,7 @@ export function Unshifting() {
           return [...newGroups, firstGroupNewCount, ...prevGroups]
         } else {
           let removedItems = 0
+
           while (true) {
             const firstGroup = prevGroups.shift()!
             if (removedItems + firstGroup < -amount) {
@@ -65,9 +67,9 @@ export function Unshifting() {
 
       <GroupedVirtuoso
         firstItemIndex={firstItemIndex}
+        groupContent={(index) => <div style={{ backgroundColor: 'gray', height: '30px' }}>Group {index}</div>}
         groupCounts={groupCounts}
         itemContent={(index) => <div style={{ height: '20px' }}>Item {index}</div>}
-        groupContent={(index) => <div style={{ height: '30px', backgroundColor: 'gray' }}>Group {index}</div>}
         style={{ height: '300px' }}
       />
     </div>

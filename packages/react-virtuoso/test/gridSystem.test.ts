@@ -1,28 +1,29 @@
-import { init, getValue, publish, subscribe } from '../src/urx'
+import { describe, expect, it, vi } from 'vitest'
+
 import { gridSystem, itemsPerRow } from '../src/gridSystem'
-import { describe, it, expect, vi } from 'vitest'
+import { getValue, init, publish, subscribe } from '../src/urx'
 
 describe('grid system', () => {
   it('outputs a single probe item once totalCount is set', () => {
-    const { scrollTop, viewportDimensions, gridState, totalCount } = init(gridSystem)
+    const { gridState, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
     expect(getValue(gridState).items).toHaveLength(0)
     publish(totalCount, 200)
     publish(scrollTop, 0)
     publish(viewportDimensions, {
-      width: 300,
       height: 200,
+      width: 300,
     })
     expect(getValue(gridState).items).toHaveLength(1)
   })
 
   it('outputs enough items to fill in the screen', () => {
-    const { itemDimensions, scrollTop, viewportDimensions, gridState, totalCount } = init(gridSystem)
+    const { gridState, itemDimensions, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
 
     publish(totalCount, 2000)
 
     publish(viewportDimensions, {
-      width: 1000,
       height: 500,
+      width: 1000,
     })
 
     publish(scrollTop, 0)
@@ -30,13 +31,13 @@ describe('grid system', () => {
     expect(getValue(gridState).items).toHaveLength(1)
 
     publish(viewportDimensions, {
-      width: 1000,
       height: 500,
+      width: 1000,
     })
 
     publish(itemDimensions, {
-      width: 300,
       height: 200,
+      width: 300,
     })
 
     const itemCount = Math.floor(1000 / 300) * Math.ceil(500 / 200)
@@ -44,8 +45,8 @@ describe('grid system', () => {
     expect(getValue(gridState).items).toHaveLength(itemCount)
 
     publish(viewportDimensions, {
-      width: 2000,
       height: 500,
+      width: 2000,
     })
 
     const newItemCount = Math.floor(2000 / 300) * Math.ceil(500 / 200)
@@ -54,13 +55,13 @@ describe('grid system', () => {
   })
 
   it('reuses currently rendered items if possible', () => {
-    const { scrollTop, itemDimensions, viewportDimensions, gridState, totalCount } = init(gridSystem)
+    const { gridState, itemDimensions, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
 
     publish(totalCount, 2000)
 
     publish(viewportDimensions, {
-      width: 1000,
       height: 500,
+      width: 1000,
     })
 
     publish(scrollTop, 0)
@@ -68,13 +69,13 @@ describe('grid system', () => {
     expect(getValue(gridState).items).toHaveLength(1)
 
     publish(viewportDimensions, {
-      width: 1000,
       height: 500,
+      width: 1000,
     })
 
     publish(itemDimensions, {
-      width: 300,
       height: 200,
+      width: 300,
     })
 
     const sub = vi.fn()
@@ -85,25 +86,25 @@ describe('grid system', () => {
   })
 
   it('offsets the item list when scrolling', () => {
-    const { scrollTop, itemDimensions, viewportDimensions, gridState, totalCount } = init(gridSystem)
+    const { gridState, itemDimensions, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
 
     publish(totalCount, 2000)
 
     publish(viewportDimensions, {
-      width: 1000,
       height: 500,
+      width: 1000,
     })
 
     publish(scrollTop, 0)
 
     publish(viewportDimensions, {
-      width: 1000,
       height: 500,
+      width: 1000,
     })
 
     publish(itemDimensions, {
-      width: 300,
       height: 200,
+      width: 300,
     })
 
     publish(scrollTop, 300)
@@ -111,25 +112,25 @@ describe('grid system', () => {
   })
 
   it('calculates the offsets correctly', () => {
-    const { itemDimensions, scrollTop, viewportDimensions, gridState, totalCount } = init(gridSystem)
+    const { gridState, itemDimensions, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
 
     publish(totalCount, 2000)
 
     publish(viewportDimensions, {
-      width: 1000,
       height: 500,
+      width: 1000,
     })
 
     publish(scrollTop, 0)
 
     publish(viewportDimensions, {
-      width: 1000,
       height: 500,
+      width: 1000,
     })
 
     publish(itemDimensions, {
-      width: 300,
       height: 200,
+      width: 300,
     })
 
     publish(scrollTop, 300)
@@ -138,23 +139,23 @@ describe('grid system', () => {
     const totalHeight = rows * 200
     const listHeight = 3 * 200
     expect(getValue(gridState)).toMatchObject({
-      offsetTop: 200,
       offsetBottom: totalHeight - 200 - listHeight,
+      offsetTop: 200,
     })
   })
 
   it('does not overflow past the last item', () => {
-    const { itemDimensions, scrollTop, totalCount, viewportDimensions, gridState, overscan } = init(gridSystem)
+    const { gridState, itemDimensions, overscan, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
     publish(overscan, 4)
     publish(totalCount, 39)
     publish(viewportDimensions, {
-      width: 9,
       height: 6,
+      width: 9,
     })
 
     publish(itemDimensions, {
-      width: 3,
       height: 2,
+      width: 3,
     })
     publish(scrollTop, 20)
     const items = getValue(gridState).items
@@ -163,17 +164,17 @@ describe('grid system', () => {
   })
 
   it('does not overflow past the first item', () => {
-    const { scrollTop, totalCount, itemDimensions, viewportDimensions, gridState, overscan } = init(gridSystem)
+    const { gridState, itemDimensions, overscan, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
     publish(scrollTop, 0)
     publish(overscan, 2)
     publish(totalCount, 30)
     publish(viewportDimensions, {
-      width: 10,
       height: 5,
+      width: 10,
     })
     publish(itemDimensions, {
-      width: 3,
       height: 2,
+      width: 3,
     })
     const sub = vi.fn()
     subscribe(gridState, sub)
@@ -185,53 +186,53 @@ describe('grid system', () => {
   })
 
   it('correctly calculates items per row', () => {
-    const { itemDimensions, scrollTop, viewportDimensions, gridState, totalCount, gap } = init(gridSystem)
+    const { gap, gridState, itemDimensions, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
 
     publish(totalCount, 2000)
 
     publish(scrollTop, 0)
 
     publish(gap, {
-      row: 5,
       column: 5,
+      row: 5,
     })
 
     // Experimentally-determined values that create a rounding error
 
     publish(viewportDimensions, {
-      width: 335,
       height: 335,
+      width: 335,
     })
 
     publish(itemDimensions, {
-      width: 108.33333587646484,
       height: 80,
+      width: 108.33333587646484,
     })
 
     expect(itemsPerRow(getValue(viewportDimensions).width, getValue(itemDimensions).width, getValue(gap).column)).toBe(3)
     expect(getValue(gridState).items).toHaveLength(12)
 
     publish(viewportDimensions, {
-      width: 405,
       height: 505,
+      width: 405,
     })
 
     publish(itemDimensions, {
-      width: 131.6666717529297,
       height: 80,
+      width: 131.6666717529297,
     })
 
     expect(itemsPerRow(getValue(viewportDimensions).width, getValue(itemDimensions).width, getValue(gap).column)).toBe(3)
     expect(getValue(gridState).items).toHaveLength(18)
 
     publish(viewportDimensions, {
-      width: 653,
       height: 770,
+      width: 653,
     })
 
     publish(itemDimensions, {
-      width: 104.66667175292969,
       height: 150,
+      width: 104.66667175292969,
     })
 
     expect(itemsPerRow(getValue(viewportDimensions).width, getValue(itemDimensions).width, getValue(gap).column)).toBe(6)

@@ -1,5 +1,5 @@
-import * as React from 'react'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+
 import { Virtuoso } from '../src'
 
 const Item = (props: { index: number }) => {
@@ -18,8 +18,8 @@ const Item = (props: { index: number }) => {
   return (
     <div
       style={{
-        outline: `1px solid green`,
         height: loaded ? 50 : 100,
+        outline: `1px solid green`,
       }}
     >
       {loaded ? `Item ${props.index}` : `Loading...`}
@@ -31,10 +31,10 @@ export function Example() {
   return (
     <div className="App" style={{ height: 300, outline: `1px solid red` }}>
       <Virtuoso
-        style={{ height: 300 }}
         itemContent={(index) => {
           return <Item index={index} />
         }}
+        style={{ height: 300 }}
         totalCount={100}
       />
     </div>

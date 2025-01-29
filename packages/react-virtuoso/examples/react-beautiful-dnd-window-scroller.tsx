@@ -1,8 +1,12 @@
 import React, { useState } from 'react'
-import { DropResult, DragDropContext, Draggable, Droppable, DraggableProvided } from 'react-beautiful-dnd'
+import { DragDropContext, Draggable, DraggableProvided, Droppable, DropResult } from 'react-beautiful-dnd'
+
 import { Components, Virtuoso } from '../src'
 
-type Item = { id: string; text: string }
+interface Item {
+  id: string
+  text: string
+}
 export function Example() {
   const [items, setItems] = useState(() => {
     return Array.from({ length: 1000 }, (_, k) => ({
@@ -34,7 +38,7 @@ export function Example() {
   )
 
   const Item = React.useMemo(() => {
-    return ({ provided, item, isDragging }: { provided: DraggableProvided; item: Item; isDragging: boolean }) => {
+    return ({ isDragging, item, provided }: { isDragging: boolean; item: Item; provided: DraggableProvided }) => {
       // For borders and visual space,
       // use container with padding rather than a margin
       // margins confuse virtuoso rendering
@@ -42,7 +46,6 @@ export function Example() {
         <div
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          // eslint-disable-next-line @typescript-eslint/unbound-method
           ref={provided.innerRef}
           style={{ ...provided.draggableProps.style, paddingBottom: '8px' }}
         >
@@ -58,7 +61,7 @@ export function Example() {
     }
   }, [])
 
-  const HeightPreservingItem: Components['Item'] = React.useMemo(() => {
+  const HeightPreservingItem: Components<{ id: string; text: string }>['Item'] = React.useMemo(() => {
     return ({ children, ...props }) => {
       return (
         // the height is necessary to prevent the item container from collapsing, which confuses Virtuoso measurements
@@ -76,12 +79,11 @@ export function Example() {
           droppableId="droppable"
           mode="virtual"
           renderClone={(provided, snapshot, rubric) => (
-            <Item provided={provided} isDragging={snapshot.isDragging} item={items[rubric.source.index]} />
+            <Item isDragging={snapshot.isDragging} item={items[rubric.source.index]} provided={provided} />
           )}
         >
           {(provided) => {
             return (
-              // eslint-disable-next-line
               <div ref={provided.innerRef as any}>
                 <Virtuoso
                   components={{
@@ -91,7 +93,7 @@ export function Example() {
                   itemContent={(index, item) => {
                     return (
                       <Draggable draggableId={item.id} index={index} key={item.id}>
-                        {(provided) => <Item provided={provided} item={item} isDragging={false} />}
+                        {(provided) => <Item isDragging={false} item={item} provided={provided} />}
                       </Draggable>
                     )
                   }}

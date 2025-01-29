@@ -1,5 +1,5 @@
-import * as React from 'react'
 import { useState } from 'react'
+
 import { VirtuosoGrid } from '../src'
 
 function generateItems(length: number) {

@@ -1,100 +1,15 @@
 import React from 'react'
-export interface ListRange {
-  startIndex: number
-  endIndex: number
-}
+export type CalculateViewLocation = (params: CalculateViewLocationParams) => IndexLocationWithAlign | null | number
 
-export interface ItemContent<D, C> {
-  (index: number, data: D, context: C): React.ReactNode
-}
-
-export type FixedHeaderContent = (() => React.ReactNode) | null
-
-export type FixedFooterContent = (() => React.ReactNode) | null
-export interface GroupItemContent<D, C> {
-  (index: number, groupIndex: number, data: D, context: C): React.ReactNode
-}
-
-export interface GroupContent<C> {
-  (index: number, context: C): React.ReactNode
-}
-
-export type ItemProps<D> = Pick<React.ComponentProps<'div'>, 'style' | 'children'> & {
-  'data-index': number
-  'data-item-index': number
-  'data-item-group-index'?: number
-  'data-known-size': number
-  item: D
-}
-
-export type GroupProps = Pick<React.ComponentProps<'div'>, 'style' | 'children'> & {
-  'data-index': number
-  'data-item-index': number
-  'data-known-size': number
-}
-
-export type TopItemListProps = Pick<React.ComponentProps<'div'>, 'style' | 'children'>
-export type TableProps = Pick<React.ComponentProps<'table'>, 'style' | 'children'>
-
-/**
- * Passed to the Components.TableBody custom component
- */
-export type TableBodyProps = Pick<React.ComponentProps<'tbody'>, 'style' | 'children' | 'className'> & {
-  'data-testid': string
-} & React.RefAttributes<HTMLTableSectionElement>
-
-/**
- * Passed to the Components.List custom component
- */
-export type ListProps = Pick<React.ComponentProps<'div'>, 'style' | 'children'> & {
-  'data-testid': string
-} & React.RefAttributes<HTMLDivElement>
-
-/**
- * Passed to the Components.List custom component
- */
-export type GridListProps = Pick<React.ComponentProps<'div'>, 'style' | 'children' | 'className'> & {
-  'data-testid': string
-} & React.RefAttributes<HTMLDivElement>
-
-/**
- * Passed to the Components.Item custom component
- */
-export type GridItemProps = Pick<React.ComponentProps<'div'>, 'style' | 'children' | 'className'> & {
-  'data-index': number
-} & React.RefAttributes<HTMLDivElement>
-
-/**
- * Passed to the Components.Scroller custom component
- */
-export type ScrollerProps = Pick<React.ComponentProps<'div'>, 'style' | 'children' | 'tabIndex'> & {
-  'data-testid'?: string
-  'data-virtuoso-scroller'?: boolean
-} & React.RefAttributes<HTMLDivElement>
-
-/**
- * Passed to the Components.ScrollSeekPlaceholder custom component
- */
-export interface ScrollSeekPlaceholderProps {
-  index: number
-  height: number
-  groupIndex?: number
-  type: 'group' | 'item'
-}
-/**
- * Passed to the Components.FillerRow custom component
- */
-export interface FillerRowProps {
-  height: number
-}
-
-/**
- * Passed to the GridComponents.ScrollSeekPlaceholder custom component
- */
-export interface GridScrollSeekPlaceholderProps {
-  index: number
-  height: number
-  width: number
+export interface CalculateViewLocationParams {
+  itemBottom: number
+  itemTop: number
+  locationParams: {
+    align?: 'center' | 'end' | 'start'
+    behavior?: 'auto' | 'smooth'
+  } & ({ groupIndex: number } | { index: number })
+  viewportBottom: number
+  viewportTop: number
 }
 
 /**
@@ -102,35 +17,28 @@ export interface GridScrollSeekPlaceholderProps {
  */
 export interface Components<Data = unknown, Context = unknown> {
   /**
-   * Set to render a component at the top of the list.
-   *
-   * The header remains above the top items and does not remain sticky.
+   * Set to render a custom UI when the list is empty.
    */
-  Header?: React.ComponentType<{ context?: Context }>
+  EmptyPlaceholder?: React.ComponentType<{ context?: Context }>
   /**
    * Set to render a component at the bottom of the list.
    */
   Footer?: React.ComponentType<{ context?: Context }>
   /**
-   * Set to customize the item wrapping element. Use only if you would like to render list from elements different than a `div`.
-   */
-  Item?: React.ComponentType<ItemProps<Data> & { context?: Context }>
-  /**
    * Set to customize the group item wrapping element. Use only if you would like to render list from elements different than a `div`.
    */
   Group?: React.ComponentType<GroupProps & { context?: Context }>
+  /**
+   * Set to render a component at the top of the list.
+   *
+   * The header remains above the top items and does not remain sticky.
+   */
+  Header?: React.ComponentType<{ context?: Context }>
 
   /**
-   * Set to customize the top list item wrapping element. Use if you would like to render list from elements different than a `div`
-   * or you want to set a custom z-index for the sticky position.
+   * Set to customize the item wrapping element. Use only if you would like to render list from elements different than a `div`.
    */
-  TopItemList?: React.ComponentType<TopItemListProps & { context?: Context }>
-
-  /**
-   * Set to customize the outermost scrollable element. This should not be necessary in general,
-   * as the component passes its HTML attribute props to it.
-   */
-  Scroller?: React.ComponentType<ScrollerProps & { context?: Context }>
+  Item?: React.ComponentType<ItemProps<Data> & { context?: Context }>
 
   /**
    * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
@@ -138,178 +46,56 @@ export interface Components<Data = unknown, Context = unknown> {
   List?: React.ComponentType<ListProps & { context?: Context }>
 
   /**
-   * Set to render a custom UI when the list is empty.
-   */
-  EmptyPlaceholder?: React.ComponentType<{ context?: Context }>
-
-  /**
-   * Set to render an item placeholder when the user scrolls fast.  See the `scrollSeek` property for more details.
-   */
-  ScrollSeekPlaceholder?: React.ComponentType<ScrollSeekPlaceholderProps & { context?: Context }>
-}
-
-/**
- * Customize the TableVirtuoso rendering by passing a set of custom components.
- */
-export interface TableComponents<Data = unknown, Context = unknown> {
-  /**
-   * Set to customize the wrapping `table` element.
-   *
-   */
-  Table?: React.ComponentType<TableProps & { context?: Context }>
-
-  /**
-   * Set to render a fixed header at the top of the table (`thead`). use [[fixedHeaderContent]] to set the contents
-   *
-   */
-  TableHead?: React.ComponentType<
-    Pick<React.ComponentProps<'thead'>, 'style' | 'children'> & { context?: Context } & React.RefAttributes<HTMLTableSectionElement>
-  >
-
-  /**
-   * Set to render a fixed footer at the bottom of the table (`tfoot`). use [[fixedFooterContent]] to set the contents
-   */
-  TableFoot?: React.ComponentType<
-    Pick<React.ComponentProps<'tfoot'>, 'style' | 'children'> & { context?: Context } & React.RefAttributes<HTMLTableSectionElement>
-  >
-
-  /**
-   * Set to customize the item wrapping element. Default is `tr`.
-   */
-  TableRow?: React.ComponentType<ItemProps<Data> & { context?: Context }>
-
-  /**
    * Set to customize the outermost scrollable element. This should not be necessary in general,
    * as the component passes its HTML attribute props to it.
    */
   Scroller?: React.ComponentType<ScrollerProps & { context?: Context }>
 
   /**
-   * Set to customize the items wrapper. Default is `tbody`.
-   */
-  TableBody?: React.ComponentType<TableBodyProps & { context?: Context }>
-
-  /**
-   * Set to render a custom UI when the list is empty.
-   */
-  EmptyPlaceholder?: React.ComponentType<{ context?: Context }>
-
-  /**
    * Set to render an item placeholder when the user scrolls fast.  See the `scrollSeek` property for more details.
    */
   ScrollSeekPlaceholder?: React.ComponentType<ScrollSeekPlaceholderProps & { context?: Context }>
 
   /**
-   * Set to render an empty item placeholder.
+   * Set to customize the top list item wrapping element. Use if you would like to render list from elements different than a `div`
+   * or you want to set a custom z-index for the sticky position.
    */
-  FillerRow?: React.ComponentType<FillerRowProps & { context?: Context }>
+  TopItemList?: React.ComponentType<TopItemListProps & { context?: Context }>
 }
 
-export interface ComputeItemKey<D, C> {
-  (index: number, item: D, context: C): React.Key
+export type ComputeItemKey<D, C> = (index: number, item: D, context: C) => React.Key
+/**
+ * Passed to the Components.FillerRow custom component
+ */
+export interface FillerRowProps {
+  height: number
 }
 
-export interface ScrollSeekToggle {
-  (velocity: number, range: ListRange): boolean
-}
+export type FixedFooterContent = (() => React.ReactNode) | null
 
-export interface ScrollSeekConfiguration {
-  /**
-   * Callback to determine if the list should enter "scroll seek" mode.
-   */
-  enter: ScrollSeekToggle
-  /**
-   * called during scrolling in scroll seek mode - use to display a hint where the list is.
-   */
-  change?: (velocity: number, range: ListRange) => void
-  /**
-   * Callback to determine if the list should exit "scroll seek" mode.
-   */
-  exit: ScrollSeekToggle
-}
-
-export type FollowOutputScalarType = boolean | 'smooth' | 'auto'
-export type FollowOutputCallback = (isAtBottom: boolean) => FollowOutputScalarType
-export type FollowOutput = FollowOutputCallback | FollowOutputScalarType
-
-export interface Item<D> {
-  index: number
-  offset: number
-  size: number
-  data?: D
-}
-export interface RecordItem<D> extends Item<D> {
-  type?: undefined
-  groupIndex?: number
-  originalIndex?: number
-  data?: D
-}
-
-export interface GroupItem<D> extends Item<D> {
-  type: 'group'
-  originalIndex?: number
-}
-
-export type ListItem<D> = RecordItem<D> | GroupItem<D>
-
-export interface LocationOptions {
-  /**
-   * How to position the item in the viewport.
-   */
-  align?: 'start' | 'center' | 'end'
-  /**
-   * Set 'smooth' to have an animated transition to the specified location.
-   */
-  behavior?: 'smooth' | 'auto'
-  /**
-   * The offset to scroll.
-   */
-  offset?: number
-}
+export type FixedHeaderContent = (() => React.ReactNode) | null
 
 export interface FlatIndexLocationWithAlign extends LocationOptions {
   /**
    * The index of the item to scroll to.
    */
-  index: number | 'LAST'
+  index: 'LAST' | number
 }
 
-export interface GroupIndexLocationWithAlign extends LocationOptions {
-  /**
-   * The group index of the item to scroll to.
-   */
-  groupIndex: number
-}
-
-export type IndexLocationWithAlign = FlatIndexLocationWithAlign | GroupIndexLocationWithAlign
-
-export type GridIndexLocation = FlatIndexLocationWithAlign | number
-
-export type ListRootProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data'>
-export type TableRootProps = Omit<React.HTMLProps<HTMLTableElement>, 'ref' | 'data'>
-export type GridRootProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data'>
-
-export interface GridItem<D> {
+export interface FlatScrollIntoViewLocation extends ScrollIntoViewLocationOptions {
   index: number
-  data?: D
 }
+export type FollowOutput = FollowOutputCallback | FollowOutputScalarType
+
+export type FollowOutputCallback = (isAtBottom: boolean) => FollowOutputScalarType
+
+export type FollowOutputScalarType = 'auto' | 'smooth' | boolean
 
 export interface GridComponents<Context = any> {
   /**
-   * Set to customize the item wrapping element. Use only if you would like to render list from elements different than a `div`.
+   * Set to render a component at the bottom of the list.
    */
-  Item?: React.ComponentType<GridItemProps & { context?: Context }>
-
-  /**
-   * Set to customize the outermost scrollable element. This should not be necessary in general,
-   * as the component passes its HTML attribute props to it.
-   */
-  Scroller?: React.ComponentType<ScrollerProps & { context?: Context }>
-
-  /**
-   * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
-   */
-  List?: React.ComponentType<GridListProps & { context?: Context }>
+  Footer?: React.ComponentType<{ context?: Context }>
 
   /**
    * Set to render a component at the top of the list.
@@ -319,9 +105,20 @@ export interface GridComponents<Context = any> {
   Header?: React.ComponentType<{ context?: Context }>
 
   /**
-   * Set to render a component at the bottom of the list.
+   * Set to customize the item wrapping element. Use only if you would like to render list from elements different than a `div`.
    */
-  Footer?: React.ComponentType<{ context?: Context }>
+  Item?: React.ComponentType<GridItemProps & { context?: Context }>
+
+  /**
+   * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
+   */
+  List?: React.ComponentType<GridListProps & { context?: Context }>
+
+  /**
+   * Set to customize the outermost scrollable element. This should not be necessary in general,
+   * as the component passes its HTML attribute props to it.
+   */
+  Scroller?: React.ComponentType<ScrollerProps & { context?: Context }>
 
   /**
    * Set to render an item placeholder when the user scrolls fast.
@@ -330,40 +127,142 @@ export interface GridComponents<Context = any> {
   ScrollSeekPlaceholder?: React.ComponentType<GridScrollSeekPlaceholderProps & { context?: Context }>
 }
 
-export interface GridComputeItemKey<D, C> {
-  (index: number, item: D, context: C): React.Key
+export type GridComputeItemKey<D, C> = (index: number, item: D, context: C) => React.Key
+
+export type GridIndexLocation = FlatIndexLocationWithAlign | number
+
+export interface GridItem<D> {
+  data?: D
+  index: number
+}
+export type GridItemContent<D, C> = (index: number, data: D, context: C) => React.ReactNode
+
+/**
+ * Passed to the Components.Item custom component
+ */
+export type GridItemProps = Pick<React.ComponentProps<'div'>, 'children' | 'className' | 'style'> &
+  React.RefAttributes<HTMLDivElement> & {
+    'data-index': number
+  }
+
+/**
+ * Passed to the Components.List custom component
+ */
+export type GridListProps = Pick<React.ComponentProps<'div'>, 'children' | 'className' | 'style'> &
+  React.RefAttributes<HTMLDivElement> & {
+    'data-testid': string
+  }
+
+export type GridRootProps = Omit<React.HTMLProps<HTMLDivElement>, 'data' | 'ref'>
+
+/**
+ * Passed to the GridComponents.ScrollSeekPlaceholder custom component
+ */
+export interface GridScrollSeekPlaceholderProps {
+  height: number
+  index: number
+  width: number
 }
 
-export interface GridItemContent<D, C> {
-  (index: number, data: D, context: C): React.ReactNode
+export type GroupContent<C> = (index: number, context: C) => React.ReactNode
+
+export interface GroupedScrollIntoViewLocation extends ScrollIntoViewLocationOptions {
+  groupIndex: number
 }
 
-export interface WindowViewportInfo {
-  offsetTop: number
-  visibleHeight: number
-  visibleWidth: number
+export interface GroupIndexLocationWithAlign extends LocationOptions {
+  /**
+   * The group index of the item to scroll to.
+   */
+  groupIndex: number
+}
+export interface GroupItem<D> extends Item<D> {
+  originalIndex?: number
+  type: 'group'
+}
+export type GroupItemContent<D, C> = (index: number, groupIndex: number, data: D, context: C) => React.ReactNode
+
+export type GroupProps = Pick<React.ComponentProps<'div'>, 'children' | 'style'> & {
+  'data-index': number
+  'data-item-index': number
+  'data-known-size': number
+}
+export type IndexLocationWithAlign = FlatIndexLocationWithAlign | GroupIndexLocationWithAlign
+
+export interface Item<D> {
+  data?: D
+  index: number
+  offset: number
+  size: number
 }
 
-export interface CalculateViewLocationParams {
-  itemTop: number
-  itemBottom: number
-  viewportTop: number
-  viewportBottom: number
-  locationParams: {
-    align?: 'start' | 'center' | 'end'
-    behavior?: 'auto' | 'smooth'
-  } & ({ index: number } | { groupIndex: number })
+export type ItemContent<D, C> = (index: number, data: D, context: C) => React.ReactNode
+
+export type ItemProps<D> = Pick<React.ComponentProps<'div'>, 'children' | 'style'> & {
+  'data-index': number
+  'data-item-group-index'?: number
+  'data-item-index': number
+  'data-known-size': number
+  item: D
 }
 
-export type CalculateViewLocation = (params: CalculateViewLocationParams) => IndexLocationWithAlign | number | null
+export type ListItem<D> = GroupItem<D> | RecordItem<D>
 
-export interface ScrollIntoViewLocationOptions {
-  align?: 'start' | 'center' | 'end'
+/**
+ * Passed to the Components.List custom component
+ */
+export type ListProps = Pick<React.ComponentProps<'div'>, 'children' | 'style'> &
+  React.RefAttributes<HTMLDivElement> & {
+    'data-testid': string
+  }
+
+export interface ListRange {
+  endIndex: number
+  startIndex: number
+}
+
+export type ListRootProps = Omit<React.HTMLProps<HTMLDivElement>, 'data' | 'ref'>
+
+export interface LocationOptions {
+  /**
+   * How to position the item in the viewport.
+   */
+  align?: 'center' | 'end' | 'start'
+  /**
+   * Set 'smooth' to have an animated transition to the specified location.
+   */
   behavior?: 'auto' | 'smooth'
   /**
-   * Will be called when the scroll is done, or immediately if no scroll is needed.
+   * The offset to scroll.
    */
-  done?: () => void
+  offset?: number
+}
+export interface RecordItem<D> extends Item<D> {
+  data?: D
+  groupIndex?: number
+  originalIndex?: number
+  type?: undefined
+}
+export interface ScrollContainerState {
+  scrollHeight: number
+  scrollTop: number
+  viewportHeight: number
+}
+
+/**
+ * Passed to the Components.Scroller custom component
+ */
+export type ScrollerProps = Pick<React.ComponentProps<'div'>, 'children' | 'style' | 'tabIndex'> &
+  React.RefAttributes<HTMLDivElement> & {
+    'data-testid'?: string
+    'data-virtuoso-scroller'?: boolean
+  }
+
+export type ScrollIntoViewLocation = FlatScrollIntoViewLocation | GroupedScrollIntoViewLocation
+
+export interface ScrollIntoViewLocationOptions {
+  align?: 'center' | 'end' | 'start'
+  behavior?: 'auto' | 'smooth'
   /**
    * Use this function to fine-tune the scrollIntoView behavior.
    * The function receives the item's top and bottom position in the viewport, and the viewport top/bottom.
@@ -388,36 +287,128 @@ const defaultCalculateViewLocation: CalculateViewLocation = ({
    *```
    */
   calculateViewLocation?: CalculateViewLocation
+  /**
+   * Will be called when the scroll is done, or immediately if no scroll is needed.
+   */
+  done?: () => void
 }
 
-export interface FlatScrollIntoViewLocation extends ScrollIntoViewLocationOptions {
+export interface ScrollSeekConfiguration {
+  /**
+   * called during scrolling in scroll seek mode - use to display a hint where the list is.
+   */
+  change?: (velocity: number, range: ListRange) => void
+  /**
+   * Callback to determine if the list should enter "scroll seek" mode.
+   */
+  enter: ScrollSeekToggle
+  /**
+   * Callback to determine if the list should exit "scroll seek" mode.
+   */
+  exit: ScrollSeekToggle
+}
+
+/**
+ * Passed to the Components.ScrollSeekPlaceholder custom component
+ */
+export interface ScrollSeekPlaceholderProps {
+  groupIndex?: number
+  height: number
   index: number
+  type: 'group' | 'item'
 }
 
-export interface GroupedScrollIntoViewLocation extends ScrollIntoViewLocationOptions {
-  groupIndex: number
-}
-
-export type ScrollIntoViewLocation = FlatScrollIntoViewLocation | GroupedScrollIntoViewLocation
-
-export interface ScrollContainerState {
-  scrollHeight: number
-  scrollTop: number
-  viewportHeight: number
-}
+export type ScrollSeekToggle = (velocity: number, range: ListRange) => boolean
 
 /** Calculates the height of `el`, which will be the `Item` element in the DOM. */
 export type SizeFunction = (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number
 
 export interface SizeRange {
-  startIndex: number
   endIndex: number
   size: number
+  startIndex: number
 }
+
+export type StateCallback = (state: StateSnapshot) => void
 
 export interface StateSnapshot {
   ranges: SizeRange[]
   scrollTop: number
 }
 
-export type StateCallback = (state: StateSnapshot) => void
+/**
+ * Passed to the Components.TableBody custom component
+ */
+export type TableBodyProps = Pick<React.ComponentProps<'tbody'>, 'children' | 'className' | 'style'> &
+  React.RefAttributes<HTMLTableSectionElement> & {
+    'data-testid': string
+  }
+
+/**
+ * Customize the TableVirtuoso rendering by passing a set of custom components.
+ */
+export interface TableComponents<Data = unknown, Context = unknown> {
+  /**
+   * Set to render a custom UI when the list is empty.
+   */
+  EmptyPlaceholder?: React.ComponentType<{ context?: Context }>
+
+  /**
+   * Set to render an empty item placeholder.
+   */
+  FillerRow?: React.ComponentType<FillerRowProps & { context?: Context }>
+
+  /**
+   * Set to customize the outermost scrollable element. This should not be necessary in general,
+   * as the component passes its HTML attribute props to it.
+   */
+  Scroller?: React.ComponentType<ScrollerProps & { context?: Context }>
+
+  /**
+   * Set to render an item placeholder when the user scrolls fast.  See the `scrollSeek` property for more details.
+   */
+  ScrollSeekPlaceholder?: React.ComponentType<ScrollSeekPlaceholderProps & { context?: Context }>
+
+  /**
+   * Set to customize the wrapping `table` element.
+   *
+   */
+  Table?: React.ComponentType<TableProps & { context?: Context }>
+
+  /**
+   * Set to customize the items wrapper. Default is `tbody`.
+   */
+  TableBody?: React.ComponentType<TableBodyProps & { context?: Context }>
+
+  /**
+   * Set to render a fixed footer at the bottom of the table (`tfoot`). use [[fixedFooterContent]] to set the contents
+   */
+  TableFoot?: React.ComponentType<
+    Pick<React.ComponentProps<'tfoot'>, 'children' | 'style'> & React.RefAttributes<HTMLTableSectionElement> & { context?: Context }
+  >
+
+  /**
+   * Set to render a fixed header at the top of the table (`thead`). use [[fixedHeaderContent]] to set the contents
+   *
+   */
+  TableHead?: React.ComponentType<
+    Pick<React.ComponentProps<'thead'>, 'children' | 'style'> & React.RefAttributes<HTMLTableSectionElement> & { context?: Context }
+  >
+
+  /**
+   * Set to customize the item wrapping element. Default is `tr`.
+   */
+  TableRow?: React.ComponentType<ItemProps<Data> & { context?: Context }>
+}
+
+export type TableProps = Pick<React.ComponentProps<'table'>, 'children' | 'style'>
+
+export type TableRootProps = Omit<React.HTMLProps<HTMLTableElement>, 'data' | 'ref'>
+
+export type TopItemListProps = Pick<React.ComponentProps<'div'>, 'children' | 'style'>
+
+export interface WindowViewportInfo {
+  offsetTop: number
+  visibleHeight: number
+  visibleWidth: number
+}

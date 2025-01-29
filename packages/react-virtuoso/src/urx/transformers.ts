@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 /**
  * Transformers change and combine streams, similar to operators.
  * urx comes with two combinators - [[combineLatest]] and [[merge]], and one convenience filter - [[duc]].
@@ -12,56 +12,6 @@ import { RESET, SUBSCRIBE } from './constants'
 import { Comparator, defaultComparator, distinctUntilChanged, pipe } from './pipe'
 import { stream } from './streams'
 import { joinProc } from './utils'
-
-/**
- * Merges one or more emitters from the same type into a new Emitter which emits values from any of the source emitters.
- * ```ts
- * const foo = stream<number>()
- * const bar = stream<number>()
- *
- * subscribe(merge(foo, bar), (value) => console.log(value)) // 42, 43
- *
- * publish(foo, 42)
- * publish(bar, 43)
- * ```
- */
-export function merge<T>(...sources: Emitter<T>[]): Emitter<T> {
-  return function (action: SUBSCRIBE | RESET, subscription?: Subscription<any>) {
-    switch (action) {
-      case SUBSCRIBE:
-        return joinProc(...sources.map((source) => subscribe(source, subscription!)))
-      case RESET:
-        // do nothing, we are stateless
-        return
-      default:
-        throw new Error(`unrecognized action ${action}`)
-    }
-  } as Emitter<T>
-}
-
-/**
- * A convenience wrapper that emits only the distinct values from the passed Emitter. Wraps [[pipe]] and [[distinctUntilChanged]].
- *
- * ```ts
- * const foo = stream<number>()
- *
- * // this line...
- * const a = duc(foo)
- *
- * // is equivalent to this
- * const b = pipe(distinctUntilChanged(foo))
- * ```
- *
- * @param source The source emitter.
- * @param comparator optional custom comparison function for the two values.
- *
- * @typeParam T the type of the value emitted by the source.
- *
- * @returns the resulting emitter.
- */
-export function duc<T>(source: Emitter<T>, comparator: Comparator<T> = defaultComparator): Emitter<T> {
-  return pipe(source, distinctUntilChanged(comparator))
-}
 
 /**
  * Creates an emitter with the latest values from all passed emitters as an array.
@@ -82,7 +32,9 @@ export function duc<T>(source: Emitter<T>, comparator: Comparator<T> = defaultCo
  * ```
  */
 export function combineLatest<O1, O2>(...emitters: [Emitter<O1>, Emitter<O2>]): Emitter<[O1, O2]> // prettier-ignore
+
 export function combineLatest<O1, O2, O3>( ...emitters: [Emitter<O1>, Emitter<O2>, Emitter<O3>]): Emitter<[O1, O2, O3]> // prettier-ignore
+
 export function combineLatest<O1, O2, O3, O4>( ...emitters: [Emitter<O1>, Emitter<O2>, Emitter<O3>, Emitter<O4>]): Emitter<[O1, O2, O3, O4]> // prettier-ignore
 export function combineLatest<O1, O2, O3>( ...emitters: [Emitter<O1>, Emitter<O2>, Emitter<O3>]): Emitter<[O1, O2, O3]> // prettier-ignore
 export function combineLatest<O1, O2, O3, O4, O5>( ...emitters: [Emitter<O1>, Emitter<O2>, Emitter<O3>, Emitter<O4>, Emitter<O5>]): Emitter<[O1, O2, O3, O4, O5]> // prettier-ignore
@@ -109,17 +61,64 @@ export function combineLatest(...emitters: Emitter<any>[]): Emitter<any> {
     })
   })
 
-  return function (action: SUBSCRIBE | RESET, subscription?: Subscription<any>) {
+  return function (action: RESET | SUBSCRIBE, subscription?: Subscription<any>) {
     switch (action) {
+      case RESET: {
+        reset(innerSubject)
+        return
+      }
       case SUBSCRIBE:
         if (called === allCalled) {
           subscription!(values)
         }
         return subscribe(innerSubject, subscription!)
-      case RESET:
-        return reset(innerSubject)
-      default:
-        throw new Error(`unrecognized action ${action}`)
     }
   } as Emitter<any>
+}
+/**
+ * A convenience wrapper that emits only the distinct values from the passed Emitter. Wraps [[pipe]] and [[distinctUntilChanged]].
+ *
+ * ```ts
+ * const foo = stream<number>()
+ *
+ * // this line...
+ * const a = duc(foo)
+ *
+ * // is equivalent to this
+ * const b = pipe(distinctUntilChanged(foo))
+ * ```
+ *
+ * @param source The source emitter.
+ * @param comparator optional custom comparison function for the two values.
+ *
+ * @typeParam T the type of the value emitted by the source.
+ *
+ * @returns the resulting emitter.
+ */
+export function duc<T>(source: Emitter<T>, comparator: Comparator<T> = defaultComparator): Emitter<T> {
+  return pipe(source, distinctUntilChanged(comparator))
+}
+/**
+ * Merges one or more emitters from the same type into a new Emitter which emits values from any of the source emitters.
+ * ```ts
+ * const foo = stream<number>()
+ * const bar = stream<number>()
+ *
+ * subscribe(merge(foo, bar), (value) => console.log(value)) // 42, 43
+ *
+ * publish(foo, 42)
+ * publish(bar, 43)
+ * ```
+ */
+export function merge<T>(...sources: Emitter<T>[]): Emitter<T> {
+  return function (action: RESET | SUBSCRIBE, subscription?: Subscription<any>) {
+    switch (action) {
+      case RESET:
+        // do nothing, we are stateless
+        return
+      case SUBSCRIBE:
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        return joinProc(...sources.map((source) => subscribe(source, subscription!)))
+    }
+  } as Emitter<T>
 }

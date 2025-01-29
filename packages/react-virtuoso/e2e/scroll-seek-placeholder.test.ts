@@ -1,16 +1,17 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
+
 //@ts-expect-error - type module and playwright
 import { navigateToExample } from './utils.ts'
 
 test.describe('list with scroll seek placeholders', () => {
-  test.beforeEach(async ({ page, baseURL }) => {
+  test.beforeEach(async ({ baseURL, page }) => {
     await navigateToExample(page, baseURL, 'scroll-seek-placeholder')
     await page.waitForTimeout(100)
   })
 
   test('renders placeholders when scrolled', async ({ page }) => {
     await page.evaluate(() => {
-      const scroller = document.querySelector('[data-testid=virtuoso-scroller]')!
+      const scroller = document.querySelector('[data-testid=virtuoso-scroller]') as HTMLElement
       setInterval(() => {
         scroller.scrollBy({ top: 30 })
       }, 10)

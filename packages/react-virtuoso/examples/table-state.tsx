@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import { StateSnapshot, TableVirtuoso, TableVirtuosoHandle } from '../src/'
 
 export function Example() {
@@ -21,22 +22,17 @@ export function Example() {
       </button>
 
       <TableVirtuoso
-        key={key}
-        ref={ref}
-        style={{ height: 400, marginTop: 8 }}
-        restoreStateFrom={state.current}
-        computeItemKey={(key: number) => `item-${key.toString()}`}
-        totalCount={250}
         components={{
           TableRow: ({ style, ...props }) => <tr style={{ height: props['data-index'] % 2 ? 15 : 60, ...style }} {...props} />,
         }}
+        computeItemKey={(key: number) => `item-${key.toString()}`}
         fixedHeaderContent={() => (
           <tr>
-            <th style={{ width: 75, background: 'blue', color: 'white' }}>Item</th>
-            <th style={{ width: 75, background: 'blue', color: 'white' }}>Col 1</th>
-            <th style={{ width: 75, background: 'blue', color: 'white' }}>Col 2</th>
-            <th style={{ width: 75, background: 'blue', color: 'white' }}>Col 3</th>
-            <th style={{ width: 75, background: 'blue', color: 'white' }}>Col 4</th>
+            <th style={{ background: 'blue', color: 'white', width: 75 }}>Item</th>
+            <th style={{ background: 'blue', color: 'white', width: 75 }}>Col 1</th>
+            <th style={{ background: 'blue', color: 'white', width: 75 }}>Col 2</th>
+            <th style={{ background: 'blue', color: 'white', width: 75 }}>Col 3</th>
+            <th style={{ background: 'blue', color: 'white', width: 75 }}>Col 4</th>
           </tr>
         )}
         itemContent={(index) => (
@@ -48,6 +44,11 @@ export function Example() {
             <td style={{ border: '1px solid gray' }}>Col {index}-4</td>
           </>
         )}
+        key={key}
+        ref={ref}
+        restoreStateFrom={state.current}
+        style={{ height: 400, marginTop: 8 }}
+        totalCount={250}
       />
     </div>
   )

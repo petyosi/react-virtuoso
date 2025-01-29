@@ -1,5 +1,5 @@
-import * as u from './urx'
 import { loggerSystem, LogLevel } from './loggerSystem'
+import * as u from './urx'
 
 export const propsReadySystem = u.system(
   ([{ log }]) => {
@@ -16,7 +16,7 @@ export const propsReadySystem = u.system(
       value && u.getValue(log)('props updated', {}, LogLevel.DEBUG)
     })
 
-    return { propsReady, didMount }
+    return { didMount, propsReady }
   },
   u.tup(loggerSystem),
   { singleton: true }

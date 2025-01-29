@@ -1,5 +1,6 @@
-import { subscribe, stream, publish } from '../../src/urx'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+import { publish, stream, subscribe } from '../../src/urx'
 
 describe('stream', () => {
   it('creates a next / subscribe function', () => {

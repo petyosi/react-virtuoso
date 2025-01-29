@@ -1,13 +1,13 @@
-import * as u from './urx'
 import { ListRange } from './interfaces'
-import { stateFlagsSystem } from './stateFlagsSystem'
 import { ScrollSeekConfiguration } from './interfaces'
+import { stateFlagsSystem } from './stateFlagsSystem'
+import * as u from './urx'
 
 export const scrollSeekSystem = u.system(
   ([{ scrollVelocity }]) => {
     const isSeeking = u.statefulStream(false)
     const rangeChanged = u.stream<ListRange>()
-    const scrollSeekConfiguration = u.statefulStream<ScrollSeekConfiguration | undefined | false>(false)
+    const scrollSeekConfiguration = u.statefulStream<false | ScrollSeekConfiguration | undefined>(false)
 
     u.connect(
       u.pipe(
@@ -15,7 +15,7 @@ export const scrollSeekSystem = u.system(
         u.withLatestFrom(scrollSeekConfiguration, isSeeking, rangeChanged),
         u.filter(([_, config]) => !!config),
         u.map(([speed, config, isSeeking, range]) => {
-          const { exit, enter } = config as ScrollSeekConfiguration
+          const { enter, exit } = config as ScrollSeekConfiguration
           if (isSeeking) {
             if (exit(speed, range)) {
               return false
@@ -34,10 +34,14 @@ export const scrollSeekSystem = u.system(
 
     u.subscribe(
       u.pipe(u.combineLatest(isSeeking, scrollVelocity, rangeChanged), u.withLatestFrom(scrollSeekConfiguration)),
-      ([[isSeeking, velocity, range], config]) => isSeeking && config && config.change && config.change(velocity, range)
+      ([[isSeeking, velocity, range], config]) => {
+        if (isSeeking && config && config.change) {
+          config.change(velocity, range)
+        }
+      }
     )
 
-    return { isSeeking, scrollSeekConfiguration, scrollVelocity, scrollSeekRangeChanged: rangeChanged }
+    return { isSeeking, scrollSeekConfiguration, scrollSeekRangeChanged: rangeChanged, scrollVelocity }
   },
   u.tup(stateFlagsSystem),
   { singleton: true }

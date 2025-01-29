@@ -2,6 +2,7 @@
   "compilerOptions": {
     "declaration": true,
     "declarationMap": true,
+    "noEmit": true,
     "emitDeclarationOnly": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -16,11 +17,23 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "outDir": "dist",
-    "rootDir": "./src",
+    "rootDir": "./",
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ESNext"
+    "target": "ESNext",
+    "allowJs": true
   },
-  "include": ["src"]
+  "include": [
+    "examples",
+    "test",
+    "e2e2",
+    "e2e",
+    "src",
+    "vite.config.ts",
+    "./eslint.config.mjs",
+    "playwright.config.ts",
+    ".ladle/config.mjs"
+  ],
+  "exclude": ["node_modules", "dist"]
 }

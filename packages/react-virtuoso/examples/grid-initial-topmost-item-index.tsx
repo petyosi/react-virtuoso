@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import { ListRange, VirtuosoGrid } from '../src'
 
 export function Example() {
@@ -6,8 +7,8 @@ export function Example() {
   return (
     <>
       <VirtuosoGrid
-        initialTopMostItemIndex={300}
         data={data}
+        initialTopMostItemIndex={300}
         itemContent={(index, dataItem) => (
           <div>
             Item {index} - data: {JSON.stringify(dataItem)}
@@ -22,7 +23,7 @@ export function Example() {
 
 const ITEMS_PER_PAGE = 40
 export function useDataPager(initialCount: number) {
-  const [data, setData] = React.useState<Array<string | undefined>>(() => Array.from({ length: initialCount }))
+  const [data, setData] = React.useState<(string | undefined)[]>(() => Array.from({ length: initialCount }))
   const fetchedPages = React.useRef(new Set<number>())
 
   const loadPage = React.useCallback(

@@ -1,5 +1,6 @@
-import { combineLatest, statefulStream, subscribe, stream, publish } from '../../src/urx'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+import { combineLatest, publish, statefulStream, stream, subscribe } from '../../src/urx'
 
 describe('combine latest', () => {
   it('combines the provided streams', () => {

@@ -1,13 +1,15 @@
+//@ts-nocheck
 import * as React from 'react'
+
 import { Virtuoso } from '../src'
 
 export function Example() {
   const [customScrollParent, setCustomScrollParent] = React.useState(null)
   return (
-    <div style={{ overflow: 'auto', background: 'lightgreen', height: '80vh' }}>
+    <div style={{ background: 'lightgreen', height: '80vh', overflow: 'auto' }}>
       <div
         ref={setCustomScrollParent}
-        style={{ overflow: 'auto', marginTop: 400, background: 'lightgrey', height: '50vh', padding: '50px' }}
+        style={{ background: 'lightgrey', height: '50vh', marginTop: 400, overflow: 'auto', padding: '50px' }}
       >
         <ol>
           <li>Scroll down manually, new items should appear.</li>
@@ -21,9 +23,9 @@ export function Example() {
         <a href="#foo">Go to foo</a>
         <Virtuoso
           customScrollParent={customScrollParent}
-          totalCount={100}
           itemContent={(index) => <div style={{ height: index % 2 ? 50 : 20 }}>Item {index}</div>}
           style={{ border: '1px solid red' }}
+          totalCount={100}
         />
         <div>
           <p>

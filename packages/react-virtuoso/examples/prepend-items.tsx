@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { useState } from 'react'
+
 import { Virtuoso } from '../src'
 
 const Item = ({ index }: { index: number }) => {
   React.useEffect(() => {
     return () => {
-      // eslint-disable-next-line no-console
       console.log(`unmounting ${index}`)
     }
   }, [index])
@@ -36,7 +36,7 @@ export function Example() {
       <button data-testid="prepend-200" onClick={prepend(200)}>
         Prepend 200 Items
       </button>
-      <Virtuoso totalCount={count} firstItemIndex={firstItemIndex} itemContent={itemContent} style={style} />
+      <Virtuoso firstItemIndex={firstItemIndex} itemContent={itemContent} style={style} totalCount={count} />
     </div>
   )
 }

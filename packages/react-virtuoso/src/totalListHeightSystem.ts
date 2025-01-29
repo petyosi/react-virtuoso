@@ -1,9 +1,9 @@
-import * as u from './urx'
-import { listStateSystem } from './listStateSystem'
 import { domIOSystem } from './domIOSystem'
+import { listStateSystem } from './listStateSystem'
+import * as u from './urx'
 
 export const totalListHeightSystem = u.system(
-  ([{ footerHeight, headerHeight, fixedHeaderHeight, fixedFooterHeight }, { listState }]) => {
+  ([{ fixedFooterHeight, fixedHeaderHeight, footerHeight, headerHeight }, { listState }]) => {
     const totalListHeightChanged = u.stream<number>()
     const totalListHeight = u.statefulStreamFromEmitter(
       u.pipe(

@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { listSystem } from '../src/listSystem'
-import { init, getValue, publish, subscribe } from '../src/urx'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { AANode, walk } from '../src/AATree'
+import { listSystem } from '../src/listSystem'
+import { getValue, init, publish, subscribe } from '../src/urx'
 
 describe('list engine', () => {
   describe('basics', () => {
@@ -12,18 +13,18 @@ describe('list engine', () => {
     })
 
     it('returns a probe row when location / dimensions are reported', () => {
-      const { propsReady, listState, scrollTop, viewportHeight, totalCount } = init(listSystem)
+      const { listState, propsReady, scrollTop, totalCount, viewportHeight } = init(listSystem)
       publish(totalCount, 1000)
       publish(propsReady, true)
       publish(scrollTop, 0)
       publish(viewportHeight, 200)
       expect(getValue(listState)).toMatchObject({
-        items: [{ index: 0, size: 0, offset: 0 }],
+        items: [{ index: 0, offset: 0, size: 0 }],
       })
     })
 
     it('returns the full set if a default item height is set', () => {
-      const { defaultItemHeight, propsReady, listState, scrollTop, viewportHeight, totalCount } = init(listSystem)
+      const { defaultItemHeight, listState, propsReady, scrollTop, totalCount, viewportHeight } = init(listSystem)
 
       publish(scrollTop, 0)
       publish(totalCount, 1000)
@@ -44,7 +45,7 @@ describe('list engine', () => {
     })
 
     it('returns the full set if a fixed item height is set', () => {
-      const { fixedItemHeight, propsReady, listState, scrollTop, viewportHeight, totalCount } = init(listSystem)
+      const { fixedItemHeight, listState, propsReady, scrollTop, totalCount, viewportHeight } = init(listSystem)
 
       publish(scrollTop, 0)
       publish(totalCount, 1000)
@@ -56,7 +57,7 @@ describe('list engine', () => {
     })
 
     it('updates the rows when new sizes are reported', () => {
-      const { propsReady, sizeRanges, listState, scrollTop, viewportHeight, totalCount } = init(listSystem)
+      const { listState, propsReady, scrollTop, sizeRanges, totalCount, viewportHeight } = init(listSystem)
 
       const sub = vi.fn()
       subscribe(listState, sub)
@@ -68,16 +69,16 @@ describe('list engine', () => {
 
       // probe item is sent
       expect(getValue(listState)).toMatchObject({
-        items: [{ index: 0, size: 0, offset: 0 }],
+        items: [{ index: 0, offset: 0, size: 0 }],
       })
-      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
+      publish(sizeRanges, [{ endIndex: 0, size: 30, startIndex: 0 }])
 
       // 7 items should be rendered
       expect(getValue(listState).items).toHaveLength(7)
 
       expect(getValue(listState)).toMatchObject({
-        offsetTop: 0,
         offsetBottom: 29790,
+        offsetTop: 0,
       })
 
       // check if we don't render too much due to streams diamond shapes
@@ -89,7 +90,7 @@ describe('list engine', () => {
     it('starts from a specified location', () => {
       const INITIAL_INDEX = 300
       const SIZE = 30
-      const { propsReady, initialTopMostItemIndex, listState, scrollTop, scrollTo, viewportHeight, totalCount, sizeRanges } =
+      const { initialTopMostItemIndex, listState, propsReady, scrollTo, scrollTop, sizeRanges, totalCount, viewportHeight } =
         init(listSystem)
 
       publish(initialTopMostItemIndex, INITIAL_INDEX)
@@ -98,21 +99,21 @@ describe('list engine', () => {
       publish(totalCount, 1000)
       publish(propsReady, true)
       expect(getValue(listState)).toMatchObject({
-        items: [{ index: INITIAL_INDEX, size: 0, offset: 0 }],
+        items: [{ index: INITIAL_INDEX, offset: 0, size: 0 }],
       })
 
       const sub = vi.fn()
       subscribe(scrollTo, sub)
 
-      publish(sizeRanges, [{ startIndex: INITIAL_INDEX, endIndex: INITIAL_INDEX, size: SIZE }])
+      publish(sizeRanges, [{ endIndex: INITIAL_INDEX, size: SIZE, startIndex: INITIAL_INDEX }])
 
       expect(getValue(listState).items).toHaveLength(0)
 
       return new Promise((resolve) => {
         setTimeout(() => {
           expect(sub).toHaveBeenCalledWith({
-            top: INITIAL_INDEX * SIZE,
             behavior: 'auto',
+            top: INITIAL_INDEX * SIZE,
           })
 
           // the UI responds by publishing back through the scrollTop stream
@@ -126,7 +127,7 @@ describe('list engine', () => {
     it('starts from a specified location with fixed item size', () => {
       const INITIAL_INDEX = 300
       const SIZE = 30
-      const { fixedItemHeight, propsReady, initialTopMostItemIndex, listState, scrollTop, scrollTo, viewportHeight, totalCount } =
+      const { fixedItemHeight, initialTopMostItemIndex, listState, propsReady, scrollTo, scrollTop, totalCount, viewportHeight } =
         init(listSystem)
 
       publish(initialTopMostItemIndex, INITIAL_INDEX)
@@ -147,8 +148,8 @@ describe('list engine', () => {
       return new Promise((resolve) => {
         setTimeout(() => {
           expect(sub).toHaveBeenCalledWith({
-            top: INITIAL_INDEX * SIZE,
             behavior: 'auto',
+            top: INITIAL_INDEX * SIZE,
           })
 
           // the UI responds by publishing back through the scrollTop stream
@@ -170,7 +171,7 @@ describe('list engine', () => {
     const VIEWPORT = 200
     const TOTAL_COUNT = 1000
     beforeEach(() => {
-      const { propsReady, scrollToIndex, scrollTop, scrollTo, viewportHeight, totalCount, sizeRanges } = init(listSystem)
+      const { propsReady, scrollTo, scrollToIndex, scrollTop, sizeRanges, totalCount, viewportHeight } = init(listSystem)
 
       sti = scrollToIndex
       sr = sizeRanges
@@ -181,13 +182,13 @@ describe('list engine', () => {
       sub = vi.fn()
       subscribe(scrollTo, sub)
 
-      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: SIZE }])
+      publish(sizeRanges, [{ endIndex: 0, size: SIZE, startIndex: 0 }])
       publish(scrollToIndex, INDEX)
       publish(propsReady, true)
 
       expect(sub).toHaveBeenCalledWith({
-        top: INDEX * SIZE,
         behavior: 'auto',
+        top: INDEX * SIZE,
       })
     })
 
@@ -195,54 +196,54 @@ describe('list engine', () => {
       publish(sti, INDEX)
 
       expect(sub).toHaveBeenCalledWith({
-        top: INDEX * SIZE,
         behavior: 'auto',
+        top: INDEX * SIZE,
       })
     })
 
     it('navigates to index with center', () => {
-      publish(sti, { index: INDEX, align: 'center' })
+      publish(sti, { align: 'center', index: INDEX })
 
       expect(sub).toHaveBeenCalledWith({
-        top: INDEX * SIZE - VIEWPORT / 2 + SIZE / 2,
         behavior: 'auto',
+        top: INDEX * SIZE - VIEWPORT / 2 + SIZE / 2,
       })
     })
 
     it('navigates to index with end', () => {
-      publish(sti, { index: INDEX, align: 'end' })
+      publish(sti, { align: 'end', index: INDEX })
 
       expect(sub).toHaveBeenCalledWith({
-        top: INDEX * SIZE - VIEWPORT + SIZE,
         behavior: 'auto',
+        top: INDEX * SIZE - VIEWPORT + SIZE,
       })
     })
 
     it('navigates to last index', () => {
-      publish(sti, { index: 'LAST', align: 'end' })
+      publish(sti, { align: 'end', index: 'LAST' })
 
       expect(sub).toHaveBeenCalledWith({
-        top: TOTAL_COUNT * SIZE - VIEWPORT,
         behavior: 'auto',
+        top: TOTAL_COUNT * SIZE - VIEWPORT,
       })
     })
 
     it('readjusts once when new sizes are reported', () => {
       const DEVIATION = 20
-      publish(sti, { index: INDEX, align: 'end' })
+      publish(sti, { align: 'end', index: INDEX })
 
       expect(sub).toHaveBeenCalledWith({
-        top: INDEX * SIZE - VIEWPORT + SIZE,
         behavior: 'auto',
+        top: INDEX * SIZE - VIEWPORT + SIZE,
       })
 
-      publish(sr, [{ startIndex: INDEX - 1, endIndex: INDEX - 1, size: SIZE + DEVIATION }])
+      publish(sr, [{ endIndex: INDEX - 1, size: SIZE + DEVIATION, startIndex: INDEX - 1 }])
 
       return new Promise((resolve) => {
         setTimeout(() => {
           expect(sub).toHaveBeenCalledWith({
-            top: INDEX * SIZE - VIEWPORT + SIZE + DEVIATION,
             behavior: 'auto',
+            top: INDEX * SIZE - VIEWPORT + SIZE + DEVIATION,
           })
           resolve(true)
         }, 20)
@@ -255,24 +256,24 @@ describe('list engine', () => {
       const INITIAL_INDEX = 300
       const SIZE = 30
       const {
-        propsReady,
         initialTopMostItemIndex,
         listState,
+        propsReady,
+        scrollBy,
         scrollContainerState,
         scrollTo,
-        viewportHeight,
-        totalCount,
         sizeRanges,
-        scrollBy,
+        totalCount,
+        viewportHeight,
       } = init(listSystem)
 
       publish(initialTopMostItemIndex, INITIAL_INDEX)
-      publish(scrollContainerState, { scrollTop: 0, scrollHeight: 1000 * 30, viewportHeight: 200 })
+      publish(scrollContainerState, { scrollHeight: 1000 * 30, scrollTop: 0, viewportHeight: 200 })
       publish(viewportHeight, 200)
       publish(totalCount, 1000)
       publish(propsReady, true)
       expect(getValue(listState)).toMatchObject({
-        items: [{ index: INITIAL_INDEX, size: 0, offset: 0 }],
+        items: [{ index: INITIAL_INDEX, offset: 0, size: 0 }],
       })
 
       const sub = vi.fn()
@@ -281,35 +282,35 @@ describe('list engine', () => {
       const scrollBySub = vi.fn()
       subscribe(scrollBy, scrollBySub)
 
-      publish(sizeRanges, [{ startIndex: INITIAL_INDEX, endIndex: INITIAL_INDEX, size: SIZE }])
+      publish(sizeRanges, [{ endIndex: INITIAL_INDEX, size: SIZE, startIndex: INITIAL_INDEX }])
 
       expect(getValue(listState).items).toHaveLength(0)
 
       return new Promise((resolve) => {
         setTimeout(() => {
           expect(sub).toHaveBeenCalledWith({
-            top: INITIAL_INDEX * SIZE,
             behavior: 'auto',
+            top: INITIAL_INDEX * SIZE,
           })
 
           setTimeout(() => {
             publish(scrollContainerState, {
-              scrollTop: INITIAL_INDEX * SIZE,
               scrollHeight: 1000 * 30,
+              scrollTop: INITIAL_INDEX * SIZE,
               viewportHeight: 200,
             })
 
             publish(scrollContainerState, {
-              scrollTop: INITIAL_INDEX * SIZE - 2,
               scrollHeight: 1000 * 30,
+              scrollTop: INITIAL_INDEX * SIZE - 2,
               viewportHeight: 200,
             })
 
             publish(sizeRanges, [
               {
-                startIndex: INITIAL_INDEX - 1,
                 endIndex: INITIAL_INDEX - 1,
                 size: SIZE + 40,
+                startIndex: INITIAL_INDEX - 1,
               },
             ])
 
@@ -323,7 +324,7 @@ describe('list engine', () => {
 
   describe('top items', () => {
     it('puts the top list items in topItems', () => {
-      const { propsReady, listState, topItemsIndexes, scrollTop, viewportHeight, totalCount, sizeRanges } = init(listSystem)
+      const { listState, propsReady, scrollTop, sizeRanges, topItemsIndexes, totalCount, viewportHeight } = init(listSystem)
       publish(topItemsIndexes, [0, 1, 2])
       publish(scrollTop, 0)
       publish(viewportHeight, 200)
@@ -331,33 +332,33 @@ describe('list engine', () => {
       publish(propsReady, true)
 
       expect(getValue(listState)).toMatchObject({
+        items: [{ index: 0, offset: 0, size: 0 }],
         topItems: [],
-        items: [{ index: 0, size: 0, offset: 0 }],
       })
 
-      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
+      publish(sizeRanges, [{ endIndex: 0, size: 30, startIndex: 0 }])
 
       // 4 items should be rendered
       expect(getValue(listState).items).toHaveLength(4)
       expect(getValue(listState)).toMatchObject({
-        topListHeight: 90,
         topItems: [
-          { index: 0, size: 30, offset: 0 },
-          { index: 1, size: 30, offset: 30 },
-          { index: 2, size: 30, offset: 60 },
+          { index: 0, offset: 0, size: 30 },
+          { index: 1, offset: 30, size: 30 },
+          { index: 2, offset: 60, size: 30 },
         ],
+        topListHeight: 90,
       })
 
       expect(getValue(listState)).toMatchObject({
-        offsetTop: 90,
         offsetBottom: 29790,
+        offsetTop: 90,
       })
     })
   })
 
   describe('grouped mode', () => {
     it('creates total count from groupCounts', () => {
-      const { totalCount, groupCounts } = init(listSystem)
+      const { groupCounts, totalCount } = init(listSystem)
       const sub = vi.fn()
       subscribe(totalCount, sub)
       publish(groupCounts, [10, 10, 10])
@@ -365,7 +366,7 @@ describe('list engine', () => {
     })
 
     it('probes with a group item / item tuple', () => {
-      const { propsReady, scrollTop, viewportHeight, listState, groupCounts } = init(listSystem)
+      const { groupCounts, listState, propsReady, scrollTop, viewportHeight } = init(listSystem)
       publish(groupCounts, [10, 10, 10])
       publish(scrollTop, 0)
       publish(viewportHeight, 200)
@@ -373,14 +374,14 @@ describe('list engine', () => {
 
       expect(getValue(listState)).toMatchObject({
         items: [
-          { type: 'group', index: 0, size: 0, offset: 0 },
-          { index: 0, groupIndex: 0, size: 0, offset: 0 },
+          { index: 0, offset: 0, size: 0, type: 'group' },
+          { groupIndex: 0, index: 0, offset: 0, size: 0 },
         ],
       })
     })
 
     it('probes with a correct group item / item tuple for initialTopMostItemIndex ', () => {
-      const { propsReady, initialTopMostItemIndex, scrollTop, viewportHeight, listState, groupCounts } = init(listSystem)
+      const { groupCounts, initialTopMostItemIndex, listState, propsReady, scrollTop, viewportHeight } = init(listSystem)
       publish(initialTopMostItemIndex, 22)
       publish(groupCounts, [10, 10, 10])
       publish(scrollTop, 0)
@@ -389,45 +390,45 @@ describe('list engine', () => {
 
       expect(getValue(listState)).toMatchObject({
         items: [
-          { type: 'group', index: 2, size: 0, offset: 0 },
-          { index: 22, groupIndex: 2, size: 0, offset: 0 },
+          { index: 2, offset: 0, size: 0, type: 'group' },
+          { groupIndex: 2, index: 22, offset: 0, size: 0 },
         ],
       })
     })
 
     it('renders groups and items', () => {
-      const { propsReady, sizeRanges, scrollTop, viewportHeight, listState, groupCounts } = init(listSystem)
+      const { groupCounts, listState, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
       publish(groupCounts, [3, 3, 3, 10])
       publish(scrollTop, 0)
       publish(viewportHeight, 200)
       publish(propsReady, true)
 
       publish(sizeRanges, [
-        { startIndex: 0, endIndex: 0, size: 30 },
-        { startIndex: 1, endIndex: 5, size: 20 },
+        { endIndex: 0, size: 30, startIndex: 0 },
+        { endIndex: 5, size: 20, startIndex: 1 },
       ])
 
       expect(getValue(listState)).toMatchObject({
-        topItems: [{ type: 'group', index: 0, size: 30, offset: 0 }],
+        topItems: [{ index: 0, offset: 0, size: 30, type: 'group' }],
         topListHeight: 30,
       })
 
       expect(getValue(listState)).toMatchObject({
         items: [
-          { index: 0, groupIndex: 0, size: 20, offset: 30 },
-          { index: 1, groupIndex: 0, size: 20, offset: 50 },
-          { index: 2, groupIndex: 0, size: 20, offset: 70 },
-          { type: 'group', index: 1, size: 30, offset: 90 },
-          { index: 3, groupIndex: 1, size: 20, offset: 120 },
-          { index: 4, groupIndex: 1, size: 20, offset: 140 },
-          { index: 5, groupIndex: 1, size: 20, offset: 160 },
-          { type: 'group', index: 2, size: 30, offset: 180 },
+          { groupIndex: 0, index: 0, offset: 30, size: 20 },
+          { groupIndex: 0, index: 1, offset: 50, size: 20 },
+          { groupIndex: 0, index: 2, offset: 70, size: 20 },
+          { index: 1, offset: 90, size: 30, type: 'group' },
+          { groupIndex: 1, index: 3, offset: 120, size: 20 },
+          { groupIndex: 1, index: 4, offset: 140, size: 20 },
+          { groupIndex: 1, index: 5, offset: 160, size: 20 },
+          { index: 2, offset: 180, size: 30, type: 'group' },
         ],
       })
     })
 
     it('takes header height into account', () => {
-      const { propsReady, sizeRanges, scrollTop, headerHeight, viewportHeight, listState, groupCounts } = init(listSystem)
+      const { groupCounts, headerHeight, listState, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
       publish(
         groupCounts,
         Array.from({ length: 20 }, () => 3)
@@ -437,21 +438,21 @@ describe('list engine', () => {
       publish(propsReady, true)
 
       publish(sizeRanges, [
-        { startIndex: 0, endIndex: 0, size: 30 },
-        { startIndex: 1, endIndex: 3, size: 20 },
+        { endIndex: 0, size: 30, startIndex: 0 },
+        { endIndex: 3, size: 20, startIndex: 1 },
       ])
 
       publish(headerHeight, 80)
 
       expect(getValue(listState)).toMatchObject({
-        topItems: [{ type: 'group', index: 0, size: 30, offset: 0 }],
+        topItems: [{ index: 0, offset: 0, size: 30, type: 'group' }],
         topListHeight: 30,
       })
 
       publish(scrollTop, 90)
 
       expect(getValue(listState)).toMatchObject({
-        topItems: [{ type: 'group', index: 0, size: 30, offset: 0 }],
+        topItems: [{ index: 0, offset: 0, size: 30, type: 'group' }],
       })
 
       /*
@@ -473,13 +474,13 @@ describe('list engine', () => {
 
   describe('headerHeight', () => {
     it('offsets the list at the top mode', () => {
-      const { propsReady, headerHeight, sizeRanges, listState, scrollTop, viewportHeight, totalCount } = init(listSystem)
+      const { headerHeight, listState, propsReady, scrollTop, sizeRanges, totalCount, viewportHeight } = init(listSystem)
 
       publish(scrollTop, 0)
       publish(viewportHeight, 200)
       publish(totalCount, 1000)
       publish(headerHeight, 50)
-      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
+      publish(sizeRanges, [{ endIndex: 0, size: 30, startIndex: 0 }])
       publish(propsReady, true)
 
       // 7 items should be rendered
@@ -490,15 +491,15 @@ describe('list engine', () => {
   describe('total height changed', () => {
     it('includes the header and the total list height', () => {
       const {
-        propsReady,
         footerHeight,
         headerHeight,
-        sizeRanges,
         listState,
+        propsReady,
         scrollTop,
-        viewportHeight,
+        sizeRanges,
         totalCount,
         totalListHeightChanged,
+        viewportHeight,
       } = init(listSystem)
 
       publish(scrollTop, 0)
@@ -506,7 +507,7 @@ describe('list engine', () => {
       publish(totalCount, 1000)
       publish(headerHeight, 50)
       publish(footerHeight, 40)
-      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
+      publish(sizeRanges, [{ endIndex: 0, size: 30, startIndex: 0 }])
       const sub = vi.fn()
       subscribe(totalListHeightChanged, sub)
       publish(propsReady, true)
@@ -519,13 +520,13 @@ describe('list engine', () => {
 
   describe('align to bottom', () => {
     it('pads the top with the difference of the viewport and the list size', () => {
-      const { propsReady, paddingTopAddition, alignToBottom, sizeRanges, scrollTop, viewportHeight, totalCount } = init(listSystem)
+      const { alignToBottom, paddingTopAddition, propsReady, scrollTop, sizeRanges, totalCount, viewportHeight } = init(listSystem)
 
       publish(alignToBottom, true)
       publish(scrollTop, 0)
       publish(viewportHeight, 1200)
       publish(totalCount, 5)
-      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
+      publish(sizeRanges, [{ endIndex: 0, size: 30, startIndex: 0 }])
       const sub = vi.fn()
       subscribe(paddingTopAddition, sub)
       publish(propsReady, true)
@@ -546,12 +547,12 @@ describe('list engine', () => {
 
   describe('shifting items', () => {
     it.skip('preserves the last item size and removes the ones at the top', () => {
-      const { sizes, totalCount, firstItemIndex, sizeRanges } = init(listSystem)
+      const { firstItemIndex, sizeRanges, sizes, totalCount } = init(listSystem)
       publish(totalCount, 100)
       publish(firstItemIndex, 4000)
-      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
+      publish(sizeRanges, [{ endIndex: 0, size: 30, startIndex: 0 }])
 
-      publish(sizeRanges, [{ startIndex: 99, endIndex: 99, size: 20 }])
+      publish(sizeRanges, [{ endIndex: 99, size: 20, startIndex: 99 }])
 
       publish(totalCount, 95)
       publish(firstItemIndex, 4005)
@@ -565,15 +566,15 @@ describe('list engine', () => {
 
   describe('unshifting group items', () => {
     it('updates the size tree when unshifting with new group counts and decreasing firstItemIndex', () => {
-      const { sizes, groupCounts, firstItemIndex, sizeRanges } = init(listSystem)
+      const { firstItemIndex, groupCounts, sizeRanges, sizes } = init(listSystem)
       publish(groupCounts, [3, 3])
       publish(firstItemIndex, 4000)
       publish(sizeRanges, [
-        { startIndex: 0, endIndex: 0, size: 30 },
-        { startIndex: 1, endIndex: 1, size: 20 },
+        { endIndex: 0, size: 30, startIndex: 0 },
+        { endIndex: 1, size: 20, startIndex: 1 },
       ])
 
-      publish(sizeRanges, [{ startIndex: 2, endIndex: 2, size: 25 }])
+      publish(sizeRanges, [{ endIndex: 2, size: 25, startIndex: 2 }])
 
       publish(groupCounts, [3, 5, 3])
       publish(firstItemIndex, 4000 - 5)
@@ -591,15 +592,15 @@ describe('list engine', () => {
     })
 
     it.skip('shifts the first group size correctly when shifting (increasing firstItemIndex)', () => {
-      const { sizes, groupCounts, firstItemIndex, sizeRanges } = init(listSystem)
+      const { firstItemIndex, groupCounts, sizeRanges, sizes } = init(listSystem)
       publish(groupCounts, [3, 3, 3, 3])
       publish(firstItemIndex, 4000)
       publish(sizeRanges, [
-        { startIndex: 0, endIndex: 0, size: 30 },
-        { startIndex: 1, endIndex: 1, size: 20 },
+        { endIndex: 0, size: 30, startIndex: 0 },
+        { endIndex: 1, size: 20, startIndex: 1 },
       ])
 
-      publish(sizeRanges, [{ startIndex: 7, endIndex: 7, size: 25 }])
+      publish(sizeRanges, [{ endIndex: 7, size: 25, startIndex: 7 }])
 
       let theSizeTree = toKV(getValue(sizes).sizeTree)
 
@@ -619,12 +620,12 @@ describe('list engine', () => {
     })
 
     it.skip('re-creates the size record that the group deletes', () => {
-      const { sizes, groupCounts, firstItemIndex, sizeRanges } = init(listSystem)
+      const { firstItemIndex, groupCounts, sizeRanges, sizes } = init(listSystem)
       publish(groupCounts, [3, 3, 3, 3])
       publish(firstItemIndex, 4000)
       publish(sizeRanges, [
-        { startIndex: 0, endIndex: 0, size: 30 },
-        { startIndex: 1, endIndex: 1, size: 20 },
+        { endIndex: 0, size: 30, startIndex: 0 },
+        { endIndex: 1, size: 20, startIndex: 1 },
       ])
 
       let theSizeTree = toKV(getValue(sizes).sizeTree)

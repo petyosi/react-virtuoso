@@ -1,6 +1,6 @@
-import * as u from './urx'
-import { totalListHeightSystem } from './totalListHeightSystem'
 import { domIOSystem } from './domIOSystem'
+import { totalListHeightSystem } from './totalListHeightSystem'
+import * as u from './urx'
 
 export const alignToBottomSystem = u.system(
   ([{ viewportHeight }, { totalListHeight }]) => {

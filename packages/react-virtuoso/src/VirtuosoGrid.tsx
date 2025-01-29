@@ -1,16 +1,17 @@
-import { RefHandle, systemToComponent } from './react-urx'
-import * as u from './urx'
 import React from 'react'
+
+import { VirtuosoGridHandle, VirtuosoGridProps } from './component-interfaces/VirtuosoGrid'
 import { gridSystem } from './gridSystem'
+import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { GridComponents, GridComputeItemKey, GridItemContent, GridRootProps } from './interfaces'
-import { buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle } from './Virtuoso'
 import { Log, LogLevel } from './loggerSystem'
-import { VirtuosoGridHandle, VirtuosoGridProps } from './component-interfaces/VirtuosoGrid'
-import { correctItemSize } from './utils/correctItemSize'
+import { RefHandle, systemToComponent } from './react-urx'
+import * as u from './urx'
 import { VirtuosoGridMockContext } from './utils/context'
-import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
+import { correctItemSize } from './utils/correctItemSize'
+import { buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle } from './Virtuoso'
 
 const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   const itemContent = u.statefulStream<GridItemContent<any, any>>((index) => `Item ${index}`)
@@ -22,7 +23,7 @@ const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   const headerFooterTag = u.statefulStream('div')
   const scrollerRef = u.statefulStream<(ref: HTMLElement | null) => void>(u.noop)
 
-  const distinctProp = <K extends keyof GridComponents>(propName: K, defaultValue: GridComponents[K] | null | 'div' = null) => {
+  const distinctProp = <K extends keyof GridComponents>(propName: K, defaultValue: 'div' | GridComponents[K] | null = null) => {
     return u.statefulStreamFromEmitter(
       u.pipe(
         components,
@@ -39,28 +40,31 @@ const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   u.connect(u.duc(reportReadyState), readyStateChanged)
 
   return {
-    readyStateChanged,
-    reportReadyState,
-    context,
-    itemContent,
     components,
     computeItemKey,
-    itemClassName,
-    listClassName,
-    headerFooterTag,
-    scrollerRef,
+    context,
     FooterComponent: distinctProp('Footer'),
     HeaderComponent: distinctProp('Header'),
-    ListComponent: distinctProp('List', 'div'),
+    headerFooterTag,
+    itemClassName,
     ItemComponent: distinctProp('Item', 'div'),
+    itemContent,
+    listClassName,
+    ListComponent: distinctProp('List', 'div'),
+    readyStateChanged,
+    reportReadyState,
     ScrollerComponent: distinctProp('Scroller', 'div'),
+    scrollerRef,
     ScrollSeekPlaceholder: distinctProp('ScrollSeekPlaceholder', 'div'),
   }
 })
 
-const combinedSystem = /*#__PURE__*/ u.system(([gridSystem, gridComponentPropsSystem]) => {
-  return { ...gridSystem, ...gridComponentPropsSystem }
-}, u.tup(gridSystem, gridComponentPropsSystem))
+const combinedSystem = /*#__PURE__*/ u.system(
+  ([gridSystem, gridComponentPropsSystem]) => {
+    return { ...gridSystem, ...gridComponentPropsSystem }
+  },
+  u.tup(gridSystem, gridComponentPropsSystem)
+)
 
 const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
   const gridState = useEmitterValue('gridState')
@@ -87,12 +91,12 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
         scrollHeightCallback(scrollHeight)
         const firstItem = el.firstChild as HTMLElement
         if (firstItem) {
-          const { width, height } = firstItem.getBoundingClientRect()
-          itemDimensions({ width, height })
+          const { height, width } = firstItem.getBoundingClientRect()
+          itemDimensions({ height, width })
         }
         gridGap({
-          row: resolveGapValue('row-gap', getComputedStyle(el).rowGap, log),
           column: resolveGapValue('column-gap', getComputedStyle(el).columnGap, log),
+          row: resolveGapValue('row-gap', getComputedStyle(el).rowGap, log),
         })
       },
       [scrollHeightCallback, itemDimensions, gridGap, log]
@@ -113,11 +117,11 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
 
   return (
     <ListComponent
-      ref={listRef}
       className={listClassName}
+      ref={listRef}
       {...contextPropIfNotDomElement(ListComponent, context)}
-      style={{ paddingTop: gridState.offsetTop, paddingBottom: gridState.offsetBottom }}
       data-testid="virtuoso-item-list"
+      style={{ paddingBottom: gridState.offsetBottom, paddingTop: gridState.offsetTop }}
     >
       {gridState.items.map((item) => {
         const key = computeItemKey(item.index, item.data, context)
@@ -125,8 +129,8 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
           <ScrollSeekPlaceholder
             key={key}
             {...contextPropIfNotDomElement(ScrollSeekPlaceholder, context)}
-            index={item.index}
             height={gridState.itemHeight}
+            index={item.index}
             width={gridState.itemWidth}
           />
         ) : (
@@ -150,7 +154,12 @@ const Header: React.FC = React.memo(function VirtuosoHeader() {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-unsafe-assignment
   const HeaderFooterTag = useEmitterValue('headerFooterTag') as any
   const ref = useSize(
-    React.useMemo(() => (el) => headerHeight(correctItemSize(el, 'height')), [headerHeight]),
+    React.useMemo(
+      () => (el) => {
+        headerHeight(correctItemSize(el, 'height'))
+      },
+      [headerHeight]
+    ),
     true,
     false
   )
@@ -168,7 +177,12 @@ const Footer: React.FC = React.memo(function VirtuosoGridFooter() {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-type-assertion
   const HeaderFooterTag = useEmitterValue('headerFooterTag') as any
   const ref = useSize(
-    React.useMemo(() => (el) => footerHeight(correctItemSize(el, 'height')), [footerHeight]),
+    React.useMemo(
+      () => (el) => {
+        footerHeight(correctItemSize(el, 'height'))
+      },
+      [footerHeight]
+    ),
     true,
     false
   )
@@ -180,7 +194,7 @@ const Footer: React.FC = React.memo(function VirtuosoGridFooter() {
   ) : null
 })
 
-const Viewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+const Viewport: React.FC<React.PropsWithChildren> = ({ children }) => {
   const ctx = React.useContext(VirtuosoGridMockContext)
   const itemDimensions = usePublisher('itemDimensions')
   const viewportDimensions = usePublisher('viewportDimensions')
@@ -204,13 +218,13 @@ const Viewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   }, [ctx, viewportDimensions, itemDimensions])
 
   return (
-    <div style={viewportStyle(false)} ref={viewportRef}>
+    <div ref={viewportRef} style={viewportStyle(false)}>
       {children}
     </div>
   )
 }
 
-const WindowViewport: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+const WindowViewport: React.FC<React.PropsWithChildren> = ({ children }) => {
   const ctx = React.useContext(VirtuosoGridMockContext)
   const windowViewportRect = usePublisher('windowViewportRect')
   const itemDimensions = usePublisher('itemDimensions')
@@ -250,47 +264,47 @@ const GridRoot: React.FC<GridRootProps> = /*#__PURE__*/ React.memo(function Grid
 
 const {
   Component: Grid,
-  usePublisher,
-  useEmitterValue,
   useEmitter,
+  useEmitterValue,
+  usePublisher,
 } = /*#__PURE__*/ systemToComponent(
   combinedSystem,
   {
-    optional: {
-      context: 'context',
-      totalCount: 'totalCount',
-      overscan: 'overscan',
-      itemContent: 'itemContent',
-      components: 'components',
-      computeItemKey: 'computeItemKey',
-      data: 'data',
-      initialItemCount: 'initialItemCount',
-      scrollSeekConfiguration: 'scrollSeekConfiguration',
-      headerFooterTag: 'headerFooterTag',
-      listClassName: 'listClassName',
-      itemClassName: 'itemClassName',
-      useWindowScroll: 'useWindowScroll',
-      customScrollParent: 'customScrollParent',
-      scrollerRef: 'scrollerRef',
-      logLevel: 'logLevel',
-      restoreStateFrom: 'restoreStateFrom',
-      initialTopMostItemIndex: 'initialTopMostItemIndex',
-      increaseViewportBy: 'increaseViewportBy',
-    },
-    methods: {
-      scrollTo: 'scrollTo',
-      scrollBy: 'scrollBy',
-      scrollToIndex: 'scrollToIndex',
-    },
     events: {
-      isScrolling: 'isScrolling',
-      endReached: 'endReached',
-      startReached: 'startReached',
-      rangeChanged: 'rangeChanged',
       atBottomStateChange: 'atBottomStateChange',
       atTopStateChange: 'atTopStateChange',
-      stateChanged: 'stateChanged',
+      endReached: 'endReached',
+      isScrolling: 'isScrolling',
+      rangeChanged: 'rangeChanged',
       readyStateChanged: 'readyStateChanged',
+      startReached: 'startReached',
+      stateChanged: 'stateChanged',
+    },
+    methods: {
+      scrollBy: 'scrollBy',
+      scrollTo: 'scrollTo',
+      scrollToIndex: 'scrollToIndex',
+    },
+    optional: {
+      components: 'components',
+      computeItemKey: 'computeItemKey',
+      context: 'context',
+      customScrollParent: 'customScrollParent',
+      data: 'data',
+      headerFooterTag: 'headerFooterTag',
+      increaseViewportBy: 'increaseViewportBy',
+      initialItemCount: 'initialItemCount',
+      initialTopMostItemIndex: 'initialTopMostItemIndex',
+      itemClassName: 'itemClassName',
+      itemContent: 'itemContent',
+      listClassName: 'listClassName',
+      logLevel: 'logLevel',
+      overscan: 'overscan',
+      restoreStateFrom: 'restoreStateFrom',
+      scrollerRef: 'scrollerRef',
+      scrollSeekConfiguration: 'scrollSeekConfiguration',
+      totalCount: 'totalCount',
+      useWindowScroll: 'useWindowScroll',
     },
   },
   GridRoot
@@ -298,8 +312,8 @@ const {
 
 export type GridHandle = RefHandle<typeof Grid>
 
-const Scroller = /*#__PURE__*/ buildScroller({ usePublisher, useEmitterValue, useEmitter })
-const WindowScroller = /*#__PURE__*/ buildWindowScroller({ usePublisher, useEmitterValue, useEmitter })
+const Scroller = /*#__PURE__*/ buildScroller({ useEmitter, useEmitterValue, usePublisher })
+const WindowScroller = /*#__PURE__*/ buildWindowScroller({ useEmitter, useEmitterValue, usePublisher })
 
 function resolveGapValue(property: string, value: string | undefined, log: Log) {
   if (value !== 'normal' && !value?.endsWith('px')) {

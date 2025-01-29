@@ -1,5 +1,5 @@
-import * as React from 'react'
 import { useState } from 'react'
+
 import { Virtuoso } from '../src'
 
 const itemContent = (index: number) => <div style={{ border: '1px solid black', height: index % 2 ? 20 : 55 }}>Item {index}</div>
@@ -16,7 +16,7 @@ export function Example() {
         Delete last item
       </button>
 
-      <Virtuoso totalCount={count} initialTopMostItemIndex={99} itemContent={itemContent} style={style} />
+      <Virtuoso initialTopMostItemIndex={99} itemContent={itemContent} style={style} totalCount={count} />
     </div>
   )
 }

@@ -1,6 +1,8 @@
-import * as React from 'react'
-import { VirtuosoGrid, GridComponents } from '../src'
+//@ts-nocheck
 import styled from '@emotion/styled'
+import * as React from 'react'
+
+import { GridComponents, VirtuosoGrid } from '../src'
 
 const ItemContainer = styled.div`
   box-sizing: border-box;
@@ -40,18 +42,20 @@ const ListContainer = styled.div`
 export function Example() {
   const [customScrollParent, setCustomScrollParent] = React.useState(null)
   const [height, setHeight] = React.useState('25vh')
-  const toggleHeight = () => (height === '50vh' ? setHeight('25vh') : setHeight('50vh'))
+  const toggleHeight = () => {
+    setHeight(height === '50vh' ? '25vh' : '50vh')
+  }
 
   return (
-    <div style={{ overflow: 'auto', background: 'lightgreen', height: '80vh', marginTop: '0vh' }}>
+    <div style={{ background: 'lightgreen', height: '80vh', marginTop: '0vh', overflow: 'auto' }}>
       <button onClick={toggleHeight}>Change Height</button>
       <div
         ref={setCustomScrollParent}
         style={{
-          overflow: 'auto',
-          marginTop: 300,
           background: 'lightgrey',
           height,
+          marginTop: 300,
+          overflow: 'auto',
         }}
       >
         <ol>
@@ -67,7 +71,6 @@ export function Example() {
         </ol>
         <div>
           <VirtuosoGrid
-            customScrollParent={customScrollParent}
             components={{
               Item: ItemContainer,
               List: ListContainer,
@@ -77,8 +80,9 @@ export function Example() {
                 </ItemContainer>
               ),
             }}
-            totalCount={1000}
+            customScrollParent={customScrollParent}
             itemContent={(index) => <ItemWrapper>Item {index}</ItemWrapper>}
+            totalCount={1000}
           />
           <div>
             <p>Yes there is a bottom!</p>

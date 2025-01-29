@@ -1,10 +1,13 @@
-import React from 'react'
 import { render } from '@testing-library/react'
-import { Virtuoso, VirtuosoMockContext, TableVirtuoso, VirtuosoGrid, VirtuosoGridMockContext } from '../src'
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
+
+import { TableVirtuoso, Virtuoso, VirtuosoGrid, VirtuosoGridMockContext, VirtuosoMockContext } from '../src'
 
 describe('VirtuosoMockContext', () => {
-  type Item = { id: string; value: string }
+  interface Item {
+    id: string
+    value: string
+  }
   const data: Item[] = [
     { id: '1', value: 'foo' },
     { id: '2', value: 'bar' },
@@ -20,7 +23,7 @@ describe('VirtuosoMockContext', () => {
     it('correctly renders items', () => {
       const { container } = render(<Virtuoso data={data} />, {
         wrapper: ({ children }) => (
-          <VirtuosoMockContext.Provider value={{ viewportHeight: 300, itemHeight: 100 }}>{children}</VirtuosoMockContext.Provider>
+          <VirtuosoMockContext.Provider value={{ itemHeight: 100, viewportHeight: 300 }}>{children}</VirtuosoMockContext.Provider>
         ),
       })
 
@@ -30,7 +33,7 @@ describe('VirtuosoMockContext', () => {
     it('correctly renders items with useWindowScroll', () => {
       const { container } = render(<Virtuoso data={data} useWindowScroll />, {
         wrapper: ({ children }) => (
-          <VirtuosoMockContext.Provider value={{ viewportHeight: 300, itemHeight: 100 }}>{children}</VirtuosoMockContext.Provider>
+          <VirtuosoMockContext.Provider value={{ itemHeight: 100, viewportHeight: 300 }}>{children}</VirtuosoMockContext.Provider>
         ),
       })
 
@@ -42,7 +45,7 @@ describe('VirtuosoMockContext', () => {
     it('correctly renders items', () => {
       const { container } = render(<TableVirtuoso data={data} />, {
         wrapper: ({ children }) => (
-          <VirtuosoMockContext.Provider value={{ viewportHeight: 300, itemHeight: 100 }}>{children}</VirtuosoMockContext.Provider>
+          <VirtuosoMockContext.Provider value={{ itemHeight: 100, viewportHeight: 300 }}>{children}</VirtuosoMockContext.Provider>
         ),
       })
 
@@ -52,7 +55,7 @@ describe('VirtuosoMockContext', () => {
     it('correctly renders items with useWindowScroll', () => {
       const { container } = render(<TableVirtuoso data={data} useWindowScroll />, {
         wrapper: ({ children }) => (
-          <VirtuosoMockContext.Provider value={{ viewportHeight: 300, itemHeight: 100 }}>{children}</VirtuosoMockContext.Provider>
+          <VirtuosoMockContext.Provider value={{ itemHeight: 100, viewportHeight: 300 }}>{children}</VirtuosoMockContext.Provider>
         ),
       })
 
@@ -64,7 +67,7 @@ describe('VirtuosoMockContext', () => {
     it('correctly renders items', () => {
       const { container } = render(<VirtuosoGrid data={data} />, {
         wrapper: ({ children }) => (
-          <VirtuosoGridMockContext.Provider value={{ viewportHeight: 200, viewportWidth: 300, itemHeight: 100, itemWidth: 100 }}>
+          <VirtuosoGridMockContext.Provider value={{ itemHeight: 100, itemWidth: 100, viewportHeight: 200, viewportWidth: 300 }}>
             {children}
           </VirtuosoGridMockContext.Provider>
         ),
@@ -76,7 +79,7 @@ describe('VirtuosoMockContext', () => {
     it('renders a single row of items when necessary', () => {
       const { container } = render(<VirtuosoGrid data={data} />, {
         wrapper: ({ children }) => (
-          <VirtuosoGridMockContext.Provider value={{ viewportHeight: 100, viewportWidth: 300, itemHeight: 100, itemWidth: 100 }}>
+          <VirtuosoGridMockContext.Provider value={{ itemHeight: 100, itemWidth: 100, viewportHeight: 100, viewportWidth: 300 }}>
             {children}
           </VirtuosoGridMockContext.Provider>
         ),
@@ -90,7 +93,7 @@ describe('VirtuosoMockContext', () => {
 
       const { container } = render(<VirtuosoGrid data={fourItemData} />, {
         wrapper: ({ children }) => (
-          <VirtuosoGridMockContext.Provider value={{ viewportHeight: 200, viewportWidth: 300, itemHeight: 100, itemWidth: 100 }}>
+          <VirtuosoGridMockContext.Provider value={{ itemHeight: 100, itemWidth: 100, viewportHeight: 200, viewportWidth: 300 }}>
             {children}
           </VirtuosoGridMockContext.Provider>
         ),
@@ -102,7 +105,7 @@ describe('VirtuosoMockContext', () => {
     it('correctly renders items with useWindowScroll', () => {
       const { container } = render(<VirtuosoGrid data={data} useWindowScroll />, {
         wrapper: ({ children }) => (
-          <VirtuosoGridMockContext.Provider value={{ viewportHeight: 200, viewportWidth: 300, itemHeight: 100, itemWidth: 100 }}>
+          <VirtuosoGridMockContext.Provider value={{ itemHeight: 100, itemWidth: 100, viewportHeight: 200, viewportWidth: 300 }}>
             {children}
           </VirtuosoGridMockContext.Provider>
         ),

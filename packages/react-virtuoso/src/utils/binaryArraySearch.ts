@@ -1,5 +1,7 @@
-export type Comparator<T> = {
-  (item: T, value: number): -1 | 0 | 1
+export type Comparator<T> = (item: T, value: number) => -1 | 0 | 1
+
+export function findClosestSmallerOrEqual<T>(items: T[], value: number, comparator: Comparator<T>): T {
+  return items[findIndexOfClosestSmallerOrEqual(items, value, comparator)]
 }
 
 export function findIndexOfClosestSmallerOrEqual<T>(items: T[], value: number, comparator: Comparator<T>, start = 0): number {
@@ -27,10 +29,6 @@ export function findIndexOfClosestSmallerOrEqual<T>(items: T[], value: number, c
   }
 
   throw new Error(`Failed binary finding record in array - ${items.join(',')}, searched for ${value}`)
-}
-
-export function findClosestSmallerOrEqual<T>(items: T[], value: number, comparator: Comparator<T>): T {
-  return items[findIndexOfClosestSmallerOrEqual(items, value, comparator)]
 }
 
 export function findRange<T>(items: T[], startValue: number, endValue: number, comparator: Comparator<T>): T[] {

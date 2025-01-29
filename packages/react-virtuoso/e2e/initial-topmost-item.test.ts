@@ -1,9 +1,10 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
+
 //@ts-expect-error - type module and playwright
 import { navigateToExample } from './utils.ts'
 
 test.describe('jagged list with initial topmost item', () => {
-  test.beforeEach(async ({ page, baseURL }) => {
+  test.beforeEach(async ({ baseURL, page }) => {
     await navigateToExample(page, baseURL, 'initial-topmost-item')
     await page.waitForTimeout(100)
   })
@@ -29,7 +30,7 @@ test.describe('jagged list with initial topmost item', () => {
   test('sticks the item to the top', async ({ page }) => {
     const firstChildIndex = await page.evaluate(() => {
       const firstChild = document.querySelector('[data-testid=virtuoso-item-list] > div') as HTMLElement
-      return firstChild.dataset['index']
+      return firstChild.dataset.index
     })
 
     expect(firstChildIndex).toBe('60')
@@ -56,7 +57,7 @@ test.describe('jagged list with initial topmost item', () => {
 
     const lastChildIndex = await page.evaluate(() => {
       const lastChildIndex = document.querySelector('[data-testid=virtuoso-item-list] > div:last-child') as HTMLElement
-      return lastChildIndex.dataset['index']
+      return lastChildIndex.dataset.index
     })
 
     expect(lastChildIndex).toBe('80')

@@ -2,11 +2,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import * as React from 'react'
-import ReactDOM from 'react-dom/client'
 import { act } from 'react'
-import { Virtuoso } from '../src/Virtuoso'
+import ReactDOM from 'react-dom/client'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { Virtuoso } from '../src/Virtuoso'
 
 vi.mock('../src/hooks/useSize')
 vi.mock('../src/hooks/useChangedChildSizes')
@@ -36,7 +36,7 @@ describe('Virtuoso', () => {
     const listParent = viewport.firstElementChild
 
     act(() => {
-      scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
+      scroller.triggerScroll({ scrollHeight: 700, scrollTop: 0, viewportHeight: 200 })
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
     })
 
@@ -59,9 +59,9 @@ describe('Virtuoso', () => {
       listParent = viewport.firstElementChild
 
       act(() => {
-        scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
+        scroller.triggerScroll({ scrollHeight: 700, scrollTop: 0, viewportHeight: 200 })
         viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
-        listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 30 }])
+        listParent.triggerChangedChildSizes([{ endIndex: 0, size: 30, startIndex: 0 }])
       })
     })
 
@@ -71,7 +71,7 @@ describe('Virtuoso', () => {
 
     it('changes the list if items resize', () => {
       act(() => {
-        listParent.triggerChangedChildSizes([{ startIndex: 10, endIndex: 12, size: 50 }])
+        listParent.triggerChangedChildSizes([{ endIndex: 12, size: 50, startIndex: 10 }])
       })
 
       expect(listParent.children).toHaveLength(22)
@@ -79,7 +79,7 @@ describe('Virtuoso', () => {
 
     it('renders new items when scrolling', () => {
       act(() => {
-        scroller.triggerScroll({ scrollTop: 600, scrollHeight: 1000, viewportHeight: 200 })
+        scroller.triggerScroll({ scrollHeight: 1000, scrollTop: 600, viewportHeight: 200 })
       })
       expect(listParent.firstElementChild.dataset.index).toBe('20')
     })
@@ -101,9 +101,9 @@ describe('Virtuoso', () => {
       listParent = viewport.firstElementChild
 
       act(() => {
-        scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
+        scroller.triggerScroll({ scrollHeight: 700, scrollTop: 0, viewportHeight: 200 })
         viewport.triggerResize({ getBoundingClientRect: () => ({ height: 700 }) })
-        listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
+        listParent.triggerChangedChildSizes([{ endIndex: 0, size: 10, startIndex: 0 }])
       })
     })
 
@@ -119,7 +119,13 @@ describe('Virtuoso', () => {
       return (
         <>
           <Virtuoso data={data} itemContent={(_: number, item: { name: string }) => item.name} />
-          <button onClick={() => setData([{ name: 'Item 0' }])}>Set Data</button>
+          <button
+            onClick={() => {
+              setData([{ name: 'Item 0' }])
+            }}
+          >
+            Set Data
+          </button>
         </>
       )
     }
@@ -133,9 +139,9 @@ describe('Virtuoso', () => {
     const listParent = viewport.firstElementChild
 
     act(() => {
-      scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
+      scroller.triggerScroll({ scrollHeight: 700, scrollTop: 0, viewportHeight: 200 })
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
-      listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
+      listParent.triggerChangedChildSizes([{ endIndex: 0, size: 10, startIndex: 0 }])
       container.querySelector('button')!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     })
 
@@ -154,7 +160,13 @@ describe('Virtuoso', () => {
               return item.name
             }}
           />
-          <button onClick={() => setData([{ name: 'Item 1' }])}>Set Data</button>
+          <button
+            onClick={() => {
+              setData([{ name: 'Item 1' }])
+            }}
+          >
+            Set Data
+          </button>
         </>
       )
     }
@@ -168,9 +180,9 @@ describe('Virtuoso', () => {
     const listParent = viewport.firstElementChild
 
     act(() => {
-      scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
+      scroller.triggerScroll({ scrollHeight: 700, scrollTop: 0, viewportHeight: 200 })
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
-      listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
+      listParent.triggerChangedChildSizes([{ endIndex: 0, size: 10, startIndex: 0 }])
       container.querySelector('button')!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     })
 
@@ -191,7 +203,13 @@ describe('Virtuoso', () => {
             }}
             itemsRendered={itemsRendered}
           />
-          <button onClick={() => setData([{ name: 'Item 1' }])}>Set Data</button>
+          <button
+            onClick={() => {
+              setData([{ name: 'Item 1' }])
+            }}
+          >
+            Set Data
+          </button>
         </>
       )
     }
@@ -207,9 +225,9 @@ describe('Virtuoso', () => {
     const listParent = viewport.firstElementChild
 
     act(() => {
-      scroller.triggerScroll({ scrollTop: 0, scrollHeight: 700, viewportHeight: 200 })
+      scroller.triggerScroll({ scrollHeight: 700, scrollTop: 0, viewportHeight: 200 })
       viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
-      listParent.triggerChangedChildSizes([{ startIndex: 0, endIndex: 0, size: 10 }])
+      listParent.triggerChangedChildSizes([{ endIndex: 0, size: 10, startIndex: 0 }])
     })
 
     expect(itemsRendered).toHaveBeenCalledTimes(2)

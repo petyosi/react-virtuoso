@@ -1,5 +1,5 @@
-import * as React from 'react'
 import { useState } from 'react'
+
 import { Virtuoso } from '../src'
 
 function generateItems(length: number, iter: number) {

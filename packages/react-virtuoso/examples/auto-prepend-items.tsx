@@ -1,6 +1,7 @@
-import React from 'react'
-import { Virtuoso } from '../src'
 import { faker } from '@faker-js/faker'
+import React from 'react'
+
+import { Virtuoso } from '../src'
 
 function toggleBg(index: number) {
   return index % 2 ? 'var(--ifm-background-color)' : 'var(--ifm-color-emphasis-200)'
@@ -11,13 +12,13 @@ function user(index = 0) {
   const lastName = faker.name.lastName()
 
   return {
-    index: index + 1,
     bgColor: toggleBg(index),
-    name: `${firstName} ${lastName}`,
+    description: faker.lorem.sentence(10),
+    index: index + 1,
     initials: `${firstName.substr(0, 1)}${lastName.substr(0, 1)}`,
     jobTitle: faker.name.jobTitle(),
-    description: faker.lorem.sentence(10),
     longText: faker.lorem.paragraphs(1),
+    name: `${firstName} ${lastName}`,
   }
 }
 
@@ -56,14 +57,12 @@ export function Example() {
 
   return (
     <Virtuoso
-      style={{ height: 500 }}
       components={{
-        Header: () => <div style={{ textAlign: 'center', padding: '1rem' }}>Loading...</div>,
+        Header: () => <div style={{ padding: '1rem', textAlign: 'center' }}>Loading...</div>,
       }}
+      data={users}
       firstItemIndex={firstItemIndex}
       initialTopMostItemIndex={INITIAL_ITEM_COUNT - 1}
-      data={users}
-      startReached={prependItems}
       itemContent={(_, user) => {
         return (
           <div style={{ backgroundColor: user.bgColor, padding: '1rem 0.5rem' }}>
@@ -74,6 +73,8 @@ export function Example() {
           </div>
         )
       }}
+      startReached={prependItems}
+      style={{ height: 500 }}
     />
   )
 }

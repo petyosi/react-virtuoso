@@ -1,9 +1,10 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
+
 //@ts-expect-error - type module and playwright
 import { navigateToExample } from './utils.ts'
 
 test.describe('jagged grouped list', () => {
-  test.beforeEach(async ({ page, baseURL }) => {
+  test.beforeEach(async ({ baseURL, page }) => {
     await navigateToExample(page, baseURL, 'grouped')
     await page.waitForTimeout(100)
   })
@@ -20,7 +21,7 @@ test.describe('jagged grouped list', () => {
 
   test('renders correct state when scrolled', async ({ page }) => {
     await page.evaluate(() => {
-      const scroller = document.querySelector('[data-testid=virtuoso-scroller]') as HTMLElement
+      const scroller = document.querySelector('[data-testid=virtuoso-scroller]')!
       scroller.scrollTo({ top: 500 })
     })
 
@@ -28,7 +29,7 @@ test.describe('jagged grouped list', () => {
 
     const stickyItemIndex = await page.evaluate(() => {
       const stickyItem = document.querySelector('[data-testid=virtuoso-top-item-list] > div') as HTMLElement
-      return stickyItem.dataset['index']
+      return stickyItem.dataset.index
     })
 
     expect(stickyItemIndex).toBe('20')
@@ -36,7 +37,7 @@ test.describe('jagged grouped list', () => {
 })
 
 test.describe('scroll into view for grouped list', () => {
-  test.beforeEach(async ({ page, baseURL }) => {
+  test.beforeEach(async ({ baseURL, page }) => {
     await navigateToExample(page, baseURL, 'group-scroll-into-view')
     await page.waitForTimeout(100)
   })

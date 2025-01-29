@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import * as u from './urx'
+import { domIOSystem } from './domIOSystem'
+import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
+import { FollowOutput, FollowOutputScalarType } from './interfaces'
+import { loggerSystem, LogLevel } from './loggerSystem'
+import { propsReadySystem } from './propsReadySystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
-import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
-import { FollowOutput, FollowOutputScalarType } from './interfaces'
-import { propsReadySystem } from './propsReadySystem'
-import { loggerSystem, LogLevel } from './loggerSystem'
-import { domIOSystem } from './domIOSystem'
+import * as u from './urx'
 
 function normalizeFollowOutput(follow: FollowOutputScalarType): FollowOutputScalarType {
   if (!follow) {
@@ -25,11 +25,11 @@ const behaviorFromFollowOutput = (follow: FollowOutput, isAtBottom: boolean) => 
 
 export const followOutputSystem = u.system(
   ([
-    { totalCount, listRefresh },
-    { isAtBottom, atBottomState },
+    { listRefresh, totalCount },
+    { atBottomState, isAtBottom },
     { scrollToIndex },
     { scrolledToInitialItem },
-    { propsReady, didMount },
+    { didMount, propsReady },
     { log },
     { scrollingInProgress },
   ]) => {
@@ -39,9 +39,9 @@ export const followOutputSystem = u.system(
 
     function scrollToBottom(followOutputBehavior: FollowOutputScalarType) {
       u.publish(scrollToIndex, {
-        index: 'LAST',
         align: 'end',
         behavior: followOutputBehavior,
+        index: 'LAST',
       })
     }
 
@@ -60,11 +60,11 @@ export const followOutputSystem = u.system(
             shouldFollow = shouldFollow && !!followOutputBehavior
           }
 
-          return { totalCount, shouldFollow, followOutputBehavior }
+          return { followOutputBehavior, shouldFollow, totalCount }
         }),
         u.filter(({ shouldFollow }) => shouldFollow)
       ),
-      ({ totalCount, followOutputBehavior }) => {
+      ({ followOutputBehavior, totalCount }) => {
         if (pendingScrollHandle) {
           pendingScrollHandle()
           pendingScrollHandle = null
@@ -119,7 +119,7 @@ export const followOutputSystem = u.system(
       }
     })
 
-    return { followOutput, autoscrollToBottom }
+    return { autoscrollToBottom, followOutput }
   },
   u.tup(sizeSystem, stateFlagsSystem, scrollToIndexSystem, initialTopMostItemIndexSystem, propsReadySystem, loggerSystem, domIOSystem)
 )

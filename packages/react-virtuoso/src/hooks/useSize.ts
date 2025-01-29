@@ -2,6 +2,10 @@ import React from 'react'
 
 export type CallbackRefParam = HTMLElement | null
 
+export default function useSize(callback: (e: HTMLElement) => void, enabled: boolean, skipAnimationFrame: boolean) {
+  return useSizeWithElRef(callback, enabled, skipAnimationFrame).callbackRef
+}
+
 export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled: boolean, skipAnimationFrame: boolean) {
   const ref = React.useRef<CallbackRefParam>(null)
 
@@ -35,9 +39,5 @@ export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled: bo
     }
   }
 
-  return { ref, callbackRef }
-}
-
-export default function useSize(callback: (e: HTMLElement) => void, enabled: boolean, skipAnimationFrame: boolean) {
-  return useSizeWithElRef(callback, enabled, skipAnimationFrame).callbackRef
+  return { callbackRef, ref }
 }

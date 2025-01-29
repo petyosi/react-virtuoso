@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import { Virtuoso, VirtuosoHandle } from '../src'
 
 export function Example() {
@@ -7,21 +8,36 @@ export function Example() {
   return (
     <>
       <Virtuoso
-        ref={ref}
-        totalCount={100}
         itemContent={(index) => (
-          <div style={{ height: index % 2 ? 30 : 20, background: 'white', color: index === 50 ? 'red' : 'black' }}>Item {index}</div>
+          <div style={{ background: 'white', color: index === 50 ? 'red' : 'black', height: index % 2 ? 30 : 20 }}>Item {index}</div>
         )}
+        ref={ref}
         style={{ height: 300 }}
+        totalCount={100}
       />
       <div>
-        <button id="start" onClick={() => ref.current!.scrollIntoView({ index: 50, align: 'start' })}>
+        <button
+          id="start"
+          onClick={() => {
+            ref.current!.scrollIntoView({ align: 'start', index: 50 })
+          }}
+        >
           Item 50 Start
         </button>
-        <button id="offset-30" onClick={() => ref.current!.scrollIntoView({ index: 50, align: 'center' })}>
+        <button
+          id="offset-30"
+          onClick={() => {
+            ref.current!.scrollIntoView({ align: 'center', index: 50 })
+          }}
+        >
           Item 50 Center
         </button>
-        <button id="center-50" onClick={() => ref.current!.scrollIntoView({ index: 50, align: 'end' })}>
+        <button
+          id="center-50"
+          onClick={() => {
+            ref.current!.scrollIntoView({ align: 'end', index: 50 })
+          }}
+        >
           Item 50 End
         </button>
       </div>

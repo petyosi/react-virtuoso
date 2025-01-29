@@ -1,14 +1,11 @@
-import * as React from 'react'
 import { TableVirtuoso } from '../src/'
 
 export function Example() {
   return (
-    <div style={{ paddingTop: 100, paddingBottom: 100 }}>
+    <div style={{ paddingBottom: 100, paddingTop: 100 }}>
       <p>red background should match the size of the table</p>
       <div style={{ background: 'red' }}>
         <TableVirtuoso
-          totalCount={100}
-          useWindowScroll
           components={{
             EmptyPlaceholder: () => {
               return (
@@ -23,10 +20,10 @@ export function Example() {
           fixedHeaderContent={() => {
             return (
               <tr style={{ background: 'white' }}>
-                <th key={1} style={{ height: 50, border: '1px solid black', background: 'white' }}>
+                <th key={1} style={{ background: 'white', border: '1px solid black', height: 50 }}>
                   TH 1
                 </th>
-                <th key={2} style={{ height: 50, border: '1px solid black', background: 'white' }}>
+                <th key={2} style={{ background: 'white', border: '1px solid black', height: 50 }}>
                   TH meh
                 </th>
               </tr>
@@ -40,6 +37,8 @@ export function Example() {
               </>
             )
           }}
+          totalCount={100}
+          useWindowScroll
         />
       </div>
     </div>

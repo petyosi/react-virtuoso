@@ -1,5 +1,6 @@
+import { describe, expect, it, vi } from 'vitest'
+
 import { call, joinProc } from '../../src/urx'
-import { describe, it, expect, vi } from 'vitest'
 
 describe('utils', () => {
   describe('call', () => {

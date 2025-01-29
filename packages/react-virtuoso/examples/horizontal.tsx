@@ -1,15 +1,14 @@
-import * as React from 'react'
 import { Virtuoso } from '../src'
 
 export function Example() {
   return (
-    <div style={{ width: 500, height: 100, resize: 'both', overflow: 'hidden' }}>
+    <div style={{ height: 100, overflow: 'hidden', resize: 'both', width: 500 }}>
       <Virtuoso
         computeItemKey={(key: number) => `item-${key.toString()}`}
-        totalCount={100}
-        itemContent={(index) => <div style={{ height: '100%', aspectRatio: '1 / 1', background: '#ccc' }}>Item {index}</div>}
-        style={{ height: '100%' }}
         horizontalDirection
+        itemContent={(index) => <div style={{ aspectRatio: '1 / 1', background: '#ccc', height: '100%' }}>Item {index}</div>}
+        style={{ height: '100%' }}
+        totalCount={100}
       />
     </div>
   )

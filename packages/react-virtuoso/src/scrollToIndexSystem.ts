@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import * as u from './urx'
 import { findMaxKeyValue } from './AATree'
 import { domIOSystem } from './domIOSystem'
-import { offsetOf, originalIndexFromLocation, sizeSystem } from './sizeSystem'
 import { IndexLocationWithAlign } from './interfaces'
 import { loggerSystem, LogLevel } from './loggerSystem'
+import { offsetOf, originalIndexFromLocation, sizeSystem } from './sizeSystem'
+import * as u from './urx'
 
-export type IndexLocation = number | IndexLocationWithAlign
+export type IndexLocation = IndexLocationWithAlign | number
 
 const SUPPORTS_SCROLL_TO_OPTIONS = typeof document !== 'undefined' && 'scrollBehavior' in document.documentElement.style
 
@@ -28,16 +28,16 @@ export function normalizeIndexLocation(location: IndexLocation) {
 
 export const scrollToIndexSystem = u.system(
   ([
-    { sizes, totalCount, listRefresh, gap },
+    { gap, listRefresh, sizes, totalCount },
     {
+      fixedFooterHeight,
+      fixedHeaderHeight,
+      footerHeight,
+      headerHeight,
       scrollingInProgress,
-      viewportHeight,
       scrollTo,
       smoothScrollTargetReached,
-      headerHeight,
-      footerHeight,
-      fixedHeaderHeight,
-      fixedFooterHeight,
+      viewportHeight,
     },
     { log },
   ]) => {
@@ -46,7 +46,7 @@ export const scrollToIndexSystem = u.system(
     const topListHeight = u.statefulStream(0)
 
     let unsubscribeNextListRefresh: any = null
-    let cleartTimeoutRef: ReturnType<typeof setTimeout> | null = null
+    let cleartTimeoutRef: null | ReturnType<typeof setTimeout> = null
     let unsubscribeListRefresh: any = null
 
     function cleanup() {
@@ -134,8 +134,8 @@ export const scrollToIndexSystem = u.system(
             }, 1200)
 
             u.publish(scrollingInProgress, true)
-            log('scrolling from index to', { index, top, behavior }, LogLevel.DEBUG)
-            return { top, behavior }
+            log('scrolling from index to', { behavior, index, top }, LogLevel.DEBUG)
+            return { behavior, top }
           }
         )
       ),
@@ -143,8 +143,8 @@ export const scrollToIndexSystem = u.system(
     )
 
     return {
-      scrollToIndex,
       scrollTargetReached,
+      scrollToIndex,
       topListHeight,
     }
   },
