@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import * as React from 'react'
 import ReactDOM from 'react-dom/client'
-import { act } from 'react-dom/test-utils'
+import { act } from 'react'
 import { Virtuoso } from '../src/Virtuoso'
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'

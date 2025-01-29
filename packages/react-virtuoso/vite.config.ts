@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import react from '@vitejs/plugin-react-swc'
 import dts from 'vite-plugin-dts'
 
 const ext = {
@@ -10,7 +10,7 @@ const ext = {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react({ jsxRuntime: 'automatic' }), dts({ rollupTypes: true })],
+  plugins: [react(), dts({ rollupTypes: true })],
   build: {
     target: ['es2020', 'edge88', 'firefox78', 'chrome79', 'safari14'],
     minify: 'terser',
