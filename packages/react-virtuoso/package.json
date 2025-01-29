@@ -1,8 +1,9 @@
 {
   "name": "react-virtuoso",
+  "description": "A virtual scroll React component for efficiently rendering large scrollable lists, grids, tables, and feeds",
   "author": "Petyo Ivanov",
   "sideEffects": false,
-  "version": "0.0.0-semantic-release",
+  "version": "4.12.3",
   "homepage": "https://virtuoso.dev/",
   "license": "MIT",
   "source": "src/index.tsx",
@@ -26,6 +27,10 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/petyosi/react-virtuoso.git"
+  },
   "scripts": {
     "build": "vite build",
     "test": "vitest run",
@@ -33,17 +38,13 @@
     "e2e": "playwright test",
     "lint": "eslint src test e2e --ext .ts,.tsx",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
-    "dev": "LADLE=true ladle serve",
-    "prepare": "pnpm run build && husky install",
-    "semantic-release": "semantic-release"
+    "dev": "LADLE=true ladle serve"
   },
   "peerDependencies": {
-    "react": ">=16 || >=17 || >= 18",
-    "react-dom": ">=16 || >=17 || >= 18"
+    "react": ">=16 || >=17 || >= 18 || >= 19",
+    "react-dom": ">=16 || >=17 || >= 18 || >=19"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.6.3",
-    "@commitlint/config-conventional": "^17.6.3",
     "@emotion/core": "^11.0.0",
     "@emotion/styled": "^11.10.8",
     "@faker-js/faker": "^7.6.0",
@@ -70,7 +71,6 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "husky": "^8.0.3",
     "immer": "^10.0.1",
     "jsdom": "^22.0.0",
     "lodash": "^4.17.21",
@@ -81,28 +81,20 @@
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "18.3.1",
     "react-router-dom": "^6.14.0",
-    "semantic-release": "^19.0.5",
     "terser": "^5.17.1",
     "tslib": "^2.5.0",
-    "typedoc": "^0.24.6",
-    "typedoc-plugin-markdown": "^3.15.3",
     "typescript": "^5.0.4",
     "vite": "^5.4.2",
     "vite-plugin-dts": "^4.0.3",
     "vitest": "^2.0.5"
   },
-  "packageManager": "pnpm@8.14.3+sha256.2d0363bb6c314daa67087ef07743eea1ba2e2d360c835e8fec6b5575e4ed9484",
   "engines": {
-    "node": ">=10"
+    "node": "22"
   },
   "prettier": {
     "printWidth": 140,
     "semi": false,
     "singleQuote": true,
     "trailingComma": "es5"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/petyosi/react-virtuoso.git"
   }
 }
