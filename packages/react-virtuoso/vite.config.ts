@@ -17,7 +17,7 @@ export default defineConfig({
       fileName: (format) => `index.${ext[format]}`,
       formats: ['es', 'cjs'],
     },
-    minify: 'terser',
+    minify: true,
     rollupOptions: {
       external: ['react', 'react-dom', 'react/jsx-runtime', '@virtuoso.dev/urx', '@virtuoso.dev/react-urx'],
     },
