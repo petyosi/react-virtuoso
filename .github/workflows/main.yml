@@ -13,44 +13,20 @@ jobs:
 
     steps:
       - name: Begin CI...
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Use Node 16
-        uses: actions/setup-node@v3
+      - name: Use Node 22
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.x
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        id: pnpm-install
-        with:
-          run_install: false
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          node-version: 22.x
 
       - name: Install dependencies
         run: | 
-          pnpm install
-          npx playwright install --with-deps chromium
+          npm install --workspaces
 
-      - name: run lint and tests
+      - name: run CI checks
         run: |
-          pnpm lint
-          pnpm typecheck
-          pnpm test
-          pnpm e2e 
+          npm run ci
 
       - name: Release
         if: github.ref == 'refs/heads/master'
@@ -58,5 +34,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          rm -rf dist
-          npx semantic-release
+          npm run release

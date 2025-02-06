@@ -2,6 +2,11 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "tasks": {
+    "typecheck": {
+      "dependsOn": [
+        "^typecheck"
+      ]
+    },
     "lint": {
       "dependsOn": [
         "^lint"
@@ -12,9 +17,14 @@
         "^test"
       ]
     },
-    "check-types": {
+    "e2e": {
       "dependsOn": [
-        "^check-types"
+        "^e2e"
+      ]
+    },
+    "build": {
+      "dependsOn": [
+        "^build"
       ]
     },
     "dev": {
