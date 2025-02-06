@@ -7,7 +7,7 @@ test.describe('list with collapsible long items', () => {
   test.beforeEach(async ({ baseURL, page }) => {
     await navigateToExample(page, baseURL, 'collapsible-long-item')
     await page.waitForSelector('[data-testid=virtuoso-scroller]')
-    await page.waitForTimeout(200)
+    await page.waitForTimeout(500)
   })
 
   test('compensates correctly when collapsing an item', async ({ page }) => {
