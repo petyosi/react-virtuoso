@@ -22,6 +22,7 @@ jobs:
 
       - name: Install dependencies
         run: | 
+          npm install
           npm install --workspaces
 
       - name: run CI checks
