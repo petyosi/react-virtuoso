@@ -39,7 +39,7 @@
     "lint": "eslint",
     "typecheck": "tsc",
     "dev": "LADLE=true ladle serve",
-    "ci-setup": "npx playwright install"
+    "ci-setup": "npx playwright install --with-deps"
   },
   "peerDependencies": {
     "react": ">=16 || >=17 || >= 18 || >= 19",
