@@ -17,6 +17,7 @@ test.describe('reverse taller than viewport', () => {
 
   test('compensates for the tall 90th item', async ({ page }) => {
     const scroller = page.locator('[data-testid=virtuoso-scroller]')
+    await page.waitForTimeout(300)
     await scroller.evaluate((el) => {
       el.scrollBy(0, -50)
     })

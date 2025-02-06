@@ -111,7 +111,8 @@ export function statefulStream<T>(initial: T): StatefulStream<T> {
       case VALUE:
         return value
     }
-    innerSubject(action as any, arg)
+    // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+    return innerSubject(action as any, arg)
   }) as StatefulStream<T>
 }
 
