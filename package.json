@@ -1,0 +1,23 @@
+{
+  "name": "@virtuoso.dev/monorepo",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "test": "turbo run test",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "e2e": "turbo run e2e",
+    "changeset-add": "npx @changesets/cli add"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.4"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "packageManager": "npm@10.8.2",
+  "workspaces": [
+    "packages/*"
+  ]
+}
