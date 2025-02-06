@@ -78,6 +78,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['node_modules/', 'dist/', 'src/**/__mocks__/'],
+    ignores: ['node_modules/', 'dist/', 'src/**/__mocks__/', 'test-results'],
   }
 )
