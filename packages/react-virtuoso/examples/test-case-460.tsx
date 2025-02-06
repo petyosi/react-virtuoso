@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Virtuoso, VirtuosoProps } from '../'
+import { Virtuoso, VirtuosoProps } from '../src'
 
 const getRandomArbitrary = (min: number, max: number) => {
   return Math.random() * (max - min) + min

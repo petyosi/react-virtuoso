@@ -2,8 +2,7 @@ import { ColumnDef, getCoreRowModel, useReactTable } from '@tanstack/react-table
 import { flexRender } from '@tanstack/react-table'
 import * as React from 'react'
 
-import { ScrollSeekPlaceholderProps } from '../'
-import { FillerRowProps, TableVirtuoso } from '../src'
+import { ScrollSeekPlaceholderProps, FillerRowProps, TableVirtuoso } from '../src'
 
 const items: ReturnType<typeof item>[] = []
 function item(index: number) {
