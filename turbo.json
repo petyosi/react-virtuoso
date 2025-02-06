@@ -27,6 +27,11 @@
         "^build"
       ]
     },
+    "ci-setup": {
+      "dependsOn": [
+        "^ci-setup"
+      ]
+    },
     "dev": {
       "cache": false,
       "persistent": true

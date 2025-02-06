@@ -38,7 +38,8 @@
     "e2e": "playwright test",
     "lint": "eslint",
     "typecheck": "tsc",
-    "dev": "LADLE=true ladle serve"
+    "dev": "LADLE=true ladle serve",
+    "ci-setup": "npx playwright install"
   },
   "peerDependencies": {
     "react": ">=16 || >=17 || >= 18 || >= 19",
