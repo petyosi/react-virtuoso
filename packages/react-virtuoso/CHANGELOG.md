@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.12.5
+
+### Patch Changes
+
+- b1d4519: Revert node requirements
+
 ## 4.12.4
 
 ### Patch Changes
