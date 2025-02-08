@@ -1,0 +1,287 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #0253b3;
+  --ifm-color-primary-dark: #024ba1;
+  --ifm-color-primary-darker: #024798;
+  --ifm-color-primary-darkest: #013a7d;
+  --ifm-color-primary-light: #025bc5;
+  --ifm-color-primary-lighter: #025fce;
+  --ifm-color-primary-lightest: #036ce9;
+  --ifm-code-font-size: 80%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-menu-link-sublist-icon: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><mask id="mask0_11_32" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20"><rect width="20" height="20" fill="%23D9D9D9"/></mask><g mask="url(%23mask0_11_32)"><path d="M8.06249 10.4391L7.5769 9.95348L9.99999 7.5304L12.4231 9.95348L11.9375 10.4391L9.99999 8.50156L8.06249 10.4391Z" fill="%231C1B1F"/></g></svg>');
+  --ifm-toc-border-color: transparent;
+  --ifm-menu-color-background-active: transparent;
+  --ifm-menu-color-background-hover: transparent;
+  --ifm-font-weight-bold: 600;
+  --ifm-code-border-radius: 0.25rem;
+  --ifm-code-padding-horizontal: 0.2rem;
+  --ifm-code-background: var(--ifm-color-gray-200);
+  --ifm-color-code: var(--ifm-color-content-secondary);
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme="dark"] {
+  --ifm-color-primary: #1c81fd;
+  --ifm-color-primary-dark: #0272fb;
+  --ifm-color-primary-darker: #026bed;
+  --ifm-color-primary-darkest: #0258c3;
+  --ifm-color-primary-light: #a7cefe;
+  --ifm-color-primary-lighter: #bbd9fe;
+  --ifm-color-primary-lightest: #e7f2ff;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+table {
+  overflow: visible;
+}
+
+code {
+  border: unset;
+  color: var(--ifm-color-code);
+}
+
+.menu__list {
+  font-size: 95%;
+}
+
+.menu__link:hover {
+  color: var(--ifm-color-primary-lighter);
+}
+
+.footer__links {
+  font-size: 90%;
+}
+
+.footer__copyright {
+  text-align: left;
+  font-size: 80%;
+}
+
+.markdown h1:first-child {
+  --ifm-h1-font-size: 2rem;
+}
+
+.markdown > h2 {
+  --ifm-h2-font-size: 1.5rem;
+}
+
+.markdown > h3 {
+  --ifm-h3-font-size: 1.3rem;
+  --ifm-heading-font-weight: 500;
+}
+
+[class^="playgroundContainer_"] {
+  display: grid;
+  min-height: 500px;
+  max-height: 500px;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: min-content 1fr;
+}
+
+[class^="playgroundContainer_"]:has([data-viewport-type="window"]) {
+  max-height: unset;
+}
+
+[class^="playgroundContainer_"]:has(.tall-example) {
+  max-height: 900px;
+}
+
+.tall-example {
+  position: sticky;
+  top: 0;
+}
+
+[class^="playgroundContainer_"] > div:nth-child(1) {
+  grid-area: 1 / 1 / 1 / 1;
+  font-size: 0.6rem;
+  padding: 0.5rem;
+}
+
+[class^="playgroundContainer_"] > div:nth-child(3) {
+  grid-area: 1 / 2 / 1 / 2;
+  font-size: 0.6rem;
+  padding: 0.5rem;
+}
+
+[class^="playgroundContainer_"] > div:nth-child(2) {
+  grid-area: 2 / 1 / 2 / 1;
+  display: flex;
+  align-items: stretch;
+  overflow-y: auto;
+}
+
+[class^="playgroundContainer_"] > div:nth-child(2) > pre {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+[class^="playgroundContainer_"] > div:nth-child(4) {
+  grid-area: 2 / 2 / 2 / 2;
+  padding-top: 0;
+}
+
+[class^="playgroundContainer_"]:has(.wide-example) {
+  max-height: 900px;
+  grid-template-columns: 1fr;
+  grid-template-rows: max-content 1fr;
+  border-top: 1px solid var(--ifm-color-secondary-light);
+}
+[class^="playgroundContainer_"]:has(.wide-example.full-code) {
+  max-height: unset;
+}
+
+[class^="playgroundContainer_"]:has(.wide-example) > div:nth-child(1) {
+  grid-area: 1 / 1 / 1 / 1;
+  display: none;
+}
+
+[class^="playgroundContainer_"]:has(.wide-example) > div:nth-child(3) {
+  grid-area: 1 / 1 / 1 / 1;
+  display: none;
+}
+
+[class^="playgroundContainer_"]:has(.wide-example) > div:nth-child(2) {
+  grid-area: 2 / 1 / 2 / 1;
+  display: flex;
+  align-items: stretch;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+[class^="playgroundContainer_"]:has(.wide-example.full-code)
+  > div:nth-child(2) {
+  grid-area: 2 / 1 / 2 / 1;
+  display: flex;
+  align-items: stretch;
+  max-height: unset;
+  height: unset;
+  overflow-y: visible;
+}
+
+[class^="playgroundContainer_"]:has(.wide-example) > div:nth-child(2) pre {
+  width: 100%;
+}
+
+[class^="playgroundContainer_"]:has(.wide-example) > div:nth-child(2) > pre {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+[class^="playgroundContainer_"]:has(.wide-example) > div:nth-child(4) {
+  font-size: 1rem;
+  height: 600px;
+  grid-area: 1 / 1 / 1 / 1;
+  padding-top: 2rem;
+  background-color: transparent;
+}
+
+#pricing-blocks {
+  flex-direction: column;
+  display: flex;
+  gap: 2rem;
+}
+
+#pricing {
+  margin: 2rem auto;
+}
+
+@media screen and (min-width: 996px) {
+  #pricing {
+    max-width: 1024px;
+  }
+
+  #pricing-blocks {
+    flex-direction: row;
+  }
+
+  #pricing-blocks > div {
+    flex: 1;
+  }
+}
+
+#pricing-blocks > div {
+  border: 1px solid var(--ifm-color-secondary-light);
+  padding: 1rem;
+  border-radius: 0.8rem;
+  display: flex;
+  flex-direction: column;
+}
+
+#pricing-blocks > div .cta {
+  margin-top: auto;
+}
+
+#pricing-blocks > div .cta button {
+  margin-top: 1rem;
+  width: 100%;
+  border: 0;
+  border-radius: 0.5rem;
+  background-color: var(--ifm-color-primary);
+  color: var(--ifm-color-content-inverse);
+  font-size: 1.3rem;
+}
+
+#pricing-blocks > div .cta code {
+  font-size: 0.9em;
+  display: block;
+  line-height: 2.2rem;
+  text-align: center;
+}
+
+#pricing-blocks > div h2 {
+  min-height: 3rem;
+}
+
+#pricing-blocks > div .license-kind {
+  font-size: 0.9rem;
+  color: var(--ifm-color-content-secondary);
+}
+
+#pricing-blocks > div .license-coverage {
+  min-height: 5rem;
+}
+
+#pricing-blocks > div .license-details {
+  margin-block-start: 0.5rem;
+  padding-inline-start: 1rem;
+  font-size: 0.9rem;
+  min-height: 8rem;
+}
+
+#pricing-blocks > div .license-details li {
+  margin-bottom: 0.5rem;
+}
+
+#pricing-blocks > div .price p:first-child {
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+#pricing-blocks > div .price p:nth-child(2) {
+  font-size: 0.8rem;
+  color: var(--ifm-color-content-secondary);
+}
+
+h2.newLabel::after,
+.navbar--fixed-top .newLabel::after {
+  content: "new";
+  font-variant: small-caps;
+  vertical-align: super;
+  font-size: 0.7rem;
+  margin-inline-start: 0.3rem;
+  background-color: var(--ifm-color-primary-lightest);
+  color: var(--ifm-color-content-inverse);
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.3rem;
+}
+
+li.newLabel > div > a {
+  color: var(--ifm-color-primary-lightest);
+}

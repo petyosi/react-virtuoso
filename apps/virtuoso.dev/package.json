@@ -1,0 +1,63 @@
+{
+  "name": "@virtuoso.dev/virtuoso.dev",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "docusaurus": "docusaurus",
+    "dev": "docusaurus start",
+    "test-prod:dev": "TEST_PRODUCTION=true docusaurus start",
+    "build": "docusaurus build",
+    "swizzle": "docusaurus swizzle",
+    "deploy": "docusaurus deploy",
+    "clear": "docusaurus clear",
+    "serve": "docusaurus serve",
+    "write-translations": "docusaurus write-translations",
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^3.2.1",
+    "@docusaurus/module-type-aliases": "^3.2.1",
+    "@docusaurus/plugin-client-redirects": "^3.2.1",
+    "@docusaurus/preset-classic": "^3.2.1",
+    "@docusaurus/theme-live-codeblock": "^3.2.1",
+    "@docusaurus/tsconfig": "^3.2.1",
+    "@docusaurus/types": "^3.2.1",
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.0",
+    "@hello-pangea/dnd": "^16.6.0",
+    "@mdx-js/react": "^3.0.0",
+    "@mui/material": "^5.15.14",
+    "@ngneat/falso": "^7.2.0",
+    "@paddle/paddle-js": "^1.0.3",
+    "@tanstack/react-table": "^8.15.0",
+    "@virtuoso.dev/message-list": "^1.9.6",
+    "clsx": "^2.0.0",
+    "docusaurus-plugin-typedoc": "^1.2.3",
+    "dotenv": "^16.4.5",
+    "prism-react-renderer": "^2.3.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-virtuoso": "*",
+    "search-insights": "^2.13.0",
+    "typedoc": "^0.27.6",
+    "typedoc-plugin-markdown": "4.4.1",
+    "typedoc-plugin-no-inherit": "^1.5.0",
+    "typescript": "~5.7.3"
+  },
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 3 chrome version",
+      "last 3 firefox version",
+      "last 5 safari version"
+    ]
+  },
+  "engines": {
+    "node": "22"
+  }
+}

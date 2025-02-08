@@ -1,0 +1,41 @@
+---
+id: virtuoso-message-list-scroll-to-item
+title: Virtuoso Message List Scroll to Item
+sidebar_label: Scroll to Item
+sidebar_position: 7
+slug: /virtuoso-message-list/scroll-to-item
+---
+
+# Scroll to Item
+
+The message list exposes an imperative API to scroll to a specific item. This is useful when you want to scroll to a specific message or a specific index in the list.
+
+:::caution
+If you want to change the scroll location when updating the data of the list, make sure to use the respective data parameters instead. They are called at the right timing and will not cause unnecessary re-renders and incorrect scroll position due to changed item sizes.
+:::
+
+```tsx live
+function App() {
+  const ref = React.useRef<VirtuosoMessageListMethods>(null);
+  const offset = React.useRef(100);
+
+  return (
+    <>
+      <button
+        onClick={() => {
+          ref.current.scrollToItem({ index: 50, align: "center" });
+        }}
+      >
+        Scroll to Item 50 in the center
+      </button>{" "}
+      <VirtuosoMessageListLicense licenseKey="">
+        <VirtuosoMessageList
+          ref={ref}
+          style={{ height: 400 }}
+          initialData={Array.from({ length: 100 }, (_, index) => index)}
+        />
+      </VirtuosoMessageListLicense>
+    </>
+  );
+}
+```
