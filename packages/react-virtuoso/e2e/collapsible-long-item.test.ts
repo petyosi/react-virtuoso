@@ -11,6 +11,7 @@ test.describe('list with collapsible long items', () => {
   })
 
   test('compensates correctly when collapsing an item', async ({ page }) => {
+    await page.waitForSelector('[data-testid=virtuoso-scroller]')
     await page.evaluate(() => {
       const scroller = document.querySelector('[data-testid=virtuoso-scroller]')!
       scroller.scrollBy({ top: -400 })
