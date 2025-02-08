@@ -23,6 +23,12 @@
       ]
     },
     "build": {
+      "env": [
+        "PADDLE_ENVIRONMENT",
+        "PADDLE_TOKEN",
+        "PADDLE_STANDARD_PRICE_ID",
+        "PADDLE_PRO_PRICE_ID"
+      ],
       "dependsOn": [
         "^build"
       ]
