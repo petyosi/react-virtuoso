@@ -35,7 +35,7 @@
     "build": "vite build",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "e2e": "playwright test",
+    "e2e": "playwright test --workers=1",
     "lint": "eslint",
     "typecheck": "tsc",
     "dev": "LADLE=true ladle serve",
