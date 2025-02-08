@@ -8,6 +8,7 @@
     "changeset-add": "npx @changesets/cli add"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.12",
     "turbo": "^2.3.4"
   },
   "engines": {
