@@ -18,6 +18,7 @@ test.describe('list with collapsible long items', () => {
     })
 
     await page.waitForTimeout(500)
+    await page.waitForSelector('[data-index="90"] button')
 
     await page.evaluate(() => {
       const button = document.querySelector('[data-index="90"] button') as HTMLElement
