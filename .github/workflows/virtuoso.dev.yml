@@ -23,11 +23,6 @@ jobs:
   # Build job
   build:
     runs-on: ubuntu-latest
-    env: 
-      PADDLE_ENVIRONMENT: ${{ vars.PADDLE_ENVIRONMENT }}
-      PADDLE_TOKEN: ${{ vars.PADDLE_TOKEN }}
-      PADDLE_STANDARD_PRICE_ID: ${{ vars.PADDLE_STANDARD_PRICE_ID }}
-      PADDLE_PRO_PRICE_ID: ${{ vars.PADDLE_PRO_PRICE_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,6 +45,11 @@ jobs:
         run: npm install
       - name: Build the site with docusaurus
         run: npm run build-virtuoso.dev
+        env:
+          PADDLE_ENVIRONMENT: ${{ vars.PADDLE_ENVIRONMENT }}
+          PADDLE_TOKEN: ${{ vars.PADDLE_TOKEN }}
+          PADDLE_STANDARD_PRICE_ID: ${{ vars.PADDLE_STANDARD_PRICE_ID }}
+          PADDLE_PRO_PRICE_ID: ${{ vars.PADDLE_PRO_PRICE_ID }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
