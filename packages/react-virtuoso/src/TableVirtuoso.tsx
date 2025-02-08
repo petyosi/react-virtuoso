@@ -298,7 +298,7 @@ const TableRoot: React.FC<TableRootProps> = /*#__PURE__*/ React.memo(function Ta
   ) : null
 
   return (
-    <TheScroller {...props}>
+    <TheScroller {...props} {...contextPropIfNotDomElement(TheScroller, context)}>
       <TheViewport>
         <TheTable style={{ borderSpacing: 0, overflowAnchor: 'none' }} {...contextPropIfNotDomElement(TheTable, context)}>
           {theHead}

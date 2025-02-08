@@ -250,9 +250,10 @@ const GridRoot: React.FC<GridRootProps> = /*#__PURE__*/ React.memo(function Grid
   const customScrollParent = useEmitterValue('customScrollParent')
   const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
   const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
+  const context = useEmitterValue('context')
 
   return (
-    <TheScroller {...props}>
+    <TheScroller {...props} {...contextPropIfNotDomElement(TheScroller, context)}>
       <TheViewport>
         <Header />
         <GridItems />

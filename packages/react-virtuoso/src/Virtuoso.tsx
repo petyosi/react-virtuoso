@@ -7,7 +7,7 @@ import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 import useScrollTop from './hooks/useScrollTop'
 import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
-import { Components, ComputeItemKey, GroupContent, GroupItemContent, ItemContent, ListRootProps } from './interfaces'
+import { Components, ComputeItemKey, ContextProp, GroupContent, GroupItemContent, ItemContent, ListRootProps } from './interfaces'
 import { listSystem } from './listSystem'
 import { systemToComponent } from './react-urx'
 import * as u from './urx'
@@ -236,8 +236,9 @@ const topItemListStyle: React.CSSProperties = {
   zIndex: 1,
 }
 
-export function contextPropIfNotDomElement(element: unknown, context: unknown) {
+export function contextPropIfNotDomElement<C>(element: unknown, context: C): ContextProp<C> {
   if (typeof element === 'string') {
+    // @ts-expect-error lie the type system, we don't want to return anything for dom elements
     return undefined
   }
   return { context }
@@ -446,10 +447,11 @@ const ListRoot: React.FC<ListRootProps> = /*#__PURE__*/ React.memo(function Virt
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const showTopList = useEmitterValue('topItemsIndexes').length > 0
   const customScrollParent = useEmitterValue('customScrollParent')
+  const context = useEmitterValue('context')
   const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
   const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
   return (
-    <TheScroller {...props}>
+    <TheScroller {...props} {...contextPropIfNotDomElement(TheScroller, context)}>
       {showTopList && (
         <TopItemListContainer>
           <Items showTopList={true} />
