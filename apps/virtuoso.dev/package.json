@@ -40,7 +40,7 @@
     "react-dom": "^18.0.0",
     "react-virtuoso": "*",
     "search-insights": "^2.13.0",
-    "typedoc": "^0.27.6",
+    "typedoc": "^0.27.7",
     "typedoc-plugin-markdown": "4.4.1",
     "typedoc-plugin-no-inherit": "^1.5.0",
     "typescript": "~5.7.3"
