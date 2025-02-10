@@ -37,7 +37,7 @@
     "dotenv": "^16.4.5",
     "prism-react-renderer": "^2.3.0",
     "react": "^18.0.0",
-    "react-dom": "^18.0.0",
+    "react-dom": "^19.0.0",
     "react-virtuoso": "*",
     "search-insights": "^2.13.0",
     "typedoc": "^0.27.6",
