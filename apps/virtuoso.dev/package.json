@@ -32,7 +32,7 @@
     "@paddle/paddle-js": "^1.0.3",
     "@tanstack/react-table": "^8.15.0",
     "@virtuoso.dev/message-list": "^1.9.6",
-    "clsx": "^2.0.0",
+    "clsx": "^2.1.1",
     "docusaurus-plugin-typedoc": "^1.2.3",
     "dotenv": "^16.4.5",
     "prism-react-renderer": "^2.3.0",
