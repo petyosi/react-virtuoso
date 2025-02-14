@@ -4,21 +4,25 @@
   "tasks": {
     "typecheck": {
       "dependsOn": [
+        "^build",
         "^typecheck"
       ]
     },
     "lint": {
       "dependsOn": [
+        "^build",
         "^lint"
       ]
     },
     "test": {
       "dependsOn": [
+        "^build",
         "^test"
       ]
     },
     "e2e": {
       "dependsOn": [
+        "^build",
         "^e2e"
       ]
     },
