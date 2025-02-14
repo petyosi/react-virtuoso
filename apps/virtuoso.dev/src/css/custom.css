@@ -289,5 +289,19 @@ li.newLabel > div > a {
 .live-code-block-wrapper {
   border-radius: var(--radius-3);
   border: 1px solid var(--base-card-classic-border-color);
-  padding: var(--space-3);
+
+  & > .live-code-block {
+    padding: var(--space-2);
+    box-sizing: border-box;
+  }
+
+  & > .live-code-block-preview {
+    border-left: 1px solid var(--base-card-classic-border-color);
+    padding: var(--space-2) var(--space-2);
+  }
+}
+
+p.rt-TooltipText {
+  padding: 0;
+  margin: 0;
 }

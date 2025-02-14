@@ -3,10 +3,11 @@ import React, { useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import MonacoEditor from 'react-monaco-editor';
 import * as _V from 'react-virtuoso';
-import { Separator, Box, Card, Flex, Inset } from '@radix-ui/themes'
+import { Separator, Box, Card, Flex, Inset, IconButton, Tooltip } from '@radix-ui/themes'
 
 import { transformToFunctionBody } from './esmTransform';
 import { useColorMode } from '@docusaurus/theme-common';
+import { ResetIcon, ClipboardCopyIcon, CubeIcon } from '@radix-ui/react-icons'
 
 // @ts-ignore
 import reactVirtuosoDtsCode from '!!raw-loader!../../../../../../node_modules/react-virtuoso/dist/index.d.ts';
@@ -15,6 +16,7 @@ import reactDtsCode from '!!raw-loader!../../../../../../node_modules/@types/rea
 
 // @ts-ignore
 import jsxRuntimeDtsCode from '!!raw-loader!../../../../../../node_modules/@types/react/jsx-runtime.d.ts';
+import { createSandbox } from './createCodesandbox';
 
 // const reactVirtuosoDtsCode = ''
 // const reactDtsCode = ''
@@ -25,6 +27,9 @@ export default function LiveCodeBlock({
   const [Comp, setComp] = React.useState<React.ComponentType | null>(null)
   const { colorMode } = useColorMode();
   const [codeWrapperHeight, setCodeWrapperHeight] = React.useState<number>(200)
+  const updateCodeRef = React.useRef<(code: string) => void | null>(null)
+  const [copyTooltip, setCopyTooltip] = React.useState<string>('Copy code')
+  const [forceOpenCopyTooltip, setForceopenCopyTooltip] = React.useState<true | undefined>(undefined)
 
   useEffect(() => {
     transformToFunctionBody(tsCode).then((result) => {
@@ -41,95 +46,132 @@ export default function LiveCodeBlock({
 
 
   return (
-    <Flex direction="row" className='live-code-block-wrapper'>
-      <Box flexGrow="0" width="50%" height={`${codeWrapperHeight}px`}>
-        <MonacoEditor
-          options={{
-            minimap: { enabled: false },
-            lineNumbers: "off",
-            lineNumbersMinChars: 0,
-            folding: false,
-            glyphMargin: false,
-            overviewRulerBorder: false,
-            overviewRulerLanes: 0,
-            hideCursorInOverviewRuler: true,
-            renderLineHighlight: 'none',
-            lineDecorationsWidth: 10,
-            scrollBeyondLastLine: false,
-            wordWrap: 'on',
-            wrappingStrategy: 'advanced',
-          }}
-          width="100%"
-          height="100%"
-          language="typescript"
-          theme={colorMode === 'dark' ? 'vs-dark' : 'vs-light'}
-          uri={() => Uri.parse('file:///custom-example.tsx')}
-          onChange={(value) => {
-            setTsCode(value)
-          }}
-          editorDidMount={(editor) => {
-            let ignoreEvent = false;
-            const updateHeight = () => {
-              setCodeWrapperHeight(editor.getContentHeight() + 19);
-              try {
-                ignoreEvent = true;
-                editor.layout();
-              } finally {
-                ignoreEvent = false;
+    <Flex direction="column" style={{ position: 'relative' }}>
+      <Flex direction="row" className='live-code-block-wrapper'>
+        <Box flexGrow="0" width="50%" height={`${codeWrapperHeight}px`} className='live-code-block'>
+          <MonacoEditor
+            options={{
+              minimap: { enabled: false },
+              lineNumbers: "off",
+              lineNumbersMinChars: 0,
+              folding: false,
+              glyphMargin: false,
+              overviewRulerBorder: false,
+              overviewRulerLanes: 0,
+              hideCursorInOverviewRuler: true,
+              renderLineHighlight: 'none',
+              lineDecorationsWidth: 10,
+              scrollBeyondLastLine: false,
+              wordWrap: 'on',
+              wrappingStrategy: 'advanced',
+            }}
+            value={tsCode}
+            width="100%"
+            height="100%"
+            language="typescript"
+            theme={colorMode === 'dark' ? 'vs-dark' : 'vs-light'}
+            uri={() => Uri.parse('file:///custom-example.tsx')}
+            onChange={(value) => {
+              setTsCode(value)
+            }}
+            editorDidMount={(editor) => {
+              let ignoreEvent = false;
+              const updateHeight = () => {
+                setCodeWrapperHeight(editor.getContentHeight() + 40);
+                try {
+                  ignoreEvent = true;
+                  editor.layout();
+                } finally {
+                  ignoreEvent = false;
+                }
+              };
+              editor.onDidContentSizeChange(updateHeight);
+              updateCodeRef.current = (code) => {
+                editor.setValue(code)
               }
-            };
-            editor.onDidContentSizeChange(updateHeight);
-            updateHeight();
-          }}
-          editorWillMount={(monaco) => {
-            monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-              jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
-              jsxFactory: 'React.createElement',
-              reactNamespace: 'React',
-              allowNonTsExtensions: true,
-              allowSyntheticDefaultImports: true,
-              target: monaco.languages.typescript.ScriptTarget.Latest,
-              moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-              typeRoots: ['node_modules/@types'],
-            })
+              updateHeight();
+            }}
+            editorWillMount={(monaco) => {
+              monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+                jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+                jsxFactory: 'React.createElement',
+                reactNamespace: 'React',
+                allowNonTsExtensions: true,
+                allowSyntheticDefaultImports: true,
+                target: monaco.languages.typescript.ScriptTarget.Latest,
+                moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+                typeRoots: ['node_modules/@types'],
+              })
 
 
-            // react types
-            monaco.languages.typescript.typescriptDefaults.addExtraLib(
-              (reactDtsCode as any) as string,
-              'file:///node_modules/@types/react/index.d.ts',
-            )
+              // react types
+              monaco.languages.typescript.typescriptDefaults.addExtraLib(
+                (reactDtsCode as any) as string,
+                'file:///node_modules/@types/react/index.d.ts',
+              )
 
-            // jsx-runtime
-            monaco.languages.typescript.typescriptDefaults.addExtraLib(
-              (jsxRuntimeDtsCode as any) as string,
-              'file:///node_modules/@types/react/jsx-runtime.d.ts',
-            )
+              // jsx-runtime
+              monaco.languages.typescript.typescriptDefaults.addExtraLib(
+                (jsxRuntimeDtsCode as any) as string,
+                'file:///node_modules/@types/react/jsx-runtime.d.ts',
+              )
 
-            monaco.languages.typescript.typescriptDefaults.addExtraLib(
-              (reactVirtuosoDtsCode as any) as string,
-              'file:///node_modules/@types/react-virtuoso/index.d.ts',
-            )
-          }}
-          value={code}
-        />
-      </Box>
-      <Box flexGrow="0" width="50%" py="2">
-        <ShadowDomPortal>
-          {Comp && <Comp />}
-        </ShadowDomPortal>
-      </Box>
+              monaco.languages.typescript.typescriptDefaults.addExtraLib(
+                (reactVirtuosoDtsCode as any) as string,
+                'file:///node_modules/@types/react-virtuoso/index.d.ts',
+              )
+            }}
+          />
+        </Box>
+        <Box flexGrow="0" width="50%" className='live-code-block-preview'>
+          <ShadowDomPortal>
+            {Comp && <Comp />}
+          </ShadowDomPortal>
+        </Box>
+      </Flex>
+      <Flex direction="row" gap="1" style={{ position: 'absolute', right: '50%', bottom: 0 }} p="1">
+        <Tooltip content="Reset example">
+          <IconButton size="1" radius='large' variant='outline' onClick={() => {
+            setTsCode(code)
+            updateCodeRef.current?.(code)
+          }}>
+            <ResetIcon width={12} height={12} />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip content={copyTooltip} open={forceOpenCopyTooltip}>
+          <IconButton size="1" radius='large' variant='outline' onClick={() => {
+            navigator.clipboard.writeText(tsCode)
+            setCopyTooltip('Copied!')
+            setForceopenCopyTooltip(true)
+            setTimeout(() => {
+              setCopyTooltip('Copy code')
+              setForceopenCopyTooltip(undefined)
+            }, 600)
+          }}>
+            <ClipboardCopyIcon width={12} height={12} />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip content="Open in codesandbox.io">
+          <IconButton size="1" radius='large' variant='outline' onClick={() => {
+            createSandbox(tsCode)
+          }}>
+            <CubeIcon width={12} height={12} />
+          </IconButton>
+        </Tooltip>
+      </Flex>
     </Flex>
   )
 }
 
-const IframePortal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const iframeRef = React.useRef<HTMLIFrameElement>(null);
-
-  return (<iframe ref={iframeRef}>
-    {iframeRef.current && createPortal(children, iframeRef.current.contentDocument.body)}
-  </iframe>);
-}
+// const IframePortal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+//   const iframeRef = React.useRef<HTMLIFrameElement>(null);
+//
+//   return (<iframe ref={iframeRef}>
+//     {iframeRef.current && createPortal(children, iframeRef.current.contentDocument.body)}
+//   </iframe>);
+// }
 
 const ShadowDomPortal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const shadowContainerRef = React.useRef<HTMLDivElement | null>(null);
