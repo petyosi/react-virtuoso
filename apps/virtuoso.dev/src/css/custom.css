@@ -293,6 +293,7 @@ li.newLabel > div > a {
   & > .live-code-block {
     padding: var(--space-2);
     box-sizing: border-box;
+    background-color: var(--gray-2);
   }
 
   & > .live-code-block-preview {
@@ -304,4 +305,8 @@ li.newLabel > div > a {
 p.rt-TooltipText {
   padding: 0;
   margin: 0;
+}
+
+.monaco-editor {
+  outline: none !important;
 }

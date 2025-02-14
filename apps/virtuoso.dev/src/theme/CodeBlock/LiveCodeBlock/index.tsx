@@ -1,13 +1,13 @@
+import { Box, Flex, IconButton, Tooltip } from '@radix-ui/themes';
 import { Uri } from 'monaco-editor';
 import React, { useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import MonacoEditor from 'react-monaco-editor';
 import * as _V from 'react-virtuoso';
-import { Separator, Box, Card, Flex, Inset, IconButton, Tooltip } from '@radix-ui/themes'
 
-import { transformToFunctionBody } from './esmTransform';
 import { useColorMode } from '@docusaurus/theme-common';
-import { ResetIcon, ClipboardCopyIcon, CubeIcon } from '@radix-ui/react-icons'
+import { ClipboardCopyIcon, CubeIcon, ResetIcon } from '@radix-ui/react-icons';
+import { transformToFunctionBody } from './esmTransform';
 
 // @ts-ignore
 import reactVirtuosoDtsCode from '!!raw-loader!../../../../../../node_modules/react-virtuoso/dist/index.d.ts';
@@ -69,7 +69,7 @@ export default function LiveCodeBlock({
             width="100%"
             height="100%"
             language="typescript"
-            theme={colorMode === 'dark' ? 'vs-dark' : 'vs-light'}
+            theme={colorMode === 'dark' ? 'custom-dark' : 'custom-light'}
             uri={() => Uri.parse('file:///custom-example.tsx')}
             onChange={(value) => {
               setTsCode(value)
@@ -92,6 +92,25 @@ export default function LiveCodeBlock({
               updateHeight();
             }}
             editorWillMount={(monaco) => {
+
+              monaco?.editor.defineTheme('custom-dark', {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [],
+                colors: {
+                  'editor.background': '#00000000',
+                }
+              });
+
+              monaco?.editor.defineTheme('custom-light', {
+                base: 'vs',
+                inherit: true,
+                rules: [],
+                colors: {
+                  'editor.background': '#ffffff00',
+                }
+              });
+
               monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
                 jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
                 jsxFactory: 'React.createElement',
@@ -131,16 +150,16 @@ export default function LiveCodeBlock({
       </Flex>
       <Flex direction="row" gap="1" style={{ position: 'absolute', right: '50%', bottom: 0 }} p="1">
         <Tooltip content="Reset example">
-          <IconButton size="1" radius='large' variant='outline' onClick={() => {
+          <IconButton size="1" radius='large' variant='soft' onClick={() => {
             setTsCode(code)
             updateCodeRef.current?.(code)
           }}>
-            <ResetIcon width={12} height={12} />
+            <ResetIcon width={14} height={14} />
           </IconButton>
         </Tooltip>
 
         <Tooltip content={copyTooltip} open={forceOpenCopyTooltip}>
-          <IconButton size="1" radius='large' variant='outline' onClick={() => {
+          <IconButton size="1" radius='large' variant='soft' onClick={() => {
             navigator.clipboard.writeText(tsCode)
             setCopyTooltip('Copied!')
             setForceopenCopyTooltip(true)
@@ -149,15 +168,15 @@ export default function LiveCodeBlock({
               setForceopenCopyTooltip(undefined)
             }, 600)
           }}>
-            <ClipboardCopyIcon width={12} height={12} />
+            <ClipboardCopyIcon width={14} height={14} />
           </IconButton>
         </Tooltip>
 
         <Tooltip content="Open in codesandbox.io">
-          <IconButton size="1" radius='large' variant='outline' onClick={() => {
+          <IconButton size="1" radius='large' variant='soft' onClick={() => {
             createSandbox(tsCode)
           }}>
-            <CubeIcon width={12} height={12} />
+            <CubeIcon width={14} height={14} />
           </IconButton>
         </Tooltip>
       </Flex>
