@@ -2,6 +2,7 @@ import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import dotenv from "dotenv";
 import type * as Preset from "@docusaurus/preset-classic";
+import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
 
 if (process.env.NODE_ENV === "development") {
   dotenv.config({ path: ".env.local" });
@@ -36,9 +37,41 @@ const config: Config = {
     locales: ["en"],
   },
 
-  themes: ["@docusaurus/theme-live-codeblock"],
+  // themes: ["@docusaurus/theme-live-codeblock"],
 
   plugins: [
+    () => {
+      return {
+        name: "monaco-webpack-plugin",
+        configureWebpack() {
+          return {
+            plugins: [
+              new MonacoWebpackPlugin({
+                // available options are documented at https://github.com/microsoft/monaco-editor/blob/main/webpack-plugin/README.md#options
+                languages: ['json', 'typescript'],
+              })
+            ],
+          };
+        },
+      };
+    },
+    // () => {
+    //   return {
+    //     name: "radix-ui-css",
+    //     configureWebpack() {
+    //       return {
+    //         module: {
+    //           rules: [
+    //             {
+    //               test: /@radix-ui\/themes\/styles.css$/i,
+    //               use: ["style-loader", "css-loader"],
+    //             },
+    //           ],
+    //         }
+    //       };
+    //     },
+    //   };
+    // },
     // @ts-expect-error Not sure why docusaurus does not like the return value, but it works
     () => {
       return {
@@ -169,7 +202,7 @@ const config: Config = {
           anonymizeIP: true,
         },
         theme: {
-          customCss: "./src/css/custom.css",
+          customCss: ["./src/css/custom.css", "../../node_modules/@radix-ui/themes/styles.css"],
         },
       } satisfies Preset.Options,
     ],

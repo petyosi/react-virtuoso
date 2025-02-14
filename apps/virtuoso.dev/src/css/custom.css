@@ -285,3 +285,9 @@ h2.newLabel::after,
 li.newLabel > div > a {
   color: var(--ifm-color-primary-lightest);
 }
+
+.live-code-block-wrapper {
+  border-radius: var(--radius-3);
+  border: 1px solid var(--base-card-classic-border-color);
+  padding: var(--space-3);
+}

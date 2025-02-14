@@ -54,27 +54,12 @@ Then follow the installation section in the [Virtuoso Message List](/virtuoso-me
 
 Add the Component to your application.
 
-```jsx
-import * as React from 'react'
-import * as ReactDOM from 'react-dom'
+```tsx live
 import { Virtuoso } from 'react-virtuoso'
 
-const App = () => (
-  <Virtuoso
-    style={{ height: '400px' }}
-    totalCount={200}
-    itemContent={index => <div>Item {index}</div>}
-  />
-)
-
-```
-
-This is how it looks live:
-
-```tsx live
-function App() {
+export default function App() {
   return <Virtuoso
-    style={{ height: "400px" }}
+    style={{ height: "100%" }}
     totalCount={200}
     itemContent={(index) => <div>Item {index}</div>}
   />
