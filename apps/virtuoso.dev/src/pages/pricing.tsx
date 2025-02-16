@@ -2,6 +2,7 @@ import Layout from "@theme/Layout";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import { initializePaddle, Paddle } from "@paddle/paddle-js";
 import { useEffect, useState } from "react";
+import { Button } from "@radix-ui/themes";
 
 export default function Pricing(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();
@@ -81,8 +82,9 @@ export default function Pricing(): JSX.Element {
             </div>
 
             <div className="cta">
-              <button
-                style={{ padding: "10px 20px", fontSize: "20px" }}
+              <Button
+                variant="solid"
+                size="3"
                 onClick={() =>
                   paddle?.Checkout.open({
                     items: [
@@ -95,7 +97,7 @@ export default function Pricing(): JSX.Element {
                 }
               >
                 Buy Now
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -124,8 +126,9 @@ export default function Pricing(): JSX.Element {
             </div>
 
             <div className="cta">
-              <button
-                style={{ padding: "10px 20px", fontSize: "20px" }}
+              <Button
+                size="3"
+                variant="solid"
                 onClick={() =>
                   paddle?.Checkout.open({
                     items: [
@@ -138,7 +141,7 @@ export default function Pricing(): JSX.Element {
                 }
               >
                 Buy Now
-              </button>
+              </Button>
             </div>
           </div>
         </div>

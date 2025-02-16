@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend&display=swap');
+
 /**
  * Any CSS included here will be global. The classic template
  * bundles Infima by default. Infima is a CSS framework designed to
@@ -6,13 +8,13 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #0253b3;
-  --ifm-color-primary-dark: #024ba1;
-  --ifm-color-primary-darker: #024798;
+  --ifm-color-primary: var(--blue-9);
+  --ifm-color-primary-dark: var(--blue-10);
+  --ifm-color-primary-darker: var(--blue-11);
   --ifm-color-primary-darkest: #013a7d;
   --ifm-color-primary-light: #025bc5;
-  --ifm-color-primary-lighter: #025fce;
-  --ifm-color-primary-lightest: #036ce9;
+  --ifm-color-primary-lighter: var(--blue-8);
+  --ifm-color-primary-lightest: var(--blue-7);
   --ifm-code-font-size: 80%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --ifm-menu-link-sublist-icon: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><mask id="mask0_11_32" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20"><rect width="20" height="20" fill="%23D9D9D9"/></mask><g mask="url(%23mask0_11_32)"><path d="M8.06249 10.4391L7.5769 9.95348L9.99999 7.5304L12.4231 9.95348L11.9375 10.4391L9.99999 8.50156L8.06249 10.4391Z" fill="%231C1B1F"/></g></svg>');
@@ -24,22 +26,46 @@
   --ifm-code-padding-horizontal: 0.2rem;
   --ifm-code-background: var(--ifm-color-gray-200);
   --ifm-color-code: var(--ifm-color-content-secondary);
+  --ifm-heading-font-family: 'Lexend';
+  --ifm-pre-background: var(--gray-2);
+  --ifm-page-background-color: var(--gray-1);
+  --navbar-bg: var(--gray-1);
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Lexend', sans-serif;
+  font-optical-sizing: auto;
+}
+
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme="dark"] {
-  --ifm-color-primary: #1c81fd;
-  --ifm-color-primary-dark: #0272fb;
-  --ifm-color-primary-darker: #026bed;
-  --ifm-color-primary-darkest: #0258c3;
-  --ifm-color-primary-light: #a7cefe;
-  --ifm-color-primary-lighter: #bbd9fe;
-  --ifm-color-primary-lightest: #e7f2ff;
+  /*--ifm-color-primary: #1c81fd;*/
+  /*--ifm-color-primary-dark: #0272fb;*/
+  /*--ifm-color-primary-darker: #026bed;*/
+  /*--ifm-color-primary-darkest: #0258c3;*/
+  /*--ifm-color-primary-light: #a7cefe;*/
+  /*--ifm-color-primary-lighter: #bbd9fe;*/
+  /*--ifm-color-primary-lightest: #e7f2ff;*/
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+.dark {
+  --navbar-bg: var(--gray-2);
+}
+
+.navbar--fixed-top {
+  background-color: var(--navbar-bg);
+  box-shadow: none;
 }
 
 table {
   overflow: visible;
+}
+
+.theme-doc-markdown > table {
+  width: 100%;
+  display: table;
 }
 
 code {
@@ -221,12 +247,8 @@ code {
 #pricing-blocks > div .cta button {
   margin-top: 1rem;
   width: 100%;
-  border: 0;
-  border-radius: 0.5rem;
-  background-color: var(--ifm-color-primary);
-  color: var(--ifm-color-content-inverse);
-  font-size: 1.3rem;
 }
+
 
 #pricing-blocks > div .cta code {
   font-size: 0.9em;
@@ -276,14 +298,14 @@ h2.newLabel::after,
   vertical-align: super;
   font-size: 0.7rem;
   margin-inline-start: 0.3rem;
-  background-color: var(--ifm-color-primary-lightest);
+  background-color: var(--ifm-color-primary);
   color: var(--ifm-color-content-inverse);
   padding: 0.2rem 0.5rem;
   border-radius: 0.3rem;
 }
 
 li.newLabel > div > a {
-  color: var(--ifm-color-primary-lightest);
+  color: var(--ifm-color-primary-lighter);
 }
 
 .live-code-block-wrapper {
@@ -302,7 +324,7 @@ li.newLabel > div > a {
   }
 }
 
-p.rt-TooltipText {
+p.rt-TooltipText, p.rt-CalloutText {
   padding: 0;
   margin: 0;
 }

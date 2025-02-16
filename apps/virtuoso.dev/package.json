@@ -45,6 +45,7 @@
     "raw-loader": "^4.0.2",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
+    "react-error-boundary": "^5.0.0",
     "react-monaco-editor": "^0.58.0",
     "react-virtuoso": "*",
     "search-insights": "^2.13.0",

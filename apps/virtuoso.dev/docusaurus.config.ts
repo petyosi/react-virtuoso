@@ -55,23 +55,6 @@ const config: Config = {
         },
       };
     },
-    // () => {
-    //   return {
-    //     name: "radix-ui-css",
-    //     configureWebpack() {
-    //       return {
-    //         module: {
-    //           rules: [
-    //             {
-    //               test: /@radix-ui\/themes\/styles.css$/i,
-    //               use: ["style-loader", "css-loader"],
-    //             },
-    //           ],
-    //         }
-    //       };
-    //     },
-    //   };
-    // },
     // @ts-expect-error Not sure why docusaurus does not like the return value, but it works
     () => {
       return {
@@ -227,7 +210,7 @@ const config: Config = {
     navbar: {
       logo: {
         alt: "React Virtuoso",
-        src: "img/logo.svg",
+        src: "img/new-logo.svg",
       },
       items: [
         {
@@ -252,7 +235,6 @@ const config: Config = {
           to: "/pricing",
           label: "Pricing",
           position: "left",
-          className: "newLabel",
         },
         {
           href: "https://github.com/petyosi/react-virtuoso",

@@ -1,7 +1,7 @@
 .codeBlockContainer {
-  background: var(--prism-background-color);
+  background-color: var(--gray-2);
   color: var(--prism-color);
   margin-bottom: var(--ifm-leading);
-  box-shadow: var(--ifm-global-shadow-lw);
-  border-radius: var(--ifm-code-border-radius);
+  border-radius: var(--radius-3);
+  border: 1px solid var(--base-card-classic-border-color);
 }

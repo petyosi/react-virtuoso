@@ -1,6 +1,6 @@
-import React, {type ReactNode} from 'react';
+import React, { type ReactNode } from 'react';
 import clsx from 'clsx';
-import {useThemeConfig, usePrismTheme} from '@docusaurus/theme-common';
+import { useThemeConfig, usePrismTheme } from '@docusaurus/theme-common';
 import {
   parseCodeBlockTitle,
   parseLanguage,
@@ -8,12 +8,12 @@ import {
   containsLineNumbers,
   useCodeWordWrap,
 } from '@docusaurus/theme-common/internal';
-import {Highlight, type Language} from 'prism-react-renderer';
+import { Highlight, type Language } from 'prism-react-renderer';
 import Line from '@theme/CodeBlock/Line';
 import CopyButton from '@theme/CodeBlock/CopyButton';
 import WordWrapButton from '@theme/CodeBlock/WordWrapButton';
 import Container from '@theme/CodeBlock/Container';
-import type {Props} from '@theme/CodeBlock/Content/String';
+import type { Props } from '@theme/CodeBlock/Content/String';
 
 import styles from './styles.module.css';
 
@@ -33,7 +33,7 @@ export default function CodeBlockString({
   language: languageProp,
 }: Props): ReactNode {
   const {
-    prism: {defaultLanguage, magicComments},
+    prism: { defaultLanguage, magicComments },
   } = useThemeConfig();
   const language = normalizeLanguage(
     languageProp ?? parseLanguage(blockClassName) ?? defaultLanguage,
@@ -47,7 +47,7 @@ export default function CodeBlockString({
   // "title=\"xyz\"" => title: "\"xyz\""
   const title = parseCodeBlockTitle(metastring) || titleProp;
 
-  const {lineClassNames, code} = parseLines(children, {
+  const { lineClassNames, code } = parseLines(children, {
     metastring,
     language,
     magicComments,
@@ -61,8 +61,8 @@ export default function CodeBlockString({
       className={clsx(
         blockClassName,
         language &&
-          !blockClassName.includes(`language-${language}`) &&
-          `language-${language}`,
+        !blockClassName.includes(`language-${language}`) &&
+        `language-${language}`,
       )}>
       {title && <div className={styles.codeBlockTitle}>{title}</div>}
       <div className={styles.codeBlockContent}>
@@ -70,7 +70,7 @@ export default function CodeBlockString({
           theme={prismTheme}
           code={code}
           language={(language ?? 'text') as Language}>
-          {({className, style, tokens, getLineProps, getTokenProps}) => (
+          {({ className, style: { backgroundColor: _, ...style }, tokens, getLineProps, getTokenProps }) => (
             <pre
               /* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */
               tabIndex={0}

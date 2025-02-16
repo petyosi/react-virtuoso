@@ -6,9 +6,16 @@ sidebar_position: 1
 slug: /
 ---
 
-**React Virtuoso** is a set of React components that display large data sets using **virtualized rendering**. The Virtuoso components automatically handle items with variable sizes and changes in items' sizes. 
+**React Virtuoso** is a family of React components that display large data sets using **virtualized rendering**, automatically handling variable item sizes and changes in items' sizes.
 
-The `react-virtuoso` NPM package includes a flat list (`Virtuoso`), a grouped list with sticky headers (`GroupedVirtuoso`), a grid with a responsive layout (`VirtuosoGrid`), and a table (`TableVirtuoso`). The package is tree-shakeable, so your bundle should not be inflated by the components you don't refer to. 
+| Component | Purpose |
+| --- | --- |
+| `Virtuoso` | Flat lists  |
+| `GroupedVirtuoso` | Groups of items with sticky group headers |
+| `VirtuosoGrid` | Same-sized items in a responsive grid layout |
+| `TableVirtuoso` | Tables with virtualized rows |
+| `MessageList` |  Human/AI chat interfaces |
+
 
 :::info
 <h2 className="newLabel">Virtuoso Message List</h2>
@@ -20,19 +27,20 @@ The `VirtuosoMessageList` component is a newly released React component built **
 
 The `react-virtuoso` package is distributed under the MIT license. The  `VirtuosoMessageList` component and the contents of the `@virtuoso.dev/message-list` package are distributed under a commercial license. See [pricing](/pricing) for more details.
 
-## Feature Overview
+## Feature Highlights
 
-The Virtuoso components automatically handle **items with variable heights**. You don't have to hard-code or manually measure item sizes. Furthermore, the components monitor any changes in the item's sizes (for example, due to content load) and re-adjust the scroll area size. The component container size itself is also monitored, so that the list reacts to browser resizing or sibling elements changing its layout.
+The Virtuoso components automatically handle **items with variable heights**. You don't have to hard-code or manually measure item sizes. The components observe changes of the items' sizes (for example, due to content load) and automatically readjust the scroll area size. The component container size itself is observed and list readjusts its display automatically when the browser or its parent container changes sizes. You can safely use the Virtuoso components in responsive flexbox layouts. 
 
-A common use case that's covered by the components' API is the **bi-directional endless scrolling** or the **press to load** UI patterns. The components can be configured to **start from an initial location**, thus skipping the initial rendering (and the potential need of data loading) of the topmost list items. The components expose `startReached` and `endReached`  callback properties, suitable for loading data on demand. After the data has been loaded, You can **append** or **prepend** additional items, while retaining the current scroll location.
+A common use case covered by the components' API is the **bi-directional endless scrolling** and the **press to load more** UI patterns. The components can be configured to **start from an initial location**, thus skipping the initial rendering (and the potential need of data loading) of earlier items. The components expose `startReached` and `endReached` callback properties, suitable for loading data on demand. After the data has been loaded, You can **append** or **prepend** additional items, while retaining the current scroll location.
 
-The markup of the components is customizable by passing custom components as props, supporting optional **Header** and **Footer**, or swapping the **scroller element with a custom one** (usually done for the sake of integrating a third party scrollbar library). The customization API makes it easy to combine the components with your UI library of choice (e.g. MUI), or even integrate drag-and-drop through a third-party library.
+The markup of the components is customizable by passing custom components as props, supporting optional **Header** and **Footer**, or even replacing the **Scroller element with a custom one** (usually when integrating third party scrollbar library). 
+The custom components props allow the easy integration of your UI library of choice (e.g. shadcn/ui, MUI, Mantine), or even integrate drag-and-drop through a third-party library.
 
 To get a better impression of what's possible, examine the various examples in the documentation, and skim through the API reference.
 
 ## Installation (react-virtuoso)
 
-React virtuoso is distributed as an NPM package.
+The Virtuoso components are distributed as NPM packages.
 
 To use the `Virtuoso`,  `TableVirtuoso`, `GroupedVirtuoso`, and `VirtuosoGrid` components, install `react-virtuoso` in your React project. 
 
@@ -40,19 +48,17 @@ To use the `Virtuoso`,  `TableVirtuoso`, `GroupedVirtuoso`, and `VirtuosoGrid` c
 npm install react-virtuoso
 ```
 
-## Installation (@virtuoso.dev/message-list)
-
-Install the `@virtuoso.dev/message-list` package to use the `VirtuosoMessageList` component. 
+Install the `@virtuoso.dev/message-list` package to use the `VirtuosoMessageList` component.
 
 ```bash
 npm install @virtuoso.dev/message-list
 ```
 
-Then follow the installation section in the [Virtuoso Message List](/virtuoso-message-list) guide.
+## Hello World
 
-## Virtuoso
+### Virtuoso
 
-Add the Component to your application.
+Add the `Virtuoso` Component to your React project. The bare minimum it needs is a height for its container (either explicitly set, or adjusted through a parent flexbox), the number of items to display, and a callback to render the item content.
 
 ```tsx live
 import { Virtuoso } from 'react-virtuoso'
@@ -66,9 +72,26 @@ export default function App() {
 }
 ```
 
-## VirtuosoMessageList
+### VirtuosoMessageList
 
 The Message List component is specifically built for human and/or AI chatbot conversations. Follow the instructions in the [Virtuoso Message List](/virtuoso-message-list) guide to install and use the `VirtuosoMessageList` component.
+
+```tsx live
+import {VirtuosoMessageListLicense, VirtuosoMessageList} from '@virtuoso.dev/message-list'
+
+export default function App() {
+  return (
+      <VirtuosoMessageListLicense licenseKey="">
+        <VirtuosoMessageList
+          ItemContent={({ data }) => <div>Message {data}</div>}
+          style={{ height: '100%' }}
+          initialData={Array.from({ length: 100 }, (_, index) => index)}
+        />
+      </VirtuosoMessageListLicense>
+  );
+}
+```
+
 
 ## GroupedVirtuoso
 

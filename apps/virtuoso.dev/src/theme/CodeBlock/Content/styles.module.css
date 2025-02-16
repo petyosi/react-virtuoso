@@ -15,7 +15,7 @@
 }
 
 .codeBlock {
-  --ifm-pre-background: var(--prism-background-color);
+  --ifm-pre-background: var(--gray-2);
   margin: 0;
   padding: 0;
 }
