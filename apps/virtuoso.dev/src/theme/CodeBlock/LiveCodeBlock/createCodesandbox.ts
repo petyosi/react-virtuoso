@@ -1,4 +1,4 @@
-export async function createSandbox(appCode: string) {
+export async function createSandbox(appCode: string, packages: string[]) {
   // Define your sandbox configuration
   const sandboxConfig = {
     files: {
@@ -39,7 +39,7 @@ root.render(
             "react": "18.2.0",
             "react-dom": "18.2.0",
             "react-scripts": "5.0.1",
-            "react-virtuoso": "latest"
+            ...packages.reduce((acc, pkg) => ({ ...acc, [pkg]: 'latest' }), {})
           },
           "devDependencies": {
             "@types/react": "18.2.38",

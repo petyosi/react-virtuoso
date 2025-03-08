@@ -1,4 +1,4 @@
-import { Text, Box, Callout, Flex, IconButton, Tooltip } from '@radix-ui/themes';
+import { Box, Callout, Flex, IconButton, Tooltip } from '@radix-ui/themes';
 import { Uri } from 'monaco-editor';
 import React, { useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -82,6 +82,7 @@ export default function LiveCodeBlock({
 }: { code: string }): ReactNode {
   const [tsCode, setTsCode] = React.useState(code)
   const [Comp, setComp] = React.useState<React.ComponentType | null>(null)
+  const [usedPackages, setUsedPackages] = React.useState<string[]>([])
   const { colorMode } = useColorMode();
   const [codeWrapperHeight, setCodeWrapperHeight] = React.useState<number>(200)
   const updateCodeRef = React.useRef<(code: string) => void | null>(null)
@@ -97,6 +98,7 @@ export default function LiveCodeBlock({
         try {
           const NewComp = (new Function(result.code))({ 'react': React, 'react-virtuoso': _V, '@virtuoso.dev/message-list': _ML })
           setComp(() => NewComp)
+          setUsedPackages(result.packages)
         } catch {
           console.log('code is invalid')
         }
@@ -181,7 +183,7 @@ export default function LiveCodeBlock({
 
         <Tooltip content="Open in codesandbox.io">
           <IconButton size="1" radius='large' variant='soft' onClick={() => {
-            createSandbox(tsCode)
+            createSandbox(tsCode, usedPackages)
           }}>
             <CubeIcon width={14} height={14} />
           </IconButton>

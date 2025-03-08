@@ -2,6 +2,9 @@ import * as esbuild from 'esbuild-wasm'
 
 let esBuildInitializePromise = null
 
+const starImportRegex = /import\s+\*\s+as\s+(\w+)\s+from\s+['"]([^'"]+)['"]/g;
+const importRegex = /import\s+({[^}]+}|\*\s+as\s+\w+|\w+)\s+from\s+['"]([^'"]+)['"]/g;
+
 export async function transformToFunctionBody(code: string) {
 
   if (esBuildInitializePromise === null) {
@@ -22,6 +25,12 @@ export async function transformToFunctionBody(code: string) {
 
 
   try {
+    const imports = Array.from(code.matchAll(importRegex));
+    const startImports = Array.from(code.matchAll(starImportRegex));
+
+    const packages = [...imports, ...startImports].map(match => match[2])
+
+
     // First convert imports to assignments
     const codeWithAssignments = convertExportsToAssignments(convertImportsToAssignments(code));
 
@@ -36,6 +45,7 @@ export async function transformToFunctionBody(code: string) {
     return {
       type: 'success',
       code: functionBodyCode,
+      packages,
     }
   } catch (e) {
     if (e instanceof Error) {
@@ -52,8 +62,6 @@ export async function transformToFunctionBody(code: string) {
 }
 
 function convertImportsToAssignments(code: string) {
-  const starImportRegex = /import\s+\*\s+as\s+(\w+)\s+from\s+['"]([^'"]+)['"]/g;
-  const importRegex = /import\s+({[^}]+}|\*\s+as\s+\w+|\w+)\s+from\s+['"]([^'"]+)['"]/g;
 
   return code.replaceAll(starImportRegex, `const $1 = passedModules['$2']`).replaceAll(importRegex, `const $1 = passedModules['$2']`)
 }
