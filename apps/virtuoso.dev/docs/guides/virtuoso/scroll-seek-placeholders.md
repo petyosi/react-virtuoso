@@ -10,8 +10,11 @@ The `scrollSeekConfiguration` property allows you to render a placeholder elemen
 
 This improves scrolling performance and delays the actual load of data from the server.
 
-```tsx live noInline
-function App() {
+```tsx live
+import { Virtuoso } from 'react-virtuoso'
+import { useMemo, useState } from 'react'
+
+export default function App() {
   const randomHeights = useMemo(
     () =>
       Array(10)
@@ -39,7 +42,7 @@ function App() {
       <div style={{ flex: 1 }}>
         <Virtuoso
           context={{ randomHeights }}
-          style={{ height: 400 }}
+          style={{ height: '100%' }}
           totalCount={1000}
           itemContent={(index ) => <div>Item {index}</div>}
           components={{ ScrollSeekPlaceholder }}
@@ -82,5 +85,5 @@ const ScrollSeekPlaceholder =  ({ height, index, context: { randomHeights }}) =>
   </div>
 )
 
-render(<App />)
+ 
 ```

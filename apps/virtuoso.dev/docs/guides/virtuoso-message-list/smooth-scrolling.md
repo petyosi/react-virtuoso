@@ -10,7 +10,10 @@ slug: /virtuoso-message-list/smooth-scrolling
 
 In addition to the default `'smooth'` and `'auto'` scroll behavior values, the component accepts a custom function that accepts the current scroll location, the target scroll location and returns a custom payload that describes a smooth scroll.
 
-```tsx live noInline
+```tsx live
+import { VirtuosoMessageList, VirtuosoMessageListProps, VirtuosoMessageListMethods, VirtuosoMessageListLicense } from '@virtuoso.dev/message-list'
+import React from 'react'
+
 /**
  * Bounce easing function - https://easings.net/#easeOutBounce. This is just an example, you can use any easing function.
  */
@@ -40,7 +43,7 @@ function customSmoothScroll(currentTop: number, targetTop: number) {
   };
 }
 
-function App() {
+export default function App() {
   const virtuoso = React.useRef<VirtuosoMessageListMethods<Message>>(null);
 
   return (
@@ -149,5 +152,5 @@ const ItemContent: VirtuosoMessageListProps<Message, null>["ItemContent"] = ({
   );
 };
 
-render(<App />);
+ ;
 ```

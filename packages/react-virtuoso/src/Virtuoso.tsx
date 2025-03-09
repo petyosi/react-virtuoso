@@ -347,6 +347,7 @@ export function buildWindowScroller({ useEmitter, useEmitterValue, usePublisher 
     const deviation = useEmitterValue('deviation')
     const customScrollParent = useEmitterValue('customScrollParent')
     const context = useEmitterValue('context')
+    const scrollerElRef = React.useRef<HTMLDivElement | null>(null)
     const { scrollByCallback, scrollerRef, scrollToCallback } = useScrollTop(
       scrollContainerStateCallback,
       smoothScrollTargetReached,
@@ -356,7 +357,7 @@ export function buildWindowScroller({ useEmitter, useEmitterValue, usePublisher 
     )
 
     useIsomorphicLayoutEffect(() => {
-      scrollerRef.current = customScrollParent ? customScrollParent : window
+      scrollerRef.current = customScrollParent ? customScrollParent : (scrollerElRef.current?.ownerDocument.defaultView as Window)
       return () => {
         scrollerRef.current = null
       }
@@ -366,6 +367,7 @@ export function buildWindowScroller({ useEmitter, useEmitterValue, usePublisher 
     useEmitter('scrollBy', scrollByCallback)
     return (
       <ScrollerComponent
+        ref={scrollerElRef}
         data-virtuoso-scroller={true}
         style={{ position: 'relative', ...style, ...(totalListHeight !== 0 ? { height: totalListHeight + deviation } : {}) }}
         {...props}

@@ -93,7 +93,7 @@ export default function App() {
 ```
 
 
-## GroupedVirtuoso
+### GroupedVirtuoso
 
 The `GroupedVirtuoso` component is similar to the "flat" `Virtuoso`, with the following differences:
 
@@ -103,34 +103,37 @@ The `GroupedVirtuoso` component is similar to the "flat" `Virtuoso`, with the fo
   which renders the **group header**. The `group` callback receives the zero-based group index as a parameter;
 * The `itemContent` render prop gets called with an additional second parameter, `groupIndex: number`.
 
-```jsx live noInline
+```tsx live
+import { GroupedVirtuoso } from 'react-virtuoso'
+
 const groupCounts = []
+
 for (let index = 0; index < 1000; index++) {
   groupCounts.push(10)
 }
 
-function App() {
+export default function App() {
   return (
     <GroupedVirtuoso
-    style={{ height: "400px" }}
+    style={{ height: "100%" }}
       groupCounts={groupCounts}
       groupContent={index => {
         return (
-          <div style={{ backgroundColor: 'white' }}>
+          // add background to the element to avoid seeing the items below it
+          <div>
             Group {index * 10} &ndash; {index * 10 + 10}
           </div>
         )
       }}
       itemContent={(index, groupIndex) => {
         return (
-              <div>Item {groupIndex}.{index}</div>
+            <div>Item {groupIndex}.{index}</div>
         )
       }}
     />
   )
 }
 
-render(<App />)
 ```
 
 Check the
@@ -139,20 +142,106 @@ Check the
 [groups with load on demand](/grouped-with-load-on-demand)
 examples.
 
-## TableVirtuoso
+### TableVirtuoso
 
 The `TableVirtuoso` component works like the `Virtuoso` one, but with HTML tables. It supports window scrolling, sticky headers, and fixed columns.
 
-Check the [Basic Table](/hello-table) example for a sample implementation.
 
-## VirtuosoGrid
+```tsx live
+import { TableVirtuoso } from 'react-virtuoso'
+
+export default function App() {
+  return (
+    <TableVirtuoso
+      style={{ height: '100%' }}
+      data={Array.from({ length: 100 }, (_, index) => ({
+        name: `User ${index}`,
+        description: `${index} description`
+      }))}
+      itemContent={(index, user) => (
+        <>
+          <td style={{ width: 150 }}>{user.name}</td>
+          <td>{user.description}</td>
+        </>
+      )}
+    />
+  )
+}
+```
+
+### VirtuosoGrid
 
 The `VirtuosoGrid` component displays **same sized items** in multiple columns.
 The layout and item sizing is controlled CSS class properties or styled containers,
 which allows you to use media queries, min-width, percentage, etc.
 
-Check the [responsive grid columns](/grid-responsive-columns) example for a sample implementation.
+```tsx live
+import { VirtuosoGrid, VirtuosoGridProps } from 'react-virtuoso'
+import { forwardRef } from 'react'
 
+// Ensure that the component definitions are not declared inline in the component function, 
+// Otherwise the grid will remount with each render due to new component instances.
+const gridComponents: VirtuosoGridProps<undefined, undefined>['components'] = {
+  List: forwardRef(({ style, children, ...props }, ref) => (
+    <div
+      ref={ref}
+      {...props}
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  )),
+  Item: ({ children, ...props }) => (
+    <div
+      {...props}
+      style={{
+        padding: "0.5rem",
+        width: "33%",
+        display: "flex",
+        flex: "none",
+        alignContent: "stretch",
+        boxSizing: "border-box",
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+const ItemWrapper = ({ children, ...props }) => (
+  <div
+    {...props}
+    style={{
+      display: "flex",
+      flex: 1,
+      textAlign: "center",
+      padding: "1rem 1rem",
+      border: "1px solid gray",
+      whiteSpace: "nowrap",
+    }}
+  >
+    {children}
+  </div>
+);
+
+export default function App() {
+  return (
+    <>
+      <VirtuosoGrid
+        style={{ height: '100%' }}
+        totalCount={1000}
+        components={gridComponents}
+        itemContent={(index) => <ItemWrapper>Item {index}</ItemWrapper>}
+      />
+      <style>{`html, body, #root { margin: 0; padding: 0 }`}</style>
+    </>
+  );
+}
+```
 
 ## Performance
 
@@ -183,7 +272,7 @@ const itemContent = (index) => {
 }
 
 const App = () => {
-  return <Virtuoso totalCount={100} itemContent={itemContent} style={{ height: 300 }} />
+  return <Virtuoso totalCount={100} itemContent={itemContent} style={{ height: '100%' }} />
 }
 
 ReactDOM.render(<App />, document.getElementById('root'))

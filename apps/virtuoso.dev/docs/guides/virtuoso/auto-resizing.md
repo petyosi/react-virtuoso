@@ -12,7 +12,10 @@ You don't have to configure anything additional.
 The list below is wrapped in a resizeable container. Try resizing the container to see how the list reacts.
 
 ```tsx live 
-function App() {
+import { Virtuoso } from 'react-virtuoso'
+import { useMemo } from 'react'
+
+export default function App() {
   const users = useMemo(() => {
     return Array.from({ length: 100000 }, (_, index) => ({
       name: `User ${index}`,
@@ -22,7 +25,7 @@ function App() {
   }, [])
 
   return (
-  <div style={{ height: 400, overflow: 'hidden', resize: 'both', padding: '1em', border: '1px solid #ccc' }}>
+  <div style={{ height: '100%', overflow: 'hidden', boxSizing: 'border-box', resize: 'both', padding: '1em', border: '1px solid #ccc' }}>
     <Virtuoso
       style={{ height: '100%' }}
       data={users}
@@ -38,8 +41,7 @@ function App() {
         </div>
       )}
     />
-    <style>{`html, body, #root { height: 100% }`}</style>
-  </>
+  </div>
   )
 }
 

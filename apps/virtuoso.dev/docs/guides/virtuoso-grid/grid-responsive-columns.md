@@ -19,7 +19,10 @@ Either way, it is up to you to implement the layout with flexbox or CSS grid. Yo
 You can safely use media queries, `min-width`, percentages, etc. in the item layout definitions.
 The grid observes the container/item dimensions and recalculates the scroll size accordingly. The example below uses inline styling, but you can easily put the styles in a stylesheet and change the item sizes with media queries.
 
-```tsx live noInline
+```tsx live
+import { VirtuosoGrid } from 'react-virtuoso'
+import { forwardRef } from 'react'
+
 // Ensure that this stays out of the component, 
 // Otherwise the grid will remount with each render due to new component instances.
 const gridComponents = {
@@ -69,7 +72,7 @@ const ItemWrapper = ({ children, ...props }) => (
   </div>
 );
 
-function App() {
+export default function App() {
   return (
     <>
       <VirtuosoGrid
@@ -83,5 +86,5 @@ function App() {
   );
 }
 
-render(<App />)
+ 
 ```

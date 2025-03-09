@@ -16,7 +16,7 @@ Apart from the structural styling necessary for the virtualized rendering, the c
 
 ## Live Example
 
-```tsx live noInline 
+```tsx live  
 
 interface Message {
   key: string
@@ -51,7 +51,7 @@ const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ d
   )
 }
 
-function App() {
+export default function App() {
   const virtuoso = React.useRef<VirtuosoMessageListMethods<Message>>(null)
 
   return (
@@ -105,7 +105,7 @@ function App() {
   )
 }
 
-render(<App />)
+ 
 ```
 
 ## License
@@ -122,15 +122,15 @@ npm install @virtuoso.dev/message-list
 
 Then, add the component along with your license to your application.
 
-```tsx live noInline
+```tsx live 
 // const licenseKey = 'your-license-key'
 const licenseKey = ''
 
-function App() {
+export default function App() {
   return (
     <VirtuosoMessageListLicense licenseKey={licenseKey}>
       <VirtuosoMessageList 
-        style={{height: 400}}  
+        style={{height: '100%'}}  
         initialLocation={{ index: 'LAST', align: 'end' }}
         initialData={Array.from({length: 100}, (_, index) => ({ id: index, content: `Message ${index}` }))}
         ItemContent={({ data }) => <div>{data.content}</div>}
@@ -139,7 +139,7 @@ function App() {
   )
 }
 
-render(<App />)
+ 
 ```
 
 To explore the features in an interactive way, you can jump straight to [Virtuoso Message List Tutorial](/virtuoso-message-list/tutorial/intro).

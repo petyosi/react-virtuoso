@@ -8,6 +8,14 @@ import { correctItemSize } from '../utils/correctItemSize'
 
 export type ScrollerRef = HTMLElement | null | Window
 
+function isWindow(el: EventTarget): el is Window {
+  return 'self' in el
+}
+
+function isDocument(el: EventTarget): el is Document {
+  return 'body' in el
+}
+
 export default function useScrollTop(
   scrollContainerStateCallback: (state: ScrollContainerState) => void,
   smoothScrollTargetReached: (yes: true) => void,
@@ -22,31 +30,28 @@ export default function useScrollTop(
 
   const handler = React.useCallback(
     (ev: Event) => {
+      let scrollHeight: number
+      let viewportHeight: number
+      let scrollTop: number
+
       const el = ev.target as HTMLElement
-      const windowScroll = (el as any) === window || (el as any) === document
-      const scrollTop = horizontalDirection
-        ? windowScroll
-          ? window.pageXOffset || document.documentElement.scrollLeft
-          : el.scrollLeft
-        : windowScroll
-          ? window.pageYOffset || document.documentElement.scrollTop
-          : el.scrollTop
 
-      const scrollHeight = horizontalDirection
-        ? windowScroll
-          ? document.documentElement.scrollWidth
-          : el.scrollWidth
-        : windowScroll
-          ? document.documentElement.scrollHeight
-          : el.scrollHeight
+      if (isDocument(el) || isWindow(el)) {
+        const theWindow = isWindow(el) ? el : (el as unknown as Document).defaultView!
+        scrollTop = horizontalDirection ? theWindow.scrollX : theWindow.scrollY
 
-      const viewportHeight = horizontalDirection
-        ? windowScroll
-          ? window.innerWidth
-          : el.offsetWidth
-        : windowScroll
-          ? window.innerHeight
-          : el.offsetHeight
+        scrollHeight = horizontalDirection
+          ? theWindow.document.documentElement.scrollWidth
+          : theWindow.document.documentElement.scrollHeight
+
+        viewportHeight = horizontalDirection ? theWindow.innerWidth : theWindow.innerHeight
+      } else {
+        scrollTop = horizontalDirection ? el.scrollLeft : el.scrollTop
+
+        scrollHeight = horizontalDirection ? el.scrollWidth : el.scrollHeight
+
+        viewportHeight = horizontalDirection ? el.offsetWidth : el.offsetHeight
+      }
 
       const call = () => {
         scrollContainerStateCallback({
@@ -106,18 +111,18 @@ export default function useScrollTop(
     let scrollHeight: number
     let scrollTop: number
 
-    if (scrollerElement === window) {
+    if (isWindow(scrollerElement)) {
       // this is not a mistake
       scrollHeight = Math.max(
-        correctItemSize(document.documentElement, horizontalDirection ? 'width' : 'height'),
-        horizontalDirection ? document.documentElement.scrollWidth : document.documentElement.scrollHeight
+        correctItemSize(scrollerElement.document.documentElement, horizontalDirection ? 'width' : 'height'),
+        horizontalDirection ? scrollerElement.document.documentElement.scrollWidth : scrollerElement.document.documentElement.scrollHeight
       )
-      offsetHeight = horizontalDirection ? window.innerWidth : window.innerHeight
-      scrollTop = horizontalDirection ? document.documentElement.scrollLeft : document.documentElement.scrollTop
+      offsetHeight = horizontalDirection ? scrollerElement.innerWidth : scrollerElement.innerHeight
+      scrollTop = horizontalDirection ? window.scrollX : window.scrollY
     } else {
-      scrollHeight = (scrollerElement as HTMLElement)[horizontalDirection ? 'scrollWidth' : 'scrollHeight']
-      offsetHeight = correctItemSize(scrollerElement as HTMLElement, horizontalDirection ? 'width' : 'height')
-      scrollTop = (scrollerElement as HTMLElement)[horizontalDirection ? 'scrollLeft' : 'scrollTop']
+      scrollHeight = scrollerElement[horizontalDirection ? 'scrollWidth' : 'scrollHeight']
+      offsetHeight = correctItemSize(scrollerElement, horizontalDirection ? 'width' : 'height')
+      scrollTop = scrollerElement[horizontalDirection ? 'scrollLeft' : 'scrollTop']
     }
 
     const maxScrollTop = scrollHeight - offsetHeight

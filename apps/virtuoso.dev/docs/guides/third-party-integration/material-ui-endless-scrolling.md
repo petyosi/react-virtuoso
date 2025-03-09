@@ -10,7 +10,8 @@ The React Virtuoso component supports customization of its internal components t
 
 The example below displays 500 records grouped by name, using the [the List components from MUI](https://mui.com/components/lists/).
 
-```tsx live noInline
+```tsx live
+import {GroupedVirtuoso} from 'react-virtuoso'
 // the MUIList object includes the necessary MUI components for this example.
 
 const MUIComponents = {
@@ -47,7 +48,7 @@ const MUIComponents = {
   },
 }
 
-function App() {
+export default function App() {
   const { users, groups, groupCounts } = useMemo(() => {
     const users = Array.from({ length: 500 }, (_, index) => ({
       name: `User ${index}`,
@@ -64,7 +65,7 @@ function App() {
 
   return (
     <GroupedVirtuoso
-      style={{ height: 400 }}
+      style={{ height: '100%' }}
       groupCounts={groupCounts}
       components={MUIComponents}
       groupContent={(index) => {
@@ -86,5 +87,5 @@ function App() {
   )
 }
 
-render(<App />)
+ 
 ```

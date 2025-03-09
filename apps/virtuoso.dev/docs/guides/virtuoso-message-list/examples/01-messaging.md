@@ -19,7 +19,11 @@ The example below is a simplified version of the final result of the tutorial - 
 
 ## Live Example 
 
-```tsx live noInline 
+```tsx live  
+import * as React from 'react'
+import { VirtuosoMessageList, VirtuosoMessageListProps, VirtuosoMessageListMethods, ListScrollLocation, VirtuosoMessageListLicense } from '@virtuoso.dev/message-list'
+import { ChatChannel, ChatMessage } from './ChatChannel'
+
 interface MessageListContext {
   loadingNewer: boolean
   channel: ChatChannel
@@ -56,7 +60,7 @@ const Header: VirtuosoProps['Header'] = ({ context }) => {
   return <div style={{ height: 30 }}>{context.loadingNewer ? 'Loading...' : ''}</div>
 }
 
-function App() {
+export default function App() {
   const channel = React.useMemo(() => new ChatChannel('general', 500), [])
   const messageListRef = React.useRef<VirtuosoMessageListMethods<ChatMessage>>(null)
   const [loadingNewer, setLoadingNewer] = React.useState(false)
@@ -177,5 +181,5 @@ function App() {
     </div>
   )
 }
-render(<App />)
+ 
 ```

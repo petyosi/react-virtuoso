@@ -9,8 +9,11 @@ Setting sticky columns is done entirely through styling.
 
 ## Table with fixed first column
 
-```jsx live
-function App() {
+```tsx live
+import {TableVirtuoso} from 'react-virtuoso'
+import {useMemo} from 'react'
+
+export default function App() {
   const users = useMemo(() => {
     return Array.from({ length: 1000 }, (_, index) => ({
       name: `User ${index}`,
@@ -20,7 +23,7 @@ function App() {
 
   return (
     <TableVirtuoso
-      style={{ height: 400 }}
+      style={{ height: '100%' }}
       data={users}
       components={{ Table: ({ style, ...props }) => <table {...props} style={{ ...style, width: 700 }} /> }}
       fixedHeaderContent={() => (

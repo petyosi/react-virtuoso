@@ -12,7 +12,10 @@ The `groups` variable contains the first letter groups -> `['A', 'B', 'C']`.
 The `groupCounts` specifies how many items each group has, for example `[ 20, 30, 15, 10 ]`.
 
 ```tsx live 
-function App() {
+import { GroupedVirtuoso } from 'react-virtuoso'
+import { useMemo } from 'react'
+
+export default function App() {
   const { users, groups, groupCounts } = useMemo(() => {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
     
@@ -35,7 +38,7 @@ function App() {
   return (
     <GroupedVirtuoso
       groupCounts={groupCounts}
-      style={{ height: 400 }}
+      style={{ height: '100%' }}
       groupContent={index => {
         return <div 
         style={{ 

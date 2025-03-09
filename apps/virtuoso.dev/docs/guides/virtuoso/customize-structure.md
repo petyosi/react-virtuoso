@@ -65,7 +65,7 @@ const List = React.forwardRef((props, ref) => {
 
 export default function App() {
   return (
-    <Virtuoso style={{ height: 400 }} components={{ Item, List, Header, Footer }} totalCount={30} itemContent={(idx) => `Item ${idx}`} />
+    <Virtuoso style={{ height: '100%' }} components={{ Item, List, Header, Footer }} totalCount={30} itemContent={(idx) => `Item ${idx}`} />
   )
 }
 ```

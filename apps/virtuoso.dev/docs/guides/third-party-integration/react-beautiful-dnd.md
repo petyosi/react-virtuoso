@@ -7,7 +7,10 @@ slug: /react-beautiful-dnd/
 
 The example below integrates React Virtuoso with the maintained fork of [React Beautiful DND](https://github.com/atlassian/react-beautiful-dnd), [hello-pangea/dnd](https://github.com/hello-pangea/dnd). The example works with Beautiful DND too, but causes warnings with StrictMode.
 
-```tsx live noInline
+```tsx live 
+import React, { useState, useEffect } from 'react'
+import {Virtuoso} from 'react-virtuoso'
+
 // Generate our initial big data set
 const initial = Array.from({ length: 1000 }, (_, k) => ({
   id: `id:${k}`,
@@ -38,7 +41,7 @@ function Item({ provided, item, isDragging }) {
   );
 }
 
-function App() {
+export default function App() {
   const [items, setItems] = useState(initial)
 
   const onDragEnd = React.useCallback(
@@ -121,5 +124,5 @@ function App() {
   );
 }
 
-render(<App />)
+ 
 ```

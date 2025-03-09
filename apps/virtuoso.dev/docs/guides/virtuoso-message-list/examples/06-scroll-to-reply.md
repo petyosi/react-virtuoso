@@ -12,7 +12,11 @@ slug: /virtuoso-message-list/examples/scroll-to-reply
 This example showcases a chat with a message that replies to another message. Clicking on the quote icon will scroll the list to the replied message and highlight it. The index of the replied message is retrieved with the `data.findIndex` method. The `align` property is set to `start` to make the replied message visible at the top of the viewport.
 
 
-```tsx live noInline
+```tsx live 
+import * as React from 'react'
+import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListProps, VirtuosoMessageListMethods, useVirtuosoMethods } from '@virtuoso.dev/message-list'
+import { randPhrase } from './helpers'
+
 interface Message {
   key: string
   text: string
@@ -95,7 +99,7 @@ const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ d
   )
 }
 
-function App() {
+export default function App() {
   const mounted = React.useRef(false)
   const virtuoso = React.useRef<VirtuosoMessageListMethods<Message>>(null)
 
@@ -120,7 +124,7 @@ function App() {
       <VirtuosoMessageListLicense licenseKey="">
       <VirtuosoMessageList<Message, null>
         ref={virtuoso}
-        style={{ height: 400 }}
+        style={{ height: '100%' }}
         computeItemKey={({ data }) => data.key}
         initialLocation={{ index: 'LAST', align: 'end' }}
         ItemContent={ItemContent}
@@ -130,7 +134,7 @@ function App() {
   )
 }
 
-render(<App />)
+ 
 ```
 
 ## Scroll to a message that's not loaded

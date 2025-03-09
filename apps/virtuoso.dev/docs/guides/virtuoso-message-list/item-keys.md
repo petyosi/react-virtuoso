@@ -12,7 +12,9 @@ React uses a unique key to identify each item in a list. By default, the Message
 
 
 ```tsx live 
-function App() {
+import { VirtuosoMessageList, VirtuosoMessageListLicense } from '@virtuoso.dev/message-list'
+
+export default function App() {
 
   return (
       <VirtuosoMessageListLicense licenseKey="">
@@ -20,7 +22,7 @@ function App() {
           computeItemKey={({ data }) => {
             return `item-${data}`
           }}
-          style={{ height: 400 }}
+          style={{ height: '100%' }}
           initialData={Array.from({ length: 100 }, (_, index) => index)}
         />
       </VirtuosoMessageListLicense>

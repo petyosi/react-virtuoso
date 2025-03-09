@@ -12,10 +12,12 @@ Note: The property applies to the list only when the component mounts.
 If you want to change the position of the list afterward, use the [scrollToIndex](/scroll-to-index/) method.
 
 ```tsx live 
-function App() {
+import { Virtuoso } from 'react-virtuoso'
+
+export default function App() {
   return (
     <Virtuoso
-      style={{ height: 400 }}
+      style={{ height: '100%' }}
       totalCount={1000}
       initialTopMostItemIndex={800}
       itemContent={(index) => (<div style={{ height: 30 }}>Item {index}</div>)}

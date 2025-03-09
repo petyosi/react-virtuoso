@@ -9,7 +9,9 @@ sidebar_position: 250
 The `Virtuoso` components can use the document scroller by setting the `useWindowScroll` property to `true`. 
 
 ```tsx live
-function App() {
+import { Virtuoso } from 'react-virtuoso'
+
+export default function App() {
   return (
     <Virtuoso
       useWindowScroll

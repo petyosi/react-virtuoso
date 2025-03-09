@@ -9,7 +9,7 @@ sidebar_position: 5
 This example re-creates the UI of the iOS contacts listview. 
 
 ```tsx live 
-function App() {
+export default function App() {
   const { users, groups, groupCounts } = useMemo(() => {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
     

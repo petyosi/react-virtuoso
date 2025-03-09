@@ -24,7 +24,7 @@ function SampleComponent() {
     <VirtuosoMessageListTestingContext.Provider value={{ itemHeight: 100, viewportHeight: 400 }}>
       <VirtuosoMessageListLicense licenseKey="">
         <VirtuosoMessageList
-          style={{ height: 400 }}
+          style={{ height: '100%' }}
           initialData={Array.from({ length: 100 })}
           ItemContent={({ index }) => <div role="item">{index}</div>}
         />

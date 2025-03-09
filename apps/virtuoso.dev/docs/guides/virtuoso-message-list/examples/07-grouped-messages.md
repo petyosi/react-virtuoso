@@ -12,7 +12,11 @@ This example showcases a chat that groups consecutive messages from the same use
 
 You can use similar approach to render the users' avatars only once per group, or to display the message timestamp at the top of the group.
 
-```tsx live noInline
+```tsx live 
+import * as React from 'react'
+import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListProps, VirtuosoMessageListMethods } from '@virtuoso.dev/message-list'
+import { randTextRange } from './helpers'
+
 interface Message {
   key: string
   text: string
@@ -25,7 +29,7 @@ function randomMessage(user: Message['user']): Message {
   return { user, key: `${idCounter++}`, text: randTextRange({ min: user === 'me' ? 20 : 100, max: 200 }) }
 }
 
-function App() {
+export default function App() {
   const mounted = React.useRef(false)
   const virtuoso = React.useRef<VirtuosoMessageListMethods<Message>>(null)
 
@@ -129,6 +133,6 @@ function App() {
   )
 }
 
-render(<App />)
+ 
 ```
 

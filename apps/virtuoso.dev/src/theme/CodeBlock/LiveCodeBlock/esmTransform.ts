@@ -28,7 +28,7 @@ export async function transformToFunctionBody(code: string) {
     const imports = Array.from(code.matchAll(importRegex));
     const startImports = Array.from(code.matchAll(starImportRegex));
 
-    const packages = [...imports, ...startImports].map(match => match[2])
+    const packages = [...imports, ...startImports].map(match => match[2]).filter(pkg => pkg !== 'react')
 
 
     // First convert imports to assignments
@@ -40,7 +40,15 @@ export async function transformToFunctionBody(code: string) {
       target: 'es2015',
     })
 
-    const functionBodyCode = ` const passedModules = arguments[0];\n const React = passedModules['react'];\n let defaultExport; \n${result.code}\n return defaultExport;`;
+    const functionBodyCode = `
+const passedModules = arguments[0]
+const React = passedModules['react']
+
+let defaultExport
+
+${result.code}
+
+return defaultExport`;
 
     return {
       type: 'success',

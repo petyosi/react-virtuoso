@@ -13,7 +13,10 @@ See the example below for its usage.
 To test the example below, click anywhere in the list and press up / down arrows. 
 
 ```tsx live 
-function App() {
+import * as React from 'react'
+import { Virtuoso } from 'react-virtuoso'
+
+export default function App() {
   const ref = React.useRef(null)
   const [currentItemIndex, setCurrentItemIndex] = React.useState(-1)
   const listRef = React.useRef(null)
@@ -72,7 +75,7 @@ function App() {
         </div>
       )}
       scrollerRef={scrollerRef}
-      style={{ height: 400 }}
+      style={{ height: '100%' }}
     />
   )
 }

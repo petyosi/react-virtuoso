@@ -14,12 +14,15 @@ The callback receives `true` when the user starts scrolling and `false` shortly 
 Handling this event can improve performance by hiding/replacing certain heavy elements in the items.
 
 
-```tsx live noInline
-function App() {
+```tsx live 
+import { Virtuoso } from 'react-virtuoso'
+import { useState } from 'react'
+
+export default function App() {
   const [isScrolling, setIsScrolling] = useState(false);
   return (
     <Virtuoso
-      style={{ height: 400 }}
+      style={{ height: '100%' }}
       totalCount={1000}
       context={{ isScrolling }}
       isScrolling={setIsScrolling}
@@ -65,5 +68,5 @@ return (<div style={{
 }
 
 
-render(<App />)
+ 
 ```

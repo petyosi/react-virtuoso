@@ -32,7 +32,7 @@ export default function CodeBlock({
   const CodeBlockComp =
     typeof children === 'string' ? StringContent : ElementContent;
 
-  if (props.metastring === 'live') {
+  if (props.metastring && props.metastring.trim() === 'live') {
     return <BrowserOnly fallback={<pre>loading...</pre>}>{
       () => {
         const LiveCodeBlock = require('@theme/CodeBlock/LiveCodeBlock').default;

@@ -11,8 +11,11 @@ The `components.Footer` property can be used to place a "load more" button that 
 Scroll to the bottom of the list and press the button to load 100 more items. The `setTimeout` simulates a network request; in the real world, you can fetch data from a service.
 
 
-```tsx live noInline
-function App() {
+```tsx live 
+import { Virtuoso } from 'react-virtuoso'
+import { useState, useCallback, useEffect } from 'react'
+
+export default function App() {
   const [users, setUsers] = useState(() => [])
   const [loading, setLoading] = useState(false)
 
@@ -31,7 +34,7 @@ function App() {
 
   return (
     <Virtuoso
-      style={{ height: 300 }}
+      style={{ height: '100%' }}
       data={users}
       context={{ loading, loadMore }}
       increaseViewportBy={200}
@@ -66,5 +69,5 @@ function generateUsers(count, start) {
 }
 
 
-render(<App />)
+ 
 ```

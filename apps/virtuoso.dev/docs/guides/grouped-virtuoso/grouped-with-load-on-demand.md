@@ -16,8 +16,11 @@ For example, if you have `[10, 10, 10, 10]` groups in total, slicing them to 23 
 
 The `setTimeout` delay is just for illustrative purposes - in reality, the data will be fetched from a remote source.
 
-```jsx live include-data
-function App() {
+```tsx live
+import { GroupedVirtuoso } from 'react-virtuoso'
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
+
+export default function App() {
   const { users, groups, groupCounts } = useMemo(() => {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
     
@@ -71,7 +74,7 @@ function App() {
 
   return (
     <GroupedVirtuoso
-      style={{ height: 400 }}
+      style={{ height: '100%' }}
       groupCounts={currentGroupCounts}
       groupContent={index => (
         <div style={{ backgroundColor: 'var(--ifm-color-content-inverse)', paddingTop: '1rem' }}>Group {groups[index]}</div>

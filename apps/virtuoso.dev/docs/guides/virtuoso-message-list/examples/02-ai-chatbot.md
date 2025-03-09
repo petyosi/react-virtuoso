@@ -19,7 +19,10 @@ The example below simulates a conversation with a chatbot. Shortly after the que
 
 ## Live Example 
 
-```tsx live noInline 
+```tsx live  
+import * as React from 'react'
+import { VirtuosoMessageList, VirtuosoMessageListProps, VirtuosoMessageListMethods, VirtuosoMessageListLicense } from '@virtuoso.dev/message-list'
+import { randTextRange, randPhrase } from './helpers'
 
 interface Message {
   key: string
@@ -54,7 +57,7 @@ const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ d
   )
 }
 
-function App() {
+export default function App() {
   const virtuoso = React.useRef<VirtuosoMessageListMethods<Message>>(null)
 
   return (
@@ -105,5 +108,5 @@ function App() {
   )
 }
 
-render(<App />)
+ 
 ```

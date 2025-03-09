@@ -25,6 +25,10 @@ export default function useChangedListContentsSizes(
 
       // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion
       const windowScrolling = (scrollableElement.lastElementChild! as HTMLDivElement).dataset.viewportType! === 'window'
+      let theWindow!: Window
+      if (windowScrolling) {
+        theWindow = scrollableElement.ownerDocument.defaultView!
+      }
 
       const scrollTop = customScrollParent
         ? horizontalDirection
@@ -32,8 +36,8 @@ export default function useChangedListContentsSizes(
           : customScrollParent.scrollTop
         : windowScrolling
           ? horizontalDirection
-            ? window.pageXOffset || document.documentElement.scrollLeft
-            : window.pageYOffset || document.documentElement.scrollTop
+            ? theWindow.scrollX || theWindow.document.documentElement.scrollLeft
+            : theWindow.scrollY || theWindow.document.documentElement.scrollTop
           : horizontalDirection
             ? scrollableElement.scrollLeft
             : scrollableElement.scrollTop
@@ -44,8 +48,8 @@ export default function useChangedListContentsSizes(
           : customScrollParent.scrollHeight
         : windowScrolling
           ? horizontalDirection
-            ? document.documentElement.scrollWidth
-            : document.documentElement.scrollHeight
+            ? theWindow.document.documentElement.scrollWidth
+            : theWindow.document.documentElement.scrollHeight
           : horizontalDirection
             ? scrollableElement.scrollWidth
             : scrollableElement.scrollHeight
@@ -56,8 +60,8 @@ export default function useChangedListContentsSizes(
           : customScrollParent.offsetHeight
         : windowScrolling
           ? horizontalDirection
-            ? window.innerWidth
-            : window.innerHeight
+            ? theWindow.innerWidth
+            : theWindow.innerHeight
           : horizontalDirection
             ? scrollableElement.offsetWidth
             : scrollableElement.offsetHeight

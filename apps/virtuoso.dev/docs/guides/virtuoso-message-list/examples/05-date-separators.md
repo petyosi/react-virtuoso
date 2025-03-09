@@ -18,7 +18,11 @@ The example below demonstrates how to implement date separators in a message lis
 
 
 
-```tsx live noInline
+```tsx live 
+import * as React from 'react'
+import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListProps, useCurrentlyRenderedData } from '@virtuoso.dev/message-list'
+import { randTextRange, rand } from './helpers'
+
 interface Message {
   key: string
   text: string
@@ -92,7 +96,7 @@ const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ d
   )
 }
 
-function App() {
+export default function App() {
   const messages = React.useMemo(() => Array.from({ length: 100 }, () => randomMessage(rand(['me', 'other']))), [])
 
   return (
@@ -106,11 +110,11 @@ function App() {
           ItemContent={ItemContent}
           StickyHeader={StickyHeader}
         />
-      </VirtualMessageListLicense>
+      </VirtuosoMessageListLicense>
     </div>
   )
 }
 
-render(<App />)
+ 
 ```
 

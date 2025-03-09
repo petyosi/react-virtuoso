@@ -15,7 +15,7 @@ The Message List component exposes an imperative API to interact with the list d
 Use this method when you need to add additional messages before the current ones, for example when loading older messages. The component will automatically adjust the scroll position to keep the previous messages in view.
 
 ```tsx live
-function App() {
+export default function App() {
   const ref = React.useRef<VirtuosoMessageListMethods>(null);
   const offset = React.useRef(0);
 
@@ -36,7 +36,7 @@ function App() {
         <VirtuosoMessageList
           ItemContent={({ data }) => <div>{data}</div>}
           ref={ref}
-          style={{ height: 400 }}
+          style={{ height: '100%' }}
           initialData={Array.from({ length: 100 }, (_, index) => index)}
         />
       </VirtuosoMessageListLicense>
@@ -66,7 +66,7 @@ The function should return:
 Experiment with the live example below to see how the scroll behavior changes when appending new items.
 
 ```tsx live
-function App() {
+export default function App() {
   const ref = React.useRef<VirtuosoMessageListMethods>(null);
   const offset = React.useRef(100);
 
@@ -76,7 +76,7 @@ function App() {
         <VirtuosoMessageList
           ItemContent={({ data }) => <div>{data}</div>}
           ref={ref}
-          style={{ height: 400 }}
+          style={{ height: '100%' }}
           initialData={Array.from({ length: 100 }, (_, index) => index)}
         />
       </VirtuosoMessageListLicense>
@@ -111,7 +111,7 @@ To see a `data.map` example usage, visit the [Reactions example](/virtuoso-messa
 
 The `data.findAndDelete(predicate: (item: Data) => boolean)` method lets you remove a message from the list. The predicate function receives the data item and should return a boolean value indicating whether the item should be removed. The example below adds a button next to each item that removes it.
 
-```tsx live noInline
+```tsx live 
 function ItemContent({ data }) {
   const virtuosoMethods = useVirtuosoMethods();
   return (
@@ -128,30 +128,30 @@ function ItemContent({ data }) {
   );
 }
 
-function App() {
+export default function App() {
   return (
     <VirtuosoMessageListLicense licenseKey="">
       <VirtuosoMessageList
         ItemContent={ItemContent}
-        style={{ height: 400 }}
+        style={{ height: '100%' }}
         initialData={Array.from({ length: 100 }, (_, index) => index)}
       />
     </VirtuosoMessageListLicense>
   );
 }
 
-render(<App />);
+ ;
 ```
 
 You can remove multiple items at once with the `data.deleteRange` method.
 
-```tsx live noInline
+```tsx live 
 function ItemContent({ data }) {
   const virtuosoMethods = useVirtuosoMethods();
   return <div>Item {data}</div>;
 }
 
-function App() {
+export default function App() {
   const ref = useRef<VirtuosoMessageListMethods>(null);
   return (
     <>
@@ -162,7 +162,7 @@ function App() {
         <VirtuosoMessageList
           ref={ref}
           ItemContent={ItemContent}
-          style={{ height: 400 }}
+          style={{ height: '100%' }}
           initialData={Array.from({ length: 100 }, (_, index) => index)}
         />
       </VirtuosoMessageListLicense>
@@ -170,7 +170,7 @@ function App() {
   );
 }
 
-render(<App />);
+ ;
 ```
 
 ## Replacing Data
@@ -179,7 +179,7 @@ In case you're building a chat application with multiple channels, you might wan
 The method accepts `data` and, optionally, an `options: { initalLocation: ItemLocation, purgeItemSizes?: boolean }` to specify the initial scroll position and weather to clear the cached item sizes. Purging the item sizes is useful when the new data has different item sizes than the previous data.
 
 ```tsx live
-function App() {
+export default function App() {
   const ref = React.useRef<VirtuosoMessageListMethods>(null);
 
   return (
@@ -204,7 +204,7 @@ function App() {
           ItemContent={({ data }) => <div>{data}</div>}
           ref={ref}
           initialLocation={{ index: "LAST", align: "end" }}
-          style={{ height: 400 }}
+          style={{ height: '100%' }}
           initialData={Array.from({ length: 100 }, (_, index) => index)}
         />
       </VirtuosoMessageListLicense>

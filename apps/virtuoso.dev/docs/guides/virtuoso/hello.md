@@ -14,8 +14,11 @@ It is up to you to build and return the respective content for it.
 
 ## List with `data`
 
-```tsx live 
-function App() {
+```tsx live
+import { Virtuoso } from 'react-virtuoso'
+import { useMemo } from 'react'
+
+export default function App() {
   const users = useMemo(() => {
     return Array.from({ length: 100000 }, (_, index) => ({
       name: `User ${index}`,
@@ -27,7 +30,7 @@ function App() {
 
   return (
     <Virtuoso
-      style={{ height: 400 }}
+      style={{ height: '100%' }}
       data={users}
       itemContent={(_, user) => (
         <div
@@ -48,8 +51,11 @@ function App() {
 
 ## List with `totalCount`
 
-```jsx live include-data
-function App() {
+```tsx live 
+import { Virtuoso } from 'react-virtuoso'
+import { useMemo } from 'react'
+
+export default function App() {
   const users = useMemo(() => {
     return Array.from({ length: 100000 }, (_, index) => ({
       name: `User ${index}`,
@@ -61,7 +67,7 @@ function App() {
 
   return (
     <Virtuoso
-      style={{ height: 400 }}
+      style={{ height: '100%' }}
       totalCount={users.length}
       itemContent={(index) => {
         const user = users[index]

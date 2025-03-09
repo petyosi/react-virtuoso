@@ -24,15 +24,17 @@ Don't do
 Instead, move the components to the module level. If you need to control the components state, pass the necessary variables through Virtuoso's `context` prop.
 :::
 
-```tsx live noInline
+```tsx live 
+import { Virtuoso } from 'react-virtuoso'
+
 function Footer() {
   return (<div style={{ padding: '1rem', textAlign: 'center', }} > end reached </div>)
 }
 
-function App() {
+export default function App() {
   return (
     <Virtuoso
-      style={{ height: 400 }}
+      style={{ height: '100%' }}
       totalCount={100}
       components={{ Footer: Footer }}
       itemContent={(index) => ( <div>Item {index}</div>)}
@@ -40,5 +42,5 @@ function App() {
   )
 }
 
-render(<App />)
+ 
 ```

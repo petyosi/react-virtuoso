@@ -14,7 +14,11 @@ A common problem in messaging interfaces is how to handle reactions to messages.
 The approach above is not exclusive to reactions - the same principle should be applied to any message state change that will change the message height (for example, expanding details, etc). 
 :::
 
-```tsx live noInline
+```tsx live 
+import { VirtuosoMessageList, VirtuosoMessageListLicense, useVirtuosoMethods, VirtuosoMessageListProps, VirtuosoMessageListMethods } from '@virtuoso.dev/message-list'
+import * as React from 'react'
+import { randTextRange, rand } from './helpers'
+
 interface Message {
   key: string
   text: string
@@ -72,7 +76,7 @@ const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ d
   )
 }
 
-function App() {
+export default function App() {
   const messages = React.useMemo(() => Array.from({ length: 100 }, () => randomMessage(rand(['me', 'other']))), [])
   const virtuoso = React.useRef<VirtuosoMessageListMethods<Message>>(null)
 
@@ -87,11 +91,11 @@ function App() {
           initialLocation={{ index: 'LAST', align: 'end' }}
           ItemContent={ItemContent}
         />
-      </VirtualMessageListLicense>
+      </VirtuosoMessageListLicense>
     </div>
   )
 }
 
-render(<App />)
+ 
 ```
 

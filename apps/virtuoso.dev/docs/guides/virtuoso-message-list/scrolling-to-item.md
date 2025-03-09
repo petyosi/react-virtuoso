@@ -15,7 +15,10 @@ If you want to change the scroll location when updating the data of the list, ma
 :::
 
 ```tsx live
-function App() {
+import { VirtuosoMessageList, VirtuosoMessageListMethods, VirtuosoMessageListLicense } from '@virtuoso.dev/message-list'
+import React from 'react'
+
+export default function App() {
   const ref = React.useRef<VirtuosoMessageListMethods>(null);
   const offset = React.useRef(100);
 
@@ -31,7 +34,7 @@ function App() {
       <VirtuosoMessageListLicense licenseKey="">
         <VirtuosoMessageList
           ref={ref}
-          style={{ height: 400 }}
+          style={{ height: '100%' }}
           initialData={Array.from({ length: 100 }, (_, index) => index)}
         />
       </VirtuosoMessageListLicense>

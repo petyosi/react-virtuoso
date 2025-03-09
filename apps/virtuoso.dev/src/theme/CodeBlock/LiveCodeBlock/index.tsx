@@ -108,7 +108,7 @@ export default function LiveCodeBlock({
 
 
   return (
-    <Flex direction="column" style={{ position: 'relative' }}>
+    <Flex direction="column" style={{ position: 'relative', marginBottom: '1rem', maxHeight: '600px' }}>
       <Flex direction="row" className='live-code-block-wrapper' height={`${codeWrapperHeight + 20}px`} >
         <Box flexGrow="0" width="50%" className='live-code-block'>
           <MonacoEditor
@@ -128,6 +128,9 @@ export default function LiveCodeBlock({
               scrollBeyondLastLine: false,
               wordWrap: 'on',
               wrappingStrategy: 'advanced',
+              stickyScroll: {
+                enabled: false
+              }
             }}
             width="100%"
             height="100%"
@@ -153,9 +156,9 @@ export default function LiveCodeBlock({
           <ErrorBoundary fallback={({ error, tryAgain }) => {
             return <ErrorMessage message={error.message} retry={tryAgain} />
           }}>
-            <ShadowDomPortal>
+            <IframePortal>
               {Comp && <Comp />}
-            </ShadowDomPortal>
+            </IframePortal>
           </ErrorBoundary>
         </Box>
       </Flex>
@@ -193,14 +196,31 @@ export default function LiveCodeBlock({
   )
 }
 
-// const IframePortal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-//   const iframeRef = React.useRef<HTMLIFrameElement>(null);
-//
-//   return (<iframe ref={iframeRef}>
-//     {iframeRef.current && createPortal(children, iframeRef.current.contentDocument.body)}
-//   </iframe>);
-// }
+const isFirefox = navigator.userAgent.toLowerCase().includes('firefox')
 
+const IframePortal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [iFrameEl, setIframeEl] = React.useState<HTMLIFrameElement | null>(null)
+
+  return (
+    <iframe
+      ref={(el) => {
+        if (!isFirefox) {
+          setIframeEl(el)
+        }
+      }}
+      onLoad={(e) => {
+        if (isFirefox) {
+          setIframeEl(e.target as HTMLIFrameElement)
+        }
+      }}
+      style={{ width: '100%', height: '100%' }}
+    >
+      {iFrameEl ? createPortal(children, iFrameEl.contentDocument!.body) : 'moo'}
+    </iframe>
+  )
+}
+
+/*
 const ShadowDomPortal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const shadowContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [shadowRoot, setShadowRoot] = React.useState<ShadowRoot | null>(null);
@@ -214,7 +234,7 @@ const ShadowDomPortal: React.FC<{ children: React.ReactNode }> = ({ children }) 
   return (<div ref={shadowContainerRef} style={{ height: '100%' }}>
     {shadowRoot && createPortal(children, shadowRoot)}
   </div>);
-}
+}*/
 
 const ErrorMessage: React.FC<{ message: string, retry: () => void }> = ({ message, retry }) => {
   return <Callout.Root variant='soft' color='ruby' size="1">

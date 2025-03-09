@@ -13,7 +13,10 @@ Setting the `horizontalDirection` property to `true` will render the Virtuoso co
 ## Horizontal mode list
 
 ```tsx live
-function App() {
+import { Virtuoso } from 'react-virtuoso'
+import { useMemo } from 'react'
+
+export default function App() {
   const users = useMemo(() => {
     return Array.from({ length: 1000 }, (_, index) => ({
       name: `User ${index}`,

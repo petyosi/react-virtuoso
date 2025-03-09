@@ -15,7 +15,9 @@ See the [press to load more example](../press-to-load-more/) for an example usag
 
 ## MUI Table virtualized with Table Virtuoso
 
-```jsx live noInline
+```tsx live
+import {TableVirtuoso} from 'react-virtuoso'
+import {useMemo} from 'react'
 
 const TableComponents = {
   Scroller: React.forwardRef((props, ref) => <MUITable.TableContainer component={MUITable.Paper} {...props} ref={ref} />),
@@ -25,7 +27,7 @@ const TableComponents = {
   TableBody: React.forwardRef((props, ref) => <MUITable.TableBody {...props} ref={ref} />),
 }
 
-function App() {
+export default function App() {
   const users = useMemo(() => Array.from({ length: 100 }, (_, index) => ({
         name: `User ${index}`,
         description: `${index} description`
@@ -33,7 +35,7 @@ function App() {
 
   return (
     <TableVirtuoso
-      style={{ height: 400 }}
+      style={{ height: '100%' }}
       data={users}
       components={TableComponents}
       fixedHeaderContent={() => (
@@ -60,5 +62,5 @@ function App() {
   )
 }
 
-render(<App />)
+ 
 ```

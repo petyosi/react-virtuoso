@@ -12,7 +12,9 @@ You can use this to customize the styling and to bind to DOM events like `onScro
 ## List with custom styling
 
 ```tsx live
-function App() {
+import { Virtuoso } from 'react-virtuoso'
+
+export default function App() {
   return (
     <Virtuoso
       onScroll={(e) => console.log(e.target.scrollTop)}
@@ -21,7 +23,7 @@ function App() {
       style={{
         border: '5px dashed gray',
         borderRadius: '4px',
-        height: 400
+        height: '100%'
       }}
     />
   )
@@ -32,7 +34,10 @@ The example below changes the scroller element with a custom component. This app
 
 ## List with custom scroller
 
-```tsx live noInline
+```tsx live 
+import { Virtuoso } from 'react-virtuoso'
+import React from 'react'
+
 // do not inline the component, as a fresh instance would be created with each re-render
 // if you need to do some conditional logic, use Virtuoso's context prop to pass props inside the Scroller
 const Scroller = React.forwardRef(({ style, ...props }, ref) => {
@@ -41,10 +46,10 @@ const Scroller = React.forwardRef(({ style, ...props }, ref) => {
   return <div style={{ ...style, border: '5px solid gray' }} ref={ref} {...props} />
 })
 
-function App() {
+export default function App() {
   return (
     <Virtuoso
-      style={{ height: 400 }}
+      style={{ height: '100%' }}
       onScroll={(e) => console.log(e.target.scrollTop)}
       totalCount={1000}
       itemContent={(idx) => `Item ${idx}`}
@@ -53,5 +58,5 @@ function App() {
   )
 }
 
-render(<App />)
+ 
 ```

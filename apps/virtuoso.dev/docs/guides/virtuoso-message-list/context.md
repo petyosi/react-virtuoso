@@ -16,7 +16,9 @@ The `VirtuosoMessageList` second type parameter is the type of the `context` pro
 
 The example below has a header component that accesses the `loading` flag from the context. The same approach works for all custom components.
 
-```tsx live noInline
+```tsx live 
+import { VirtuosoMessageList, VirtuosoMessageListProps, VirtuosoMessageListLicense } from '@virtuoso.dev/message-list'
+import React, { useState } from 'react'
 
 interface MessageListContext {
   loading: boolean
@@ -26,7 +28,7 @@ const Header: VirtuosoMessageListProps<number, MessageListContext>['Header'] = (
   <div style={{ height: 30, background: 'lightblue' }}>Header - {context.loading ? 'loading' : 'loaded'}</div>
 )
 
-function App() {
+export default function App() {
   const [loading, setLoading] = useState(false)
 
   return (
@@ -36,7 +38,7 @@ function App() {
         <VirtuosoMessageList<number, MessageListContext>
           context={{ loading }}
           Header={Header}
-          style={{ height: 400 }}
+          style={{ height: '100%' }}
           initialData={Array.from({ length: 100 }, (_, index) => index)}
         />
       </VirtuosoMessageListLicense>
@@ -44,5 +46,5 @@ function App() {
   )
 }
 
-render(<App />)
+ 
 ```

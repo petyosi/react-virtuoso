@@ -12,8 +12,11 @@ If you want to load items more aggressively, set the `increaseViewportBy` proper
 
 Scroll to the bottom of the list to load additional items.
 
-```tsx live noInline
-function App() {
+```tsx live 
+import { Virtuoso } from 'react-virtuoso'
+import { useState, useCallback, useEffect } from 'react'
+
+export default function App() {
   const [users, setUsers] = useState(() => [])
 
   const loadMore = useCallback(() => {
@@ -29,7 +32,7 @@ function App() {
 
   return (
     <Virtuoso
-      style={{ height: 300 }}
+      style={{ height: '100%' }}
       data={users}
       endReached={loadMore}
       increaseViewportBy={200}
@@ -62,5 +65,5 @@ function generateUsers(count, start) {
 }
 
 
-render(<App />)
+ 
 ```

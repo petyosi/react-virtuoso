@@ -9,7 +9,8 @@ The following takes the [virtualized rows example of @tanstack/table](https://ta
 
 ## Virtualized @tanstack/table with Table Virtuoso
 
-```jsx live noInline
+```tsx live
+import {TableVirtuoso} from 'react-virtuoso'
 
 function makeData(count) {
   return Array.from({length: count}, (_, index) => {
@@ -27,7 +28,7 @@ function makeData(count) {
   })
 }
 
-function App() {
+export default function App() {
   const rerender = useReducer(() => ({}), {})[1];
 
   const [sorting, setSorting] = useState([]);
@@ -177,5 +178,5 @@ function App() {
   );
 }
 
-render(<App />);
+ ;
 ```

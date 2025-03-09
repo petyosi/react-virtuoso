@@ -26,8 +26,9 @@ export default function useWindowViewportRectRef(
         visibleHeight = customScrollParentRect.height - Math.max(0, deltaTop)
         offsetTop = deltaTop + customScrollParent.scrollTop
       } else {
-        visibleHeight = window.innerHeight - Math.max(0, rect.top)
-        offsetTop = rect.top + window.pageYOffset
+        const theElementWindow = ref.current!.ownerDocument.defaultView!
+        visibleHeight = theElementWindow.innerHeight - Math.max(0, rect.top)
+        offsetTop = rect.top + theElementWindow.scrollY
       }
 
       viewportInfo.current = {
@@ -59,11 +60,12 @@ export default function useWindowViewportRectRef(
         observer.unobserve(customScrollParent)
       }
     } else {
-      window.addEventListener('scroll', scrollAndResizeEventHandler)
-      window.addEventListener('resize', scrollAndResizeEventHandler)
+      const theElementWindow = ref.current!.ownerDocument.defaultView!
+      theElementWindow.addEventListener('scroll', scrollAndResizeEventHandler)
+      theElementWindow.addEventListener('resize', scrollAndResizeEventHandler)
       return () => {
-        window.removeEventListener('scroll', scrollAndResizeEventHandler)
-        window.removeEventListener('resize', scrollAndResizeEventHandler)
+        theElementWindow.removeEventListener('scroll', scrollAndResizeEventHandler)
+        theElementWindow.removeEventListener('resize', scrollAndResizeEventHandler)
       }
     }
   }, [scrollAndResizeEventHandler, customScrollParent])

@@ -14,7 +14,10 @@ Using smooth scrolling over many items can kill performance and potentially clas
 :::
 
 ```tsx live 
-function App() {
+import { Virtuoso } from 'react-virtuoso'
+import { useState, useRef } from 'react'
+
+export default function App() {
   const [align, setAlign] = useState("start");
   const [behavior, setBehavior] = useState("auto");
   const virtuoso = useRef(null);

@@ -10,8 +10,11 @@ Ensure that the header elements are not transparent. Otherwise, the table cells 
 
 ## Table with `fixedHeaderContent`
 
-```jsx live 
-function App() {
+```tsx live
+import {TableVirtuoso} from 'react-virtuoso'
+import {useMemo} from 'react'
+
+export default function App() {
   const users = useMemo(() => {
     return Array.from({ length: 1000 }, (_, index) => ({
       name: `User ${index}`,
@@ -21,7 +24,7 @@ function App() {
 
   return (
     <TableVirtuoso
-      style={{ height: 400 }}
+      style={{ height: '100%' }}
       data={users}
       fixedHeaderContent={() => (
         <tr>
