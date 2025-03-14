@@ -12,7 +12,8 @@ In addition to the default `'smooth'` and `'auto'` scroll behavior values, the c
 
 ```tsx live
 import { VirtuosoMessageList, VirtuosoMessageListProps, VirtuosoMessageListMethods, VirtuosoMessageListLicense } from '@virtuoso.dev/message-list'
-import React from 'react'
+import {useRef} from 'react'
+import {randTextRange, randPhrase} from '@ngneat/falso'
 
 /**
  * Bounce easing function - https://easings.net/#easeOutBounce. This is just an example, you can use any easing function.
@@ -44,7 +45,7 @@ function customSmoothScroll(currentTop: number, targetTop: number) {
 }
 
 export default function App() {
-  const virtuoso = React.useRef<VirtuosoMessageListMethods<Message>>(null);
+  const virtuoso = useRef<VirtuosoMessageListMethods<Message>>(null);
 
   return (
     <div

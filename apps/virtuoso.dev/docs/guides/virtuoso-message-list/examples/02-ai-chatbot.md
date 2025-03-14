@@ -22,7 +22,7 @@ The example below simulates a conversation with a chatbot. Shortly after the que
 ```tsx live  
 import * as React from 'react'
 import { VirtuosoMessageList, VirtuosoMessageListProps, VirtuosoMessageListMethods, VirtuosoMessageListLicense } from '@virtuoso.dev/message-list'
-import { randTextRange, randPhrase } from './helpers'
+import { randTextRange, randPhrase } from '@ngneat/falso'
 
 interface Message {
   key: string

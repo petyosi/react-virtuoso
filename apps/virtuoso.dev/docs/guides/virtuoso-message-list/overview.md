@@ -17,6 +17,8 @@ Apart from the structural styling necessary for the virtualized rendering, the c
 ## Live Example
 
 ```tsx live  
+import { VirtuosoMessageListProps, VirtuosoMessageListLicense, VirtuosoMessageList } from '@virtuoso.dev/message-list'
+import { randTextRange } from '@ngneat/falso'
 
 interface Message {
   key: string
@@ -123,6 +125,8 @@ npm install @virtuoso.dev/message-list
 Then, add the component along with your license to your application.
 
 ```tsx live 
+import { VirtuosoMessageListLicense, VirtuosoMessageList } from '@virtuoso.dev/message-list'
+
 // const licenseKey = 'your-license-key'
 const licenseKey = ''
 

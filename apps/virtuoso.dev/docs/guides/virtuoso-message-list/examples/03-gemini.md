@@ -26,7 +26,7 @@ import {
   VirtuosoMessageListMethods,
   VirtuosoMessageListProps,
 } from "@virtuoso.dev/message-list";
-import { randTextRange, randPhrase } from './helpers';
+import { randTextRange, randPhrase } from '@ngneat/falso';
 
 interface Message {
   key: string;

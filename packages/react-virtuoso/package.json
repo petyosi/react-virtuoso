@@ -32,13 +32,14 @@
     "url": "https://github.com/petyosi/react-virtuoso.git"
   },
   "scripts": {
+    "dev": "vite build",
     "build": "vite build",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "e2e": "playwright test --workers=1",
     "lint": "eslint",
     "typecheck": "tsc",
-    "dev": "LADLE=true ladle serve",
+    "ladle": "LADLE=true ladle serve",
     "ci-setup": "npx playwright install --with-deps"
   },
   "peerDependencies": {

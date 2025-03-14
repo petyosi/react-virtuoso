@@ -17,7 +17,7 @@ The approach above is not exclusive to reactions - the same principle should be 
 ```tsx live 
 import { VirtuosoMessageList, VirtuosoMessageListLicense, useVirtuosoMethods, VirtuosoMessageListProps, VirtuosoMessageListMethods } from '@virtuoso.dev/message-list'
 import * as React from 'react'
-import { randTextRange, rand } from './helpers'
+import { randTextRange, rand } from '@ngneat/falso'
 
 interface Message {
   key: string
@@ -81,18 +81,16 @@ export default function App() {
   const virtuoso = React.useRef<VirtuosoMessageListMethods<Message>>(null)
 
   return (
-    <div class="tall-example" style={{fontSize: '70%'}}>
       <VirtuosoMessageListLicense licenseKey="">
         <VirtuosoMessageList<Message, null>
           ref={virtuoso}
           initialData={messages}
-          style={{ height: 800 }}
+          style={{ height: '100%' }}
           computeItemKey={({ data }) => data.key}
           initialLocation={{ index: 'LAST', align: 'end' }}
           ItemContent={ItemContent}
         />
       </VirtuosoMessageListLicense>
-    </div>
   )
 }
 

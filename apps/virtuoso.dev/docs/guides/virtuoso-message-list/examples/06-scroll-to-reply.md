@@ -15,7 +15,7 @@ This example showcases a chat with a message that replies to another message. Cl
 ```tsx live 
 import * as React from 'react'
 import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListProps, VirtuosoMessageListMethods, useVirtuosoMethods } from '@virtuoso.dev/message-list'
-import { randPhrase } from './helpers'
+import { randPhrase } from '@ngneat/falso'
 
 interface Message {
   key: string

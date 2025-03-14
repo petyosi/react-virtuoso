@@ -15,7 +15,7 @@ You can use similar approach to render the users' avatars only once per group, o
 ```tsx live 
 import * as React from 'react'
 import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListProps, VirtuosoMessageListMethods } from '@virtuoso.dev/message-list'
-import { randTextRange } from './helpers'
+import { randTextRange } from '@ngneat/falso'
 
 interface Message {
   key: string

@@ -21,7 +21,7 @@ The example below demonstrates how to implement date separators in a message lis
 ```tsx live 
 import * as React from 'react'
 import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListProps, useCurrentlyRenderedData } from '@virtuoso.dev/message-list'
-import { randTextRange, rand } from './helpers'
+import { randTextRange, rand } from '@ngneat/falso'
 
 interface Message {
   key: string

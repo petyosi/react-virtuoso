@@ -7,11 +7,11 @@
     "build-virtuoso.dev": "turbo build --filter @virtuoso.dev/virtuoso.dev",
     "release": "turbo build && npx @changesets/cli publish",
     "changeset-add": "npx @changesets/cli add",
-    "dev": "turbo dev"
+    "dev": "turbo watch dev"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.12",
-    "turbo": "^2.3.4"
+    "turbo": "^2.4.4"
   },
   "engines": {
     "node": "22"

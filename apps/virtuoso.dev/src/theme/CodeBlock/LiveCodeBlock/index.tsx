@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import MonacoEditor from 'react-monaco-editor';
 import * as _V from 'react-virtuoso';
 import * as _ML from '@virtuoso.dev/message-list'
+import * as _Falso from '@ngneat/falso'
 
 import { useColorMode } from '@docusaurus/theme-common';
 import { CheckIcon, ClipboardCopyIcon, CrossCircledIcon, CubeIcon, InfoCircledIcon, ReloadIcon, ResetIcon } from '@radix-ui/react-icons';
@@ -21,6 +22,10 @@ import reactDtsCode from '!!raw-loader!../../../../../../node_modules/@types/rea
 
 // @ts-ignore
 import jsxRuntimeDtsCode from '!!raw-loader!../../../../../../node_modules/@types/react/jsx-runtime.d.ts';
+
+// @ts-ignore
+import falsoDtsCode from '!!raw-loader!../../../../../../node_modules/@ngneat/falso/src/index.d.ts';
+
 import { createSandbox } from './createCodesandbox';
 
 import copy from 'copy-text-to-clipboard';
@@ -75,6 +80,10 @@ monaco.languages.typescript.typescriptDefaults.setExtraLibs([
     content: (reactVirtuosoDtsCode as any) as string,
     filePath: 'file:///node_modules/@types/react-virtuoso/index.d.ts',
   },
+  {
+    content: (falsoDtsCode as any) as string,
+    filePath: 'file:///node_modules/@types/ngneat__falso/index.d.ts',
+  },
 ])
 
 export default function LiveCodeBlock({
@@ -96,11 +105,11 @@ export default function LiveCodeBlock({
     transformToFunctionBody(tsCode).then((result) => {
       if (result.type === 'success') {
         try {
-          const NewComp = (new Function(result.code))({ 'react': React, 'react-virtuoso': _V, '@virtuoso.dev/message-list': _ML })
+          const NewComp = (new Function(result.code))({ 'react': React, 'react-virtuoso': _V, '@virtuoso.dev/message-list': _ML, '@ngneat/falso': _Falso })
           setComp(() => NewComp)
           setUsedPackages(result.packages)
-        } catch {
-          console.log('code is invalid')
+        } catch (e) {
+          console.log('code is invalid:', e)
         }
       }
     })

@@ -18,7 +18,7 @@ The example below has a header component that accesses the `loading` flag from t
 
 ```tsx live 
 import { VirtuosoMessageList, VirtuosoMessageListProps, VirtuosoMessageListLicense } from '@virtuoso.dev/message-list'
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 interface MessageListContext {
   loading: boolean
