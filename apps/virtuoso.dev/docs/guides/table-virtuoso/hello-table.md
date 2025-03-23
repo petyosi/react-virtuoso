@@ -78,14 +78,14 @@ export default function App() {
 
 
 ```tsx live
-import {TableVirtuoso} from 'react-virtuoso'
+import { TableVirtuoso } from 'react-virtuoso'
 
 export default function App() {
   return (
     <TableVirtuoso
       data={Array.from({ length: 100 }, (_, index) => ({ name: `User ${index}`, description: `${index} description` }))}
       useWindowScroll
-      fixedHeaderContent={(index, user) => (
+      fixedHeaderContent={() => (
         <tr>
           <th style={{ width: 150, background: 'blue', color: 'white' }}>Name</th>
           <th style={{ background: 'blue', color: 'white' }}>Description</th>

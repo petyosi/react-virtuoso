@@ -15,16 +15,23 @@ See the [press to load more example](../press-to-load-more/) for an example usag
 
 ## MUI Table virtualized with Table Virtuoso
 
-```tsx live
-import {TableVirtuoso} from 'react-virtuoso'
-import {useMemo} from 'react'
+```tsx live noSandbox
+import {TableVirtuoso, TableVirtuosoProps} from 'react-virtuoso'
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import { useMemo, forwardRef } from 'react'
 
-const TableComponents = {
-  Scroller: React.forwardRef((props, ref) => <MUITable.TableContainer component={MUITable.Paper} {...props} ref={ref} />),
-  Table: (props) => <MUITable.Table {...props} style={{ borderCollapse: 'separate' }} />,
-  TableHead: MUITable.TableHead,
-  TableRow: MUITable.TableRow,
-  TableBody: React.forwardRef((props, ref) => <MUITable.TableBody {...props} ref={ref} />),
+const TableComponents: TableVirtuosoProps<{name: string, description: string}, unknown>['components'] = {
+  Scroller: forwardRef((props, ref) => <TableContainer component={Paper} {...props} ref={ref} />),
+  Table: (props) => <Table {...props} style={{ borderCollapse: 'separate' }} />,
+  TableHead: TableHead,
+  TableRow: TableRow,
+  TableBody: forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
 }
 
 export default function App() {
@@ -39,23 +46,23 @@ export default function App() {
       data={users}
       components={TableComponents}
       fixedHeaderContent={() => (
-        <MUITable.TableRow>
-          <MUITable.TableCell style={{ width: 150, background: 'white' }}>
+        <TableRow>
+          <TableCell style={{ width: 150, background: 'white' }}>
             Name
-          </MUITable.TableCell>
-          <MUITable.TableCell style={{ background: 'white' }}>
+          </TableCell>
+          <TableCell style={{ background: 'white' }}>
             Description
-          </MUITable.TableCell>
-        </MUITable.TableRow>
+          </TableCell>
+        </TableRow>
       )}
       itemContent={(index, user) => (
         <>
-          <MUITable.TableCell style={{ width: 150, background: 'white' }}>
+          <TableCell style={{ width: 150, background: 'white' }}>
             {user.name}
-          </MUITable.TableCell>
-          <MUITable.TableCell style={{ background: 'white'  }}>
+          </TableCell>
+          <TableCell style={{ background: 'white'  }}>
             {user.description}
-          </MUITable.TableCell>
+          </TableCell>
         </>
       )}
     />

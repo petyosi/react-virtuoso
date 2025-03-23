@@ -9,6 +9,8 @@ sidebar_position: 5
 This example re-creates the UI of the iOS contacts listview. 
 
 ```tsx live 
+import {GroupedVirtuoso} from 'react-virtuoso'
+import { useMemo, useRef } from 'react'
 export default function App() {
   const { users, groups, groupCounts } = useMemo(() => {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
@@ -31,7 +33,7 @@ export default function App() {
   const virtuoso = useRef(null)
 
   return (
-    <div style={{ display: 'flex' }}>
+    <div style={{ display: 'flex', height: '100%' }}>
       <div style={{ flex: 1 }}>
         <GroupedVirtuoso
           ref={virtuoso}

@@ -32,11 +32,12 @@ export default function CodeBlock({
   const CodeBlockComp =
     typeof children === 'string' ? StringContent : ElementContent;
 
-  if (props.metastring && props.metastring.trim() === 'live') {
+  if (props.metastring && props.metastring.trim().startsWith('live')) {
+    const disableSandbox = props.metastring.trim().includes('noSandbox');
     return <BrowserOnly fallback={<pre>loading...</pre>}>{
       () => {
         const LiveCodeBlock = require('@theme/CodeBlock/LiveCodeBlock').default;
-        return <LiveCodeBlock code={children as string} />
+        return <LiveCodeBlock disableSandbox={disableSandbox} code={children as string} />
       }
     }</BrowserOnly>;
   }

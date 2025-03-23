@@ -6,6 +6,21 @@ import MonacoEditor from 'react-monaco-editor';
 import * as _V from 'react-virtuoso';
 import * as _ML from '@virtuoso.dev/message-list'
 import * as _Falso from '@ngneat/falso'
+import * as MUIStyles from '@mui/material/styles'
+import List from "@mui/material/List";
+import ListSubheader from "@mui/material/ListSubheader";
+import ListItem from "@mui/material/ListItem";
+import ListItemAvatar from "@mui/material/ListItemAvatar";
+import Avatar from "@mui/material/Avatar";
+import ListItemText from "@mui/material/ListItemText";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import createCache from '@emotion/cache'
 
 import { useColorMode } from '@docusaurus/theme-common';
 import { CheckIcon, ClipboardCopyIcon, CrossCircledIcon, CubeIcon, InfoCircledIcon, ReloadIcon, ResetIcon } from '@radix-ui/react-icons';
@@ -32,6 +47,33 @@ import copy from 'copy-text-to-clipboard';
 import ErrorBoundary from '@docusaurus/ErrorBoundary';
 
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import { CacheProvider } from '@emotion/react';
+
+
+
+const IMPORT_MAP = {
+  'react': React,
+  'react-virtuoso': _V,
+  '@virtuoso.dev/message-list': _ML,
+  '@ngneat/falso': _Falso,
+  '@mui/material/List': List,
+  '@mui/material/ListSubheader': ListSubheader,
+  '@mui/material/ListItem': ListItem,
+  '@mui/material/ListItemAvatar': ListItemAvatar,
+  '@mui/material/Avatar': Avatar,
+  '@mui/material/ListItemText': ListItemText,
+  '@mui/material/Table': Table,
+  '@mui/material/TableBody': TableBody,
+  '@mui/material/TableCell': TableCell,
+  '@mui/material/TableContainer': TableContainer,
+  '@mui/material/TableHead': TableHead,
+  '@mui/material/TableRow': TableRow,
+  '@mui/material/Paper': Paper,
+  '@mui/material/styles': MUIStyles
+};
+
+const genericDefaultIsAnyDtsCode = `declare const _default: any;
+export default _default;`
 
 monaco?.editor.defineTheme('custom-dark', {
   base: 'vs-dark',
@@ -84,11 +126,39 @@ monaco.languages.typescript.typescriptDefaults.setExtraLibs([
     content: (falsoDtsCode as any) as string,
     filePath: 'file:///node_modules/@types/ngneat__falso/index.d.ts',
   },
+  {
+    content: (messageListDtsCode as any) as string,
+    filePath: 'file:///node_modules/@types/virtuoso.dev__message-list/index.d.ts',
+  },
+  {
+    content: (reactDtsCode as any) as string,
+    filePath: 'file:///node_modules/@types/react/index.d.ts',
+  },
+  {
+    content: (jsxRuntimeDtsCode as any) as string,
+    filePath: 'file:///node_modules/@types/react/jsx-runtime.d.ts',
+  },
+  {
+    content: (reactVirtuosoDtsCode as any) as string,
+    filePath: 'file:///node_modules/@types/react-virtuoso/index.d.ts',
+  },
+  {
+    content: (falsoDtsCode as any) as string,
+    filePath: 'file:///node_modules/@types/ngneat__falso/index.d.ts',
+  },
+  ...['List', 'ListSubheader', 'ListItem', 'ListItemAvatar', 'Avatar', 'ListItemText',
+    'Table', 'TableBody', 'TableCell', 'TableContainer', 'TableHead', 'TableRow',
+    'Paper', 'styles'].map(component => ({
+      content: genericDefaultIsAnyDtsCode,
+      filePath: `file:///node_modules/@types/mui__material/${component}/index.d.ts`,
+    }))
 ])
 
+
 export default function LiveCodeBlock({
-  code
-}: { code: string }): ReactNode {
+  code,
+  disableSandbox = false
+}: { code: string, disableSandbox?: boolean }): ReactNode {
   const [tsCode, setTsCode] = React.useState(code)
   const [Comp, setComp] = React.useState<React.ComponentType | null>(null)
   const [usedPackages, setUsedPackages] = React.useState<string[]>([])
@@ -105,7 +175,7 @@ export default function LiveCodeBlock({
     transformToFunctionBody(tsCode).then((result) => {
       if (result.type === 'success') {
         try {
-          const NewComp = (new Function(result.code))({ 'react': React, 'react-virtuoso': _V, '@virtuoso.dev/message-list': _ML, '@ngneat/falso': _Falso })
+          const NewComp = (new Function(result.code))(IMPORT_MAP)
           setComp(() => NewComp)
           setUsedPackages(result.packages)
         } catch (e) {
@@ -193,13 +263,15 @@ export default function LiveCodeBlock({
           </IconButton>
         </Tooltip>
 
-        <Tooltip content="Open in codesandbox.io">
-          <IconButton size="1" radius='large' variant='soft' onClick={() => {
-            createSandbox(tsCode, usedPackages)
-          }}>
-            <CubeIcon width={14} height={14} />
-          </IconButton>
-        </Tooltip>
+        {!disableSandbox &&
+          <Tooltip content="Open in codesandbox.io">
+            <IconButton size="1" radius='large' variant='soft' onClick={() => {
+              createSandbox(tsCode, usedPackages)
+            }}>
+              <CubeIcon width={14} height={14} />
+            </IconButton>
+          </Tooltip>
+        }
       </Flex>
     </Flex>
   )
@@ -210,22 +282,30 @@ const isFirefox = navigator.userAgent.toLowerCase().includes('firefox')
 const IframePortal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [iFrameEl, setIframeEl] = React.useState<HTMLIFrameElement | null>(null)
 
+  const cache = createCache({
+    key: 'css',
+    container: iFrameEl?.contentWindow?.document?.head,
+    prepend: true
+  })
+
   return (
-    <iframe
-      ref={(el) => {
-        if (!isFirefox) {
-          setIframeEl(el)
-        }
-      }}
-      onLoad={(e) => {
-        if (isFirefox) {
-          setIframeEl(e.target as HTMLIFrameElement)
-        }
-      }}
-      style={{ width: '100%', height: '100%' }}
-    >
-      {iFrameEl ? createPortal(children, iFrameEl.contentDocument!.body) : 'moo'}
-    </iframe>
+    <MUIStyles.StyledEngineProvider injectFirst>
+      <iframe
+        ref={(el) => {
+          if (!isFirefox) {
+            setIframeEl(el)
+          }
+        }}
+        onLoad={(e) => {
+          if (isFirefox) {
+            setIframeEl(e.target as HTMLIFrameElement)
+          }
+        }}
+        style={{ width: '100%', height: '100%' }}
+      >
+        {iFrameEl ? createPortal(<CacheProvider value={cache}>{children}</CacheProvider>, iFrameEl.contentDocument!.body) : null}
+      </iframe>
+    </MUIStyles.StyledEngineProvider>
   )
 }
 

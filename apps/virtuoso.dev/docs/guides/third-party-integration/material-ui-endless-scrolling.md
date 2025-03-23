@@ -10,30 +10,38 @@ The React Virtuoso component supports customization of its internal components t
 
 The example below displays 500 records grouped by name, using the [the List components from MUI](https://mui.com/components/lists/).
 
-```tsx live
-import {GroupedVirtuoso} from 'react-virtuoso'
-// the MUIList object includes the necessary MUI components for this example.
+```tsx live noSandbox
+import {GroupedVirtuoso, GroupedVirtuosoProps} from 'react-virtuoso'
+import {useMemo, forwardRef} from 'react'
+import List from "@mui/material/List";
+import ListSubheader from "@mui/material/ListSubheader";
+import ListItem from "@mui/material/ListItem";
+import ListItemAvatar from "@mui/material/ListItemAvatar";
+import Avatar from "@mui/material/Avatar";
+import ListItemText from "@mui/material/ListItemText";
 
-const MUIComponents = {
-  List: React.forwardRef(({ style, children }, listRef) => {
+// the object includes the necessary MUI components for this example.
+
+const MUIComponents: GroupedVirtuosoProps<unknown, unknown>['components'] = {
+  List: forwardRef(({ style, children }, listRef) => {
     return (
-      <MUIList.List style={{ padding: 0, ...style, margin: 0 }} component="div" ref={listRef}>
+      <List style={{ padding: 0, ...style, margin: 0 }} component="div" ref={listRef}>
         {children}
-      </MUIList.List>
+      </List>
     )
   }),
 
   Item: ({ children, ...props }) => {
     return (
-      <MUIList.ListItem component="div" {...props} style={{ margin: 0 }}>
+      <ListItem component="div" {...props} style={{ margin: 0 }}>
         {children}
-      </MUIList.ListItem>
+      </ListItem>
     )
   },
 
   Group: ({ children, style, ...props }) => {
     return (
-      <MUIList.ListSubheader
+      <ListSubheader
         component="div"
         {...props}
         style={{
@@ -43,7 +51,7 @@ const MUIComponents = {
         }}
       >
         {children}
-      </MUIList.ListSubheader>
+      </ListSubheader>
     )
   },
 }
@@ -75,11 +83,11 @@ export default function App() {
         const user = users[index]
         return (
           <>
-            <MUIList.ListItemAvatar>
-              <MUIList.Avatar>{user.initials}</MUIList.Avatar>
-            </MUIList.ListItemAvatar>
+            <ListItemAvatar>
+              <Avatar>{user.initials}</Avatar>
+            </ListItemAvatar>
 
-            <MUIList.ListItemText primary={user.name} secondary={<span>{user.description}</span>} />
+            <ListItemText primary={user.name} secondary={<span>{user.description}</span>} />
           </>
         )
       }}
