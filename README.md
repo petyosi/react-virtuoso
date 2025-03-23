@@ -1,5 +1,3 @@
-<img src="https://user-images.githubusercontent.com/13347/101237112-ec4c6000-36de-11eb-936d-4b6b7ec94976.png" width="229" />
-
 [![npm version](https://img.shields.io/npm/v/react-virtuoso.svg?style=flat)](//badge.fury.io/js/react-virtuoso)
 
 **React Virtuoso** - the most complete React virtualization rendering list/table/grid family of components.
