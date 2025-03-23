@@ -45,7 +45,7 @@ const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ d
           fontSize: '0.8rem',
           maxWidth: '50%',
           marginLeft: data.user === 'me' ? 'auto' : undefined,
-          backgroundColor: data.highlighted ? 'yellow' : data.user === 'me' ? 'lightblue' : 'lightgreen',
+          backgroundColor: data.highlighted ? 'var(--highlight)' : data.user === 'me' ? 'var(--background)' : 'var(--alt-background)',
           transition: 'background-color 0.5s',
           borderRadius: '1rem',
           padding: '1rem',
@@ -56,7 +56,7 @@ const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ d
             style={{
               width: '80%',
               marginBottom: '1rem',
-              backgroundColor: 'white',
+              backgroundColor: 'var(--alt-background)',
               borderRadius: '1rem',
               padding: '1rem',
               fontSize: '0.8rem',
@@ -72,7 +72,7 @@ const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ d
                     return item
                   }
                 })
-              }, 100)
+              })
 
               // remove the highlight after 2 seconds
               setTimeout(() => {

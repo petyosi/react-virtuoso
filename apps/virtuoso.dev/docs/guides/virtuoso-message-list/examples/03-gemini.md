@@ -54,9 +54,9 @@ const ItemContent: VirtuosoMessageListProps<Message, null>["ItemContent"] = ({
         style={{
           maxWidth: "80%",
           marginLeft: data.user === "me" ? "auto" : undefined,
-
-          background: ownMessage ? "#0253B3" : "#F0F0F3",
-          color: ownMessage ? "white" : "black",
+          background: ownMessage ? "var(--background)" : "var(--alt-background)",
+          color: 'var(--foreground)',
+          border: '1px solid var(--border)',
           borderRadius: "1rem",
           padding: "1rem",
         }}

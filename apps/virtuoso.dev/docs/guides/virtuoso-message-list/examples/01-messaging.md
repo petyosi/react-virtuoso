@@ -39,8 +39,9 @@ const ItemContent: VirtuosoProps['ItemContent'] = ({ data: message, context }) =
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: '50%' }}>
         <div
           style={{
-            background: ownMessage ? '#0253B3' : '#F0F0F3',
-            color: ownMessage ? 'white' : 'black',
+            background: ownMessage ? 'var(--background)' : 'var(--alt-background)',
+            color: 'var(--foreground)',
+            border: '1px solid var(--border)',
             borderRadius: '0.5rem',
             padding: '0.5rem',
             ...(ownMessage ? { borderTopRightRadius: '0' } : { borderTopLeftRadius: 'auto' }),

@@ -210,7 +210,9 @@ const IframePortal: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             :root {
               --foreground: ${colorMode === 'dark' ? '#fff' : '#000'};
               --background: ${colorMode === 'dark' ? '#000' : '#fff'};
+              --alt-background: ${colorMode === 'dark' ? '#222222' : '#f3f3f3'};
               --border: ${colorMode === 'dark' ? '#333' : '#ccc'};
+              --highlight: ${colorMode === 'dark' ? '#B8860B' : '#FFFFE0'};
             }
           `}</style>
           {children}

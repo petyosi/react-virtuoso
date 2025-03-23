@@ -49,7 +49,7 @@ const StickyHeader: VirtuosoMessageListProps<Message, null>['StickyHeader'] = ({
   const firstItem = useCurrentlyRenderedData<{ date: Date }>()[0] as { date: Date } | undefined
   return (
     <div style={{ width: '100%', position: 'absolute', top: 0 }}>
-      <div style={{ textAlign: 'center', fontWeight: 300 }}><span style={{backgroundColor: '#F0F0F3', padding: '0.1rem 2rem', borderRadius: '0.5rem' }}>{firstItem?.date.toDateString()}</span></div>
+      <div style={{ textAlign: 'center', fontWeight: 300 }}><span style={{border: '1px solid var(--border)', backgroundColor: 'var(--alt-background)', padding: '0.1rem 2rem', borderRadius: '0.5rem' }}>{firstItem?.date.toDateString()}</span></div>
     </div>
   )
 }
@@ -57,8 +57,8 @@ const StickyHeader: VirtuosoMessageListProps<Message, null>['StickyHeader'] = ({
 const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ data, prevData }) => {
   const dateSeparator =
     !prevData || prevData.date.getDate() !== data.date.getDate() ? (
-      <div>
-        <div style={{ textAlign: 'center', fontWeight: 300 }}><span style={{backgroundColor: '#F0F0F3', padding: '0.1rem 2rem', borderRadius: '0.5rem' }}>{data.date.toDateString()}</span></div>
+      <div style={{ padding: '0.5rem 0' }}>
+        <div style={{ textAlign: 'center', fontWeight: 300 }}><span style={{backgroundColor: 'var(--alt-background)', border: '1px solid var(--border)', padding: '0.1rem 2rem', borderRadius: '0.5rem' }}>{data.date.toDateString()}</span></div>
       </div>
     ) : null
 
@@ -82,9 +82,9 @@ const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ d
       >
         <div
           style={{
-            backgroundColor: data.user === 'me' ? '#0253B3' : '#F0F0F3',
-            color: data.user === 'me'  ? 'white' : 'black',
+            backgroundColor: data.user === 'me' ? 'var(--background)' : 'var(--alt-background)',
             borderRadius: '1rem',
+            border: '1px solid var(--border)',
             padding: '1rem',
           }}
         >

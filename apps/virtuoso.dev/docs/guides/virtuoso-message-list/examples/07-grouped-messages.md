@@ -89,8 +89,9 @@ export default function App() {
                 style={{
                   maxWidth: '50%',
                   marginLeft: data.user === 'me' ? 'auto' : undefined,
-                  backgroundColor: data.user === 'me' ? '#0253B3' : '#E6B253',
-                  color: data.user === 'me'  ? 'white' : 'black',
+                  backgroundColor: data.user === 'me' ? 'var(--background)' : 'var(--alt-background)',
+                  color: data.user === 'me'  ? 'var(--foreground)' : 'var(--foreground)',
+                  border: '1px solid var(--border)',
                   borderRadius: borderRadiusStyle,
                   padding: '1rem',
                 }}

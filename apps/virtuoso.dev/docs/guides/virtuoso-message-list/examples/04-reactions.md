@@ -52,7 +52,8 @@ const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ d
       >
         <div
           style={{
-            backgroundColor: data.user === 'me' ? '#0253B3' : '#F0F0F3',
+            backgroundColor: data.user === 'me' ? 'var(--background)' : 'var(--alt-background)',
+            border: '1px solid var(--border)',
             borderRadius: '1rem',
             padding: '1rem',
           }}

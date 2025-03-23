@@ -32,7 +32,7 @@ export default function App() {
         <div
           style={{
             padding: '1rem 0.5rem',
-              borderBottom: `1px solid var(--border)`
+            borderBottom: `1px solid var(--border)`
           }}
         >
           <h4>{user.name}</h4>
