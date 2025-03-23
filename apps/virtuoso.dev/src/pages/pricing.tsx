@@ -1,15 +1,15 @@
-import Layout from "@theme/Layout";
-import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
-import { initializePaddle, Paddle } from "@paddle/paddle-js";
-import { useEffect, useState } from "react";
-import { Button } from "@radix-ui/themes";
+import Layout from '@theme/Layout'
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
+import { initializePaddle, Paddle } from '@paddle/paddle-js'
+import { useEffect, useState } from 'react'
+import { Button } from '@radix-ui/themes'
 
 export default function Pricing(): JSX.Element {
-  const { siteConfig } = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext()
 
-  const paddleConfig = siteConfig.customFields.paddle as any;
+  const paddleConfig = siteConfig.customFields.paddle as any
   // Create a local state to store Paddle instance
-  const [paddle, setPaddle] = useState<Paddle>();
+  const [paddle, setPaddle] = useState<Paddle>()
 
   // Download and initialize Paddle instance from CDN
   useEffect(() => {
@@ -18,16 +18,13 @@ export default function Pricing(): JSX.Element {
       token: paddleConfig.token,
     }).then((paddleInstance: Paddle | undefined) => {
       if (paddleInstance) {
-        setPaddle(paddleInstance);
+        setPaddle(paddleInstance)
       }
-    });
-  }, []);
+    })
+  }, [])
 
   return (
-    <Layout
-      title={`React Virtuoso Message List Pricing`}
-      description="Description will go into a meta tag in <head />"
-    >
+    <Layout title={`React Virtuoso Message List Pricing`} description="Description will go into a meta tag in <head />">
       <div id="pricing">
         <h1>Pricing Plans</h1>
 
@@ -38,9 +35,7 @@ export default function Pricing(): JSX.Element {
             <p className="license-kind">MIT Licensed, free forever.</p>
 
             <p className="license-coverage">
-              The <code>Virtuoso</code>, <code>GroupedVirtuoso</code>,{" "}
-              <code>VirtuosoGrid</code> and <code>VirtuosoTable</code>{" "}
-              components.
+              The <code>Virtuoso</code>, <code>GroupedVirtuoso</code>, <code>VirtuosoGrid</code> and <code>VirtuosoTable</code> components.
             </p>
 
             <ul className="license-details">
@@ -76,9 +71,7 @@ export default function Pricing(): JSX.Element {
               <p>
                 $<strong>14</strong>/month/seat
               </p>
-              <p style={{ textAlign: "center" }}>
-                Billed annualy at $168/seat.
-              </p>
+              <p style={{ textAlign: 'center' }}>Billed annualy at $168/seat.</p>
             </div>
 
             <div className="cta">
@@ -120,7 +113,7 @@ export default function Pricing(): JSX.Element {
               <p>
                 $<strong>26</strong>/month/seat
               </p>
-              <p style={{ textAlign: "center" }}>
+              <p style={{ textAlign: 'center' }}>
                 Billed annualy at $<strong>312</strong>/seat.
               </p>
             </div>
@@ -146,49 +139,34 @@ export default function Pricing(): JSX.Element {
           </div>
         </div>
 
-        <div style={{ marginTop: "4rem" }}>
+        <div style={{ marginTop: '4rem' }}>
           <h2>FAQ</h2>
           <h3>How many licenses do I need?</h3>
           <p>
-            The number of licenses to the maximum number of concurrent front-end
-            developers who contribute to a project that uses the package. This
-            also includes developers who work on the project part-time or as
-            contractors. See more details in in the{" "}
-            <a href="/virtuoso-message-list/licensing">
-              message list licensing section
-            </a>
-            .
+            The number of licenses to the maximum number of concurrent front-end developers who contribute to a project that uses the
+            package. This also includes developers who work on the project part-time or as contractors. See more details in in the{' '}
+            <a href="/virtuoso-message-list/licensing">message list licensing section</a>.
           </p>
           <h3>What happens when I make a purchase?</h3>
           <p>
-            You will receive a license key on the email you provide. You put the
-            license key in the <code>licenseKey</code> prop of the{" "}
-            <code>VirtuosoMessageListLicense</code> component and you're good to
-            go.
+            You will receive a license key on the email you provide. You put the license key in the <code>licenseKey</code> prop of the{' '}
+            <code>VirtuosoMessageListLicense</code> component and you're good to go.
           </p>
           <h3>What happens after my license expires?</h3>
           <p>
-            The purchased license works indefinitely in production. If you want
-            to continue active development using the component, you should
-            update your subscription.
+            The purchased license works indefinitely in production. If you want to continue active development using the component, you
+            should update your subscription.
           </p>
           <h3>Can I try before I make a purchase decision?</h3>
-          <p>
-            Yes, you can use the package in development mode without a license
-            for 30 days.
-          </p>
+          <p>Yes, you can use the package in development mode without a license for 30 days.</p>
           <h3>What's the guaranteed response time of the pro plan?</h3>
-          <p>
-            Within 2 business days, you're going to get a reply back from the
-            authors of the package.
-          </p>
+          <p>Within 2 business days, you're going to get a reply back from the authors of the package.</p>
           <h3>I have more questions</h3>
           <p>
-            Reach out to{" "}
-            <a href="mailto:support@virtuoso.dev">support@virtuoso.dev</a>.
+            Reach out to <a href="mailto:support@virtuoso.dev">support@virtuoso.dev</a>.
           </p>
         </div>
       </div>
     </Layout>
-  );
+  )
 }

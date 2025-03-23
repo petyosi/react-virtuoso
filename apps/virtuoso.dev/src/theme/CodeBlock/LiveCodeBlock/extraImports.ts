@@ -1,41 +1,40 @@
-import Avatar from "@mui/material/Avatar";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import ListItemText from "@mui/material/ListItemText";
-import ListSubheader from "@mui/material/ListSubheader";
-import Paper from "@mui/material/Paper";
-import * as MUIStyles from '@mui/material/styles';
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import * as _Falso from '@ngneat/falso';
-import * as TanstackReactTable from "@tanstack/react-table";
-import * as _ML from '@virtuoso.dev/message-list';
-import React from 'react';
-import * as _V from 'react-virtuoso';
-
-
-// @ts-ignore
-import messageListDtsCode from '!!raw-loader!../../../../../../node_modules/@virtuoso.dev/message-list/dist/index.d.ts';
+import Avatar from '@mui/material/Avatar'
+import List from '@mui/material/List'
+import ListItem from '@mui/material/ListItem'
+import ListItemAvatar from '@mui/material/ListItemAvatar'
+import ListItemText from '@mui/material/ListItemText'
+import ListSubheader from '@mui/material/ListSubheader'
+import Paper from '@mui/material/Paper'
+import * as MUIStyles from '@mui/material/styles'
+import Table from '@mui/material/Table'
+import TableBody from '@mui/material/TableBody'
+import TableCell from '@mui/material/TableCell'
+import TableContainer from '@mui/material/TableContainer'
+import TableHead from '@mui/material/TableHead'
+import TableRow from '@mui/material/TableRow'
+import * as _Falso from '@ngneat/falso'
+import * as TanstackReactTable from '@tanstack/react-table'
+import * as _ML from '@virtuoso.dev/message-list'
+import React from 'react'
+import * as _V from 'react-virtuoso'
 
 // @ts-ignore
-import reactVirtuosoDtsCode from '!!raw-loader!../../../../../../node_modules/react-virtuoso/dist/index.d.ts';
+import messageListDtsCode from '!!raw-loader!../../../../../../node_modules/@virtuoso.dev/message-list/dist/index.d.ts'
 
 // @ts-ignore
-import reactDtsCode from '!!raw-loader!../../../../../../node_modules/@types/react/index.d.ts';
+import reactVirtuosoDtsCode from '!!raw-loader!../../../../../../node_modules/react-virtuoso/dist/index.d.ts'
 
 // @ts-ignore
-import jsxRuntimeDtsCode from '!!raw-loader!../../../../../../node_modules/@types/react/jsx-runtime.d.ts';
+import reactDtsCode from '!!raw-loader!../../../../../../node_modules/@types/react/index.d.ts'
 
 // @ts-ignore
-import falsoDtsCode from '!!raw-loader!../../../../../../node_modules/@ngneat/falso/src/index.d.ts';
+import jsxRuntimeDtsCode from '!!raw-loader!../../../../../../node_modules/@types/react/jsx-runtime.d.ts'
+
+// @ts-ignore
+import falsoDtsCode from '!!raw-loader!../../../../../../node_modules/@ngneat/falso/src/index.d.ts'
 
 export const importMap = {
-  'react': React,
+  react: React,
   'react-virtuoso': _V,
   '@virtuoso.dev/message-list': _ML,
   '@ngneat/falso': _Falso,
@@ -53,9 +52,8 @@ export const importMap = {
   '@mui/material/TableRow': TableRow,
   '@mui/material/Paper': Paper,
   '@mui/material/styles': MUIStyles,
-  '@tanstack/react-table': TanstackReactTable
-};
-
+  '@tanstack/react-table': TanstackReactTable,
+}
 
 const tanstackReactTableDtsCode = `
 export declare function flexRender<TProps extends object>(Comp: Renderable<TProps>, props: TProps): any;
@@ -69,53 +67,66 @@ export default _default;`
 
 export const libDefinitions = [
   {
-    content: (messageListDtsCode as any) as string,
+    content: messageListDtsCode as any as string,
     filePath: 'file:///node_modules/@types/virtuoso.dev__message-list/index.d.ts',
   },
   {
-    content: (reactDtsCode as any) as string,
+    content: reactDtsCode as any as string,
     filePath: 'file:///node_modules/@types/react/index.d.ts',
   },
   {
-    content: (jsxRuntimeDtsCode as any) as string,
+    content: jsxRuntimeDtsCode as any as string,
     filePath: 'file:///node_modules/@types/react/jsx-runtime.d.ts',
   },
   {
-    content: (reactVirtuosoDtsCode as any) as string,
+    content: reactVirtuosoDtsCode as any as string,
     filePath: 'file:///node_modules/@types/react-virtuoso/index.d.ts',
   },
   {
-    content: (falsoDtsCode as any) as string,
+    content: falsoDtsCode as any as string,
     filePath: 'file:///node_modules/@types/ngneat__falso/index.d.ts',
   },
   {
-    content: (tanstackReactTableDtsCode as any) as string,
+    content: tanstackReactTableDtsCode as any as string,
     filePath: 'file:///node_modules/@types/tanstack__react-table/index.d.ts',
   },
   {
-    content: (messageListDtsCode as any) as string,
+    content: messageListDtsCode as any as string,
     filePath: 'file:///node_modules/@types/virtuoso.dev__message-list/index.d.ts',
   },
   {
-    content: (reactDtsCode as any) as string,
+    content: reactDtsCode as any as string,
     filePath: 'file:///node_modules/@types/react/index.d.ts',
   },
   {
-    content: (jsxRuntimeDtsCode as any) as string,
+    content: jsxRuntimeDtsCode as any as string,
     filePath: 'file:///node_modules/@types/react/jsx-runtime.d.ts',
   },
   {
-    content: (reactVirtuosoDtsCode as any) as string,
+    content: reactVirtuosoDtsCode as any as string,
     filePath: 'file:///node_modules/@types/react-virtuoso/index.d.ts',
   },
   {
-    content: (falsoDtsCode as any) as string,
+    content: falsoDtsCode as any as string,
     filePath: 'file:///node_modules/@types/ngneat__falso/index.d.ts',
   },
-  ...['List', 'ListSubheader', 'ListItem', 'ListItemAvatar', 'Avatar', 'ListItemText',
-    'Table', 'TableBody', 'TableCell', 'TableContainer', 'TableHead', 'TableRow',
-    'Paper', 'styles'].map(component => ({
-      content: genericDefaultIsAnyDtsCode,
-      filePath: `file:///node_modules/@types/mui__material/${component}/index.d.ts`,
-    }))
+  ...[
+    'List',
+    'ListSubheader',
+    'ListItem',
+    'ListItemAvatar',
+    'Avatar',
+    'ListItemText',
+    'Table',
+    'TableBody',
+    'TableCell',
+    'TableContainer',
+    'TableHead',
+    'TableRow',
+    'Paper',
+    'styles',
+  ].map((component) => ({
+    content: genericDefaultIsAnyDtsCode,
+    filePath: `file:///node_modules/@types/mui__material/${component}/index.d.ts`,
+  })),
 ]
