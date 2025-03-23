@@ -1,46 +1,16 @@
+import createCache from '@emotion/cache';
+import * as MUIStyles from '@mui/material/styles';
 import { Box, Callout, Flex, IconButton, Tooltip } from '@radix-ui/themes';
 import { Uri } from 'monaco-editor';
-import React, { useEffect, type ReactNode } from 'react';
+import React, { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import MonacoEditor from 'react-monaco-editor';
-import * as _V from 'react-virtuoso';
-import * as _ML from '@virtuoso.dev/message-list'
-import * as _Falso from '@ngneat/falso'
-import * as MUIStyles from '@mui/material/styles'
-import * as TanstackReactTable from "@tanstack/react-table";
-import List from "@mui/material/List";
-import ListSubheader from "@mui/material/ListSubheader";
-import ListItem from "@mui/material/ListItem";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import Avatar from "@mui/material/Avatar";
-import ListItemText from "@mui/material/ListItemText";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import createCache from '@emotion/cache'
+import MonacoEditor, { MonacoEditorHandle } from '@virtuoso.dev/react-monaco-editor';
 
 import { useColorMode } from '@docusaurus/theme-common';
-import { CheckIcon, ClipboardCopyIcon, CrossCircledIcon, CubeIcon, InfoCircledIcon, ReloadIcon, ResetIcon } from '@radix-ui/react-icons';
+import { CheckIcon, ClipboardCopyIcon, CubeIcon, ReloadIcon, ResetIcon } from '@radix-ui/react-icons';
 import { transformToFunctionBody } from './esmTransform';
+import iFrameStyle from '!!raw-loader!./iframe-style.css';
 
-// @ts-ignore
-import messageListDtsCode from '!!raw-loader!../../../../../../node_modules/@virtuoso.dev/message-list/dist/index.d.ts';
-
-// @ts-ignore
-import reactVirtuosoDtsCode from '!!raw-loader!../../../../../../node_modules/react-virtuoso/dist/index.d.ts';
-
-// @ts-ignore
-import reactDtsCode from '!!raw-loader!../../../../../../node_modules/@types/react/index.d.ts';
-
-// @ts-ignore
-import jsxRuntimeDtsCode from '!!raw-loader!../../../../../../node_modules/@types/react/jsx-runtime.d.ts';
-
-// @ts-ignore
-import falsoDtsCode from '!!raw-loader!../../../../../../node_modules/@ngneat/falso/src/index.d.ts';
 
 import { createSandbox } from './createCodesandbox';
 
@@ -51,41 +21,7 @@ import ErrorBoundary from '@docusaurus/ErrorBoundary';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 import { CacheProvider } from '@emotion/react';
-
-
-
-const IMPORT_MAP = {
-  'react': React,
-  'react-virtuoso': _V,
-  '@virtuoso.dev/message-list': _ML,
-  '@ngneat/falso': _Falso,
-  '@mui/material/List': List,
-  '@mui/material/ListSubheader': ListSubheader,
-  '@mui/material/ListItem': ListItem,
-  '@mui/material/ListItemAvatar': ListItemAvatar,
-  '@mui/material/Avatar': Avatar,
-  '@mui/material/ListItemText': ListItemText,
-  '@mui/material/Table': Table,
-  '@mui/material/TableBody': TableBody,
-  '@mui/material/TableCell': TableCell,
-  '@mui/material/TableContainer': TableContainer,
-  '@mui/material/TableHead': TableHead,
-  '@mui/material/TableRow': TableRow,
-  '@mui/material/Paper': Paper,
-  '@mui/material/styles': MUIStyles,
-  '@tanstack/react-table': TanstackReactTable
-};
-
-
-const tanstackReactTableDtsCode = `
-export declare function flexRender<TProps extends object>(Comp: Renderable<TProps>, props: TProps): any;
-export declare function useReactTable<TData extends RowData>(options: TableOptions<TData>): any;
-export declare function getCoreRowModel(): any;
-export declare function getSortedRowModel(): any;
-`
-
-const genericDefaultIsAnyDtsCode = `declare const _default: any;
-export default _default;`
+import { importMap, libDefinitions } from './extraImports';
 
 monaco?.editor.defineTheme('custom-dark', {
   base: 'vs-dark',
@@ -117,58 +53,7 @@ monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
   typeRoots: ['node_modules/@types'],
 })
 
-monaco.languages.typescript.typescriptDefaults.setExtraLibs([
-  {
-    content: (messageListDtsCode as any) as string,
-    filePath: 'file:///node_modules/@types/virtuoso.dev__message-list/index.d.ts',
-  },
-  {
-    content: (reactDtsCode as any) as string,
-    filePath: 'file:///node_modules/@types/react/index.d.ts',
-  },
-  {
-    content: (jsxRuntimeDtsCode as any) as string,
-    filePath: 'file:///node_modules/@types/react/jsx-runtime.d.ts',
-  },
-  {
-    content: (reactVirtuosoDtsCode as any) as string,
-    filePath: 'file:///node_modules/@types/react-virtuoso/index.d.ts',
-  },
-  {
-    content: (falsoDtsCode as any) as string,
-    filePath: 'file:///node_modules/@types/ngneat__falso/index.d.ts',
-  },
-  {
-    content: (tanstackReactTableDtsCode as any) as string,
-    filePath: 'file:///node_modules/@types/tanstack__react-table/index.d.ts',
-  },
-  {
-    content: (messageListDtsCode as any) as string,
-    filePath: 'file:///node_modules/@types/virtuoso.dev__message-list/index.d.ts',
-  },
-  {
-    content: (reactDtsCode as any) as string,
-    filePath: 'file:///node_modules/@types/react/index.d.ts',
-  },
-  {
-    content: (jsxRuntimeDtsCode as any) as string,
-    filePath: 'file:///node_modules/@types/react/jsx-runtime.d.ts',
-  },
-  {
-    content: (reactVirtuosoDtsCode as any) as string,
-    filePath: 'file:///node_modules/@types/react-virtuoso/index.d.ts',
-  },
-  {
-    content: (falsoDtsCode as any) as string,
-    filePath: 'file:///node_modules/@types/ngneat__falso/index.d.ts',
-  },
-  ...['List', 'ListSubheader', 'ListItem', 'ListItemAvatar', 'Avatar', 'ListItemText',
-    'Table', 'TableBody', 'TableCell', 'TableContainer', 'TableHead', 'TableRow',
-    'Paper', 'styles'].map(component => ({
-      content: genericDefaultIsAnyDtsCode,
-      filePath: `file:///node_modules/@types/mui__material/${component}/index.d.ts`,
-    }))
-])
+monaco.languages.typescript.typescriptDefaults.setExtraLibs(libDefinitions)
 
 
 export default function LiveCodeBlock({
@@ -185,13 +70,14 @@ export default function LiveCodeBlock({
   const randomTypeScriptFileName = React.useMemo(() => {
     return `file:///custom-example-${Math.random().toString(36).substring(7)}.tsx`
   }, [])
+  const monacoEditorRef = useRef<MonacoEditorHandle>(null)
 
 
   useEffect(() => {
     transformToFunctionBody(tsCode).then((result) => {
       if (result.type === 'success') {
         try {
-          const NewComp = (new Function(result.code))(IMPORT_MAP)
+          const NewComp = (new Function(result.code))(importMap)
           setComp(() => NewComp)
           setUsedPackages(result.packages)
         } catch (e) {
@@ -207,6 +93,7 @@ export default function LiveCodeBlock({
       <Flex direction="row" className='live-code-block-wrapper' height={`${codeWrapperHeight + 20}px`} >
         <Box flexGrow="0" width="50%" className='live-code-block'>
           <MonacoEditor
+            ref={monacoEditorRef}
             value={code}
             options={{
               automaticLayout: true,
@@ -241,9 +128,6 @@ export default function LiveCodeBlock({
               };
               editor.onDidContentSizeChange(updateHeight);
               updateHeight();
-              updateCodeRef.current = (code) => {
-                editor.setValue(code)
-              }
             }}
           />
         </Box>
@@ -261,7 +145,7 @@ export default function LiveCodeBlock({
         <Tooltip content="Reset example">
           <IconButton size="1" radius='large' variant='soft' onClick={() => {
             setTsCode(code)
-            updateCodeRef.current?.(code)
+            monacoEditorRef.current?.editor.setValue(code)
           }}>
             <ResetIcon width={14} height={14} />
           </IconButton>
@@ -297,6 +181,7 @@ const isFirefox = navigator.userAgent.toLowerCase().includes('firefox')
 
 const IframePortal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [iFrameEl, setIframeEl] = React.useState<HTMLIFrameElement | null>(null)
+  const { colorMode } = useColorMode();
 
   const cache = createCache({
     key: 'css',
@@ -319,7 +204,17 @@ const IframePortal: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         }}
         style={{ width: '100%', height: '100%' }}
       >
-        {iFrameEl ? createPortal(<CacheProvider value={cache}>{children}</CacheProvider>, iFrameEl.contentDocument!.body) : null}
+        {iFrameEl ? createPortal(<CacheProvider value={cache}>
+          <style>{iFrameStyle}</style>
+          <style>{`
+            :root {
+              --foreground: ${colorMode === 'dark' ? '#fff' : '#000'};
+              --background: ${colorMode === 'dark' ? '#000' : '#fff'};
+              --border: ${colorMode === 'dark' ? '#333' : '#ccc'};
+            }
+          `}</style>
+          {children}
+        </CacheProvider>, iFrameEl.contentDocument!.body) : null}
       </iframe>
     </MUIStyles.StyledEngineProvider>
   )

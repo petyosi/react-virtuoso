@@ -28,8 +28,8 @@ export default function App() {
       data={users}
       fixedHeaderContent={() => (
         <tr>
-          <th style={{ width: 150, background: 'white' }}>Name</th>
-          <th style={{ background: 'white' }}>Description</th>
+          <th style={{ width: 150, background: 'var(--background)' }}>Name</th>
+          <th style={{ background: 'var(--background)' }}>Description</th>
         </tr>
       )}
       itemContent={(index, user) => (

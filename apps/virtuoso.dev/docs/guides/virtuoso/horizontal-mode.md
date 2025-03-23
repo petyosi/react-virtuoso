@@ -20,7 +20,6 @@ export default function App() {
   const users = useMemo(() => {
     return Array.from({ length: 1000 }, (_, index) => ({
       name: `User ${index}`,
-      bgColor: `hsl(${Math.random() * 360}, 70%, 80%)`,
       size: Math.floor(Math.random() * 40) + 100,
       description: `Description for user ${index}`,
     }));
@@ -28,20 +27,23 @@ export default function App() {
 
   return (
     <Virtuoso
-      style={{ height: 120 }}
+      style={{ height: 320 }}
       data={users}
       horizontalDirection
       itemContent={(_, user) => (
         <div
           style={{
-            backgroundColor: user.bgColor,
-            padding: "0.5rem",
+            padding: "1rem",
+            height: `100%`,
+            borderRight: "1px solid var(--border)",
           }}
         >
-          <p>
+          <div style={{display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <p style={{marginBottom: '1rem'}}>
             <strong>{user.name}</strong>
           </p>
           <div>{user.description}</div>
+          </div>
         </div>
       )}
     />

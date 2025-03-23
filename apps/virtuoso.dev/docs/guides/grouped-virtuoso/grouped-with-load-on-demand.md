@@ -77,7 +77,7 @@ export default function App() {
       style={{ height: '100%' }}
       groupCounts={currentGroupCounts}
       groupContent={index => (
-        <div style={{ backgroundColor: 'var(--ifm-color-content-inverse)', paddingTop: '1rem' }}>Group {groups[index]}</div>
+        <div style={{ backgroundColor: 'var(--background)', paddingTop: '1rem' }}>Group {groups[index]}</div>
       )}
       itemContent={index => (
         <div>{users[index].name}</div>

@@ -28,17 +28,17 @@ export default function App() {
       components={{ Table: ({ style, ...props }) => <table {...props} style={{ ...style, width: 700 }} /> }}
       fixedHeaderContent={() => (
         <tr>
-          <th style={{ width: 150, background: 'white', position: 'sticky', left: 0, zIndex: 1 }}>Name</th>
-          <th style={{ background: 'white' }}>Description</th>
-          <th style={{ background: 'white' }}>Description</th>
-          <th style={{ background: 'white' }}>Description</th>
-          <th style={{ background: 'white' }}>Description</th>
-          <th style={{ background: 'white' }}>Description</th>
+          <th style={{ width: 150, background: 'var(--background)', position: 'sticky', left: 0, zIndex: 1 }}>Name</th>
+          <th style={{ background: 'var(--background)' }}>Description</th>
+          <th style={{ background: 'var(--background)' }}>Description</th>
+          <th style={{ background: 'var(--background)' }}>Description</th>
+          <th style={{ background: 'var(--background)' }}>Description</th>
+          <th style={{ background: 'var(--background)' }}>Description</th>
         </tr>
       )}
       itemContent={(index, user) => (
         <>
-          <td style={{ width: 150, background: 'white', position: 'sticky', left: 0 }}>{user.name}</td>
+          <td style={{ width: 150, background: 'var(--background)', position: 'sticky', left: 0 }}>{user.name}</td>
           <td>{user.description}</td>
           <td>{user.description}</td>
           <td>{user.description}</td>

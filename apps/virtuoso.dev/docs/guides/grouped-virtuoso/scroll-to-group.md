@@ -40,7 +40,7 @@ export default function App() {
           groupCounts={groupCounts}
           groupContent={index => {
           return <div style={{ 
-            backgroundColor: 'var(--ifm-color-content-inverse)', 
+            backgroundColor: 'var(--background)', 
             padding: '0.3rem 1rem'
           }}>{groups[index]}</div>
           }}
@@ -76,6 +76,7 @@ export default function App() {
             <li key={index}>
               <a
                 href="#"
+                style={{color: 'var(--foreground)', padding: '0.5rem'}}
                 onClick={e => {
                   e.preventDefault()
                   virtuoso.current.scrollToIndex({

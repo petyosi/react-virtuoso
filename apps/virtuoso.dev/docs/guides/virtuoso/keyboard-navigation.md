@@ -65,7 +65,7 @@ export default function App() {
       itemContent={(index, _, { currentItemIndex }) => (
         <div
           style={{
-            borderColor: index === currentItemIndex ? 'blue' : 'transparent',
+            borderColor: index === currentItemIndex ? 'var(--border)' : 'transparent',
             borderSize: '1px',
             borderStyle: 'solid',
             padding: '0.5rem 0.2rem',

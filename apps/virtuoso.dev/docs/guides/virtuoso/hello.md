@@ -22,8 +22,8 @@ export default function App() {
   const users = useMemo(() => {
     return Array.from({ length: 100000 }, (_, index) => ({
       name: `User ${index}`,
-      bgColor: `hsl(${Math.random() * 360}, 70%, 80%)`,
-      size: Math.floor(Math.random() * 40) + 100,
+      // random-sized items
+      size: Math.floor(Math.random() * 40) + 70,
       description: `Description for user ${index}`
     }))
   }, [])
@@ -35,9 +35,9 @@ export default function App() {
       itemContent={(_, user) => (
         <div
           style={{
-            backgroundColor: user.bgColor,
             padding: '0.5rem',
-            height: `${user.size}px`
+            height: `${user.size}px`,
+            borderBottom: `1px solid var(--border)`
           }}
         >
           <p><strong>{user.name}</strong></p>
@@ -59,8 +59,7 @@ export default function App() {
   const users = useMemo(() => {
     return Array.from({ length: 100000 }, (_, index) => ({
       name: `User ${index}`,
-      bgColor: `hsl(${Math.random() * 360}, 70%, 80%)`,
-      size: Math.floor(Math.random() * 40) + 100,
+      size: Math.floor(Math.random() * 40) + 70,
       description: `Description for user ${index}`
     }))
   }, [])
@@ -74,9 +73,9 @@ export default function App() {
         return (
         <div
           style={{
-            backgroundColor: user.bgColor,
             padding: '0.5rem',
-            height: `${user.size}px`
+            height: `${user.size}px`,
+            borderBottom: `1px solid var(--border)`
           }}
         >
           <p><strong>{user.name}</strong></p>

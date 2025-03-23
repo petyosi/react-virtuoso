@@ -19,7 +19,6 @@ export default function App() {
   const users = useMemo(() => {
     return Array.from({ length: 100000 }, (_, index) => ({
       name: `User ${index}`,
-      bgColor: `hsl(${Math.random() * 360}, 70%, 80%)`,
       description: `Description for user ${index}`
     }))
   }, [])
@@ -32,8 +31,8 @@ export default function App() {
       itemContent={(index, user) => (
         <div
           style={{
-            backgroundColor: user.bgColor,
             padding: '1rem 0.5rem',
+              borderBottom: `1px solid var(--border)`
           }}
         >
           <h4>{user.name}</h4>

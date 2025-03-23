@@ -42,9 +42,9 @@ export default function App() {
       groupContent={index => {
         return <div 
         style={{ 
-          backgroundColor: 'white',
+          backgroundColor: 'var(--background)',
           paddingTop: '1rem',
-          borderBottom: '1px solid #ccc'
+          borderBottom: '1px solid var(--border)'
         }}>{groups[index]}</div>
       }}
 

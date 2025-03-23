@@ -87,8 +87,8 @@ export default function App() {
       useWindowScroll
       fixedHeaderContent={() => (
         <tr>
-          <th style={{ width: 150, background: 'blue', color: 'white' }}>Name</th>
-          <th style={{ background: 'blue', color: 'white' }}>Description</th>
+          <th style={{ width: 150, background: 'var(--background)', color: 'var(--foreground)' }}>Name</th>
+          <th style={{ background: 'var(--background)', color: 'var(--foreground)' }}>Description</th>
         </tr>
       )}
       itemContent={(index, user) => (
