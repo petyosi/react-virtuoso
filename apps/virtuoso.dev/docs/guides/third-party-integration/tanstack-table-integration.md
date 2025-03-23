@@ -11,6 +11,8 @@ The following takes the [virtualized rows example of @tanstack/table](https://ta
 
 ```tsx live
 import {TableVirtuoso} from 'react-virtuoso'
+import {useReducer, useState} from 'react'
+import { flexRender, useReactTable, getCoreRowModel, getSortedRowModel } from '@tanstack/react-table'
 
 function makeData(count) {
   return Array.from({length: count}, (_, index) => {
@@ -71,15 +73,15 @@ export default function App() {
   const [data, setData] = React.useState(() => makeData(500));
   const refreshData = () => setData(() => makeData(500));
 
-  const table = Tanstack.useReactTable({
+  const table = useReactTable({
     data,
     columns,
     state: {
       sorting
     },
     onSortingChange: setSorting,
-    getCoreRowModel: Tanstack.getCoreRowModel(),
-    getSortedRowModel: Tanstack.getSortedRowModel()
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel()
   });
 
   const { rows } = table.getRowModel();
@@ -114,7 +116,7 @@ export default function App() {
               <tr {...props}>
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} style={{ padding: "6px" }}>
-                    {Tanstack.flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
               </tr>
@@ -149,7 +151,7 @@ export default function App() {
                           onClick: header.column.getToggleSortingHandler()
                         }}
                       >
-                        {Tanstack.flexRender(
+                        {flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}

@@ -7,6 +7,7 @@ import * as _V from 'react-virtuoso';
 import * as _ML from '@virtuoso.dev/message-list'
 import * as _Falso from '@ngneat/falso'
 import * as MUIStyles from '@mui/material/styles'
+import * as TanstackReactTable from "@tanstack/react-table";
 import List from "@mui/material/List";
 import ListSubheader from "@mui/material/ListSubheader";
 import ListItem from "@mui/material/ListItem";
@@ -44,9 +45,11 @@ import falsoDtsCode from '!!raw-loader!../../../../../../node_modules/@ngneat/fa
 import { createSandbox } from './createCodesandbox';
 
 import copy from 'copy-text-to-clipboard';
+
 import ErrorBoundary from '@docusaurus/ErrorBoundary';
 
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+
 import { CacheProvider } from '@emotion/react';
 
 
@@ -69,8 +72,17 @@ const IMPORT_MAP = {
   '@mui/material/TableHead': TableHead,
   '@mui/material/TableRow': TableRow,
   '@mui/material/Paper': Paper,
-  '@mui/material/styles': MUIStyles
+  '@mui/material/styles': MUIStyles,
+  '@tanstack/react-table': TanstackReactTable
 };
+
+
+const tanstackReactTableDtsCode = `
+export declare function flexRender<TProps extends object>(Comp: Renderable<TProps>, props: TProps): any;
+export declare function useReactTable<TData extends RowData>(options: TableOptions<TData>): any;
+export declare function getCoreRowModel(): any;
+export declare function getSortedRowModel(): any;
+`
 
 const genericDefaultIsAnyDtsCode = `declare const _default: any;
 export default _default;`
@@ -125,6 +137,10 @@ monaco.languages.typescript.typescriptDefaults.setExtraLibs([
   {
     content: (falsoDtsCode as any) as string,
     filePath: 'file:///node_modules/@types/ngneat__falso/index.d.ts',
+  },
+  {
+    content: (tanstackReactTableDtsCode as any) as string,
+    filePath: 'file:///node_modules/@types/tanstack__react-table/index.d.ts',
   },
   {
     content: (messageListDtsCode as any) as string,

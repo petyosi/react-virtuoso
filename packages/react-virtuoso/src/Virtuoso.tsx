@@ -348,11 +348,12 @@ export function buildWindowScroller({ useEmitter, useEmitterValue, usePublisher 
     const customScrollParent = useEmitterValue('customScrollParent')
     const context = useEmitterValue('context')
     const scrollerElRef = React.useRef<HTMLDivElement | null>(null)
+    const scrollerRefCallback = useEmitterValue('scrollerRef')
     const { scrollByCallback, scrollerRef, scrollToCallback } = useScrollTop(
       scrollContainerStateCallback,
       smoothScrollTargetReached,
       ScrollerComponent,
-      u.noop,
+      scrollerRefCallback,
       customScrollParent
     )
 
