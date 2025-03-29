@@ -60,12 +60,13 @@ export default function useWindowViewportRectRef(
         observer.unobserve(customScrollParent)
       }
     } else {
-      const theElementWindow = ref.current!.ownerDocument.defaultView!
-      theElementWindow.addEventListener('scroll', scrollAndResizeEventHandler)
-      theElementWindow.addEventListener('resize', scrollAndResizeEventHandler)
+      const theElementWindow = ref.current?.ownerDocument.defaultView
+
+      theElementWindow?.addEventListener('scroll', scrollAndResizeEventHandler)
+      theElementWindow?.addEventListener('resize', scrollAndResizeEventHandler)
       return () => {
-        theElementWindow.removeEventListener('scroll', scrollAndResizeEventHandler)
-        theElementWindow.removeEventListener('resize', scrollAndResizeEventHandler)
+        theElementWindow?.removeEventListener('scroll', scrollAndResizeEventHandler)
+        theElementWindow?.removeEventListener('resize', scrollAndResizeEventHandler)
       }
     }
   }, [scrollAndResizeEventHandler, customScrollParent])
