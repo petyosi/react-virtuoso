@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.12.6
+
+### Patch Changes
+
+- bb0402e: Support window scrolling to iframe react portals
+
 ## 4.12.5
 
 ### Patch Changes
