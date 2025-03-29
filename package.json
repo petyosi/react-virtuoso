@@ -2,7 +2,7 @@
   "name": "@virtuoso.dev/monorepo",
   "private": true,
   "scripts": {
-    "ci": "turbo ci-setup && turbo build && turbo typecheck lint test e2e",
+    "ci": "turbo ci-setup && turbo react-virtuoso#build && turbo typecheck lint test e2e",
     "build": "turbo build",
     "build-virtuoso.dev": "turbo build --filter @virtuoso.dev/virtuoso.dev",
     "release": "turbo build && npx @changesets/cli publish",
