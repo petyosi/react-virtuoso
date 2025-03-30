@@ -1,23 +1,24 @@
 ---
 id: getting-started
 title: Getting Started with React Virtuoso
-sidebar_label: Getting Started 
+sidebar_label: Getting Started
 sidebar_position: 1
 slug: /
 ---
 
 **React Virtuoso** is a family of React components that display large data sets using **virtualized rendering**, automatically handling variable item sizes and changes in items' sizes.
 
-| Component | Purpose |
-| --- | --- |
-| `Virtuoso` | Flat lists  |
-| `GroupedVirtuoso` | Groups of items with sticky group headers |
-| `VirtuosoGrid` | Same-sized items in a responsive grid layout |
-| `TableVirtuoso` | Tables with virtualized rows |
-| `MessageList` |  Human/AI chat interfaces |
-
+| Component         | Purpose                                      |
+| ----------------- | -------------------------------------------- |
+| `Virtuoso`        | Flat lists                                   |
+| `GroupedVirtuoso` | Groups of items with sticky group headers    |
+| `VirtuosoGrid`    | Same-sized items in a responsive grid layout |
+| `TableVirtuoso`   | Tables with virtualized rows                 |
+| `MessageList`     | Human/AI chat interfaces                     |
+| `Masonry`         | Photos/Product listings                      |
 
 :::info
+
 <h2 className="newLabel">Virtuoso Message List</h2>
 
 The `VirtuosoMessageList` component is a newly released React component built **specifically for human and AI chatbot conversations**. [Check out the live example](/virtuoso-message-list/).
@@ -25,15 +26,15 @@ The `VirtuosoMessageList` component is a newly released React component built **
 
 ## License
 
-The `react-virtuoso` package is distributed under the MIT license. The  `VirtuosoMessageList` component and the contents of the `@virtuoso.dev/message-list` package are distributed under a commercial license. See [pricing](/pricing) for more details.
+The `react-virtuoso` package is distributed under the MIT license. The `VirtuosoMessageList` component and the contents of the `@virtuoso.dev/message-list` package are distributed under a commercial license. See [pricing](/pricing) for more details.
 
 ## Feature Highlights
 
-The Virtuoso components automatically handle **items with variable heights**. You don't have to hard-code or manually measure item sizes. The components observe changes of the items' sizes (for example, due to content load) and automatically readjust the scroll area size. The component container size itself is observed and list readjusts its display automatically when the browser or its parent container changes sizes. You can safely use the Virtuoso components in responsive flexbox layouts. 
+The Virtuoso components automatically handle **items with variable heights**. You don't have to hard-code or manually measure item sizes. The components observe changes of the items' sizes (for example, due to content load) and automatically readjust the scroll area size. The component container size itself is observed and list readjusts its display automatically when the browser or its parent container changes sizes. You can safely use the Virtuoso components in responsive flexbox layouts.
 
 A common use case covered by the components' API is the **bi-directional endless scrolling** and the **press to load more** UI patterns. The components can be configured to **start from an initial location**, thus skipping the initial rendering (and the potential need of data loading) of earlier items. The components expose `startReached` and `endReached` callback properties, suitable for loading data on demand. After the data has been loaded, You can **append** or **prepend** additional items, while retaining the current scroll location.
 
-The markup of the components is customizable by passing custom components as props, supporting optional **Header** and **Footer**, or even replacing the **Scroller element with a custom one** (usually when integrating third party scrollbar library). 
+The markup of the components is customizable by passing custom components as props, supporting optional **Header** and **Footer**, or even replacing the **Scroller element with a custom one** (usually when integrating third party scrollbar library).
 The custom components props allow the easy integration of your UI library of choice (e.g. shadcn/ui, MUI, Mantine), or even integrate drag-and-drop through a third-party library.
 
 To get a better impression of what's possible, examine the various examples in the documentation, and skim through the API reference.
@@ -42,7 +43,7 @@ To get a better impression of what's possible, examine the various examples in t
 
 The Virtuoso components are distributed as NPM packages.
 
-To use the `Virtuoso`,  `TableVirtuoso`, `GroupedVirtuoso`, and `VirtuosoGrid` components, install `react-virtuoso` in your React project. 
+To use the `Virtuoso`, `TableVirtuoso`, `GroupedVirtuoso`, and `VirtuosoGrid` components, install `react-virtuoso` in your React project.
 
 ```bash
 npm install react-virtuoso
@@ -64,11 +65,7 @@ Add the `Virtuoso` Component to your React project. The bare minimum it needs is
 import { Virtuoso } from 'react-virtuoso'
 
 export default function App() {
-  return <Virtuoso
-    style={{ height: "100%" }}
-    totalCount={200}
-    itemContent={(index) => <div>Item {index}</div>}
-  />
+  return <Virtuoso style={{ height: '100%' }} totalCount={200} itemContent={(index) => <div>Item {index}</div>} />
 }
 ```
 
@@ -77,31 +74,30 @@ export default function App() {
 The Message List component is specifically built for human and/or AI chatbot conversations. Follow the instructions in the [Virtuoso Message List](/virtuoso-message-list) guide to install and use the `VirtuosoMessageList` component.
 
 ```tsx live
-import {VirtuosoMessageListLicense, VirtuosoMessageList} from '@virtuoso.dev/message-list'
+import { VirtuosoMessageListLicense, VirtuosoMessageList } from '@virtuoso.dev/message-list'
 
 export default function App() {
   return (
-      <VirtuosoMessageListLicense licenseKey="">
-        <VirtuosoMessageList
-          ItemContent={({ data }) => <div>Message {data}</div>}
-          style={{ height: '100%' }}
-          initialData={Array.from({ length: 100 }, (_, index) => index)}
-        />
-      </VirtuosoMessageListLicense>
-  );
+    <VirtuosoMessageListLicense licenseKey="">
+      <VirtuosoMessageList
+        ItemContent={({ data }) => <div>Message {data}</div>}
+        style={{ height: '100%' }}
+        initialData={Array.from({ length: 100 }, (_, index) => index)}
+      />
+    </VirtuosoMessageListLicense>
+  )
 }
 ```
-
 
 ### GroupedVirtuoso
 
 The `GroupedVirtuoso` component is similar to the "flat" `Virtuoso`, with the following differences:
 
-* Instead of `totalCount`, the Component accepts `groupedCounts: number[]`, which specifies the amount of items in each group.
+- Instead of `totalCount`, the Component accepts `groupedCounts: number[]`, which specifies the amount of items in each group.
   For example, passing `[20, 30]` will render two groups with 20 and 30 items each;
-* In addition the `item` render prop, the Component requires an additional `group` render prop,
+- In addition the `item` render prop, the Component requires an additional `group` render prop,
   which renders the **group header**. The `group` callback receives the zero-based group index as a parameter;
-* The `itemContent` render prop gets called with an additional second parameter, `groupIndex: number`.
+- The `itemContent` render prop gets called with an additional second parameter, `groupIndex: number`.
 
 ```tsx live
 import { GroupedVirtuoso } from 'react-virtuoso'
@@ -115,9 +111,9 @@ for (let index = 0; index < 1000; index++) {
 export default function App() {
   return (
     <GroupedVirtuoso
-    style={{ height: "100%" }}
+      style={{ height: '100%' }}
       groupCounts={groupCounts}
-      groupContent={index => {
+      groupContent={(index) => {
         return (
           // add background to the element to avoid seeing the items below it
           <div>
@@ -127,13 +123,14 @@ export default function App() {
       }}
       itemContent={(index, groupIndex) => {
         return (
-            <div>Item {groupIndex}.{index}</div>
+          <div>
+            Item {groupIndex}.{index}
+          </div>
         )
       }}
     />
   )
 }
-
 ```
 
 Check the
@@ -146,7 +143,6 @@ examples.
 
 The `TableVirtuoso` component works like the `Virtuoso` one, but with HTML tables. It supports window scrolling, sticky headers, and fixed columns.
 
-
 ```tsx live
 import { TableVirtuoso } from 'react-virtuoso'
 
@@ -156,7 +152,7 @@ export default function App() {
       style={{ height: '100%' }}
       data={Array.from({ length: 100 }, (_, index) => ({
         name: `User ${index}`,
-        description: `${index} description`
+        description: `${index} description`,
       }))}
       itemContent={(index, user) => (
         <>
@@ -179,7 +175,7 @@ which allows you to use media queries, min-width, percentage, etc.
 import { VirtuosoGrid, VirtuosoGridProps } from 'react-virtuoso'
 import { forwardRef } from 'react'
 
-// Ensure that the component definitions are not declared inline in the component function, 
+// Ensure that the component definitions are not declared inline in the component function,
 // Otherwise the grid will remount with each render due to new component instances.
 const gridComponents: VirtuosoGridProps<undefined, undefined>['components'] = {
   List: forwardRef(({ style, children, ...props }, ref) => (
@@ -187,8 +183,8 @@ const gridComponents: VirtuosoGridProps<undefined, undefined>['components'] = {
       ref={ref}
       {...props}
       style={{
-        display: "flex",
-        flexWrap: "wrap",
+        display: 'flex',
+        flexWrap: 'wrap',
         ...style,
       }}
     >
@@ -199,34 +195,34 @@ const gridComponents: VirtuosoGridProps<undefined, undefined>['components'] = {
     <div
       {...props}
       style={{
-        padding: "0.5rem",
-        width: "33%",
-        display: "flex",
-        flex: "none",
-        alignContent: "stretch",
-        boxSizing: "border-box",
+        padding: '0.5rem',
+        width: '33%',
+        display: 'flex',
+        flex: 'none',
+        alignContent: 'stretch',
+        boxSizing: 'border-box',
       }}
     >
       {children}
     </div>
-  )
+  ),
 }
 
 const ItemWrapper = ({ children, ...props }) => (
   <div
     {...props}
     style={{
-      display: "flex",
+      display: 'flex',
       flex: 1,
-      textAlign: "center",
-      padding: "1rem 1rem",
-      border: "1px solid gray",
-      whiteSpace: "nowrap",
+      textAlign: 'center',
+      padding: '1rem 1rem',
+      border: '1px solid gray',
+      whiteSpace: 'nowrap',
     }}
   >
     {children}
   </div>
-);
+)
 
 export default function App() {
   return (
@@ -239,14 +235,18 @@ export default function App() {
       />
       <style>{`html, body, #root { margin: 0; padding: 0 }`}</style>
     </>
-  );
+  )
 }
 ```
+
+### Masonry
+
+The masonry component renders columns from varying-height items, suitable for product listings, image galleries, etc. Check the examples in the [masonry section](/hello-masonry) for more details.
 
 ## Performance
 
 Several factors affect the component's performance.
-The first and most important one is the *size of the visible area*.
+The first and most important one is the _size of the visible area_.
 Redrawing more items takes more time and reduces the frame rate.
 To see if this affects you, reduce the component width or height;
 Set the `style` property to something like `{{width: '200px'}}`.
@@ -299,7 +299,7 @@ To avoid that, if you are putting paragraphs and headings inside the `item`, mak
 ```jsx
 <Virtuoso
   totalCount={100}
-  item={index => (
+  item={(index) => (
     <div>
       <p style={{ margin: 0 }}>Item {index}</p>
     </div>

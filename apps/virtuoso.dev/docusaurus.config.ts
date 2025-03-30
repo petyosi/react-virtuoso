@@ -131,6 +131,31 @@ const config: Config = {
       },
     ],
     [
+      'docusaurus-plugin-typedoc',
+      {
+        id: '@virtuoso.dev/masonry',
+        // TypeDoc options
+        entryPoints: ['../../node_modules/@virtuoso.dev/masonry/dist/index.d.ts'],
+        tsconfig: 'tsconfig.masonry.json',
+
+        // Plugin options
+        out: 'docs/virtuoso-masonry-api',
+
+        excludeExternals: false,
+        excludePrivate: true,
+        excludeInternal: true,
+        categorizeByGroup: true,
+        useHTMLEncodedBrackets: false,
+        groupOrder: ['Functions', 'Variables', 'Interfaces', 'Type Aliases', '*'],
+
+        disableSources: true,
+        // allReflectionsHaveOwnDocument: true,
+        hideBreadcrumbs: true,
+        readme: 'none',
+        sort: 'kind',
+      },
+    ],
+    [
       '@docusaurus/plugin-client-redirects',
       {
         redirects: [
@@ -218,6 +243,12 @@ const config: Config = {
           sidebarId: 'messageListApiSidebar',
           position: 'left',
           label: 'Virtuoso Message List API',
+        },
+        {
+          type: 'docSidebar',
+          sidebarId: 'masonryApiSidebar',
+          position: 'left',
+          label: 'Virtuoso Masonry API',
         },
         {
           to: '/pricing',

@@ -1,11 +1,12 @@
 [![npm version](https://img.shields.io/npm/v/react-virtuoso.svg?style=flat)](//badge.fury.io/js/react-virtuoso)
 
-**React Virtuoso** - the most complete React virtualization rendering list/table/grid family of components.
+**React Virtuoso** - the most complete React virtualization rendering list/table/grid/masonry family of components.
 
 - Variable sized items out of the box; no manual measurements or hard-coding item heights is necessary;
 - [Chat message list UI](https://virtuoso.dev/virtuoso-message-list/) **NEW**;
 - [Grouped mode with sticky headers](https://virtuoso.dev/grouped-by-first-letter/);
 - [Responsive grid layout](https://virtuoso.dev/grid-responsive-columns/);
+- [Masonry layout](https://virtuoso.dev/hello-masonry/) **NEW**;
 - [Table Support](https://virtuoso.dev/hello-table/);
 - [Automatic handling of content resize](https://virtuoso.dev/auto-resizing/);
 - [Custom Header, Footer, and empty list components](https://virtuoso.dev/customize-structure/);
@@ -55,10 +56,14 @@ The `GroupedVirtuoso` component is a variant of the "flat" `Virtuoso`, with the 
 The `VirtuosoGrid` component displays **same sized items** in multiple columns.
 The layout and item sizing is controlled through CSS class properties, which allows you to use media queries, min-width, percentage, etc.
 
+## [Masonry](https://virtuoso.dev/hello-masonry/)
+
+The `Masonry` component renders columns from varying-height items, suitable for product listings, image galleries, etc. 
+
 ## [Table](https://virtuoso.dev/hello-table/)
 
 The `TableVirtuoso` component works just like `Virtuoso`, but with HTML tables.
-It supports window scrolling, sticky headers, sticky columns, and works with React Table and MUI Table.
+It supports window scrolling, sticky headers, sticky columns, and works with Tanstack Table and MUI Table.
 
 ## Works With Your UI Library of Choice
 

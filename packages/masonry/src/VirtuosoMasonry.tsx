@@ -10,14 +10,29 @@ import { type MasonryItem, masonryItemsState$ } from './masonry-item-state'
 import { absoluteSizes$, columnCount$, indexesInColumns$, initialItemCount$, knownSizes$, masonryRanges$ } from './masonry-sizes'
 
 export interface VirtuosoMasonryProps<Data, Context> extends ScrollerProps {
+  /**
+   * The number of columns to be rendered. This prop is required.
+   */
   columnCount: number
+  /**
+   * Additional data to be passed to the item content component. This prop is optional.
+   */
   context?: Context
+  /**
+   * The data to be rendered. This prop is required.
+   */
   data: Data[]
+  /**
+   * Use this prop for SSR rendering.
+   */
   initialItemCount?: number
   /**
    * A React component that's used to render the individual item. See {@link ItemContent} for further details on the accepted props.
    */
   ItemContent?: NoInfer<ItemContent<Data, Context>>
+  /**
+   * Set to true to make the component use window scroll instead of the scroller element.
+   */
   useWindowScroll?: boolean
 }
 
@@ -98,12 +113,13 @@ const VirtuosoScroller: React.FC<ScrollerProps> = ({ style: passedStyle, ...html
         const element = entry.target as HTMLDivElement
 
         if (element === scrollerRef.current) {
+          const theWindow = element.ownerDocument.defaultView as Window
           pubPayload = {
             ...pubPayload,
-            [scrollHeight$]: useWindowScroll ? document.documentElement.scrollHeight : element.scrollHeight,
-            [scrollTop$]: useWindowScroll ? window.scrollY : element.scrollTop,
-            [viewportHeight$]: useWindowScroll ? window.innerHeight : entry.contentRect.height,
-            [viewportWidth$]: useWindowScroll ? window.innerWidth : element.clientWidth,
+            [scrollHeight$]: useWindowScroll ? theWindow.document.documentElement.scrollHeight : element.scrollHeight,
+            [scrollTop$]: useWindowScroll ? theWindow.scrollY : element.scrollTop,
+            [viewportHeight$]: useWindowScroll ? theWindow.innerHeight : entry.contentRect.height,
+            [viewportWidth$]: useWindowScroll ? theWindow.innerWidth : element.clientWidth,
             ...(useWindowScroll ? {} : { [listOffset$]: entry.contentRect.top, [scrollHeight$]: element.scrollHeight }),
           }
           continue

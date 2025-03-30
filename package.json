@@ -7,6 +7,7 @@
     "build-virtuoso.dev": "turbo build --filter @virtuoso.dev/virtuoso.dev",
     "release": "turbo build && npx @changesets/cli publish",
     "changeset-add": "npx @changesets/cli add",
+    "dev:docs": "turbo run dev @virtuoso.dev/virtuoso.dev#dev",
     "dev": "turbo watch dev"
   },
   "devDependencies": {

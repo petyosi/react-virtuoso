@@ -217,7 +217,7 @@ const IframePortal: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         }}
         style={{ width: '100%', height: '100%' }}
       >
-        {iFrameEl
+        {iFrameEl?.contentDocument
           ? createPortal(
               <CacheProvider value={cache}>
                 <style>{iFrameStyle}</style>

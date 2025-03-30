@@ -21,7 +21,7 @@ export type Data<Item = unknown> = Item[]
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ContextAwareComponent<Context = any> = React.ComponentType<{
   /**
-   * The value currently passed to the `context` prop of the `VirtuosoMessageList` component.
+   * The value currently passed to the `context` prop of the `VirtuosoMasonry` component.
    */
   context: Context
 }>
@@ -30,7 +30,7 @@ export type ContextAwareComponent<Context = any> = React.ComponentType<{
 export type ComputeItemKey<Data = unknown, Context = unknown> = (params: { context: Context; data: Data; index: number }) => React.Key
 
 /**
- * The DOM attributes that you can pass to the `VirtualMessageList` component to customize the scroll element.
+ * The DOM attributes that you can pass to the `VirtuosoMasonry` component to customize the scroll element.
  * @noInheritDoc
  */
 export type ScrollerProps = Omit<React.HTMLProps<HTMLDivElement>, 'data' | 'onScroll' | 'ref'>

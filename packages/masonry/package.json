@@ -29,7 +29,8 @@
   },
   "scripts": {
     "build": "tsc && vite build",
-    "dev": "ladle serve",
+    "dev": "vite build",
+    "ladle": "ladle serve",
     "test": "vitest",
     "e2e": "echo 'No e2e tests'",
     "typecheck": "tsc --noEmit",
@@ -91,3 +92,4 @@
     "trailingComma": "es5"
   }
 }
+
