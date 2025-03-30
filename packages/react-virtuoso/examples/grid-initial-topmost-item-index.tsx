@@ -43,17 +43,20 @@ export function useDataPager(initialCount: number) {
     [setData]
   )
 
-  const rangeRendered = React.useCallback((range: ListRange) => {
-    const firstPage = Math.floor(range.startIndex / ITEMS_PER_PAGE)
-    const lastPage = Math.floor(range.endIndex / ITEMS_PER_PAGE)
+  const rangeRendered = React.useCallback(
+    (range: ListRange) => {
+      const firstPage = Math.floor(range.startIndex / ITEMS_PER_PAGE)
+      const lastPage = Math.floor(range.endIndex / ITEMS_PER_PAGE)
 
-    for (let page = firstPage; page <= lastPage; page++) {
-      if (!fetchedPages.current.has(page)) {
-        fetchedPages.current.add(page)
-        loadPage(page)
+      for (let page = firstPage; page <= lastPage; page++) {
+        if (!fetchedPages.current.has(page)) {
+          fetchedPages.current.add(page)
+          loadPage(page)
+        }
       }
-    }
-  }, [])
+    },
+    [loadPage]
+  )
 
   return { data, rangeRendered }
 }

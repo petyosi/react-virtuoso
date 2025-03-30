@@ -39,6 +39,7 @@ export default function useWindowViewportRectRef(
 
       callback(viewportInfo.current)
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [callback, customScrollParent]
   )
 
@@ -68,7 +69,7 @@ export default function useWindowViewportRectRef(
         theElementWindow.removeEventListener('resize', scrollAndResizeEventHandler)
       }
     }
-  }, [scrollAndResizeEventHandler, customScrollParent])
+  }, [scrollAndResizeEventHandler, customScrollParent, ref])
 
   return callbackRef
 }

@@ -10,3 +10,4 @@ test-results
 # generated docs
 docs/virtuoso-api/*
 docs/virtuoso-message-list-api/*
+.vscode

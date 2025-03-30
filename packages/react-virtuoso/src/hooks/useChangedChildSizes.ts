@@ -82,7 +82,7 @@ export default function useChangedListContentsSizes(
         callback(ranges)
       }
     },
-    [callback, itemSize, log, gap, customScrollParent, scrollContainerStateCallback]
+    [callback, itemSize, log, gap, customScrollParent, scrollContainerStateCallback, horizontalDirection]
   )
 
   return useSizeWithElRef(memoedCallback, enabled, skipAnimationFrame)

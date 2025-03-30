@@ -78,7 +78,7 @@ export default function useScrollTop(
         }
       }
     },
-    [scrollContainerStateCallback, smoothScrollTargetReached]
+    [scrollContainerStateCallback, smoothScrollTargetReached, horizontalDirection]
   )
 
   React.useEffect(() => {

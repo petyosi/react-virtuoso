@@ -1,0 +1,19 @@
+{
+  "name": "@virtuoso.dev/masonry",
+  "entries": [
+    {
+      "version": "1.3.2",
+      "tag": "@virtuoso.dev/masonry_v1.3.2",
+      "date": "Fri, 10 Jan 2025 08:23:07 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Switch to @virtuoso.dev/gurx",
+            "author": "Petyo Ivanov <underlog@gmail.com>",
+            "commit": "b303ff5d9992ac6f25d9005b654741218b841d78"
+          }
+        ]
+      }
+    }
+  ]
+}
