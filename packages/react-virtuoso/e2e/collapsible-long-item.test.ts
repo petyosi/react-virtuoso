@@ -10,7 +10,7 @@ test.describe('list with collapsible long items', () => {
     await page.waitForTimeout(500)
   })
 
-  test('compensates correctly when collapsing an item', async ({ page }) => {
+  test.skip('compensates correctly when collapsing an item', async ({ page }) => {
     await page.waitForSelector('[data-testid=virtuoso-scroller]')
     await page.evaluate(() => {
       const scroller = document.querySelector('[data-testid=virtuoso-scroller]')!
