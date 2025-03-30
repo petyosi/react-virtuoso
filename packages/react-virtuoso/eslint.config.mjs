@@ -13,7 +13,7 @@ export default tseslint.config(
   pluginReact.configs.flat.recommended,
   pluginReact.configs.flat['jsx-runtime'],
   {
-    files: ['**/*.{js,jsx}'],
+    files: ['**/*.{js,jsx,ts,tsx}'],
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     plugins: { 'react-hooks': reactHooks },
     // ...

@@ -17,9 +17,12 @@ import * as TanstackReactTable from '@tanstack/react-table'
 import * as _ML from '@virtuoso.dev/message-list'
 import React from 'react'
 import * as _V from 'react-virtuoso'
+import * as _Masonry from '@virtuoso.dev/masonry'
 
 // @ts-ignore
 import messageListDtsCode from '!!raw-loader!../../../../../../node_modules/@virtuoso.dev/message-list/dist/index.d.ts'
+// @ts-ignore
+import masonryDtsCode from '!!raw-loader!../../../../../../node_modules/@virtuoso.dev/masonry/dist/index.d.ts'
 
 // @ts-ignore
 import reactVirtuosoDtsCode from '!!raw-loader!../../../../../../node_modules/react-virtuoso/dist/index.d.ts'
@@ -37,6 +40,7 @@ export const importMap = {
   react: React,
   'react-virtuoso': _V,
   '@virtuoso.dev/message-list': _ML,
+  '@virtuoso.dev/masonry': _Masonry,
   '@ngneat/falso': _Falso,
   '@mui/material/List': List,
   '@mui/material/ListSubheader': ListSubheader,
@@ -109,6 +113,10 @@ export const libDefinitions = [
   {
     content: falsoDtsCode as any as string,
     filePath: 'file:///node_modules/@types/ngneat__falso/index.d.ts',
+  },
+  {
+    content: masonryDtsCode as any as string,
+    filePath: 'file:///node_modules/@types/virtuoso.dev__masonry/index.d.ts',
   },
   ...[
     'List',

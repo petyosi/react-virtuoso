@@ -78,7 +78,7 @@ export function Example() {
 
   const syncBack = React.useCallback(() => {
     goToSubtitle(currentSubtitle)
-  }, [currentSubtitle])
+  }, [currentSubtitle, goToSubtitle])
 
   return (
     <>

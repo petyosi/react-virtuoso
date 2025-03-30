@@ -32,6 +32,7 @@
     "@radix-ui/themes": "^3.2.0",
     "@tanstack/react-table": "^8.15.0",
     "@virtuoso.dev/message-list": "^1.9.15",
+    "@virtuoso.dev/masonry": "*",
     "@virtuoso.dev/react-monaco-editor": "^0.60.0",
     "clsx": "^2.0.0",
     "css-loader": "^7.1.2",

@@ -253,9 +253,13 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
   })
 
   const usePublisher = <K extends keyof S>(key: K) => {
-    return React.useCallback(u.curry2to1(u.publish, React.useContext(Context)[key]), [key]) as (
-      value: S[K] extends Stream<infer R> ? R : never
-    ) => void
+    const context = React.useContext(Context)
+    return React.useCallback(
+      (value: S[K] extends Stream<infer R> ? R : never) => {
+        u.publish(context[key], value)
+      },
+      [context, key]
+    )
   }
 
   /**

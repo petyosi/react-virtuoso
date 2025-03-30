@@ -74,7 +74,7 @@ function Example() {
         setSearchParams({ page: currentPage.toString() })
       }
     },
-    [rangeRendered]
+    [rangeRendered, setSearchParams]
   )
 
   return (
@@ -122,19 +122,22 @@ function useDataPager(initialCount: number, initialTopMostItemIndex: null | numb
         return [...prevData, ...dataPage]
       })
     })
-  }, [])
+  }, [data.length])
 
-  const rangeRendered = React.useCallback((range: ListRange) => {
-    const firstPage = Math.floor(range.startIndex / ITEMS_PER_PAGE)
-    const lastPage = Math.floor(range.endIndex / ITEMS_PER_PAGE)
+  const rangeRendered = React.useCallback(
+    (range: ListRange) => {
+      const firstPage = Math.floor(range.startIndex / ITEMS_PER_PAGE)
+      const lastPage = Math.floor(range.endIndex / ITEMS_PER_PAGE)
 
-    for (let page = firstPage; page <= lastPage; page++) {
-      if (!fetchedPages.current.has(page)) {
-        fetchedPages.current.add(page)
-        loadPage(page)
+      for (let page = firstPage; page <= lastPage; page++) {
+        if (!fetchedPages.current.has(page)) {
+          fetchedPages.current.add(page)
+          loadPage(page)
+        }
       }
-    }
-  }, [])
+    },
+    [loadPage]
+  )
 
   // load the first page
   if (initialTopMostItemIndex !== null) {

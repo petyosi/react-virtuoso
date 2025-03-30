@@ -13,8 +13,8 @@ export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled: bo
     void 0
   }
 
-  if (typeof ResizeObserver !== 'undefined') {
-    const observer = React.useMemo(() => {
+  const observer = React.useMemo(() => {
+    if (typeof ResizeObserver !== 'undefined') {
       return new ResizeObserver((entries: ResizeObserverEntry[]) => {
         const code = () => {
           const element = entries[0].target as HTMLElement
@@ -24,18 +24,19 @@ export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled: bo
         }
         skipAnimationFrame ? code() : requestAnimationFrame(code)
       })
-    }, [callback])
+    }
+    return null
+  }, [callback, skipAnimationFrame])
 
-    callbackRef = (elRef: CallbackRefParam) => {
-      if (elRef && enabled) {
-        observer.observe(elRef)
-        ref.current = elRef
-      } else {
-        if (ref.current) {
-          observer.unobserve(ref.current)
-        }
-        ref.current = null
+  callbackRef = (elRef: CallbackRefParam) => {
+    if (elRef && enabled) {
+      observer?.observe(elRef)
+      ref.current = elRef
+    } else {
+      if (ref.current) {
+        observer?.unobserve(ref.current)
       }
+      ref.current = null
     }
   }
 
