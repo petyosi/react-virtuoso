@@ -31,8 +31,8 @@
     "@radix-ui/react-icons": "^1.3.2",
     "@radix-ui/themes": "^3.2.0",
     "@tanstack/react-table": "^8.15.0",
-    "@virtuoso.dev/message-list": "^1.9.15",
     "@virtuoso.dev/masonry": "*",
+    "@virtuoso.dev/message-list": "^1.9.15",
     "@virtuoso.dev/react-monaco-editor": "^0.60.0",
     "clsx": "^2.0.0",
     "css-loader": "^7.1.2",
@@ -49,9 +49,8 @@
     "react-virtuoso": "*",
     "search-insights": "^2.13.0",
     "style-loader": "^4.0.0",
-    "typedoc": "^0.27.6",
-    "typedoc-plugin-markdown": "4.4.1",
-    "typedoc-plugin-no-inherit": "^1.5.0",
+    "typedoc": "^0.28.1",
+    "typedoc-plugin-markdown": "^4.6.0",
     "typescript": "~5.7.3"
   },
   "devDependencies": {
@@ -86,4 +85,3 @@
     "trailingComma": "es5"
   }
 }
-
