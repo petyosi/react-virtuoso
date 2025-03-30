@@ -1,4 +1,0 @@
-// @ts-check
-/** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
-const typedocSidebar = { items: [{"type":"category","label":"Functions","items":[{"type":"doc","id":"virtuoso-masonry-api/functions/VirtuosoMasonry","label":"VirtuosoMasonry"}]},{"type":"category","label":"Interfaces","items":[{"type":"doc","id":"virtuoso-masonry-api/interfaces/VirtuosoMasonryProps","label":"VirtuosoMasonryProps"}]},{"type":"category","label":"Type Aliases","items":[{"type":"doc","id":"virtuoso-masonry-api/type-aliases/ContextAwareComponent","label":"ContextAwareComponent"},{"type":"doc","id":"virtuoso-masonry-api/type-aliases/ItemContent","label":"ItemContent"},{"type":"doc","id":"virtuoso-masonry-api/type-aliases/ScrollerProps","label":"ScrollerProps"}]}]};
-module.exports = typedocSidebar.items;
