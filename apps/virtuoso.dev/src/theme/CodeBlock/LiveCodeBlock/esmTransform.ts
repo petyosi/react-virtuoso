@@ -10,7 +10,7 @@ export async function transformToFunctionBody(code: string) {
     esBuildInitializePromise = new Promise<void>((resolve, reject) => {
       esbuild
         .initialize({
-          wasmURL: 'https://unpkg.com/esbuild-wasm@0.25.1/esbuild.wasm',
+          wasmURL: 'https://cdn.jsdelivr.net/npm/esbuild-wasm@0.25.1/esbuild.wasm',
         })
         .then(() => {
           resolve()
