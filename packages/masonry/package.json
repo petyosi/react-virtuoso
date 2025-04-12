@@ -47,6 +47,7 @@
     "react-dom": ">= 18 || >= 19"
   },
   "devDependencies": {
+    "@virtuoso.dev/tooling": "*",
     "@eslint/js": "^9.19.0",
     "@ladle/react": "^5.0.1",
     "@types/node": "^22.10.1",
