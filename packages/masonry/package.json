@@ -40,7 +40,7 @@
     "knip": "knip"
   },
   "dependencies": {
-    "@virtuoso.dev/gurx": "^1.0.0"
+    "@virtuoso.dev/gurx": "*"
   },
   "peerDependencies": {
     "react": ">= 18 || >= 19",
@@ -48,7 +48,6 @@
   },
   "devDependencies": {
     "@virtuoso.dev/tooling": "*",
-    "@eslint/js": "^9.19.0",
     "@ladle/react": "^5.0.1",
     "@types/node": "^22.10.1",
     "@types/react": "^18.2.64",
@@ -56,11 +55,6 @@
     "@vitejs/plugin-react-swc": "^3.7.2",
     "@vitest/browser": "^3.0.4",
     "eslint": "^9.19.0",
-    "eslint-config-prettier": "^10.0.1",
-    "eslint-plugin-perfectionist": "^4.7.0",
-    "eslint-plugin-prettier": "^5.2.3",
-    "eslint-plugin-react": "^7.37.4",
-    "eslint-plugin-react-hooks": "^5.1.0",
     "globals": "^15.14.0",
     "jsdom": "^26.0.0",
     "knip": "^5.38.3",
@@ -74,7 +68,6 @@
     "typedoc": "^0.27.2",
     "typedoc-plugin-no-inherit": "^1.4.0",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.22.0",
     "vite": "^6.0.11",
     "vite-plugin-dts": "^4.5.0",
     "vitest": "^3.0.4"
@@ -85,11 +78,5 @@
   "files": [
     "dist",
     "CHANGELOG.md"
-  ],
-  "prettier": {
-    "printWidth": 140,
-    "semi": false,
-    "singleQuote": true,
-    "trailingComma": "es5"
-  }
+  ]
 }

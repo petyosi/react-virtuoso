@@ -1,0 +1,19 @@
+{
+  "name": "@virtuoso.dev/gurx",
+  "entries": [
+    {
+      "version": "1.0.0",
+      "tag": "@virtuoso.dev/gurx_v1.0.0",
+      "date": "Sat, 04 Jan 2025 18:09:03 GMT",
+      "comments": {
+        "major": [
+          {
+            "comment": "Initial version publish",
+            "author": "Petyo Ivanov <underlog@gmail.com>",
+            "commit": "536fb126e41598e455139706f6f3ebce795bde15"
+          }
+        ]
+      }
+    }
+  ]
+}

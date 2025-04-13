@@ -1,5 +1,5 @@
 import pluginJs from '@eslint/js'
-import markdown from '@eslint/markdown'
+// import markdown from '@eslint/markdown'
 import perfectionist from 'eslint-plugin-perfectionist'
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 import pluginReact from 'eslint-plugin-react'
@@ -58,7 +58,7 @@ export default tseslint.config(
   },
   {
     ignores: ['node_modules/', 'dist/', 'src/**/__mocks__/', 'test-results'],
-  },
-  ...markdown.configs.recommended,
-  ...markdown.configs.processor
+  }
+  // ...markdown.configs.recommended,
+  // ...markdown.configs.processor
 )
