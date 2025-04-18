@@ -110,10 +110,14 @@ let currentRealm$$: Realm | undefined = undefined
  *
  */
 export class Realm {
+  private childRealms: Realm[] = []
   private readonly definitionRegistry = new Set<symbol>()
   private readonly distinctNodes = new Map<symbol, Comparator<unknown>>()
   private readonly executionMaps = new Map<symbol | symbol[], ExecutionMap>()
   private readonly graph = new SetMap<RealmProjection>()
+  private parentRealm: Realm | undefined = undefined
+  private readonly parentRealmSingletonSubscriptions = new Map<symbol, Subscription<unknown>>()
+  private readonly parentRealmSubscriptions = new SetMap<Subscription<unknown>>()
   private readonly pipeMap = new Map<symbol, symbol>()
   private readonly singletonSubscriptions = new Map<symbol, Subscription<unknown>>()
   private readonly state = new Map<symbol, unknown>()
@@ -124,12 +128,13 @@ export class Realm {
    * @param initialValues - the initial cell values that will populate the realm.
    * Those values will not trigger a recomputation cycle, and will overwrite the initial values specified for each cell.
    */
-  constructor(initialValues: Record<symbol, unknown> = {}) {
+  constructor(initialValues: Record<symbol, unknown> = {}, parentRealm?: Realm) {
     for (const id of Object.getOwnPropertySymbols(initialValues)) {
       this.state.set(id, initialValues[id])
     }
+    this.parentRealm = parentRealm
+    parentRealm?.childRealms.push(this)
   }
-
   /**
    * Creates or resolves an existing cell instance in the realm. Useful as a joint point when building your own operators.
    * @returns a reference to the cell.
@@ -624,6 +629,9 @@ export class Realm {
    * ```
    */
   getValue<T>(node: Out<T>): T {
+    if (this.parentRealm?.hasOwnOrParentHasRef(node)) {
+      return this.parentRealm.getValue(node)
+    }
     this.register(node)
     return this.state.get(node) as T
   }
@@ -669,7 +677,6 @@ export class Realm {
     currentRealm$$ = prevRealm
     return result
   }
-
   /**
    * Links the output of a node to the input of another node.
    */
@@ -682,6 +689,7 @@ export class Realm {
       sources: [source],
     })
   }
+
   /**
    * Creates a new node that emits the values of the source node transformed through the specified operators.
    * @example
@@ -754,19 +762,39 @@ export class Realm {
    * r.pubIn({[foo$]: 'foo1', [bar$]: 'bar1'})
    * ```
    */
-  pubIn(values: Record<symbol, unknown>) {
+  pubIn(values: Record<symbol, unknown>, skipParent = false) {
+    const parentValues: Record<symbol, unknown> = {}
+    let ownValues: Record<symbol, unknown> = {}
+
+    if (this.parentRealm && !skipParent) {
+      for (const k of Reflect.ownKeys(values)) {
+        const key = k as NodeRef
+        const val = values[key]
+        if (this.parentRealm.hasOwnOrParentHasRef(key)) {
+          parentValues[key] = val
+        } else {
+          ownValues[key] = val
+        }
+      }
+      this.parentRealm.pubIn(parentValues)
+    } else {
+      ownValues = values
+    }
+
     // if we have pipe nodes, we need to use their input symbols for publishing instead
-    const ids = (Reflect.ownKeys(values) as symbol[]).map((id) => {
+    const ids = (Reflect.ownKeys(ownValues) as symbol[]).map((id) => {
       return this.pipeMap.get(id) ?? id
     })
 
-    const mappedValues = Reflect.ownKeys(values).reduce<Record<symbol, unknown>>((acc, key) => {
+    const mappedValues = Reflect.ownKeys(ownValues).reduce<Record<symbol, unknown>>((acc, key) => {
       const symbolKey = key as symbol
-      const value = values[symbolKey]
+      const value = ownValues[symbolKey]
       const pipeMappedKey: symbol = this.pipeMap.get(symbolKey) ?? symbolKey
       acc[pipeMappedKey] = value
       return acc
     }, {})
+
+    const childChangePayload = { ...mappedValues }
 
     const map = this.getExecutionMap(ids)
     const refCount = map.refCount.clone()
@@ -784,9 +812,7 @@ export class Realm {
           }
         }
       })
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    } // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     while (true) {
       const nextId = participatingNodeKeys.shift()
       if (nextId === undefined) {
@@ -802,6 +828,7 @@ export class Realm {
         }
         resolved = true
         transientState.set(id, value)
+        childChangePayload[id] = value
         if (this.state.has(id)) {
           this.state.set(id, value)
         }
@@ -832,6 +859,10 @@ export class Realm {
         nodeWillNotEmit(id)
       }
     }
+    for (const childRealm of this.childRealms) {
+      // the pubIn will clone the passed payload, so the realms won't overlap with each other
+      childRealm.pubIn(childChangePayload, true)
+    }
   }
   /**
    * Explicitly includes the specified cell/signal/pipe reference in the realm.
@@ -841,39 +872,37 @@ export class Realm {
   register(node$: NodeRef | PipeRef) {
     const definition = nodeDefs$$.get(node$)
     // local node
-    if (definition === undefined) {
+    if (definition === undefined || this.definitionRegistry.has(node$) || this.parentRealm?.hasOwnOrParentHasRef(node$)) {
       return node$
     }
 
-    if (!this.definitionRegistry.has(node$)) {
-      this.definitionRegistry.add(node$)
-      if (definition.type === CELL_TYPE) {
-        return tap(this.cellInstance(definition.initial, definition.distinct, node$), (node$) => {
-          this.inContext(() => {
-            definition.init(this, node$)
-          })
+    this.definitionRegistry.add(node$)
+    if (definition.type === CELL_TYPE) {
+      return tap(this.cellInstance(definition.initial, definition.distinct, node$), (node$) => {
+        this.inContext(() => {
+          definition.init(this, node$)
         })
-      }
-      if (definition.type === SIGNAL_TYPE) {
-        return tap(this.signalInstance(definition.distinct, node$), (node$) => {
-          this.inContext(() => {
-            definition.init(this, node$)
-          })
-        })
-      }
-      // PipeRef
-      const input$ = this.signalInstance(definition.distinct)
-      const output$ = this.cellInstance(definition.initial, true)
-      const pipe$ = this.cellInstance(definition.initial, definition.distinct, node$)
-      this.link(output$, pipe$)
-      this.pipeMap.set(pipe$, input$)
-      this.inContext(() => {
-        definition.init(this, input$, output$)
       })
-      return pipe$
     }
-    return node$
+    if (definition.type === SIGNAL_TYPE) {
+      return tap(this.signalInstance(definition.distinct, node$), (node$) => {
+        this.inContext(() => {
+          definition.init(this, node$)
+        })
+      })
+    }
+    // PipeRef
+    const input$ = this.signalInstance(definition.distinct)
+    const output$ = this.cellInstance(definition.initial, true)
+    const pipe$ = this.cellInstance(definition.initial, definition.distinct, node$)
+    this.link(output$, pipe$)
+    this.pipeMap.set(pipe$, input$)
+    this.inContext(() => {
+      definition.init(this, input$, output$)
+    })
+    return pipe$
   }
+
   /**
    * Clears all exclusive subscriptions.
    */
@@ -910,13 +939,19 @@ export class Realm {
    * ```
    */
   singletonSub<T>(node: Out<T>, subscription: Subscription<T> | undefined): UnsubscribeHandle {
-    this.register(node)
-    if (subscription === undefined) {
-      this.singletonSubscriptions.delete(node)
+    let subs: Map<symbol, Subscription<unknown>>
+    if (this.parentRealm?.hasOwnOrParentHasRef(node)) {
+      subs = this.parentRealmSingletonSubscriptions
     } else {
-      this.singletonSubscriptions.set(node, subscription as Subscription<unknown>)
+      this.register(node)
+      subs = this.singletonSubscriptions
     }
-    return () => this.singletonSubscriptions.delete(node)
+    if (subscription === undefined) {
+      subs.delete(node)
+    } else {
+      subs.set(node, subscription as Subscription<unknown>)
+    }
+    return () => subs.delete(node)
   }
   /**
    * Subscribes to the values published in the referred node.
@@ -935,12 +970,16 @@ export class Realm {
    * ```
    */
   sub<T>(node: Out<T>, subscription: Subscription<T>): UnsubscribeHandle {
-    this.register(node)
-    const nodeSubscriptions = this.subscriptions.getOrCreate(node)
-    nodeSubscriptions.add(subscription as Subscription<unknown>)
-    return () => nodeSubscriptions.delete(subscription as Subscription<unknown>)
+    let subscriptions: Set<Subscription<unknown>>
+    if (this.parentRealm?.hasOwnOrParentHasRef(node)) {
+      subscriptions = this.parentRealmSubscriptions.getOrCreate(node)
+    } else {
+      this.register(node)
+      subscriptions = this.subscriptions.getOrCreate(node)
+    }
+    subscriptions.add(subscription as Subscription<unknown>)
+    return () => subscriptions.delete(subscription as Subscription<unknown>)
   }
-
   /**
    * Subscribes to multiple nodes at once. If any of the nodes emits a value, the subscription will be called with an array of the latest values from each node.
    * If the nodes change within a single execution cycle, the subscription will be called only once with the final node values.
@@ -995,6 +1034,38 @@ export class Realm {
       sources: nodes,
     })
     return this.sub(sink, subscription)
+  }
+  /**
+   * Cleans up this realm's resources and removes it from its parent.
+   * Implements the standard disposal pattern.
+   */
+  [Symbol.dispose](): void {
+    // Remove self from parent's childRealms array
+    if (this.parentRealm) {
+      const index = this.parentRealm.childRealms.indexOf(this)
+      if (index !== -1) {
+        this.parentRealm.childRealms.splice(index, 1)
+      }
+      this.parentRealm = undefined
+    }
+
+    // Clear subscriptions
+    this.subscriptions.clear()
+    this.singletonSubscriptions.clear()
+    this.parentRealmSubscriptions.clear()
+    this.parentRealmSingletonSubscriptions.clear()
+
+    // Clear state
+    this.definitionRegistry.clear()
+    this.distinctNodes.clear()
+    this.executionMaps.clear()
+    this.graph.clear()
+    this.pipeMap.clear()
+    this.state.clear()
+
+    for (const child of this.childRealms) {
+      child.parentRealm = undefined
+    }
   }
   /**
    * Works as a reverse pipe.
@@ -1097,6 +1168,7 @@ export class Realm {
       return source as NodeRef
     }
   }
+
   private getExecutionMap(nodes: symbol[]) {
     let key: symbol | symbol[] = nodes
     if (nodes.length === 1) {
@@ -1116,6 +1188,10 @@ export class Realm {
     const map = this.calculateExecutionMap(nodes)
     this.executionMaps.set(key, map)
     return map
+  }
+
+  private hasOwnOrParentHasRef(node: NodeRef | PipeRef): boolean {
+    return Boolean(this.parentRealm?.hasOwnOrParentHasRef(node)) || this.definitionRegistry.has(node)
   }
 }
 

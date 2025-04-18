@@ -598,3 +598,65 @@ describe('Derived cell', () => {
     expect(r.getValue(bar$)).toEqual('baz-bar')
   })
 })
+
+describe('child realm', () => {
+  it('reads values from its parent realm', () => {
+    const foo$ = Cell('foo')
+    const parentRealm = new Realm()
+    parentRealm.register(foo$)
+    parentRealm.pub(foo$, 'bar')
+
+    const childRealm = new Realm({}, parentRealm)
+    expect(childRealm.getValue(foo$)).toEqual('bar')
+  })
+
+  it('subscribes to the parent realm updates', () => {
+    const foo$ = Signal<number>()
+    const parent = new Realm()
+    parent.register(foo$)
+    const child = new Realm({}, parent)
+    const bar$ = Signal<number>((r) => {
+      r.link(
+        r.pipe(
+          foo$,
+          map((val) => val + 1)
+        ),
+        bar$
+      )
+    })
+    const spy = vi.fn()
+    child.sub(bar$, spy)
+    parent.pub(foo$, 1)
+    expect(spy).toHaveBeenCalledWith(2)
+  })
+
+  it('publishes into parent realm cells if present', () => {
+    const foo$ = Signal<number>()
+    const parent = new Realm()
+    parent.register(foo$)
+    const child = new Realm({}, parent)
+    const bar$ = Signal<number>((r) => {
+      r.link(
+        r.pipe(
+          foo$,
+          map((val) => val + 1)
+        ),
+        bar$
+      )
+    })
+    const spy = vi.fn()
+    parent.sub(bar$, spy)
+    child.pub(foo$, 1)
+    expect(spy).toHaveBeenCalledWith(2)
+  })
+
+  it('disposes the realm', () => {
+    {
+      const foo$ = Signal<number>()
+      using realm = new Realm()
+      realm.sub(foo$, () => {
+        void 0
+      })
+    }
+  })
+})

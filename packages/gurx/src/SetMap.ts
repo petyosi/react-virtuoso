@@ -1,5 +1,9 @@
 export class SetMap<T> {
-  map = new Map<symbol, Set<T>>()
+  private map = new Map<symbol, Set<T>>()
+
+  clear() {
+    this.map.clear()
+  }
 
   delete(id: symbol) {
     return this.map.delete(id)
