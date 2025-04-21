@@ -65,7 +65,7 @@
     "react-dom": "18.3.1",
     "resize-observer-polyfill": "^1.5.1",
     "semantic-release": "^24.2.0",
-    "typedoc": "^0.27.2",
+    "typedoc": "^0.28.3",
     "typedoc-plugin-no-inherit": "^1.4.0",
     "typescript": "^5.7.3",
     "vite": "^6.0.11",
