@@ -15,20 +15,18 @@ The Message List component exposes an imperative API to interact with the list d
 Use this method when you need to add additional messages before the current ones, for example when loading older messages. The component will automatically adjust the scroll position to keep the previous messages in view.
 
 ```tsx live
-import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListMethods} from '@virtuoso.dev/message-list'
+import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListMethods } from '@virtuoso.dev/message-list'
 
 export default function App() {
-  const ref = React.useRef<VirtuosoMessageListMethods>(null);
-  const offset = React.useRef(0);
+  const ref = React.useRef<VirtuosoMessageListMethods>(null)
+  const offset = React.useRef(0)
 
   return (
     <>
       <button
         onClick={() => {
-          offset.current = offset.current - 10;
-          ref.current.data.prepend(
-            Array.from({ length: 10 }, (_, index) => index + offset.current),
-          );
+          offset.current = offset.current - 10
+          ref.current.data.prepend(Array.from({ length: 10 }, (_, index) => index + offset.current))
         }}
       >
         Prepend 10 items
@@ -38,12 +36,12 @@ export default function App() {
         <VirtuosoMessageList
           ItemContent={({ data }) => <div>{data}</div>}
           ref={ref}
-          style={{ height: '100%' }}
+          style={{ height: 500 }}
           initialData={Array.from({ length: 100 }, (_, index) => index)}
         />
       </VirtuosoMessageListLicense>
     </>
-  );
+  )
 }
 ```
 
@@ -68,11 +66,11 @@ The function should return:
 Experiment with the live example below to see how the scroll behavior changes when appending new items.
 
 ```tsx live
-import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListMethods} from '@virtuoso.dev/message-list'
+import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListMethods } from '@virtuoso.dev/message-list'
 
 export default function App() {
-  const ref = React.useRef<VirtuosoMessageListMethods>(null);
-  const offset = React.useRef(100);
+  const ref = React.useRef<VirtuosoMessageListMethods>(null)
+  const offset = React.useRef(100)
 
   return (
     <>
@@ -80,7 +78,7 @@ export default function App() {
         <VirtuosoMessageList
           ItemContent={({ data }) => <div>{data}</div>}
           ref={ref}
-          style={{ height: '100%' }}
+          style={{ height: 500 }}
           initialData={Array.from({ length: 100 }, (_, index) => index)}
         />
       </VirtuosoMessageListLicense>
@@ -88,15 +86,15 @@ export default function App() {
         onClick={() => {
           ref.current.data.append(
             Array.from({ length: 10 }, (_, index) => index + offset.current),
-            (params) => true,
-          );
-          offset.current = offset.current + 10;
+            (params) => true
+          )
+          offset.current = offset.current + 10
         }}
       >
         Append 10 items
       </button>
     </>
-  );
+  )
 }
 ```
 
@@ -115,23 +113,17 @@ To see a `data.map` example usage, visit the [Reactions example](/virtuoso-messa
 
 The `data.findAndDelete(predicate: (item: Data) => boolean)` method lets you remove a message from the list. The predicate function receives the data item and should return a boolean value indicating whether the item should be removed. The example below adds a button next to each item that removes it.
 
-```tsx live 
-import { VirtuosoMessageList, useVirtuosoMethods, VirtuosoMessageListLicense, VirtuosoMessageListMethods} from '@virtuoso.dev/message-list'
+```tsx live
+import { VirtuosoMessageList, useVirtuosoMethods, VirtuosoMessageListLicense, VirtuosoMessageListMethods } from '@virtuoso.dev/message-list'
 
 function ItemContent({ data }) {
-  const virtuosoMethods = useVirtuosoMethods();
+  const virtuosoMethods = useVirtuosoMethods()
   return (
     <div>
       Item {data}
-      <button
-        onClick={() =>
-          virtuosoMethods.data.findAndDelete((item) => item === data)
-        }
-      >
-        Remove
-      </button>
+      <button onClick={() => virtuosoMethods.data.findAndDelete((item) => item === data)}>Remove</button>
     </div>
-  );
+  )
 }
 
 export default function App() {
@@ -139,47 +131,41 @@ export default function App() {
     <VirtuosoMessageListLicense licenseKey="">
       <VirtuosoMessageList
         ItemContent={ItemContent}
-        style={{ height: '100%' }}
+        style={{ height: 500 }}
         initialData={Array.from({ length: 100 }, (_, index) => index)}
       />
     </VirtuosoMessageListLicense>
-  );
+  )
 }
-
- ;
 ```
 
 You can remove multiple items at once with the `data.deleteRange` method.
 
-```tsx live 
-import { VirtuosoMessageList, useVirtuosoMethods, VirtuosoMessageListLicense, VirtuosoMessageListMethods} from '@virtuoso.dev/message-list'
-import {useRef} from 'react'
+```tsx live
+import { VirtuosoMessageList, useVirtuosoMethods, VirtuosoMessageListLicense, VirtuosoMessageListMethods } from '@virtuoso.dev/message-list'
+import { useRef } from 'react'
 
 function ItemContent({ data }) {
-  const virtuosoMethods = useVirtuosoMethods();
-  return <div>Item {data}</div>;
+  const virtuosoMethods = useVirtuosoMethods()
+  return <div>Item {data}</div>
 }
 
 export default function App() {
-  const ref = useRef<VirtuosoMessageListMethods>(null);
+  const ref = useRef<VirtuosoMessageListMethods>(null)
   return (
     <>
-      <button onClick={() => ref.current.data.deleteRange(5, 10)}>
-        Remove 10 items starting from 5
-      </button>
+      <button onClick={() => ref.current.data.deleteRange(5, 10)}>Remove 10 items starting from 5</button>
       <VirtuosoMessageListLicense licenseKey="">
         <VirtuosoMessageList
           ref={ref}
           ItemContent={ItemContent}
-          style={{ height: '100%' }}
+          style={{ height: 500 }}
           initialData={Array.from({ length: 100 }, (_, index) => index)}
         />
       </VirtuosoMessageListLicense>
     </>
-  );
+  )
 }
-
- ;
 ```
 
 ## Replacing Data
@@ -188,23 +174,20 @@ In case you're building a chat application with multiple channels, you might wan
 The method accepts `data` and, optionally, an `options: { initalLocation: ItemLocation, purgeItemSizes?: boolean }` to specify the initial scroll position and weather to clear the cached item sizes. Purging the item sizes is useful when the new data has different item sizes than the previous data.
 
 ```tsx live
-import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListMethods} from '@virtuoso.dev/message-list'
+import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListMethods } from '@virtuoso.dev/message-list'
 
 export default function App() {
-  const ref = React.useRef<VirtuosoMessageListMethods>(null);
+  const ref = React.useRef<VirtuosoMessageListMethods>(null)
 
   return (
     <>
       <button
         onClick={() => {
-          const newData = Array.from(
-            { length: 100 },
-            (_, index) => index + 100,
-          );
+          const newData = Array.from({ length: 100 }, (_, index) => index + 100)
           ref.current.data.replace(newData, {
-            initialLocation: { index: "LAST", align: "end" },
+            initialLocation: { index: 'LAST', align: 'end' },
             purgeItemSizes: true,
-          });
+          })
         }}
       >
         Replace with 100 items (100-200)
@@ -214,13 +197,13 @@ export default function App() {
         <VirtuosoMessageList
           ItemContent={({ data }) => <div>{data}</div>}
           ref={ref}
-          initialLocation={{ index: "LAST", align: "end" }}
-          style={{ height: '100%' }}
+          initialLocation={{ index: 'LAST', align: 'end' }}
+          style={{ height: 500 }}
           initialData={Array.from({ length: 100 }, (_, index) => index)}
         />
       </VirtuosoMessageListLicense>
     </>
-  );
+  )
 }
 ```
 

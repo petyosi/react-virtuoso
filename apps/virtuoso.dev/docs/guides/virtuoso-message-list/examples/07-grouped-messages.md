@@ -12,9 +12,14 @@ This example showcases a chat that groups consecutive messages from the same use
 
 You can use similar approach to render the users' avatars only once per group, or to display the message timestamp at the top of the group.
 
-```tsx live 
+```tsx live
 import * as React from 'react'
-import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListProps, VirtuosoMessageListMethods } from '@virtuoso.dev/message-list'
+import {
+  VirtuosoMessageList,
+  VirtuosoMessageListLicense,
+  VirtuosoMessageListProps,
+  VirtuosoMessageListMethods,
+} from '@virtuoso.dev/message-list'
 import { randTextRange } from '@ngneat/falso'
 
 interface Message {
@@ -50,58 +55,58 @@ export default function App() {
     })
   }, [])
   return (
-    <div class="tall-example" style={{fontSize: '70%'}}>
+    <div class="tall-example" style={{ height: '100%', fontSize: '70%' }}>
       <VirtuosoMessageListLicense licenseKey="">
-      <VirtuosoMessageList<Message, null>
-        ref={virtuoso}
-        style={{ height: 800 }}
-        computeItemKey={({ data }) => data.key}
-        initialLocation={{ index: 'LAST', align: 'end' }}
-        ItemContent={({ data, nextData, prevData }) => {
-          let groupType = 'none'
-          if (nextData && nextData.user === data.user) {
-            if (prevData && prevData.user === data.user) {
-              groupType = 'middle'
-            } else {
-              groupType = 'top'
+        <VirtuosoMessageList<Message, null>
+          ref={virtuoso}
+          style={{ height: '500px', fontSize: '80%' }}
+          computeItemKey={({ data }) => data.key}
+          initialLocation={{ index: 'LAST', align: 'end' }}
+          ItemContent={({ data, nextData, prevData }) => {
+            let groupType = 'none'
+            if (nextData && nextData.user === data.user) {
+              if (prevData && prevData.user === data.user) {
+                groupType = 'middle'
+              } else {
+                groupType = 'top'
+              }
+            } else if (prevData && prevData.user === data.user) {
+              groupType = 'bottom'
             }
-          } else if (prevData && prevData.user === data.user) {
-            groupType = 'bottom'
-          }
 
-          const borderRadiusStyle = {
-            none: '1rem',
-            top: '1rem 1rem 0.3rem 0.3rem',
-            middle: '0.3rem',
-            bottom: '0.3rem 0.3rem 1rem 1rem',
-          }[groupType]
+            const borderRadiusStyle = {
+              none: '1rem',
+              top: '1rem 1rem 0.3rem 0.3rem',
+              middle: '0.3rem',
+              bottom: '0.3rem 0.3rem 1rem 1rem',
+            }[groupType]
 
-          const paddingBottomStyle = {
-            none: '2rem',
-            top: '0.2rem',
-            middle: '0.2rem',
-            bottom: '1rem',
-          }[groupType]
+            const paddingBottomStyle = {
+              none: '2rem',
+              top: '0.2rem',
+              middle: '0.2rem',
+              bottom: '1rem',
+            }[groupType]
 
-          return (
-            <div style={{ paddingBottom: paddingBottomStyle, display: 'flex' }}>
-              <div
-                style={{
-                  maxWidth: '50%',
-                  marginLeft: data.user === 'me' ? 'auto' : undefined,
-                  backgroundColor: data.user === 'me' ? 'var(--background)' : 'var(--alt-background)',
-                  color: data.user === 'me'  ? 'var(--foreground)' : 'var(--foreground)',
-                  border: '1px solid var(--border)',
-                  borderRadius: borderRadiusStyle,
-                  padding: '1rem',
-                }}
-              >
-                {data.text}
+            return (
+              <div style={{ paddingBottom: paddingBottomStyle, display: 'flex' }}>
+                <div
+                  style={{
+                    maxWidth: '50%',
+                    marginLeft: data.user === 'me' ? 'auto' : undefined,
+                    backgroundColor: data.user === 'me' ? 'var(--background)' : 'var(--alt-background)',
+                    color: data.user === 'me' ? 'var(--foreground)' : 'var(--foreground)',
+                    border: '1px solid var(--border)',
+                    borderRadius: borderRadiusStyle,
+                    padding: '1rem',
+                  }}
+                >
+                  {data.text}
+                </div>
               </div>
-            </div>
-          )
-        }}
-      />
+            )
+          }}
+        />
       </VirtuosoMessageListLicense>
       <button
         onClick={() => {
@@ -133,7 +138,4 @@ export default function App() {
     </div>
   )
 }
-
- 
 ```
-

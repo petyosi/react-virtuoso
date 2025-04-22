@@ -19,26 +19,22 @@ import { VirtuosoMessageList, VirtuosoMessageListMethods, VirtuosoMessageListLic
 import React from 'react'
 
 export default function App() {
-  const ref = React.useRef<VirtuosoMessageListMethods>(null);
-  const offset = React.useRef(100);
+  const ref = React.useRef<VirtuosoMessageListMethods>(null)
+  const offset = React.useRef(100)
 
   return (
     <>
       <button
         onClick={() => {
-          ref.current.scrollToItem({ index: 50, align: "center" });
+          ref.current.scrollToItem({ index: 50, align: 'center' })
         }}
       >
         Scroll to Item 50 in the center
-      </button>{" "}
+      </button>{' '}
       <VirtuosoMessageListLicense licenseKey="">
-        <VirtuosoMessageList
-          ref={ref}
-          style={{ height: '100%' }}
-          initialData={Array.from({ length: 100 }, (_, index) => index)}
-        />
+        <VirtuosoMessageList ref={ref} style={{ height: 500 }} initialData={Array.from({ length: 100 }, (_, index) => index)} />
       </VirtuosoMessageListLicense>
     </>
-  );
+  )
 }
 ```
