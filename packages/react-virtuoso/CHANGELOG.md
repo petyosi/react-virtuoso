@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.12.7
+
+### Patch Changes
+
+- a04ba00: Fix for prepend items flickering
+
 ## 4.12.6
 
 ### Patch Changes
