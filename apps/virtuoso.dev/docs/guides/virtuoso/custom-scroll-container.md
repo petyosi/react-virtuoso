@@ -17,7 +17,7 @@ import { Virtuoso } from 'react-virtuoso'
 export default function App() {
   return (
     <Virtuoso
-      onScroll={(e) => console.log(e.target.scrollTop)}
+      onScroll={(e) => console.log((e.target as HTMLElement).scrollTop)}
       totalCount={1000}
       itemContent={(idx) => `Item ${idx}`}
       style={{
@@ -34,13 +34,13 @@ The example below changes the scroller element with a custom component. This app
 
 ## List with custom scroller
 
-```tsx live 
-import { Virtuoso } from 'react-virtuoso'
+```tsx live
+import { Virtuoso, VirtuosoProps } from 'react-virtuoso'
 import React from 'react'
 
 // do not inline the component, as a fresh instance would be created with each re-render
 // if you need to do some conditional logic, use Virtuoso's context prop to pass props inside the Scroller
-const Scroller = React.forwardRef(({ style, ...props }, ref) => {
+const Scroller: VirtuosoProps<unknown, unknown>['components']['Scroller'] = React.forwardRef(({ style, ...props }, ref) => {
   // an alternative option to assign the ref is
   // <div ref={(r) => ref.current = r}>
   return <div style={{ ...style, border: '5px solid gray' }} ref={ref} {...props} />
@@ -50,7 +50,7 @@ export default function App() {
   return (
     <Virtuoso
       style={{ height: '100%' }}
-      onScroll={(e) => console.log(e.target.scrollTop)}
+      onScroll={(e) => console.log((e.target as HTMLElement).scrollTop)}
       totalCount={1000}
       itemContent={(idx) => `Item ${idx}`}
       components={{ Scroller }}
@@ -58,5 +58,5 @@ export default function App() {
   )
 }
 
- 
+
 ```

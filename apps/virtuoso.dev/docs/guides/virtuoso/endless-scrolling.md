@@ -12,7 +12,7 @@ If you want to load items more aggressively, set the `increaseViewportBy` proper
 
 Scroll to the bottom of the list to load additional items.
 
-```tsx live 
+```tsx live
 import { Virtuoso } from 'react-virtuoso'
 import { useState, useCallback, useEffect } from 'react'
 
@@ -58,12 +58,12 @@ const Footer = () => {
   )
 }
 
-function generateUsers(count, start) {
+function generateUsers(count: number, start: number) {
   return Array.from({ length: count }, (_, i) => ({
     name: `User ${start + i}`,
   }))
 }
 
 
- 
+
 ```

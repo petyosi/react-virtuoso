@@ -55,7 +55,7 @@ export default function App() {
               }
               return shouldExit;
             },
-            change: (_velocity, { startIndex, endIndex }) => setVisibleRange([startIndex, endIndex])
+            change: (_velocity, { startIndex, endIndex }) => setVisibleRange([startIndex.toString(), endIndex.toString()]),
           }}
         />
       </div>
@@ -85,5 +85,5 @@ const ScrollSeekPlaceholder =  ({ height, index, context: { randomHeights }}) =>
   </div>
 )
 
- 
+
 ```

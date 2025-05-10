@@ -14,9 +14,9 @@ The callback receives `true` when the user starts scrolling and `false` shortly 
 Handling this event can improve performance by hiding/replacing certain heavy elements in the items.
 
 
-```tsx live 
+```tsx live
 import { Virtuoso } from 'react-virtuoso'
-import { useState } from 'react'
+import { useState, FC } from 'react'
 
 export default function App() {
   const [isScrolling, setIsScrolling] = useState(false);
@@ -43,7 +43,7 @@ export default function App() {
   )
 }
 
-function Avatar () {
+const Avatar: FC = () => {
   return (
     <div style={{
         backgroundColor: 'blue',
@@ -58,15 +58,15 @@ function Avatar () {
   )
 }
 
-function AvatarPlaceholder({text }) {
+const AvatarPlaceholder: FC = () => {
 return (<div style={{
         backgroundColor: '#eef2f4',
         borderRadius: '50%',
         width: 50,
         height: 50,
-    }}>{text}</div>)
+    }}>{' '}</div>)
 }
 
 
- 
+
 ```

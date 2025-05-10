@@ -10,15 +10,16 @@ slug: /virtuoso-message-list
 
 The Virtuoso message list component is built specifically for human/chatbot conversations. In addition to the virtualized rendering, the component exposes an imperative data management API that gives you the necessary control over the scroll position when older messages are loaded, new messages arrive, and when the user submits a message. The scroll position can update instantly or with a smooth scroll animation.
 
-You can specify custom components as header, footer, sticky header, or sticky footer, for loading messages, scroll to bottom indicators, and new message notifications. You can also control the vertical positioning for short conversations that don't fill the viewport. 
+You can specify custom components as header, footer, sticky header, or sticky footer, for loading messages, scroll to bottom indicators, and new message notifications. You can also control the vertical positioning for short conversations that don't fill the viewport.
 
 Apart from the structural styling necessary for the virtualized rendering, the component is completely unstyled. You can easily integrate it with your design system and UI component library of choice.
 
 ## Live Example
 
-```tsx live  
-import { VirtuosoMessageListProps, VirtuosoMessageListLicense, VirtuosoMessageList } from '@virtuoso.dev/message-list'
-import { randTextRange } from '@ngneat/falso'
+```tsx live
+import { VirtuosoMessageListProps, VirtuosoMessageListMethods, VirtuosoMessageListLicense, VirtuosoMessageList } from '@virtuoso.dev/message-list'
+import { randTextRange, randPhrase } from '@ngneat/falso'
+import {useRef} from 'react'
 
 interface Message {
   key: string
@@ -54,7 +55,7 @@ const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ d
 }
 
 export default function App() {
-  const virtuoso = React.useRef<VirtuosoMessageListMethods<Message>>(null)
+  const virtuoso = useRef<VirtuosoMessageListMethods<Message>>(null)
 
   return (
     <div className="wide-example" style={{ height: 500, display: 'flex', flexDirection: 'column', fontSize: '70%' }}>
@@ -72,7 +73,7 @@ export default function App() {
       <button
         style={{marginTop: '1rem', fontSize: '1.1rem', padding: '1rem' }}
         onClick={(e) => {
-          e.target.disabled = true
+          (e.target as HTMLButtonElement).disabled = true
           const myMessage = randomMessage('me')
           virtuoso.current?.data.append([myMessage], ({ scrollInProgress, atBottom }) => {
             return {
@@ -89,8 +90,8 @@ export default function App() {
             let counter = 0
             const interval = setInterval(() => {
               if (counter++ > 20) {
-                clearInterval(interval)
-                e.target.disabled = false
+                clearInterval(interval);
+                (e.target as HTMLButtonElement).disabled = false
               }
               virtuoso.current?.data.map((message) => {
                   return message.key === botMessage.key ? { ...message, text: message.text + ' ' + randPhrase() } : message
@@ -107,12 +108,12 @@ export default function App() {
   )
 }
 
- 
+
 ```
 
 ## License
 
-The `@virtuoso.dev/message-list` package is distributed under a commercial license. See [Licensing](/virtuoso-message-list/licensing) for more details. 
+The `@virtuoso.dev/message-list` package is distributed under a commercial license. See [Licensing](/virtuoso-message-list/licensing) for more details.
 
 ## Installation
 
@@ -124,7 +125,7 @@ npm install @virtuoso.dev/message-list
 
 Then, add the component along with your license to your application.
 
-```tsx live 
+```tsx live
 import { VirtuosoMessageListLicense, VirtuosoMessageList } from '@virtuoso.dev/message-list'
 
 // const licenseKey = 'your-license-key'
@@ -133,8 +134,8 @@ const licenseKey = ''
 export default function App() {
   return (
     <VirtuosoMessageListLicense licenseKey={licenseKey}>
-      <VirtuosoMessageList 
-        style={{height: '100%'}}  
+      <VirtuosoMessageList
+        style={{height: '100%'}}
         initialLocation={{ index: 'LAST', align: 'end' }}
         initialData={Array.from({length: 100}, (_, index) => ({ id: index, content: `Message ${index}` }))}
         ItemContent={({ data }) => <div>{data.content}</div>}
@@ -143,7 +144,7 @@ export default function App() {
   )
 }
 
- 
+
 ```
 
 To explore the features in an interactive way, you can jump straight to [Virtuoso Message List Tutorial](/virtuoso-message-list/tutorial/intro).
@@ -156,16 +157,16 @@ The chat interface has a certain set of specifics - a live flow of new messages,
 
 Out of the box, the component tracks the viewport and the items heights and renders only the items that are visible. This allows you to display thousands of messages without performance issues. You don't need to adjust anything or measure the items' heights manually.
 
-### Imperative Data Management API 
+### Imperative Data Management API
 
 The component starts with an optional initial data set, passed through the `initialData` prop. Any subsequent data updates are handled through the component `data` methods API, giving you precise control over the scroll position adjustment necessary. For example, when the user submits a message, you append the new message to the exiting data set, and scroll to the bottom instantly or with a smooth scroll animation. A different behavior may be applied when messages from other users arrive, or when a chatbot response is updated.
 
 :::info
 #### What is an imperative API and why does the message list uses it?
 
-There are two ways to work with React components - the imperative way and the declarative way. In the declarative way, you describe the UI based on the current state, and React takes care of updating the UI when the state changes. 
+There are two ways to work with React components - the imperative way and the declarative way. In the declarative way, you describe the UI based on the current state, and React takes care of updating the UI when the state changes.
 
-The imperative API method works by creating a ref object with `useRef` and then passing it to the component. Afterwards, the `ref.current` object exposes the methods to interact with the component. This approach is necessary for the message list component because it needs to handle the scroll position in a specific way when new messages arrive, or when the user submits a message. 
+The imperative API method works by creating a ref object with `useRef` and then passing it to the component. Afterwards, the `ref.current` object exposes the methods to interact with the component. This approach is necessary for the message list component because it needs to handle the scroll position in a specific way when new messages arrive, or when the user submits a message.
 
 #### Why not just pass an updated data set to the component?
 
