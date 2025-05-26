@@ -23,8 +23,8 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "react": ">= 18 || >= 19",
-    "react-dom": ">= 18 || >= 19"
+    "react": ">= 16 || >= 17 || >= 18 || >= 19",
+    "react-dom": ">= 16 || >= 17 || >= 18 || >= 19"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.48.0",

@@ -4,6 +4,8 @@ import type { Inp, NodeRef, Out, PipeRef } from './realm'
 
 import { RealmContext } from './react'
 
+const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? React.useLayoutEffect : React.useEffect
+
 /**
  * Returns a direct reference to the current realm. Use with caution.
  *
@@ -16,6 +18,36 @@ export function useRealm() {
     throw new Error('useRealm must be used within a RealmContextProvider')
   }
   return realm
+}
+
+function useCellValueWithStore<T>(cell: Out<T>): T {
+  const realm = useRealm()
+  realm.register(cell)
+
+  const cb = React.useCallback((c: () => void) => realm.sub(cell, c), [realm, cell])
+
+  return React.useSyncExternalStore(
+    cb,
+    () => realm.getValue(cell),
+    () => realm.getValue(cell)
+  )
+}
+
+function useCellValueWithState<T>(cell: Out<T>): T {
+  const realm = useRealm()
+  realm.register(cell)
+  const [value, setValue] = React.useState(() => realm.getValue(cell))
+
+  useIsomorphicLayoutEffect(() => {
+    const unsub = realm.sub(cell, () => {
+      setValue(() => realm.getValue(cell))
+    })
+    return () => {
+      unsub()
+    }
+  }, [realm, cell])
+
+  return value
 }
 
 /**
@@ -38,18 +70,7 @@ export function useRealm() {
  * ```
  * @category Hooks
  */
-export function useCellValue<T>(cell: Out<T>) {
-  const realm = useRealm()
-  realm.register(cell)
-
-  const cb = React.useCallback((c: () => void) => realm.sub(cell, c), [realm, cell])
-
-  return React.useSyncExternalStore(
-    cb,
-    () => realm.getValue(cell),
-    () => realm.getValue(cell)
-  )
-}
+export const useCellValue = 'useSyncExternalStore' in React ? useCellValueWithStore : useCellValueWithState
 
 /**
  * Retreives the values of the passed cells.
