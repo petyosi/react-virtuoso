@@ -76,3 +76,33 @@ export function Example() {
     </>
   )
 }
+
+export function FixedItemHeight() {
+  const [count, setCount] = useState(100)
+  const itemContent = useCallback((index: number) => {
+    const height = 30
+    return <div style={{ background: 'white', height }}>Item {index} </div>
+  }, [])
+
+  return (
+    <>
+      <div>
+        <button
+          onClick={() => {
+            setCount((count) => count + 4)
+          }}
+        >
+          Append Items
+        </button>
+      </div>
+      <Virtuoso
+        style={{ height: 300 }}
+        followOutput={'smooth'}
+        initialTopMostItemIndex={99}
+        itemContent={itemContent}
+        fixedItemHeight={30}
+        totalCount={count}
+      />
+    </>
+  )
+}

@@ -25,7 +25,7 @@ const behaviorFromFollowOutput = (follow: FollowOutput, isAtBottom: boolean) => 
 
 export const followOutputSystem = u.system(
   ([
-    { listRefresh, totalCount },
+    { listRefresh, totalCount, fixedItemSize },
     { atBottomState, isAtBottom },
     { scrollToIndex },
     { scrolledToInitialItem },
@@ -70,11 +70,19 @@ export const followOutputSystem = u.system(
           pendingScrollHandle = null
         }
 
-        pendingScrollHandle = u.handleNext(listRefresh, () => {
-          u.getValue(log)('following output to ', { totalCount }, LogLevel.DEBUG)
-          scrollToBottom(followOutputBehavior)
-          pendingScrollHandle = null
-        })
+        // if the items have fixed size, we can scroll immediately
+        if (u.getValue(fixedItemSize)) {
+          requestAnimationFrame(() => {
+            u.getValue(log)('following output to ', { totalCount }, LogLevel.DEBUG)
+            scrollToBottom(followOutputBehavior)
+          })
+        } else {
+          pendingScrollHandle = u.handleNext(listRefresh, () => {
+            u.getValue(log)('following output to ', { totalCount }, LogLevel.DEBUG)
+            scrollToBottom(followOutputBehavior)
+            pendingScrollHandle = null
+          })
+        }
       }
     )
 
