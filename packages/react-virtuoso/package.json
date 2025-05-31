@@ -3,7 +3,7 @@
   "description": "A virtual scroll React component for efficiently rendering large scrollable lists, grids, tables, and feeds",
   "author": "Petyo Ivanov",
   "sideEffects": false,
-  "version": "4.12.7",
+  "version": "4.12.8",
   "homepage": "https://virtuoso.dev/",
   "license": "MIT",
   "source": "src/index.tsx",

@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.12.8
+
+### Patch Changes
+
+- dbe93a0: Follow output works with fixedItemHeight set
+
 ## 4.12.7
 
 ### Patch Changes
