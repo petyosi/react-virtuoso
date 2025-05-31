@@ -18,6 +18,7 @@ import * as _ML from '@virtuoso.dev/message-list'
 import React from 'react'
 import * as _V from 'react-virtuoso'
 import * as _Masonry from '@virtuoso.dev/masonry'
+import SimpleBar from 'simplebar-react'
 
 // @ts-ignore
 import messageListDtsCode from '!!raw-loader!../../../../../../node_modules/@virtuoso.dev/message-list/dist/index.d.ts'
@@ -35,6 +36,9 @@ import jsxRuntimeDtsCode from '!!raw-loader!../../../../../../node_modules/@type
 
 // @ts-ignore
 import falsoDtsCode from '!!raw-loader!../../../../../../node_modules/@ngneat/falso/src/index.d.ts'
+
+// @ts-ignore
+import simplebarDtsCode from '!!raw-loader!../../../../../../node_modules/simplebar-react/dist/index.d.ts'
 
 export const importMap = {
   react: React,
@@ -57,6 +61,7 @@ export const importMap = {
   '@mui/material/Paper': Paper,
   '@mui/material/styles': MUIStyles,
   '@tanstack/react-table': TanstackReactTable,
+  'simplebar-react': SimpleBar,
 }
 
 const tanstackReactTableDtsCode = `
@@ -117,6 +122,10 @@ export const libDefinitions = [
   {
     content: masonryDtsCode as any as string,
     filePath: 'file:///node_modules/@types/virtuoso.dev__masonry/index.d.ts',
+  },
+  {
+    content: simplebarDtsCode as any as string,
+    filePath: 'file:///node_modules/@types/simplebar-react/index.d.ts',
   },
   ...[
     'List',

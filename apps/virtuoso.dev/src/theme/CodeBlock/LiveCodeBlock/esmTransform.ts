@@ -1,22 +1,23 @@
 import * as esbuild from 'esbuild-wasm'
 
-let esBuildInitializePromise = null
+let esBuildInitializePromise: Promise<boolean> | null = null
 
 const starImportRegex = /import\s+\*\s+as\s+(\w+)\s+from\s+['"]([^'"]+)['"]/g
 const importRegex = /import\s+({[^}]+}|\*\s+as\s+\w+|\w+)\s+from\s+['"]([^'"]+)['"]/g
+const effectImportRegex = /import\s+['"]([^'"]+)['"]/g
 
 export async function transformToFunctionBody(code: string) {
   if (esBuildInitializePromise === null) {
-    esBuildInitializePromise = new Promise<void>((resolve, reject) => {
+    esBuildInitializePromise = new Promise<boolean>((resolve, reject) => {
       esbuild
         .initialize({
           wasmURL: 'https://cdn.jsdelivr.net/npm/esbuild-wasm@0.25.1/esbuild.wasm',
         })
         .then(() => {
-          resolve()
+          resolve(true)
         })
         .catch(() => {
-          reject()
+          reject(new Error('Failed to initialize esbuild'))
         })
     })
   }
@@ -71,7 +72,10 @@ return defaultExport`
 }
 
 function convertImportsToAssignments(code: string) {
-  return code.replaceAll(starImportRegex, `const $1 = passedModules['$2']`).replaceAll(importRegex, `const $1 = passedModules['$2']`)
+  return code
+    .replaceAll(starImportRegex, `const $1 = passedModules['$2']`)
+    .replaceAll(importRegex, `const $1 = passedModules['$2']`)
+    .replaceAll(effectImportRegex, ``)
 }
 
 function convertExportsToAssignments(code: string) {

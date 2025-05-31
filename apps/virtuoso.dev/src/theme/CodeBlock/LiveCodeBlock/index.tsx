@@ -11,6 +11,9 @@ import { useColorMode } from '@docusaurus/theme-common'
 import { CheckIcon, ClipboardCopyIcon, CubeIcon, ReloadIcon, ResetIcon } from '@radix-ui/react-icons'
 import { transformToFunctionBody } from './esmTransform'
 import iFrameStyle from '!!raw-loader!./iframe-style.css'
+import simpleBarStyle from '!!raw-loader!../../../../../../node_modules/simplebar-react/dist/simplebar.min.css'
+
+console.log(simpleBarStyle)
 
 import { createSandbox } from './createCodesandbox'
 
@@ -77,7 +80,7 @@ export default function LiveCodeBlock({ code, disableSandbox = false }: { code: 
             setComp(() => NewComp)
             setUsedPackages(result.packages ?? [])
           } catch (e) {
-            console.log('code is invalid:', e)
+            console.log('code is invalid:', e, result.code)
           }
         }
       })
@@ -221,6 +224,7 @@ const IframePortal: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           ? createPortal(
               <CacheProvider value={cache}>
                 <style>{iFrameStyle}</style>
+                <style>{simpleBarStyle}</style>
                 <style>{`
             :root {
               --foreground: ${colorMode === 'dark' ? '#fff' : '#000'};

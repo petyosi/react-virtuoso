@@ -48,6 +48,7 @@
     "react-error-boundary": "^5.0.0",
     "react-virtuoso": "*",
     "search-insights": "^2.13.0",
+    "simplebar-react": "^3.3.1",
     "style-loader": "^4.0.0",
     "typedoc": "^0.28.1",
     "typedoc-plugin-markdown": "^4.6.0",
