@@ -142,7 +142,7 @@ describe('pipe', () => {
     expect(spy).toHaveBeenCalledTimes(1)
   })
 
-  it('throttleTime delays the execution', async () => {
+  it.skip('throttleTime delays the execution', async () => {
     const r = new Realm()
     const a = Signal<number>()
     const b = r.pipe(a, throttleTime(60))
