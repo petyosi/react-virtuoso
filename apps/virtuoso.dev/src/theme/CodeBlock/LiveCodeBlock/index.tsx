@@ -13,8 +13,6 @@ import { transformToFunctionBody } from './esmTransform'
 import iFrameStyle from '!!raw-loader!./iframe-style.css'
 import simpleBarStyle from '!!raw-loader!../../../../../../node_modules/simplebar-react/dist/simplebar.min.css'
 
-console.log(simpleBarStyle)
-
 import { createSandbox } from './createCodesandbox'
 
 import copy from 'copy-text-to-clipboard'
