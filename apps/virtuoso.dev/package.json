@@ -38,7 +38,7 @@
     "css-loader": "^7.1.2",
     "docusaurus-plugin-typedoc": "^1.2.3",
     "dotenv": "^16.4.5",
-    "esbuild-wasm": "^0.25.0",
+    "esbuild-wasm": "0.25.1",
     "monaco-editor": "^0.52.2",
     "monaco-editor-webpack-plugin": "^7.1.0",
     "prism-react-renderer": "^2.3.0",
