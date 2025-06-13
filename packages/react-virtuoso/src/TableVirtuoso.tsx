@@ -1,10 +1,24 @@
 import React from 'react'
 
-import { TableVirtuosoHandle, TableVirtuosoProps } from './component-interfaces/TableVirtuoso'
+import {
+  GroupedTableVirtuosoHandle,
+  GroupedTableVirtuosoProps,
+  TableVirtuosoHandle,
+  TableVirtuosoProps,
+} from './component-interfaces/TableVirtuoso'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
-import { ComputeItemKey, FixedFooterContent, FixedHeaderContent, ItemContent, TableComponents, TableRootProps } from './interfaces'
+import {
+  ComputeItemKey,
+  FixedFooterContent,
+  FixedHeaderContent,
+  GroupContent,
+  GroupItemContent,
+  ItemContent,
+  TableComponents,
+  TableRootProps,
+} from './interfaces'
 import { listSystem } from './listSystem'
 import { systemToComponent } from './react-urx'
 import * as u from './urx'
@@ -18,10 +32,12 @@ import {
   itemPropIfNotDomElement,
   viewportStyle,
 } from './Virtuoso'
+import { positionStickyCssValue } from './utils/positionStickyCssValue'
 
 const tableComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   const itemContent = u.statefulStream<ItemContent<any, unknown>>((index: number) => <td>Item ${index}</td>)
   const context = u.statefulStream<unknown>(null)
+  const groupContent = u.statefulStream<GroupContent<unknown>>((index: number) => <td colSpan={1000}>Group {index}</td>)
   const fixedHeaderContent = u.statefulStream<FixedHeaderContent>(null)
   const fixedFooterContent = u.statefulStream<FixedFooterContent>(null)
   const components = u.statefulStream<TableComponents>({})
@@ -51,6 +67,7 @@ const tableComponentPropsSystem = /*#__PURE__*/ u.system(() => {
     fixedFooterContent,
     fixedHeaderContent,
     itemContent,
+    groupContent,
     ScrollerComponent: distinctProp('Scroller', 'div'),
     scrollerRef,
     ScrollSeekPlaceholder: distinctProp('ScrollSeekPlaceholder'),
@@ -59,6 +76,7 @@ const tableComponentPropsSystem = /*#__PURE__*/ u.system(() => {
     TableFooterComponent: distinctProp('TableFoot', 'tfoot'),
     TableHeadComponent: distinctProp('TableHead', 'thead'),
     TableRowComponent: distinctProp('TableRow', 'tr'),
+    GroupComponent: distinctProp('Group', 'tr'),
   }
 })
 
@@ -82,17 +100,23 @@ const DefaultFillerRow = ({ height }: { height: number }) => (
 )
 
 const ITEM_STYLE = { overflowAnchor: 'none' } as const
+const STICKY_ITEM_STYLE = { position: positionStickyCssValue(), zIndex: 2, overflowAnchor: 'none' } as const
 
 const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = false }: { showTopList?: boolean }) {
   const listState = useEmitterValue('listState')
   const computeItemKey = useEmitterValue('computeItemKey')
   const firstItemIndex = useEmitterValue('firstItemIndex')
-  const isSeeking = useEmitterValue('isSeeking')
-  const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder') || DefaultScrollSeekPlaceholder
   const context = useEmitterValue('context')
-  const TableRowComponent = useEmitterValue('TableRowComponent')!
+  const isSeeking = useEmitterValue('isSeeking')
   const fixedHeaderHeight = useEmitterValue('fixedHeaderHeight')
+  const hasGroups = useEmitterValue('groupIndices').length > 0
+
   const itemContent = useEmitterValue('itemContent')
+  const groupContent = useEmitterValue('groupContent')
+
+  const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder') || DefaultScrollSeekPlaceholder
+  const GroupComponent = useEmitterValue('GroupComponent')!
+  const TableRowComponent = useEmitterValue('TableRowComponent')!
 
   const topItemOffsets = (showTopList ? listState.topItems : []).reduce<number[]>((acc, item, index) => {
     if (index === 0) {
@@ -119,6 +143,23 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
         />
       )
     }
+    if (item.type === 'group') {
+      return (
+        <GroupComponent
+          {...contextPropIfNotDomElement(GroupComponent, context)}
+          data-index={index}
+          data-item-index={item.index}
+          data-known-size={item.size}
+          key={key}
+          style={{
+            ...STICKY_ITEM_STYLE,
+            top: fixedHeaderHeight,
+          }}
+        >
+          {groupContent(item.index, context)}
+        </GroupComponent>
+      )
+    }
     return (
       <TableRowComponent
         {...contextPropIfNotDomElement(TableRowComponent, context)}
@@ -126,10 +167,13 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
         data-index={index}
         data-item-index={item.index}
         data-known-size={item.size}
+        data-item-group-index={item.groupIndex}
         key={key}
-        style={showTopList ? { overflowAnchor: 'none', position: 'sticky', top: fixedHeaderHeight + offsetTop, zIndex: 2 } : ITEM_STYLE}
+        style={showTopList ? { ...STICKY_ITEM_STYLE, top: fixedHeaderHeight + offsetTop } : ITEM_STYLE}
       >
-        {itemContent(item.index, item.data, context)}
+        {hasGroups
+          ? (itemContent as GroupItemContent<any, any>)(item.index, item.groupIndex!, item.data, context)
+          : (itemContent as ItemContent<any, any>)(item.index, item.data, context)}
       </TableRowComponent>
     )
   })
@@ -325,6 +369,7 @@ const {
       followOutput: 'followOutput',
       firstItemIndex: 'firstItemIndex',
       itemContent: 'itemContent',
+      groupContent: 'groupContent',
       fixedHeaderContent: 'fixedHeaderContent',
       fixedFooterContent: 'fixedFooterContent',
       overscan: 'overscan',
@@ -377,4 +422,8 @@ const WindowScroller = /*#__PURE__*/ buildWindowScroller({ useEmitter, useEmitte
 
 export const TableVirtuoso = Table as <ItemData = any, Context = any>(
   props: TableVirtuosoProps<ItemData, Context> & { ref?: React.Ref<TableVirtuosoHandle> }
+) => React.ReactElement
+
+export const GroupedTableVirtuoso = Table as <ItemData = any, Context = any>(
+  props: GroupedTableVirtuosoProps<ItemData, Context> & { ref?: React.Ref<GroupedTableVirtuosoHandle> }
 ) => React.ReactElement
