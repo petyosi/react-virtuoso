@@ -1,14 +1,14 @@
 ---
 id: table-grouped
-title: Table Virtuoso Example with Grouped Items
-sidebar_label: Table with Grouped Items
+title: Table Virtuoso Example with Grouped Rows
+sidebar_label: Grouped Rows
 slug: /table-grouped/
 ---
 
 If set, the `fixedHeaderContent` property specifies the content of the `thead` element. The header element remains fixed while scrolling.
-Ensure that the header elements are not transparent. Otherwise, the table cells will be visible.
+Ensure that the header elements and the group elements are not transparent. Otherwise, the table cells will be visible.
 
-## Table with `fixedHeaderContent`
+## Table with grouped rows
 
 ```tsx live
 import { TableVirtuoso } from 'react-virtuoso'
@@ -34,13 +34,13 @@ export default function App() {
       style={{ height: '100%', '--background': 'whitesmoke' }}
       groupCounts={groupCounts}
       fixedHeaderContent={() => (
-        <tr>
-          <th style={{ height: 50, width: 150, background: 'var(--background)' }}>Name</th>
-          <th style={{ background: 'var(--background)' }}>Description</th>
+        <tr style={{ background: 'var(--background)' }}>
+          <th style={{ width: 150 }}>Name</th>
+          <th>Description</th>
         </tr>
       )}
       groupContent={(index) => (
-        <td colSpan={1000} style={{ height: 30, background: 'var(--background)' }}>
+        <td colSpan={1000} style={{ background: 'var(--background)', fontWeight: 'bold' }}>
           Group {index}
         </td>
       )}
