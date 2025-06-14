@@ -5,10 +5,13 @@ import type {
   FlatIndexLocationWithAlign,
   FlatScrollIntoViewLocation,
   FollowOutput,
+  GroupContent,
+  GroupItemContent,
   IndexLocationWithAlign,
   ItemContent,
   ListItem,
   ListRange,
+  ScrollIntoViewLocationOptions,
   ScrollSeekConfiguration,
   SizeFunction,
   StateCallback,
@@ -17,16 +20,23 @@ import type {
 } from '../interfaces'
 import type { VirtuosoProps } from './Virtuoso'
 
-export interface TableVirtuosoHandle {
+interface BaseTableVirtuosoHandle {
   /**
    * Obtains the internal size state of the component, so that it can be restored later. This does not include the data items.
    */
   getState(stateCb: StateCallback): void
   scrollBy(location: ScrollToOptions): void
-  scrollIntoView(location: FlatScrollIntoViewLocation | number): void
   scrollTo(location: ScrollToOptions): void
+}
 
+export interface TableVirtuosoHandle extends BaseTableVirtuosoHandle {
+  scrollIntoView(location: FlatScrollIntoViewLocation | number): void
   scrollToIndex(location: FlatIndexLocationWithAlign | number): void
+}
+
+export interface GroupedTableVirtuosoHandle extends BaseTableVirtuosoHandle {
+  scrollIntoView(location: ScrollIntoViewLocationOptions): void
+  scrollToIndex(location: IndexLocationWithAlign | number): void
 }
 
 export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'components' | 'headerFooterTag'> {
@@ -241,4 +251,37 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
    * Uses the document scroller rather than wrapping the list in its own.
    */
   useWindowScroll?: boolean
+}
+
+export interface GroupedTableVirtuosoProps<D, C> extends Omit<TableVirtuosoProps<D, C>, 'itemContent' | 'totalCount'> {
+  /**
+   * Use when implementing inverse infinite scrolling, decrease the value this property
+   * in combination with a change in `groupCounts` to prepend groups items to the top of the list.
+   * Both new groups and extending the top group is supported.
+   *
+   * The delta of the firstItemIndex should equal the amount of new items introduced, without the group themselves.
+   * As an example, if you prepend 2 groups with 20 and 30 items each, the firstItemIndex should be decreased with 50.
+   *
+   * You can also prepend more items to the first group, for example:
+   * `{ groupCounts: [20, 30], firstItemIndex: 1000 }` can become `{ groupCounts: [10, 30, 30], firstItemIndex: 980 }`
+   *
+   * Warning: the firstItemIndex should **be a positive number**, based on the total amount of items to be displayed.
+   */
+  firstItemIndex?: number
+
+  /**
+   * Specifies how each each group header gets rendered. The callback receives the zero-based index of the group.
+   */
+  groupContent?: GroupContent<C>
+
+  /**
+   * Specifies the amount of items in each group (and, actually, how many groups are there).
+   * For example, passing [20, 30] will display 2 groups with 20 and 30 items each.
+   */
+  groupCounts?: number[]
+
+  /**
+   * Specifies how each each item gets rendered.
+   */
+  itemContent?: GroupItemContent<D, C>
 }
