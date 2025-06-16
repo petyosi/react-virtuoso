@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.13.0
+
+### Minor Changes
+
+- 7ee973e: Support table grouping
+
 ## 4.12.8
 
 ### Patch Changes
