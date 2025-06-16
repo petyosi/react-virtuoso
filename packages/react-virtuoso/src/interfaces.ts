@@ -385,6 +385,11 @@ export interface TableComponents<Data = unknown, Context = unknown> {
   TableBody?: React.ComponentType<TableBodyProps & ContextProp<Context>>
 
   /**
+   * Set to customize the group item wrapping element. Use only if you would like to render list from elements different than a `tr`.
+   */
+  Group?: React.ComponentType<GroupProps & ContextProp<Context>>
+
+  /**
    * Set to render a fixed footer at the bottom of the table (`tfoot`). use [[fixedFooterContent]] to set the contents
    */
   TableFoot?: React.ComponentType<
