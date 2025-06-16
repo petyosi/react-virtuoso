@@ -1,19 +1,7 @@
----
-id: table-grouped
-title: Table Virtuoso Example with Grouped Rows
-sidebar_label: Grouped Rows
-slug: /table-grouped/
----
-
-The `GroupedTableVirtuoso` component supports grouping of rows, similar to `GroupedVirtuoso`.
-
-## Table with grouped rows
-
-```tsx live
-import { GroupedTableVirtuoso } from 'react-virtuoso'
 import { useMemo } from 'react'
+import { GroupedTableVirtuoso } from '../src/'
 
-export default function App() {
+export function Example() {
   const groupCounts = useMemo(() => {
     return Array(10).fill(10)
   }, [])
@@ -39,7 +27,7 @@ export default function App() {
         </tr>
       )}
       groupContent={(index) => (
-        <td colSpan={2} style={{ backgroundColor: 'var(--background)' }}>
+        <td colSpan={2} style={{ background: 'red', fontWeight: 'bold' }}>
           Group {index}
         </td>
       )}
@@ -57,4 +45,3 @@ export default function App() {
     />
   )
 }
-```
