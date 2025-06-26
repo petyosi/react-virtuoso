@@ -267,6 +267,7 @@ export type ScrollIntoViewLocation = FlatScrollIntoViewLocation | GroupedScrollI
 export interface ScrollIntoViewLocationOptions {
   align?: 'center' | 'end' | 'start'
   behavior?: 'auto' | 'smooth'
+  targetsNextRefresh?: boolean
   /**
    * Use this function to fine-tune the scrollIntoView behavior.
    * The function receives the item's top and bottom position in the viewport, and the viewport top/bottom.

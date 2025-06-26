@@ -25,19 +25,21 @@ const defaultCalculateViewLocation: CalculateViewLocation = ({
 
 export const scrollIntoViewSystem = u.system(
   ([
-    { gap, sizes, totalCount },
+    { gap, listRefresh, sizes, totalCount },
     { fixedFooterHeight, fixedHeaderHeight, headerHeight, scrollingInProgress, scrollTop, viewportHeight },
     { scrollToIndex },
   ]) => {
     const scrollIntoView = u.stream<ScrollIntoViewLocation>()
+    let pendingScrollHandle: any = null
 
-    u.connect(
+    u.subscribe(
       u.pipe(
         scrollIntoView,
         u.withLatestFrom(sizes, viewportHeight, totalCount, headerHeight, fixedHeaderHeight, fixedFooterHeight, scrollTop),
-        u.withLatestFrom(gap),
-        u.map(([[viewLocation, sizes, viewportHeight, totalCount, headerHeight, fixedHeaderHeight, fixedFooterHeight, scrollTop], gap]) => {
-          const { align, behavior, calculateViewLocation = defaultCalculateViewLocation, done, ...rest } = viewLocation
+        u.withLatestFrom(gap)
+      ),
+      (([[viewLocation, sizes, viewportHeight, totalCount, headerHeight, fixedHeaderHeight, fixedFooterHeight, scrollTop], gap]) => {
+          const { align, behavior, calculateViewLocation = defaultCalculateViewLocation, done, targetsNextRefresh, ...rest } = viewLocation
           const actualIndex = originalIndexFromLocation(viewLocation, sizes, totalCount - 1)
 
           const itemTop = offsetOf(actualIndex, sizes.offsetTree, gap) + headerHeight + fixedHeaderHeight
@@ -45,36 +47,49 @@ export const scrollIntoViewSystem = u.system(
           const viewportTop = scrollTop + fixedHeaderHeight
           const viewportBottom = scrollTop + viewportHeight - fixedFooterHeight
 
-          const location = calculateViewLocation({
-            itemBottom,
-            itemTop,
-            locationParams: { align, behavior, ...rest },
-            viewportBottom,
-            viewportTop,
-          })
+          function startScroll() {
+            const location = calculateViewLocation({
+              itemBottom,
+              itemTop,
+              locationParams: { align, behavior, ...rest },
+              viewportBottom,
+              viewportTop,
+            })
 
-          if (location) {
-            done &&
-              u.handleNext(
-                u.pipe(
-                  scrollingInProgress,
-                  u.filter((value) => !value),
-                  // skips the initial publish of false, and the cleanup call.
-                  // but if scrollingInProgress is true, we skip the initial publish.
-                  u.skip(u.getValue(scrollingInProgress) ? 1 : 2)
-                ),
-                done
-              )
-          } else {
-            done && done()
+            if (location) {
+              done &&
+                u.handleNext(
+                  u.pipe(
+                    scrollingInProgress,
+                    u.filter((value) => !value),
+                    // skips the initial publish of false, and the cleanup call.
+                    // but if scrollingInProgress is true, we skip the initial publish.
+                    u.skip(u.getValue(scrollingInProgress) ? 1 : 2)
+                  ),
+                  done
+                )
+            } else {
+              done && done()
+            }
+            if (location){
+              u.publish(scrollToIndex, location);
+            }
           }
 
-          return location
-        }),
-        u.filter((value) => value !== null)
-      ),
-      scrollToIndex
-    )
+          if (targetsNextRefresh) {
+            if (pendingScrollHandle) {
+              pendingScrollHandle()
+              pendingScrollHandle = null
+            }
+            pendingScrollHandle = u.handleNext(listRefresh, () => {
+              pendingScrollHandle = null
+              startScroll()
+            })
+          } else {
+            startScroll()
+          }
+        })
+      )
 
     return {
       scrollIntoView,
