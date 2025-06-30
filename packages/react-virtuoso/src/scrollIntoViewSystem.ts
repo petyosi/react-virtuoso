@@ -25,9 +25,10 @@ const defaultCalculateViewLocation: CalculateViewLocation = ({
 
 export const scrollIntoViewSystem = u.system(
   ([
-    { gap, listRefresh, sizes, totalCount },
+    { gap, sizes, totalCount },
     { fixedFooterHeight, fixedHeaderHeight, headerHeight, scrollingInProgress, scrollTop, viewportHeight },
     { scrollToIndex },
+    { didCalcList }
   ]) => {
     const scrollIntoView = u.stream<ScrollIntoViewLocation>()
     let pendingScrollHandle: any = null
@@ -81,9 +82,11 @@ export const scrollIntoViewSystem = u.system(
               pendingScrollHandle()
               pendingScrollHandle = null
             }
-            pendingScrollHandle = u.handleNext(listRefresh, () => {
+            pendingScrollHandle = u.handleNext(didCalcList, () => {
               pendingScrollHandle = null
-              startScroll()
+              requestAnimationFrame(() => {
+                startScroll()
+              })
             })
           } else {
             startScroll()

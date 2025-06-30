@@ -267,6 +267,11 @@ export type ScrollIntoViewLocation = FlatScrollIntoViewLocation | GroupedScrollI
 export interface ScrollIntoViewLocationOptions {
   align?: 'center' | 'end' | 'start'
   behavior?: 'auto' | 'smooth'
+  /**
+   * Use this function for the scroll to be initiated directly after the next update of data/totalCount.
+   * The index provided therefore should be consistent with the data/totalCount set.
+   * It is only currently designed to be used with behavior: 'auto'.
+   */
   targetsNextRefresh?: boolean
   /**
    * Use this function to fine-tune the scrollIntoView behavior.
