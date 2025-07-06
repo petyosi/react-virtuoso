@@ -1,5 +1,11 @@
 # Change Log - @virtuoso.dev/masonry
 
+## 1.3.4
+
+### Patch Changes
+
+- 57a05da: Fix edge case for initial empty data. Fixes #1262.
+
 ## 1.3.3
 
 ### Patch Changes
