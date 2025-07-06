@@ -69,6 +69,10 @@ export const masonryItemsState$ = Cell<MasonryItemsState<unknown>>({ columns: []
             useWindowScroll,
           ]
         ) => {
+          if (totalCount === 0) {
+            return current
+          }
+
           const listOffsetTop = useWindowScroll ? listOffset + listScrollTop : 0
           const viewportTop = Math.min(Math.max(listScrollTop - listOffsetTop, 0), Math.max(...totalHeights) - visibleListHeight)
           const viewportBottom = viewportTop + visibleListHeight
@@ -106,7 +110,7 @@ export const masonryItemsState$ = Cell<MasonryItemsState<unknown>>({ columns: []
                   listTop: 0,
                   offsetTree: offsetTree,
                   totalHeight: 0,
-                  viewportBottom: 0,
+                  viewportBottom,
                 } satisfies ColumnItemsState<unknown>
               }
 
@@ -215,7 +219,8 @@ export const masonryItemsState$ = Cell<MasonryItemsState<unknown>>({ columns: []
     (masonryItemsState) => {
       const shortestColumn = masonryItemsState.columns.slice().sort((a, b) => a.listBottom - b.listBottom)[0]
       const indexes = r.getValue(indexesInColumns$)
-      const nextIndex = Math.max(...indexes.flat()) + 1
+      const flattenedIndexes = indexes.flat()
+      const nextIndex = flattenedIndexes.length ? Math.max(...flattenedIndexes) + 1 : 0
       if (nextIndex >= r.getValue(totalCount$)) {
         return
       }

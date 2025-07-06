@@ -78,3 +78,33 @@ export const WindowExample = () => {
     </div>
   )
 }
+
+export const DynamicDataExample = () => {
+  const [data, setData] = useState(() => {
+    return Array.from({ length: 0 }, (_, index) => index)
+  })
+
+  console.log(data)
+  return (
+    <div>
+      <button
+        onClick={() => {
+          setData((prevData) => {
+            return [...prevData, ...Array.from({ length: 2 }, (_, index) => index)]
+          })
+        }}
+      >
+        Add data
+      </button>
+      <VirtuosoMasonry
+        columnCount={8}
+        data={data}
+        ItemContent={ItemContent}
+        style={{
+          border: '1px solid black',
+          height: 400,
+        }}
+      />
+    </div>
+  )
+}
