@@ -84,7 +84,6 @@ export const DynamicDataExample = () => {
     return Array.from({ length: 0 }, (_, index) => index)
   })
 
-  console.log(data)
   return (
     <div>
       <button
