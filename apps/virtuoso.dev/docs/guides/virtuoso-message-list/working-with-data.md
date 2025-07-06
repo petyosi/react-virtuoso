@@ -16,10 +16,11 @@ Use this method when you need to add additional messages before the current ones
 
 ```tsx live
 import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListMethods } from '@virtuoso.dev/message-list'
+import { useRef } from 'react'
 
 export default function App() {
-  const ref = React.useRef<VirtuosoMessageListMethods>(null)
-  const offset = React.useRef(0)
+  const ref = useRef<VirtuosoMessageListMethods>(null)
+  const offset = useRef(0)
 
   return (
     <>
@@ -67,10 +68,11 @@ Experiment with the live example below to see how the scroll behavior changes wh
 
 ```tsx live
 import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListMethods } from '@virtuoso.dev/message-list'
+import { useRef } from 'react'
 
 export default function App() {
-  const ref = React.useRef<VirtuosoMessageListMethods>(null)
-  const offset = React.useRef(100)
+  const ref = useRef<VirtuosoMessageListMethods>(null)
+  const offset = useRef(100)
 
   return (
     <>
@@ -146,7 +148,6 @@ import { VirtuosoMessageList, useVirtuosoMethods, VirtuosoMessageListLicense, Vi
 import { useRef } from 'react'
 
 function ItemContent({ data }) {
-  const virtuosoMethods = useVirtuosoMethods()
   return <div>Item {data}</div>
 }
 
@@ -175,9 +176,10 @@ The method accepts `data` and, optionally, an `options: { initalLocation: ItemLo
 
 ```tsx live
 import { VirtuosoMessageList, VirtuosoMessageListLicense, VirtuosoMessageListMethods } from '@virtuoso.dev/message-list'
+import { useRef } from 'react'
 
 export default function App() {
-  const ref = React.useRef<VirtuosoMessageListMethods>(null)
+  const ref = useRef<VirtuosoMessageListMethods>(null)
 
   return (
     <>
