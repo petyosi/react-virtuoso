@@ -36,6 +36,7 @@
     "build": "vite build",
     "test": "vitest run",
     "test:watch": "vitest watch",
+    "test:benchmark": "vitest run test/benchmark.test.ts",
     "e2e": "playwright test --workers=1",
     "lint": "eslint",
     "typecheck": "tsc",
