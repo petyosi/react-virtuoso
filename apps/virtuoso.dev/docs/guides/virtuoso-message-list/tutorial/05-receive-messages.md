@@ -8,55 +8,48 @@ slug: /virtuoso-message-list/tutorial/receive-messages
 
 # Part 5 - Receive Messages
 
-In this part, we're going to implement a simulation of receiving messages from the server. Since we have no actual backend, we're going to use a button for that.
+In this part, we're going to implement a simulation of receiving messages from the server. Since we have no actual backend, we're going to use a button for that. Receiving messages has a specific scroll behavior; if the list is at the bottom, it should automatically scroll to the bottom. If the user has scrolled up to read previous messages, the list should remain at the same scroll position and display a notification that new messages are available. Let's add a counter for the unread messages first:
 
-## Receive Message Button
+```ts
+const [unseenMessages, setUnseenMessages] = useState(0)
+```
 
-Our `ChatChannel` class exposes a convenience method called `createNewMessageFromAnotherUser`. Let's add a button below the list component to simulate receiving a message:
+Then, add the following button somewhere below the message list:
 
 ```tsx
 //...
-  <div style={{ display: 'flex', gap: '1rem', padding: '1rem' }}>
-    <button
-      onClick={() => {
-        channel.createNewMessageFromAnotherUser()
-      }}
-    >
-      Receive message from another user
-    </button>
-  </div>
-</main>
-```
-
-## New Messages and Scroll Position
-
-By default, when a new message is received, the list should scroll to the bottom so that the user can follow the conversation. However, if the user has scrolled up to read previous messages, the list should should remain at the same scroll position and they should see a notification that new messages are available. To implement this, we are going to add an event listener for new messages and a counter that will show the number of new messages if the user has scrolled up. Add a state counter to the `Home` component:
-
-```tsx
-const [unseenMessages, setUnseenMessages] = useState(0);
-```
-## New Messages Event Handler
-
-The `ChatChannel` has a simple event callback that gets called when new messages come in that we will override in the `useEffect`. Add the following code to the existing `useEffect` call and refresh the page:
-
-```tsx
-  useEffect(() => {
-    channel.onNewMessages = (messages) => {
-      messageListRef.current?.data.append(messages, ({ atBottom, scrollInProgress }) => {
-        if (atBottom || scrollInProgress) {
-          return 'smooth'
-        } else {
-          setUnseenMessages((val) => val + 1)
-          return false
+<div style={{ display: 'flex', gap: '1rem', padding: '1rem' }}>
+  <button
+    onClick={() => {
+      const otherMessages = [createMessage(otherUser), createMessage(otherUser)]
+      setMessageListData((current) => {
+        return {
+          data: [...(current?.data ?? []), ...otherMessages],
+          scrollModifier: {
+            type: 'auto-scroll-to-bottom',
+            autoScroll: ({ atBottom, scrollInProgress }) => {
+              if (atBottom || scrollInProgress) {
+                return 'smooth'
+              }
+              setUnseenMessages((prev) => prev + otherMessages.length)
+              return false
+            },
+          },
         }
       })
-    }
+    }}
+  >
+    Receive 2 messages
+  </button>
+</div>
 ```
 
-The `data.append` method accepts an optional `scrollToBottom` argument that lets us specify if we want the list to scroll to the bottom when the new message is added. If the list is at the bottom, we will smooth scroll to the latest message. If not, we increment the `unseenMessages` counter. 
+:::note
+Since we're using a smooth scroll, there's a slight chance of a new message coming in _while_ the list is scrolling to the bottom. In that case, the list will scroll to the bottom again, and the user will see the new message. That's the reason for the `scrollInProgress` check.
+:::
 
 :::note
-Since we're using a smooth scroll, there's a slight chance of a new message coming in *while* the list is scrolling to the bottom. In that case, the list will scroll to the bottom again, and the user will see the new message. That's the reason for the `scrollInProgress` check.
+The `auto-scroll-to-bottom` modifier is used for adding new messages to the end of the list. Through the `autoScroll` callback, you can conditionally determine if the list should catch up with the new messages or not.
 :::
 
 If everything works as expected, pressing the button will display a new message from another user with a smooth scroll animation.
@@ -81,6 +74,7 @@ interface MessageListContext {
 ```
 
 Now, change the `StickyFooter` component to display the new message counter:
+
 ```tsx
 // highlight-next-line
 const StickyFooter: VirtuosoProps['StickyFooter'] = ({ context: { unseenMessages } }) => {
@@ -97,7 +91,7 @@ const StickyFooter: VirtuosoProps['StickyFooter'] = ({ context: { unseenMessages
       >
         {location.bottomOffset > 200 && (
           <>
-// highlight-next-line
+            // highlight-next-line
             {unseenMessages > 0 && <span>{unseenMessages} new messages</span>}
             <button
               style={{
@@ -137,6 +131,3 @@ A more sophisticated logic can be implemented, but for now, we would like to res
 ```
 
 Scroll up the message list and press the button - the indicator of new messages should appear. Clicking the button will scroll to the bottom of the list and reset the indicator.
-
-
-
