@@ -1,14 +1,27 @@
 ---
 id: virtuoso-message-list-working-with-data
 title: Virtuoso Message - Working with Data
-sidebar_label: Working with Data
-sidebar_position: 4
+sidebar_label: Imperative Data API
+sidebar_position: 10
 slug: /virtuoso-message-list/working-with-data
 ---
 
-# Working with Data
+# Imperative Data API
 
-The Message List component exposes an imperative API to interact with the list data. This API is available through the `useVirtuosoMethods` hook from components nested inside and through the `ref` object you can pass into the component.
+In addition to the `data` prop, the message list component exposes an imperative API to interact with the list data. This API is available through the `useVirtuosoMethods` hook from components nested inside and through the `ref` object you can pass into the component.
+
+:::info
+
+#### What is an imperative API and why does the message list uses it?
+
+There are two ways to work with React components - the imperative way and the declarative way. In the declarative way, you describe the UI based on the current state, and React takes care of updating the UI when the state changes.
+
+The imperative API method works by creating a ref object with `useRef` and then passing it to the component. Afterwards, the `ref.current` object exposes the methods to interact with the component. This approach is necessary for the message list component because it needs to handle the scroll position in a specific way when new messages arrive, or when the user submits a message.
+
+#### Should I keep the data in my component state?
+
+Yes, you should do that if your use case includes mounting/unmounting the component. You can pass the data state to the `initialData` prop, it will be picked up in the initial render.
+:::
 
 ## Prepending Data
 

@@ -90,6 +90,7 @@ const config: Config = {
 
         // Plugin options
         out: 'docs/virtuoso-api',
+        plugin: ['typedoc-plugin-no-inherit'],
 
         excludeExternals: false,
         excludePrivate: true,
@@ -115,6 +116,7 @@ const config: Config = {
 
         // Plugin options
         out: 'docs/virtuoso-message-list-api',
+        plugin: ['typedoc-plugin-no-inherit'],
 
         excludeExternals: false,
         excludePrivate: true,
@@ -140,6 +142,7 @@ const config: Config = {
 
         // Plugin options
         out: 'docs/virtuoso-masonry-api',
+        plugin: ['typedoc-plugin-no-inherit'],
 
         excludeExternals: false,
         excludePrivate: true,

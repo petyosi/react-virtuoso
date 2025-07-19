@@ -17,12 +17,13 @@ To achieve this, you can use the `useCurrentlyRenderedData` hook to get the firs
 The example below demonstrates how to implement date separators in a message list.
 
 ```tsx live
-import * as React from 'react'
+import { useMemo } from 'react'
 import {
   VirtuosoMessageList,
   VirtuosoMessageListLicense,
   VirtuosoMessageListProps,
   useCurrentlyRenderedData,
+  DataWithScrollModifier,
 } from '@virtuoso.dev/message-list'
 import { randTextRange, rand } from '@ngneat/falso'
 
@@ -48,7 +49,7 @@ function randomMessage(user: Message['user']): Message {
   }
 }
 
-const StickyHeader: VirtuosoMessageListProps<Message, null>['StickyHeader'] = ({ data, prevData }) => {
+const StickyHeader: VirtuosoMessageListProps<Message, null>['StickyHeader'] = () => {
   const firstItem = useCurrentlyRenderedData<{ date: Date }>()[0] as { date: Date } | undefined
   return (
     <div style={{ width: '100%', position: 'absolute', top: 0 }}>
@@ -122,15 +123,20 @@ const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ d
 }
 
 export default function App() {
-  const messages = React.useMemo(() => Array.from({ length: 100 }, () => randomMessage(rand(['me', 'other']))), [])
+  const data = useMemo<DataWithScrollModifier<Message>>(
+    () => ({
+      data: Array.from({ length: 100 }, () => randomMessage(rand(['me', 'other']))),
+      scrollModifier: { type: 'item-location', location: { index: 'LAST', align: 'end' } },
+    }),
+    []
+  )
 
   return (
     <VirtuosoMessageListLicense licenseKey="">
       <VirtuosoMessageList<Message, null>
-        initialData={messages}
+        data={data}
         style={{ height: '100%', fontSize: '90%' }}
         computeItemKey={({ data }) => data.key}
-        initialLocation={{ index: 'LAST', align: 'end' }}
         ItemContent={ItemContent}
         StickyHeader={StickyHeader}
       />

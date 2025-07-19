@@ -30,17 +30,17 @@ const Header: VirtuosoMessageListProps<number, MessageListContext>['Header'] = (
 
 export default function App() {
   const [loading, setLoading] = useState(false)
+  const [data] = useState(() => {
+    return {
+      data: Array.from({ length: 100 }, (_, index) => index),
+    }
+  })
 
   return (
     <>
       <button onClick={() => setLoading(!loading)}>Toggle Loading</button>
       <VirtuosoMessageListLicense licenseKey="">
-        <VirtuosoMessageList<number, MessageListContext>
-          context={{ loading }}
-          Header={Header}
-          style={{ height: 500 }}
-          initialData={Array.from({ length: 100 }, (_, index) => index)}
-        />
+        <VirtuosoMessageList<number, MessageListContext> context={{ loading }} Header={Header} style={{ height: 500 }} data={data} />
       </VirtuosoMessageListLicense>
     </>
   )

@@ -8,15 +8,22 @@ slug: /virtuoso-message-list/examples/reactions
 
 # Reactions
 
-A common problem in messaging interfaces is how to handle reactions to messages. Displaying reactions can change the size of the message element, which can displace the rest of the messages in the list, canceling the automatic scroll behavior when new messages come in. To address this, the `data.map` method has an additional `autoscrollToBottomBehavior` field in the argument, which lets you specify the necessary behavior if the data mapping causes the list to be no longer at the bottom.
+A common problem in messaging interfaces is how to handle reactions to messages. Displaying reactions can increase the size of the message element, which can displace the rest of the messages in the list, canceling the automatic scroll behavior when new messages come in. To address this, the `items-change` scroll modifier allows you to keep the list at the bottom in case it is there and the change of the data causes a size increase.
 
 :::info
-The approach above is not exclusive to reactions - the same principle should be applied to any message state change that will change the message height (for example, expanding details, etc). 
+The approach above is not exclusive to reactions - the same principle should be applied to any message state change that will change the message height (for example, expanding details, etc).
 :::
 
-```tsx live 
-import { VirtuosoMessageList, VirtuosoMessageListLicense, useVirtuosoMethods, VirtuosoMessageListProps, VirtuosoMessageListMethods } from '@virtuoso.dev/message-list'
-import * as React from 'react'
+```tsx live
+import {
+  ScrollModifier,
+  VirtuosoMessageList,
+  VirtuosoMessageListLicense,
+  useVirtuosoMethods,
+  VirtuosoMessageListProps,
+  VirtuosoMessageListMethods,
+} from '@virtuoso.dev/message-list'
+import { useState, useCallback } from 'react'
 import { randTextRange, rand } from '@ngneat/falso'
 
 interface Message {
@@ -32,8 +39,25 @@ function randomMessage(user: Message['user']): Message {
   return { liked: false, user, key: `${idCounter++}`, text: randTextRange({ min: user === 'me' ? 20 : 100, max: 200 }) }
 }
 
-const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ data }) => {
-  const methods = useVirtuosoMethods<Message, {}>()
+interface MessageListContext {
+  toggleLike: (key: Message['key']) => void
+}
+
+const InitialDataScrollModifier: ScrollModifier = {
+  type: 'item-location',
+  location: {
+    index: 'LAST',
+    align: 'end',
+  },
+}
+
+const ItemsChangeScrollModifier: ScrollModifier = {
+  type: 'items-change',
+  // set to auto for instant adjustment
+  behavior: 'smooth',
+}
+
+const ItemContent: VirtuosoMessageListProps<Message, MessageListContext>['ItemContent'] = ({ data, context }) => {
   return (
     <div
       style={{
@@ -64,10 +88,7 @@ const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ d
         <button
           style={{ appearance: 'none', border: 'none', background: 'transparent', cursor: 'pointer' }}
           onClick={() => {
-            methods.data.map((item) => {
-                return item.key === data.key ? { ...item, liked: !item.liked } : item
-              }, 
-            'smooth')
+            context.toggleLike(data.key)
           }}
         >
           {data.liked ? '❤️' : '🤍'}
@@ -77,24 +98,40 @@ const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ d
   )
 }
 
+type MessageListProps = VirtuosoMessageListProps<Message, MessageListContext>
+
 export default function App() {
-  const messages = React.useMemo(() => Array.from({ length: 100 }, () => randomMessage(rand(['me', 'other']))), [])
-  const virtuoso = React.useRef<VirtuosoMessageListMethods<Message>>(null)
+  const [data, setData] = useState<MessageListProps['data']>(() => {
+    return {
+      data: Array.from({ length: 100 }, () => randomMessage(rand(['me', 'other']))),
+      scrollModifier: InitialDataScrollModifier,
+    }
+  }, [])
+
+  const toggleLike = useCallback((key: Message['key']) => {
+    setData((current) => {
+      return {
+        data: (current?.data ?? []).map((item) => {
+          if (item.key === key) {
+            return { ...item, liked: !item.liked }
+          }
+          return item
+        }),
+        scrollModifier: ItemsChangeScrollModifier,
+      }
+    })
+  }, [])
 
   return (
-      <VirtuosoMessageListLicense licenseKey="">
-        <VirtuosoMessageList<Message, null>
-          ref={virtuoso}
-          initialData={messages}
-          style={{ height: '100%' }}
-          computeItemKey={({ data }) => data.key}
-          initialLocation={{ index: 'LAST', align: 'end' }}
-          ItemContent={ItemContent}
-        />
-      </VirtuosoMessageListLicense>
+    <VirtuosoMessageListLicense licenseKey="">
+      <VirtuosoMessageList<Message, MessageListContext>
+        data={data}
+        context={{ toggleLike }}
+        style={{ height: '100%' }}
+        computeItemKey={({ data }) => data.key}
+        ItemContent={ItemContent}
+      />
+    </VirtuosoMessageListLicense>
   )
 }
-
- 
 ```
-

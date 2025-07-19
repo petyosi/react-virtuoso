@@ -12,16 +12,20 @@ The example below simulates a conversation with a chatbot. Shortly after the que
 
 ## Key Points
 
-* The `data.map` method is used to stream the incoming response.
-* The initial message positioning is set through `shortSizeAlign`
-* The `autoscrollToBottomBehavior` is set to `smooth` to animate the scroll when the streaming response scroll beyond the visible area.
+- The streaming response is handled by data mapping with `items-change` scroll modifier.
+- The initial message positioning is set through `shortSizeAlign`
+- The `autoscrollToBottomBehavior` is set to `smooth` to animate the scroll when the streaming response scroll beyond the visible area.
 
+## Live Example
 
-## Live Example 
-
-```tsx live  
-import * as React from 'react'
-import { VirtuosoMessageList, VirtuosoMessageListProps, VirtuosoMessageListMethods, VirtuosoMessageListLicense } from '@virtuoso.dev/message-list'
+```tsx live
+import { useState } from 'react'
+import {
+  VirtuosoMessageList,
+  VirtuosoMessageListProps,
+  VirtuosoMessageListMethods,
+  VirtuosoMessageListLicense,
+} from '@virtuoso.dev/message-list'
 import { randTextRange, randPhrase } from '@ngneat/falso'
 
 interface Message {
@@ -58,46 +62,71 @@ const ItemContent: VirtuosoMessageListProps<Message, null>['ItemContent'] = ({ d
 }
 
 export default function App() {
-  const virtuoso = React.useRef<VirtuosoMessageListMethods<Message>>(null)
+  const [data, setData] = useState<VirtuosoMessageListProps<Message, null>['data']>(() => {
+    data: []
+  })
 
   return (
     <div className="tall-example" style={{ height: 500, display: 'flex', flexDirection: 'column', fontSize: '70%' }}>
       <VirtuosoMessageListLicense licenseKey="">
         <VirtuosoMessageList<Message, null>
-          ref={virtuoso}
           style={{ flex: 1 }}
+          data={data}
           computeItemKey={({ data }) => data.key}
-          initialLocation={{ index: 'LAST', align: 'end' }}
           shortSizeAlign="bottom-smooth"
           ItemContent={ItemContent}
         />
       </VirtuosoMessageListLicense>
 
       <button
-        onClick={() => {
-          const myMessage = randomMessage('me')
-          virtuoso.current?.data.append([myMessage], ({ scrollInProgress, atBottom }) => {
+        style={{ marginTop: '1rem', fontSize: '1.1rem', padding: '1rem' }}
+        onClick={(e) => {
+          ;(e.target as HTMLButtonElement).disabled = true
+          setData((current) => {
+            const myMessage = randomMessage('me')
             return {
-              index: 'LAST',
-              align: 'end',
-              behavior: atBottom || scrollInProgress ? 'smooth' : 'auto',
+              data: [...(current?.data ?? []), myMessage],
+              scrollModifier: {
+                type: 'auto-scroll-to-bottom',
+                autoScroll: ({ scrollInProgress, atBottom }) => {
+                  return {
+                    index: 'LAST',
+                    align: 'start',
+                    behavior: atBottom || scrollInProgress ? 'smooth' : 'auto',
+                  }
+                },
+              },
             }
           })
 
           setTimeout(() => {
             const botMessage = randomMessage('other')
-            virtuoso.current?.data.append([botMessage])
+            setData((current) => {
+              return {
+                data: [...(current?.data ?? []), botMessage],
+              }
+            })
 
             let counter = 0
             const interval = setInterval(() => {
               if (counter++ > 20) {
                 clearInterval(interval)
+                ;(e.target as HTMLButtonElement).disabled = false
               }
-              virtuoso.current?.data.map((message) => {
-                  return message.key === botMessage.key ? { ...message, text: message.text + ' ' + randPhrase() } : message
-                },
-                'smooth'
-              )
+
+              setData((current) => {
+                return {
+                  data: (current?.data ?? []).map((message) => {
+                    return message.key === botMessage.key
+                      ? { user: message.user, key: message.key, text: `${message.text} ${randPhrase()}` }
+                      : message
+                  }),
+                  scrollModifier: {
+                    type: 'items-change',
+                    behavior: 'smooth',
+                  },
+                }
+              })
             }, 150)
           }, 1000)
         }}
@@ -107,6 +136,4 @@ export default function App() {
     </div>
   )
 }
-
- 
 ```

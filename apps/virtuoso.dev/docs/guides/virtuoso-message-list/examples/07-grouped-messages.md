@@ -13,11 +13,12 @@ This example showcases a chat that groups consecutive messages from the same use
 You can use similar approach to render the users' avatars only once per group, or to display the message timestamp at the top of the group.
 
 ```tsx live
-import * as React from 'react'
+import { useState } from 'react'
 import {
   VirtuosoMessageList,
   VirtuosoMessageListLicense,
   VirtuosoMessageListProps,
+  DataWithScrollModifier,
   VirtuosoMessageListMethods,
 } from '@virtuoso.dev/message-list'
 import { randTextRange } from '@ngneat/falso'
@@ -35,33 +36,29 @@ function randomMessage(user: Message['user']): Message {
 }
 
 export default function App() {
-  const mounted = React.useRef(false)
-  const virtuoso = React.useRef<VirtuosoMessageListMethods<Message>>(null)
-
-  React.useEffect(() => {
-    if (mounted.current) {
-      return
+  const [data, setData] = useState<DataWithScrollModifier<Message>>(() => {
+    return {
+      data: Array.from({ length: 20 }, (_, index) => {
+        const author = ['me', 'other'][index % 4 ? 0 : 1]
+        // biome-ignore lint/suspicious/noExplicitAny: this is an example
+        return randomMessage(author as any)
+      }),
+      scrollModifier: {
+        type: 'item-location',
+        location: {
+          index: 'LAST',
+          align: 'end',
+        },
+      },
     }
-    mounted.current = true
-
-    setTimeout(() => {
-      virtuoso.current?.data.append(
-        Array.from({ length: 20 }, (_, index) => {
-          const author = ['me', 'other'][index % 4 ? 0 : 1]
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
-          return randomMessage(author as any)
-        })
-      )
-    })
-  }, [])
+  })
   return (
-    <div class="tall-example" style={{ height: '100%', fontSize: '70%' }}>
+    <div className="tall-example" style={{ height: '100%', fontSize: '70%' }}>
       <VirtuosoMessageListLicense licenseKey="">
         <VirtuosoMessageList<Message, null>
-          ref={virtuoso}
+          data={data}
           style={{ height: '500px', fontSize: '80%' }}
           computeItemKey={({ data }) => data.key}
-          initialLocation={{ index: 'LAST', align: 'end' }}
           ItemContent={({ data, nextData, prevData }) => {
             let groupType = 'none'
             if (nextData && nextData.user === data.user) {
@@ -110,11 +107,14 @@ export default function App() {
       </VirtuosoMessageListLicense>
       <button
         onClick={() => {
-          virtuoso.current?.data.append([randomMessage('me')], ({ scrollInProgress, atBottom }) => {
-            if (atBottom || scrollInProgress) {
-              return 'smooth'
-            } else {
-              return 'auto'
+          setData((current) => {
+            const myMessage = randomMessage('me')
+            return {
+              data: [...(current?.data ?? []), myMessage],
+              scrollModifier: {
+                type: 'auto-scroll-to-bottom',
+                autoScroll: 'smooth',
+              },
             }
           })
         }}
@@ -124,11 +124,14 @@ export default function App() {
 
       <button
         onClick={() => {
-          virtuoso.current?.data.append([randomMessage('other')], ({ scrollInProgress, atBottom }) => {
-            if (atBottom || scrollInProgress) {
-              return 'smooth'
-            } else {
-              return false
+          setData((current) => {
+            const myMessage = randomMessage('other')
+            return {
+              data: [...(current?.data ?? []), myMessage],
+              scrollModifier: {
+                type: 'auto-scroll-to-bottom',
+                autoScroll: 'smooth',
+              },
             }
           })
         }}

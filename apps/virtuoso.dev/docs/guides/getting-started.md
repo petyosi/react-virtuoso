@@ -75,14 +75,25 @@ The Message List component is specifically built for human and/or AI chatbot con
 
 ```tsx live
 import { VirtuosoMessageListLicense, VirtuosoMessageList } from '@virtuoso.dev/message-list'
+import { useMemo } from 'react'
 
 export default function App() {
+  const data = useMemo(() => Array.from({ length: 100 }, (_, index) => index), [])
   return (
     <VirtuosoMessageListLicense licenseKey="">
       <VirtuosoMessageList
         ItemContent={({ data }) => <div>Message {data}</div>}
         style={{ height: '100%' }}
-        initialData={Array.from({ length: 100 }, (_, index) => index)}
+        data={{
+          data: data,
+          scrollModifier: {
+            type: 'item-location',
+            location: {
+              index: 'LAST',
+              align: 'end',
+            },
+          },
+        }}
       />
     </VirtuosoMessageListLicense>
   )

@@ -22,7 +22,7 @@ export default function App() {
     <VirtuosoMessageListLicense licenseKey="">
       <SimpleBar style={{ height: 300 }} scrollableNodeProps={{ ref: setScrollParent }}>
         {scrollParent && (
-          <VirtuosoMessageList customScrollParent={scrollParent} initialData={Array.from({ length: 100 }, (_, index) => index)} />
+          <VirtuosoMessageList customScrollParent={scrollParent} data={{ data: Array.from({ length: 100 }, (_, index) => index) }} />
         )}
       </SimpleBar>
     </VirtuosoMessageListLicense>

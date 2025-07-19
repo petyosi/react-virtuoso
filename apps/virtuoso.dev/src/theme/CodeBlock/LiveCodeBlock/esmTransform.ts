@@ -58,6 +58,7 @@ return defaultExport`
       packages,
     }
   } catch (e) {
+    console.error('Error during transformation:', e)
     if (e instanceof Error) {
       return {
         type: 'error',

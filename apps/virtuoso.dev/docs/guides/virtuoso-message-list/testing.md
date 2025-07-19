@@ -25,7 +25,7 @@ function SampleComponent() {
       <VirtuosoMessageListLicense licenseKey="">
         <VirtuosoMessageList
           style={{ height: '100%' }}
-          initialData={Array.from({ length: 100 })}
+          data={{ data: Array.from({ length: 100 })}}
           ItemContent={({ index }) => <div role="item">{index}</div>}
         />
       </VirtuosoMessageListLicense>
