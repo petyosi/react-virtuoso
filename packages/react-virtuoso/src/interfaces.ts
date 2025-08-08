@@ -268,6 +268,12 @@ export interface ScrollIntoViewLocationOptions {
   align?: 'center' | 'end' | 'start'
   behavior?: 'auto' | 'smooth'
   /**
+   * Use this function for the scroll to be initiated directly after the next update of data/totalCount.
+   * The index provided therefore should be consistent with the data/totalCount set.
+   * It is only currently designed to be used with behavior: 'auto'.
+   */
+  targetsNextRefresh?: boolean
+  /**
    * Use this function to fine-tune the scrollIntoView behavior.
    * The function receives the item's top and bottom position in the viewport, and the viewport top/bottom.
    * Return an location object to scroll, or null to prevent scrolling.

@@ -183,6 +183,8 @@ export const listStateSystem = u.system(
     const topItemsIndexes = u.statefulStream<number[]>([])
     const initialItemCount = u.statefulStream(0)
     const itemsRendered = u.stream<ListItems>()
+    const didCalcList = u.stream<true>()
+    
 
     u.connect(groupedListSystem.topItemsIndexes, topItemsIndexes)
 
@@ -319,7 +321,9 @@ export const listStateSystem = u.system(
               }
             })
 
-            return buildListState(items, topItems, totalCount, gap, sizesValue, firstItemIndex)
+            let state = buildListState(items, topItems, totalCount, gap, sizesValue, firstItemIndex)
+            u.publish(didCalcList, true);
+            return state
           }
         ),
         //@ts-expect-error filter needs to be fixed
@@ -412,7 +416,7 @@ export const listStateSystem = u.system(
       )
     )
 
-    return { endReached, initialItemCount, itemsRendered, listState, rangeChanged, startReached, topItemsIndexes, ...stateFlags }
+    return { endReached, initialItemCount, itemsRendered, listState, rangeChanged, startReached, topItemsIndexes, didCalcList, ...stateFlags }
   },
   u.tup(
     sizeSystem,
