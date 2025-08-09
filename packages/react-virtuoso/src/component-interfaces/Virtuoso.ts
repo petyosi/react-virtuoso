@@ -203,6 +203,18 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   followOutput?: FollowOutput
 
   /**
+   * Implement this callback if you want to adjust the list position when the list total count changes.
+   * Return a `ScrollIntoViewLocation` object to scroll to a specific item, or falsey value to avoid scrolling.
+   * Use the context contents if you need to implement custom logic based on the current state of the list.
+   */
+  scrollIntoViewOnChange?: (params: {
+    context: C
+    totalCount: number
+    scrollingInProgress: boolean
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+  }) => ScrollIntoViewLocation | null | undefined | false | void
+
+  /**
    * Set to customize the wrapper tag for the header and footer components (default is `div`).
    */
   headerFooterTag?: string

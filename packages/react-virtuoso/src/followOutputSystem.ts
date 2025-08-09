@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
+import { contextSystem } from './contextSystem'
 import { domIOSystem } from './domIOSystem'
 import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
-import { FollowOutput, FollowOutputScalarType } from './interfaces'
+import { FollowOutput, FollowOutputScalarType, ScrollIntoViewLocation } from './interfaces'
 import { loggerSystem, LogLevel } from './loggerSystem'
 import { propsReadySystem } from './propsReadySystem'
+import { scrollIntoViewSystem } from './scrollIntoViewSystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
@@ -32,6 +34,8 @@ export const followOutputSystem = u.system(
     { didMount, propsReady },
     { log },
     { scrollingInProgress },
+    { context },
+    { scrollIntoView },
   ]) => {
     const followOutput = u.statefulStream<FollowOutput>(false)
     const autoscrollToBottom = u.stream<true>()
@@ -127,7 +131,58 @@ export const followOutputSystem = u.system(
       }
     })
 
-    return { autoscrollToBottom, followOutput }
+    const scrollIntoViewOnChange = u.statefulStream<
+      | null
+      | ((params: {
+          context: unknown
+          totalCount: number
+          scrollingInProgress: boolean
+          // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+        }) => ScrollIntoViewLocation | null | undefined | false | void)
+    >(null)
+
+    u.subscribe(
+      u.pipe(
+        u.combineLatest(u.pipe(u.duc(totalCount), u.skip(1)), didMount),
+        u.withLatestFrom(u.duc(scrollIntoViewOnChange), scrolledToInitialItem, scrollingInProgress, context),
+        u.map(([[totalCount, didMount], scrollIntoViewOnChange, scrolledToInitialItem, scrollingInProgress, context]) => {
+          return didMount && scrolledToInitialItem && scrollIntoViewOnChange?.({ context, totalCount, scrollingInProgress })
+        }),
+        u.filter((viewLocation) => Boolean(viewLocation))
+      ),
+      (viewLocation) => {
+        if (pendingScrollHandle) {
+          pendingScrollHandle()
+          pendingScrollHandle = null
+        }
+
+        // if the items have fixed size, we can scroll immediately
+        if (u.getValue(fixedItemSize)) {
+          requestAnimationFrame(() => {
+            u.getValue(log)('scrolling into view', {})
+            u.publish(scrollIntoView, viewLocation)
+          })
+        } else {
+          pendingScrollHandle = u.handleNext(listRefresh, () => {
+            u.getValue(log)('scrolling into view', {})
+            u.publish(scrollIntoView, viewLocation)
+            pendingScrollHandle = null
+          })
+        }
+      }
+    )
+
+    return { autoscrollToBottom, followOutput, scrollIntoViewOnChange }
   },
-  u.tup(sizeSystem, stateFlagsSystem, scrollToIndexSystem, initialTopMostItemIndexSystem, propsReadySystem, loggerSystem, domIOSystem)
+  u.tup(
+    sizeSystem,
+    stateFlagsSystem,
+    scrollToIndexSystem,
+    initialTopMostItemIndexSystem,
+    propsReadySystem,
+    loggerSystem,
+    domIOSystem,
+    contextSystem,
+    scrollIntoViewSystem
+  )
 )

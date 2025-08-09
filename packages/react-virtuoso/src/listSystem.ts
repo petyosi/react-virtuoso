@@ -1,4 +1,5 @@
 import { alignToBottomSystem } from './alignToBottomSystem'
+import { contextSystem } from './contextSystem'
 import { domIOSystem } from './domIOSystem'
 import { followOutputSystem } from './followOutputSystem'
 import { groupedListSystem } from './groupedListSystem'
@@ -32,6 +33,7 @@ const featureGroup1System = u.system(
     windowScroller,
     scrollIntoView,
     logger,
+    context,
   ]) => {
     return {
       ...sizeRange,
@@ -44,6 +46,7 @@ const featureGroup1System = u.system(
       ...windowScroller,
       ...scrollIntoView,
       ...logger,
+      ...context,
     }
   },
   u.tup(
@@ -56,7 +59,8 @@ const featureGroup1System = u.system(
     alignToBottomSystem,
     windowScrollerSystem,
     scrollIntoViewSystem,
-    loggerSystem
+    loggerSystem,
+    contextSystem
   )
 )
 

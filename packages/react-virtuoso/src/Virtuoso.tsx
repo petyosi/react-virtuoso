@@ -21,7 +21,6 @@ export function identity<T>(value: T) {
 
 const listComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   const itemContent = u.statefulStream<GroupItemContent<any, any> | ItemContent<any, any>>((index: number) => `Item ${index}`)
-  const context = u.statefulStream<unknown>(null)
   const groupContent = u.statefulStream<GroupContent<any>>((index: number) => `Group ${index}`)
   const components = u.statefulStream<Components<any>>({})
   const computeItemKey = u.statefulStream<ComputeItemKey<any, any>>(identity)
@@ -42,7 +41,6 @@ const listComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   return {
     components,
     computeItemKey,
-    context,
     EmptyPlaceholder: distinctProp('EmptyPlaceholder'),
     FooterComponent: distinctProp('Footer'),
     GroupComponent: distinctProp('Group', 'div'),
@@ -482,6 +480,7 @@ export const {
       restoreStateFrom: 'restoreStateFrom',
       context: 'context',
       followOutput: 'followOutput',
+      scrollIntoViewOnChange: 'scrollIntoViewOnChange',
       itemContent: 'itemContent',
       groupContent: 'groupContent',
       overscan: 'overscan',
