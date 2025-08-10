@@ -1,4 +1,4 @@
-import type { NodeRef, Out, Realm } from './realm'
+import { getNodeLabel, labelNode, type NodeRef, type Out, type Realm } from './realm'
 
 /**
  * An operator that transforms a node into another node, used in the {@link Realm.pipe} method.
@@ -21,15 +21,18 @@ export type O<In, Out> = Operator<In, Out>
 export function map<I, O>(mapFunction: (value: I) => O) {
   return ((source, r) => {
     const sink = r.signalInstance<O>()
+    labelNode(sink, 'map operator junction')
     r.connect({
       map: (done) => (value) => {
+        // eslint-disable-next-line no-console, @typescript-eslint/restrict-template-expressions
+        console.log(`mapping ${getNodeLabel(source)} value ${value} with ${mapFunction.name || '<anonymous>'}`)
         done(mapFunction(value as I))
       },
       sink,
       sources: [source],
     })
     return sink
-  }) as Operator<I, O>
+  }) satisfies Operator<I, O>
 }
 
 /**
