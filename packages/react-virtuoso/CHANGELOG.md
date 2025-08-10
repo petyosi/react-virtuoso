@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.14.0
+
+### Minor Changes
+
+- 0898bc7: Support `scrollIntoViewOnChange prop for Virtoso"
+
 ## 4.13.0
 
 ### Minor Changes
