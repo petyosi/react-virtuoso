@@ -2,6 +2,7 @@ import type { O } from './operators'
 
 import { RefCount } from './RefCount'
 import { SetMap } from './SetMap'
+import { CC, Tracer, TracerConsole } from './Tracer'
 import { noop, tap } from './utils'
 
 const CELL_TYPE = 'cell'
@@ -115,6 +116,11 @@ let currentRealm$$: Realm | undefined = undefined
  *
  */
 export class Realm {
+  public get tracer() {
+    return this._tracer
+  }
+
+  private readonly _tracer = new Tracer()
   private readonly definitionRegistry = new Set<symbol>()
   private readonly distinctNodes = new Map<symbol, Comparator<unknown>>()
   private readonly executionMaps = new Map<symbol | symbol[], ExecutionMap>()
@@ -122,6 +128,7 @@ export class Realm {
   private readonly pipeMap = new Map<symbol, symbol>()
   private readonly singletonSubscriptions = new Map<symbol, Subscription<unknown>>()
   private readonly state = new Map<symbol, unknown>()
+
   private readonly subscriptions = new SetMap<Subscription<unknown>>()
 
   /**
@@ -421,7 +428,6 @@ export class Realm {
     currentRealm$$ = prevRealm
     return result
   }
-
   /**
    * Links the output of a node to the input of another node.
    */
@@ -434,6 +440,7 @@ export class Realm {
       sources: [source],
     })
   }
+
   /**
    * Creates a new node that emits the values of the source node transformed through the specified operators.
    * @example
@@ -524,8 +531,9 @@ export class Realm {
       return { [getNodeLabel(key as symbol)]: values[key as symbol] }
     })
 
-    // eslint-disable-next-line no-console
-    console.log(`Realm: publishing values`, tracePayload)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.tracer.log(CC.blue('Realm pub '), tracePayload as any)
+    this.tracer.groupCollapsed('pub:')
 
     const map = this.getExecutionMap(ids)
     const refCount = map.refCount.clone()
@@ -552,40 +560,35 @@ export class Realm {
         break
       }
       const id = nextId
-      // eslint-disable-next-line no-console
-      console.log(`processing node ${getNodeLabel(id)}`)
+      this.tracer.groupCollapsed(`${getNodeLabel(id)}:`)
       let resolved = false
       const done = (value: unknown) => {
         const dnRef = this.distinctNodes.get(id)
         if (dnRef?.(transientState.get(id), value)) {
-          // eslint-disable-next-line no-console, @typescript-eslint/restrict-template-expressions
-          console.log(`Skipping ${getNodeLabel(id)}, value is already ${value}`)
+          this.tracer.log(`Skipping ${getNodeLabel(id)}, value is already`, value)
           resolved = false
           return
         }
         resolved = true
         transientState.set(id, value)
-        // eslint-disable-next-line no-console, @typescript-eslint/restrict-template-expressions
-        console.log(`Setting transient state ${getNodeLabel(id)} to ${value}`)
+
+        this.tracer.log(CC.blue('Transient state: '), value)
         if (this.state.has(id)) {
-          // eslint-disable-next-line no-console, @typescript-eslint/restrict-template-expressions
-          console.log(`Persisting ${getNodeLabel(id)} as ${value}`)
+          this.tracer.log(CC.blue('Persisting state: '), value)
           this.state.set(id, value)
         }
       }
       if (Object.hasOwn(mappedValues, id)) {
-        // eslint-disable-next-line no-console
-        console.log(`'${getNodeLabel(id)}' value found in direct payload`)
+        this.tracer.log(CC.blue(`${getNodeLabel(id)}: `), 'value found in direct payload')
         done(mappedValues[id])
       } else {
-        // eslint-disable-next-line no-console
-        console.log(`'${getNodeLabel(id)}' has a projection`)
         map.projections.use(id, (nodeProjections) => {
           for (const projection of nodeProjections) {
             const args = [...Array.from(projection.sources), ...Array.from(projection.pulls)].map((id) => transientState.get(id))
-            // eslint-disable-next-line no-console
-            console.log(`Start projection for '${getNodeLabel(id)}' with [${args.join(',')}]`)
+            this.tracer.log(CC.blue(`Start projection `), getNodeLabel(id), ' args: ', args)
+            this.tracer.groupCollapsed(getNodeLabel(id))
             projection.map(done)(...args)
+            this.tracer.groupEnd()
           }
         })
       }
@@ -593,13 +596,12 @@ export class Realm {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (resolved) {
         const value = transientState.get(id)
-        // eslint-disable-next-line no-console, @typescript-eslint/restrict-template-expressions
-        console.log(`'${getNodeLabel(id)}' value resolved to ${value}`)
+
+        this.tracer.log(CC.blue('Value resolved: '), value)
         this.inContext(() => {
           this.subscriptions.use(id, (nodeSubscriptions) => {
             for (const subscription of nodeSubscriptions) {
-              // eslint-disable-next-line no-console, @typescript-eslint/restrict-template-expressions
-              console.log(`'${getNodeLabel(id)}' calling subscription: ${subscription.name} with ${value}`)
+              this.tracer.log(CC.blue('Calling subscription: '), subscription.name || '<anonymous>', value)
               subscription(value)
             }
           })
@@ -608,7 +610,9 @@ export class Realm {
       } else {
         nodeWillNotEmit(id)
       }
+      this.tracer.groupEnd()
     }
+    this.tracer.groupEnd()
   }
   /**
    * Explicitly includes the specified cell/signal/pipe reference in the realm.
@@ -656,6 +660,13 @@ export class Realm {
    */
   resetSingletonSubs() {
     this.singletonSubscriptions.clear()
+  }
+
+  /**
+   * Sets the console instance used by the realm tracing.
+   */
+  setTracerConsole(console: TracerConsole | undefined) {
+    this._tracer.setConsole(console)
   }
   /**
    * Creates or resolves an existing signal instance in the realm. Useful as a joint point when building your own operators.
