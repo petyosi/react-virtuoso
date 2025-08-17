@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest'
 
-import { Action, Cell, DerivedCell, pipe, Realm, Signal } from '../..'
+import { Action, Cell, DerivedCell, pipe, R, Realm, Signal } from '../..'
 import { filter, handlePromise, map } from '../../operators'
 
 describe('gurx cells/signals', () => {
@@ -21,7 +21,7 @@ describe('gurx cells/signals', () => {
     const callback = vi.fn()
     r.sub(signal, callback)
     r.pub(signal, 'hello')
-    expect(callback).toHaveBeenCalledWith('hello')
+    expect(callback).toHaveBeenCalledWith('hello', r)
   })
 
   it('implicitly registers cells used with combine', () => {
@@ -32,7 +32,7 @@ describe('gurx cells/signals', () => {
     const callback = vi.fn()
     r.sub(fooBar, callback)
     r.pub(foo, 'foo2')
-    expect(callback).toHaveBeenCalledWith(['foo2', 'bar'])
+    expect(callback).toHaveBeenCalledWith(['foo2', 'bar'], r)
   })
 
   it('accepts initial cell values', () => {
@@ -89,7 +89,7 @@ describe('realm features', () => {
     const spy = vi.fn()
     r.sub(n, spy)
     r.pub(n, 'foo')
-    expect(spy).toHaveBeenCalledWith('foo')
+    expect(spy).toHaveBeenCalledWith('foo', r)
   })
 
   it('supports undefined initial value', () => {
@@ -108,7 +108,7 @@ describe('realm features', () => {
     const spy = vi.fn()
     r.sub(tc, spy)
     r.pub(n, 'foo')
-    expect(spy).toHaveBeenCalledWith(3)
+    expect(spy).toHaveBeenCalledWith(3, r)
   })
 
   it('connects nodes', () => {
@@ -125,7 +125,7 @@ describe('realm features', () => {
     const spy = vi.fn()
     r.sub(b, spy)
     r.pub(a, 2)
-    expect(spy).toHaveBeenCalledWith(4)
+    expect(spy).toHaveBeenCalledWith(4, r)
     expect(spy).toHaveBeenCalledTimes(1)
   })
 
@@ -165,7 +165,7 @@ describe('realm features', () => {
     r.pub(a, 2)
 
     expect(spy).toHaveBeenCalledTimes(1)
-    expect(spy).toHaveBeenCalledWith(10)
+    expect(spy).toHaveBeenCalledWith(10, r)
   })
 
   it('handles multiple conditional execution paths', () => {
@@ -211,18 +211,18 @@ describe('realm features', () => {
       [a]: 2,
       [b]: 3,
     })
-    expect(spy).toHaveBeenCalledWith(2)
+    expect(spy).toHaveBeenCalledWith(2, r)
     expect(spy).toHaveBeenCalledTimes(1)
-    expect(spy2).toHaveBeenCalledWith(4)
+    expect(spy2).toHaveBeenCalledWith(4, r)
     expect(spy2).toHaveBeenCalledTimes(1)
 
     r.pubIn({
       [a]: 3,
       [b]: 4,
     })
-    expect(spy).toHaveBeenCalledWith(4)
+    expect(spy).toHaveBeenCalledWith(4, r)
     expect(spy).toHaveBeenCalledTimes(2)
-    expect(spy2).toHaveBeenCalledWith(8)
+    expect(spy2).toHaveBeenCalledWith(8, r)
     expect(spy2).toHaveBeenCalledTimes(2)
   })
 
@@ -297,7 +297,7 @@ describe('realm features', () => {
     r.sub(f, spy)
     r.pub(a, 1)
     expect(spy).toHaveBeenCalledTimes(1)
-    expect(spy).toHaveBeenCalledWith(7)
+    expect(spy).toHaveBeenCalledWith(7, r)
   })
 
   it('supports conditional connections', () => {
@@ -321,10 +321,10 @@ describe('realm features', () => {
     r.pub(a, 3)
     r.pub(a, 4)
 
-    expect(spy).toHaveBeenCalledWith(2)
-    expect(spy).not.toHaveBeenCalledWith(3)
-    expect(spy).not.toHaveBeenCalledWith(1)
-    expect(spy).toHaveBeenCalledWith(4)
+    expect(spy).toHaveBeenCalledWith(2, r)
+    expect(spy).not.toHaveBeenCalledWith(3, r)
+    expect(spy).not.toHaveBeenCalledWith(1, r)
+    expect(spy).toHaveBeenCalledWith(4, r)
     expect(spy).toHaveBeenCalledTimes(2)
   })
 
@@ -367,10 +367,10 @@ describe('realm features', () => {
     r.pub(a, 3)
     r.pub(a, 4)
 
-    expect(spy).toHaveBeenCalledWith(2)
-    expect(spy).not.toHaveBeenCalledWith(3)
-    expect(spy).not.toHaveBeenCalledWith(1)
-    expect(spy).toHaveBeenCalledWith(4)
+    expect(spy).toHaveBeenCalledWith(2, r)
+    expect(spy).not.toHaveBeenCalledWith(3, r)
+    expect(spy).not.toHaveBeenCalledWith(1, r)
+    expect(spy).toHaveBeenCalledWith(4, r)
     expect(spy).toHaveBeenCalledTimes(2)
   })
 
@@ -391,7 +391,7 @@ describe('realm features', () => {
     r.sub(c, spy)
     r.pubIn({ [a]: 2, [b]: 3 })
 
-    expect(spy).toHaveBeenCalledWith(5)
+    expect(spy).toHaveBeenCalledWith(5, r)
     expect(spy).toHaveBeenCalledTimes(1)
   })
 
@@ -412,7 +412,7 @@ describe('realm features', () => {
     const spy = vi.fn()
     r.sub(c, spy)
     r.pub(b, 'bar')
-    expect(spy).toHaveBeenCalledWith('foobar')
+    expect(spy).toHaveBeenCalledWith('foobar', r)
   })
 
   it('does not recall subscriptions for distinct stateful nodes', () => {
@@ -472,7 +472,7 @@ describe('realm features', () => {
       [b]: 'mu',
     })
 
-    expect(spy).toHaveBeenCalledWith(['qux', 'mu'])
+    expect(spy).toHaveBeenCalledWith(['qux', 'mu'], r)
     expect(spy).toHaveBeenCalledTimes(1)
   })
 
@@ -482,7 +482,7 @@ describe('realm features', () => {
     const spy = vi.fn()
     r.subMultiple([a, b], spy)
     r.pub(a, '2')
-    expect(spy).toHaveBeenCalledWith(['2', '2'])
+    expect(spy).toHaveBeenCalledWith(['2', '2'], r)
     expect(spy).toHaveBeenCalledTimes(1)
   })
 })
@@ -494,7 +494,7 @@ describe('singleton subscription', () => {
     const spy1 = vi.fn()
     r.singletonSub(a, spy1)
     r.pub(a, 2)
-    expect(spy1).toHaveBeenCalledWith(2)
+    expect(spy1).toHaveBeenCalledWith(2, r)
   })
 
   it('replaces the subscription', () => {
@@ -596,5 +596,18 @@ describe('Derived cell', () => {
     r.register(bar$)
     r.pub(foo$, 'baz')
     expect(r.getValue(bar$)).toEqual('baz-bar')
+  })
+})
+
+describe('global connectors', () => {
+  it('supports global link', () => {
+    const foo$ = Cell('foo')
+    const bar$ = Signal<string>()
+    R.link(foo$, bar$)
+    const spy = vi.fn()
+    const r = new Realm()
+    r.sub(bar$, spy)
+    r.pub(foo$, 'baz')
+    expect(spy).toHaveBeenCalledWith('baz', r)
   })
 })
