@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { Cell, Realm, Signal } from '../..'
+import { Cell, labelNode, Realm, Signal } from '../..'
 import { debounceTime, filter, map, mapTo, once, onNext, scan, throttleTime, withLatestFrom } from '../../operators'
 import { noop } from '../../utils'
 
@@ -16,16 +16,19 @@ async function awaitCall(cb: () => unknown, delay: number) {
 describe('pipe', () => {
   it('maps node values', () => {
     const r = new Realm()
+    // r.setTracerConsole(console)
     const a = Signal<number>()
+    labelNode(a, 'a')
 
     const b = r.pipe(
       a,
-      map((val: number) => val * 2)
+      map((val: number) => val * 2),
+      filter((val: number) => val > 3)
     )
     const spy = vi.fn()
     r.sub(b, spy)
     r.pub(a, 2)
-    expect(spy).toHaveBeenCalledWith(4)
+    expect(spy).toHaveBeenCalledWith(4, r)
   })
 
   it('filters node values', () => {
@@ -42,9 +45,9 @@ describe('pipe', () => {
     r.pub(a, 2)
     r.pub(a, 3)
     r.pub(a, 4)
-    expect(spy).toHaveBeenCalledWith(4)
-    expect(spy).not.toHaveBeenCalledWith(3)
-    expect(spy).toHaveBeenCalledWith(2)
+    expect(spy).toHaveBeenCalledWith(4, r)
+    expect(spy).not.toHaveBeenCalledWith(3, r)
+    expect(spy).toHaveBeenCalledWith(2, r)
   })
 
   it('pulls values in withLatestFrom', () => {
@@ -58,11 +61,11 @@ describe('pipe', () => {
     r.sub(c, spy)
 
     r.pub(a, 'baz')
-    expect(spy).toHaveBeenCalledWith(['baz', 'bar'])
+    expect(spy).toHaveBeenCalledWith(['baz', 'bar'], r)
     r.pub(b, 'qux')
     expect(spy).toHaveBeenCalledTimes(1)
     r.pub(a, 'foo')
-    expect(spy).toHaveBeenCalledWith(['foo', 'qux'])
+    expect(spy).toHaveBeenCalledWith(['foo', 'qux'], r)
     expect(spy).toHaveBeenCalledTimes(2)
   })
 
@@ -76,7 +79,7 @@ describe('pipe', () => {
     r.sub(b, spy)
 
     r.pub(a, 2)
-    expect(spy).toHaveBeenCalledWith('bar')
+    expect(spy).toHaveBeenCalledWith('bar', r)
   })
 
   it('accumulates with scan', () => {
@@ -92,10 +95,10 @@ describe('pipe', () => {
     r.sub(b, spy)
 
     r.pub(a, 2)
-    expect(spy).toHaveBeenCalledWith(3)
+    expect(spy).toHaveBeenCalledWith(3, r)
 
     r.pub(a, 3)
-    expect(spy).toHaveBeenCalledWith(6)
+    expect(spy).toHaveBeenCalledWith(6, r)
   })
 
   it('onNext publishes only once, when the trigger signal emits', () => {
@@ -112,7 +115,7 @@ describe('pipe', () => {
     expect(spy).toHaveBeenCalledTimes(0)
 
     r.pub(b, 3)
-    expect(spy).toHaveBeenCalledWith([2, 3])
+    expect(spy).toHaveBeenCalledWith([2, 3], r)
     expect(spy).toHaveBeenCalledTimes(1)
 
     // next publish should not retrigger the sub
@@ -122,7 +125,7 @@ describe('pipe', () => {
     // a new value should activate the triggering again
     r.pub(a, 2)
     r.pub(b, 4)
-    expect(spy).toHaveBeenCalledWith([2, 4])
+    expect(spy).toHaveBeenCalledWith([2, 4], r)
     expect(spy).toHaveBeenCalledTimes(2)
   })
 
@@ -138,7 +141,7 @@ describe('pipe', () => {
 
     r.pub(a, 1)
     r.pub(a, 2)
-    expect(spy).toHaveBeenCalledWith(1)
+    expect(spy).toHaveBeenCalledWith(1, r)
     expect(spy).toHaveBeenCalledTimes(1)
   })
 
@@ -160,7 +163,7 @@ describe('pipe', () => {
     expect(spy).toHaveBeenCalledTimes(0)
     await awaitCall(noop, 20) // +20 = 80
 
-    expect(spy).toHaveBeenCalledWith(3)
+    expect(spy).toHaveBeenCalledWith(3, r)
     expect(spy).toHaveBeenCalledTimes(1)
   })
 
@@ -182,7 +185,7 @@ describe('pipe', () => {
     expect(spy).toHaveBeenCalledTimes(0)
     await awaitCall(noop, 70)
 
-    expect(spy).toHaveBeenCalledWith(3)
+    expect(spy).toHaveBeenCalledWith(3, r)
     expect(spy).toHaveBeenCalledTimes(1)
   })
 
@@ -197,10 +200,10 @@ describe('pipe', () => {
     const spy = vi.fn()
     r.sub(c, spy)
     r.pubIn({ [a]: 3, [b]: 4 })
-    expect(spy).toHaveBeenCalledWith([3, 4, 6])
+    expect(spy).toHaveBeenCalledWith([3, 4, 6], r)
     expect(spy).toHaveBeenCalledTimes(1)
     r.pub(d, 7)
-    expect(spy).toHaveBeenCalledWith([3, 4, 7])
+    expect(spy).toHaveBeenCalledWith([3, 4, 7], r)
   })
 
   it('supports value-less signals', () => {

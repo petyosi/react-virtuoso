@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import type { Inp, NodeRef, Out, PipeRef } from './realm'
+import type { Inp, NodeRef, Out } from './realm'
 
 import { RealmContext } from './react'
 
@@ -159,7 +159,7 @@ export function usePublisher<T>(node: Inp<T>) {
  * @returns A tuple of the current value of the cell and a publisher function.
  * @category Hooks
  */
-export function useCell<O, I = O>(cell: NodeRef<O> | PipeRef<I, O>): [O, (value: I) => void] {
+export function useCell<T>(cell: NodeRef<T>): [T, (value: T) => void] {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
-  return [useCellValue<O>(cell), usePublisher<I>(cell as any)]
+  return [useCellValue<T>(cell), usePublisher<T>(cell as any)]
 }

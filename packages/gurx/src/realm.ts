@@ -6,8 +6,8 @@ import { CC, Tracer, TracerConsole } from './Tracer'
 import { noop, tap } from './utils'
 
 const CELL_TYPE = 'cell'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const SIGNAL_TYPE = 'signal'
-const PIPE_TYPE = 'pipe'
 
 /**
  * A typed reference to a node.
@@ -20,12 +20,10 @@ export type NodeRef<T = unknown> = symbol & { valType: T }
  * A function that is called when a node emits a value.
  * @typeParam T - The type of values that the node emits.
  */
-export type Subscription<T> = (value: T) => unknown
+export type Subscription<T> = (value: T, realm: Realm) => unknown
 
-export type PipeRef<I = unknown, O = unknown> = symbol & { inputType: I; outputType: O }
-
-export type Inp<T = unknown> = NodeRef<T> | PipeRef<T>
-export type Out<T = unknown> = NodeRef<T> | PipeRef<unknown, T>
+export type Inp<T = unknown> = NodeRef<T>
+export type Out<T = unknown> = NodeRef<T>
 
 /**
  * The resulting type of a subscription to a node. Can be used to cancel the subscription.
@@ -79,8 +77,6 @@ export type Distinct<T> = boolean | Comparator<T>
  */
 export type NodeInit<T> = (r: Realm, node$: NodeRef<T>) => void
 
-export type PipeInit<I, O> = (r: Realm, inputRef$: NodeRef<I>, outputRef$: NodeRef<O>) => void
-
 interface CellDefinition<T> {
   distinct: Distinct<T>
   init: NodeInit<T>
@@ -94,19 +90,25 @@ interface SignalDefinition<T> {
   type: typeof SIGNAL_TYPE
 }
 
-interface PipeDefinition<I, O> {
-  distinct: Distinct<I>
-  init: PipeInit<I, O>
-  initial: O
-  type: typeof PIPE_TYPE
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const nodeDefs$$ = new Map<symbol, CellDefinition<any> | PipeDefinition<any, any> | SignalDefinition<any>>()
+const nodeDefs$$ = new Map<symbol, CellDefinition<any> | SignalDefinition<any>>()
 const nodeLabels$$ = new Map<symbol, string>()
+const nodeInits$$ = new SetMap<NodeInit<unknown>>()
 
 export const getNodeLabel = (node: symbol): string => {
   return nodeLabels$$.get(node) ?? '<anonymous>'
+}
+
+function addNodeInit<T>(node: NodeRef<T>, init: NodeInit<T>) {
+  nodeInits$$.getOrCreate(node).add(init as NodeInit<unknown>)
+}
+
+export const R = {
+  link<T>(source: Out<T>, sink: Inp<T>) {
+    addNodeInit(source, (r) => {
+      r.link(source, sink)
+    })
+  },
 }
 
 let currentRealm$$: Realm | undefined = undefined
@@ -125,7 +127,6 @@ export class Realm {
   private readonly distinctNodes = new Map<symbol, Comparator<unknown>>()
   private readonly executionMaps = new Map<symbol | symbol[], ExecutionMap>()
   private readonly graph = new SetMap<RealmProjection>()
-  private readonly pipeMap = new Map<symbol, symbol>()
   private readonly singletonSubscriptions = new Map<symbol, Subscription<unknown>>()
   private readonly state = new Map<symbol, unknown>()
 
@@ -514,20 +515,9 @@ export class Realm {
    * ```
    */
   pubIn(values: Record<symbol, unknown>) {
-    // if we have pipe nodes, we need to use their input symbols for publishing instead
-    const ids = (Reflect.ownKeys(values) as symbol[]).map((id) => {
-      return this.pipeMap.get(id) ?? id
-    })
+    const ids = Reflect.ownKeys(values) as symbol[]
 
-    const mappedValues = Reflect.ownKeys(values).reduce<Record<symbol, unknown>>((acc, key) => {
-      const symbolKey = key as symbol
-      const value = values[symbolKey]
-      const pipeMappedKey: symbol = this.pipeMap.get(symbolKey) ?? symbolKey
-      acc[pipeMappedKey] = value
-      return acc
-    }, {})
-
-    const tracePayload = Reflect.ownKeys(mappedValues).map((key) => {
+    const tracePayload = Reflect.ownKeys(values).map((key) => {
       return { [getNodeLabel(key as symbol)]: values[key as symbol] }
     })
 
@@ -553,8 +543,7 @@ export class Realm {
       })
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    while (true) {
+    for (;;) {
       const nextId = participatingNodeKeys.shift()
       if (nextId === undefined) {
         break
@@ -578,9 +567,9 @@ export class Realm {
           this.state.set(id, value)
         }
       }
-      if (Object.hasOwn(mappedValues, id)) {
+      if (Object.hasOwn(values, id)) {
         this.tracer.log(CC.blue(`${getNodeLabel(id)}: `), 'value found in direct payload')
-        done(mappedValues[id])
+        done(values[id])
       } else {
         map.projections.use(id, (nodeProjections) => {
           for (const projection of nodeProjections) {
@@ -602,11 +591,11 @@ export class Realm {
           this.subscriptions.use(id, (nodeSubscriptions) => {
             for (const subscription of nodeSubscriptions) {
               this.tracer.log(CC.blue('Calling subscription: '), subscription.name || '<anonymous>', value)
-              subscription(value)
+              subscription(value, this)
             }
           })
         })
-        this.singletonSubscriptions.get(id)?.(value)
+        this.singletonSubscriptions.get(id)?.(value, this)
       } else {
         nodeWillNotEmit(id)
       }
@@ -619,7 +608,7 @@ export class Realm {
    * Most of the time you don't need to do that, since any interaction with the node through a realm will register it.
    * The only exception of that rule should be when the interaction is conditional, and the node definition includes an init function that needs to be eagerly evaluated.
    */
-  register(node$: NodeRef | PipeRef) {
+  register(node$: NodeRef) {
     const definition = nodeDefs$$.get(node$)
     // local node
     if (definition === undefined) {
@@ -628,30 +617,22 @@ export class Realm {
 
     if (!this.definitionRegistry.has(node$)) {
       this.definitionRegistry.add(node$)
-      if (definition.type === CELL_TYPE) {
-        return tap(this.cellInstance(definition.initial, definition.distinct, node$), (node$) => {
+
+      return tap(
+        definition.type === CELL_TYPE
+          ? this.cellInstance(definition.initial, definition.distinct, node$)
+          : this.signalInstance(definition.distinct, node$),
+        (theNode$) => {
           this.inContext(() => {
-            definition.init(this, node$)
+            definition.init(this, theNode$)
           })
-        })
-      }
-      if (definition.type === SIGNAL_TYPE) {
-        return tap(this.signalInstance(definition.distinct, node$), (node$) => {
-          this.inContext(() => {
-            definition.init(this, node$)
+          nodeInits$$.use(node$, (inits) => {
+            for (const init of inits) {
+              init(this, node$)
+            }
           })
-        })
-      }
-      // PipeRef
-      const input$ = this.signalInstance(definition.distinct)
-      const output$ = this.cellInstance(definition.initial, true)
-      const pipe$ = this.cellInstance(definition.initial, definition.distinct, node$)
-      this.link(output$, pipe$)
-      this.pipeMap.set(pipe$, input$)
-      this.inContext(() => {
-        definition.init(this, input$, output$)
-      })
-      return pipe$
+        }
+      )
     }
     return node$
   }
@@ -928,16 +909,6 @@ export function Cell<T>(value: T, init: (r: Realm) => void = noop, distinct: Dis
   return tap(Symbol(), (id) => {
     nodeDefs$$.set(id, { distinct, init, initial: value, type: CELL_TYPE })
   }) as NodeRef<T>
-}
-
-export function Pipe<I, O>(
-  value: O,
-  init: (r: Realm, input$: Out<I>, output$: Out<O>) => void,
-  distinct: Distinct<I> = true
-): PipeRef<I, O> {
-  return tap(Symbol(), (id) => {
-    nodeDefs$$.set(id, { distinct, init, initial: value, type: PIPE_TYPE })
-  }) as PipeRef<I, O>
 }
 
 /**
