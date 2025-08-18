@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest'
 
-import { Action, Cell, DerivedCell, pipe, R, Realm, Signal } from '../..'
+import { Action, Cell, DerivedCell, R, Realm, Signal } from '../..'
 import { filter, handlePromise, map } from '../../operators'
 
 describe('gurx cells/signals', () => {
@@ -25,13 +25,13 @@ describe('gurx cells/signals', () => {
   })
 
   it('implicitly registers cells used with combine', () => {
-    const foo = Cell('foo')
-    const bar = Cell('bar')
-    const fooBar = r.combine(foo, bar)
+    const foo$ = Cell('foo')
+    const bar$ = Cell('bar')
+    const fooBar$ = r.combine(foo$, bar$)
 
     const callback = vi.fn()
-    r.sub(fooBar, callback)
-    r.pub(foo, 'foo2')
+    r.sub(fooBar$, callback)
+    r.pub(foo$, 'foo2')
     expect(callback).toHaveBeenCalledWith(['foo2', 'bar'], r)
   })
 
@@ -586,8 +586,8 @@ describe('singleton subscription', () => {
 describe('Derived cell', () => {
   it('creates a derived cell', () => {
     const foo$ = Cell('foo')
-    const bar$ = DerivedCell('foo-bar', () =>
-      pipe(
+    const bar$ = DerivedCell('foo-bar', (r) =>
+      r.pipe(
         foo$,
         map((val) => `${val}-bar`)
       )
@@ -600,14 +600,73 @@ describe('Derived cell', () => {
 })
 
 describe('global connectors', () => {
+  let r: Realm
+  beforeEach(() => {
+    r = new Realm()
+  })
+
   it('supports global link', () => {
     const foo$ = Cell('foo')
     const bar$ = Signal<string>()
     R.link(foo$, bar$)
     const spy = vi.fn()
-    const r = new Realm()
     r.sub(bar$, spy)
     r.pub(foo$, 'baz')
     expect(spy).toHaveBeenCalledWith('baz', r)
+  })
+
+  it('supports global sub', () => {
+    const foo$ = Cell('foo')
+    const spy = vi.fn()
+    R.sub(foo$, spy)
+    r.pub(foo$, 'baz')
+    expect(spy).toHaveBeenCalledWith('baz', r)
+  })
+
+  it('supports global singletonSub', () => {
+    const foo$ = Cell('foo')
+    const spy = vi.fn()
+    const spy2 = vi.fn()
+    R.singletonSub(foo$, spy)
+    R.singletonSub(foo$, spy2)
+    r.pub(foo$, 'baz')
+    expect(spy).not.toHaveBeenCalledWith('baz', r)
+    expect(spy2).toHaveBeenCalledWith('baz', r)
+  })
+
+  it('supports global subMultiple', () => {
+    const a = Cell('bar')
+    const b = Cell('foo')
+    const spy = vi.fn()
+
+    R.subMultiple([a, b], spy)
+
+    r.pubIn({
+      [a]: 'qux',
+      [b]: 'mu',
+    })
+
+    expect(spy).toHaveBeenCalledWith(['qux', 'mu'], r)
+  })
+
+  it('supports global changeWith', () => {
+    const foo$ = Cell('foo')
+    const bar$ = Signal<string>()
+    R.changeWith(foo$, bar$, (foo, bar) => `${foo}-${bar}`)
+    const spy = vi.fn()
+    r.sub(foo$, spy)
+    r.pub(bar$, 'baz')
+    expect(spy).toHaveBeenCalledWith('foo-baz', r)
+  })
+
+  it('supports global combine', () => {
+    const foo$ = Cell('foo')
+    const bar$ = Cell('bar')
+    const fooBar$ = R.combine(foo$, bar$)
+
+    const callback = vi.fn()
+    r.sub(fooBar$, callback)
+    r.pub(foo$, 'foo2')
+    expect(callback).toHaveBeenCalledWith(['foo2', 'bar'], r)
   })
 })

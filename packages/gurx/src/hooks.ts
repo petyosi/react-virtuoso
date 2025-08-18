@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import type { Inp, NodeRef, Out } from './realm'
+import type { Inp, NodeRef, Out } from './types'
 
 import { RealmContext } from './react'
 

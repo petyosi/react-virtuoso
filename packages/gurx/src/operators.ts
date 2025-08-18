@@ -1,5 +1,8 @@
-import { getNodeLabel, type NodeRef, type Out, type Realm } from './realm'
+import { getNodeLabel } from './globals'
+import { type Realm } from './realm'
 import { CC } from './Tracer'
+import { type Out } from './types'
+import { type NodeRef } from './types'
 
 /**
  * An operator that transforms a node into another node, used in the {@link Realm.pipe} method.
