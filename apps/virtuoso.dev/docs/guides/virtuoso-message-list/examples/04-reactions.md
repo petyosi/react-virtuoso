@@ -106,7 +106,7 @@ export default function App() {
       data: Array.from({ length: 100 }, () => randomMessage(rand(['me', 'other']))),
       scrollModifier: InitialDataScrollModifier,
     }
-  }, [])
+  })
 
   const toggleLike = useCallback((key: Message['key']) => {
     setData((current) => {
