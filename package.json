@@ -14,9 +14,6 @@
     "@changesets/cli": "^2.27.12",
     "turbo": "^2.4.4"
   },
-  "engines": {
-    "node": "22"
-  },
   "packageManager": "npm@10.8.2",
   "workspaces": [
     "packages/*",
