@@ -77,9 +77,6 @@
       "last 5 safari version"
     ]
   },
-  "engines": {
-    "node": "22"
-  },
   "prettier": {
     "printWidth": 140,
     "semi": false,
