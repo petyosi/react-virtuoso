@@ -1,6 +1,7 @@
 import { addNodeInit } from './globals'
 import { Signal } from './nodes'
-import { Subscription } from './types'
+import { O } from './operators'
+import { NodeRef, Subscription } from './types'
 import { Out } from './types'
 import { Inp } from './types'
 import { tap } from './utils'
@@ -52,12 +53,32 @@ function subMultiple(nodes: Out[], subscription: Subscription<any>): void {
   })
 }
 
+function pipe<T>(s$: Out<T>): NodeRef<T> // prettier-ignore
+function pipe<T, O1>(s: Out<T>, o1: O<T, O1>): NodeRef<O1> // prettier-ignore
+function pipe<T, O1, O2>(s: Out<T>, ...o: [O<T, O1>, O<O1, O2>]): NodeRef<O2> // prettier-ignore
+function pipe<T, O1, O2, O3>(s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>]): NodeRef<O3> // prettier-ignore
+function pipe<T, O1, O2, O3, O4>(s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>]): NodeRef<O4> // prettier-ignore
+function pipe<T, O1, O2, O3, O4, O5>(s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>]): NodeRef<O5> // prettier-ignore
+function pipe<T, O1, O2, O3, O4, O5, O6>(s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>]): NodeRef<O6> // prettier-ignore
+function pipe<T, O1, O2, O3, O4, O5, O6, O7>( s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>]): NodeRef<O7> // prettier-ignore
+function pipe<T, O1, O2, O3, O4, O5, O6, O7, O8>( s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>, O<O7, O8>]): NodeRef<O8> // prettier-ignore
+function pipe<T, O1, O2, O3, O4, O5, O6, O7, O8, O9>( s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>, O<O7, O8>, O<O8, O9>]): NodeRef<O9> // prettier-ignore
+function pipe<T>(source$: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef
+function pipe<T>(source$: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef {
+  return tap(Signal<unknown>(), (sink$) => {
+    addNodeInit(source$, (r) => {
+      r.link(r.pipe.apply(r, [source$, ...operators]), sink$)
+    })
+  })
+}
+
 export const R = {
   changeWith<T, K>(cell: Inp<T>, source: Out<K>, map: (cellValue: T, signalValue: K) => T) {
     addNodeInit(source, (r) => {
       r.changeWith(cell, source, map)
     })
   },
+
   /**
    * Combines the values from multiple nodes into a single node that emits an array of the latest values of the nodes.
    *
@@ -69,6 +90,18 @@ export const R = {
       r.link(source, sink)
     })
   },
+  /**
+   * Creates a new node that emits the values of the source node transformed through the specified operators.
+   * @example
+   * ```ts
+   * const signal$ = Signal<number>(true)
+   * const signalPlusOne$ = R.pipe(signal$, map(i => i + 1))
+   * R.sub(signalPlusOne$, console.log)
+   * const r = new Realm()
+   * r.pub(signal$, 1)
+   * ```
+   */
+  pipe,
   singletonSub<T>(node: Out<T>, subscription: Subscription<T>) {
     addNodeInit(node, (r) => {
       r.singletonSub(node, subscription)

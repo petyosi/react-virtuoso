@@ -669,4 +669,30 @@ describe('global connectors', () => {
     r.pub(foo$, 'foo2')
     expect(callback).toHaveBeenCalledWith(['foo2', 'bar'], r)
   })
+
+  it('supports global combine', () => {
+    const foo$ = Signal<number>()
+    const fooPlusOne$ = R.pipe(
+      foo$,
+      map((v) => v + 1)
+    )
+    const bar$ = Signal<number>()
+
+    R.link(
+      R.pipe(
+        foo$,
+        map((v) => v + 1)
+      ),
+      bar$
+    )
+
+    const callback = vi.fn()
+    const callback2 = vi.fn()
+    // r.setTracerConsole(console)
+    r.sub(fooPlusOne$, callback)
+    r.sub(bar$, callback2)
+    r.pub(foo$, 1)
+    expect(callback).toHaveBeenCalledWith(2, r)
+    expect(callback2).toHaveBeenCalledWith(2, r)
+  })
 })
