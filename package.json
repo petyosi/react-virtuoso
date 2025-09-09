@@ -2,22 +2,26 @@
   "name": "@virtuoso.dev/monorepo",
   "private": true,
   "scripts": {
-    "ci": "turbo ci-setup && turbo react-virtuoso#build && turbo typecheck lint test e2e",
-    "build": "turbo build",
-    "build-virtuoso.dev": "turbo build --filter @virtuoso.dev/virtuoso.dev",
-    "release": "turbo build && npx @changesets/cli publish",
+    "ci": "npm run ci-setup && npm run build && npm run typecheck && npm run lint && npm run test && npm run e2e",
+    "ci-setup": "npm run ci-setup --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "e2e": "npm run e2e --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "build-virtuoso.dev": "npm run build --workspace @virtuoso.dev/virtuoso.dev",
+    "release": "npm run build --workspaces --if-present && npx @changesets/cli publish",
     "changeset-add": "npx @changesets/cli add",
-    "dev:docs": "turbo run dev @virtuoso.dev/virtuoso.dev#dev",
-    "dev": "turbo watch dev"
+    "dev:docs": "npm run dev --workspace  @virtuoso.dev/virtuoso.dev#dev"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.12",
-    "turbo": "^2.4.4"
+    "@changesets/cli": "^2.27.12"
   },
+  "packageManager": "^npm@10.9.0",
   "devEngines": {
     "packageManager": {
       "name": "npm",
-      "version": ">=10",
+      "version": ">=10.9",
       "onFail": "error"
     },
     "runtime": {

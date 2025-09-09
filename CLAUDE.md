@@ -1,7 +1,6 @@
 # React Virtuoso Codebase Guide
 
 ## Build Commands
-- Build: `npm run build` or `turbo build`
 - Lint: `npm run lint`
 - Test: `npm run test`
 - Run single test: `npx vitest <test-file-path>` or `npx vitest -t "<test-name>"`
