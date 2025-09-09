@@ -1,5 +1,11 @@
 # Change Log - @virtuoso.dev/masonry
 
+## 1.3.5
+
+### Patch Changes
+
+- c2c7dc7: Remove bogus engines field
+
 ## 1.3.4
 
 ### Patch Changes
