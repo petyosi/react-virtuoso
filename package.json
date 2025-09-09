@@ -14,10 +14,18 @@
     "@changesets/cli": "^2.27.12",
     "turbo": "^2.4.4"
   },
-  "engines": {
-    "node": "22"
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": ">=10",
+      "onFail": "error"
+    },
+    "runtime": {
+      "name": "node",
+      "version": "^22.19.0",
+      "onFail": "error"
+    }
   },
-  "packageManager": "npm@10.8.2",
   "workspaces": [
     "packages/*",
     "apps/*"
