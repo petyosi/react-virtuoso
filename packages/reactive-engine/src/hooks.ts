@@ -7,45 +7,45 @@ import { EngineContext } from './react'
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? React.useLayoutEffect : React.useEffect
 
 /**
- * Returns a direct reference to the current realm. Use with caution.
+ * Returns a direct reference to the current engine. Use with caution.
  *
- * If possible, design your logic in a reactive manner, and use {@link useCellValue} and {@link usePublisher} to access the output of the realm.
+ * If possible, design your logic in a reactive manner, and use {@link useCellValue} and {@link usePublisher} to access the output of the engine.
  * @category Hooks
  */
-export function useRealm() {
-  const realm = React.useContext(EngineContext)
-  if (realm === null) {
-    throw new Error('useRealm must be used within a RealmContextProvider')
+export function useEngine() {
+  const engine = React.useContext(EngineContext)
+  if (engine === null) {
+    throw new Error('useEngine must be used within an EngineProvider')
   }
-  return realm
+  return engine
 }
 
 function useCellValueWithStore<T>(cell: Out<T>): T {
-  const realm = useRealm()
-  realm.register(cell)
+  const engine = useEngine()
+  engine.register(cell)
 
-  const cb = React.useCallback((c: () => void) => realm.sub(cell, c), [realm, cell])
+  const cb = React.useCallback((c: () => void) => engine.sub(cell, c), [engine, cell])
 
   return React.useSyncExternalStore(
     cb,
-    () => realm.getValue(cell),
-    () => realm.getValue(cell)
+    () => engine.getValue(cell),
+    () => engine.getValue(cell)
   )
 }
 
 function useCellValueWithState<T>(cell: Out<T>): T {
-  const realm = useRealm()
-  realm.register(cell)
-  const [value, setValue] = React.useState(() => realm.getValue(cell))
+  const engine = useEngine()
+  engine.register(cell)
+  const [value, setValue] = React.useState(() => engine.getValue(cell))
 
   useIsomorphicLayoutEffect(() => {
-    const unsub = realm.sub(cell, () => {
-      setValue(() => realm.getValue(cell))
+    const unsub = engine.sub(cell, () => {
+      setValue(() => engine.getValue(cell))
     })
     return () => {
       unsub()
     }
-  }, [realm, cell])
+  }, [engine, cell])
 
   return value
 }
@@ -53,7 +53,7 @@ function useCellValueWithState<T>(cell: Out<T>): T {
 /**
  * Gets the current value of the cell. The component is re-rendered when the cell value changes.
  *
- * @remark If you need the values of multiple nodes from the realm and those nodes might change in the same computiation, you can `useCellValues` to reduce re-renders.
+ * @remark If you need the values of multiple nodes from the engine and those nodes might change in the same computiation, you can `useCellValues` to reduce re-renders.
  *
  * @returns The current value of the cell.
  * @typeParam T - the type of the value that the cell caries.
@@ -118,34 +118,34 @@ export function useCellValues<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12,
   ...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>]
 ): [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13] // prettier-ignore
 export function useCellValues(...cells: Out[]): unknown[] {
-  const realm = useRealm()
+  const engine = useEngine()
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, prefer-spread, @typescript-eslint/no-explicit-any
-  return useCellValue(realm.combineCells.apply(realm, cells as any))
+  return useCellValue(engine.combineCells.apply(engine, cells as any))
 }
 
 /**
  * Returns a function that publishes its passed argument into the specified node.
  * @example
  * ```tsx
- * const signal$ = Signal<number>(true, (r) => {
- *  r.sub(signal$, (value) => console.log(`${value} was published in the signal`))
+ * const stream = Stream<number>(true, (r) => {
+ *  r.sub(stream, (value) => console.log(`${value} was published in the stream`))
  * })
  * //...
  * function MyComponent() {
- *  const pub = usePublisher(signal$);
- *  return <button onClick={() => pub(2)}>Push a value into the signal</button>
+ *  const pub = usePublisher(stream);
+ *  return <button onClick={() => pub(2)}>Push a value into the stream</button>
  * }
  * ```
  * @category Hooks
  */
 export function usePublisher<T>(node: Inp<T>) {
-  const realm = useRealm()
-  realm.register(node)
+  const engine = useEngine()
+  engine.register(node)
   return React.useCallback(
     (value: T) => {
-      realm.pub(node, value)
+      engine.pub(node, value)
     },
-    [realm, node]
+    [engine, node]
   )
 }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { Cell, Engine, labelNode, Signal } from '../..'
+import { Cell, E, Engine, labelNode, Stream } from '../..'
 import { debounceTime, filter, map, mapTo, once, onNext, scan, throttleTime, withLatestFrom } from '../../operators'
 import { noop } from '../../utils'
 
@@ -17,7 +17,7 @@ describe('pipe', () => {
   it('maps node values', () => {
     const r = new Engine()
     // r.setTracerConsole(console)
-    const a = Signal<number>()
+    const a = Stream<number>()
     labelNode(a, 'a')
 
     const b = r.pipe(
@@ -33,7 +33,7 @@ describe('pipe', () => {
 
   it('filters node values', () => {
     const r = new Engine()
-    const a = Signal<number>()
+    const a = Stream<number>()
 
     const b = r.pipe(
       a,
@@ -71,7 +71,7 @@ describe('pipe', () => {
 
   it('maps to fixed value with mapTo', () => {
     const r = new Engine()
-    const a = Signal<number>()
+    const a = Stream<number>()
 
     const b = r.pipe(a, mapTo('bar'))
 
@@ -84,7 +84,7 @@ describe('pipe', () => {
 
   it('accumulates with scan', () => {
     const r = new Engine()
-    const a = Signal<number>()
+    const a = Stream<number>()
 
     const b = r.pipe(
       a,
@@ -101,10 +101,10 @@ describe('pipe', () => {
     expect(spy).toHaveBeenCalledWith(6, r)
   })
 
-  it('onNext publishes only once, when the trigger signal emits', () => {
+  it('onNext publishes only once, when the trigger stream emits', () => {
     const r = new Engine()
-    const a = Signal<number>()
-    const b = Signal<number>()
+    const a = Stream<number>()
+    const b = Stream<number>()
 
     const c = r.pipe(a, onNext(b))
 
@@ -131,8 +131,8 @@ describe('pipe', () => {
 
   it('once publishes only once', () => {
     const r = new Engine()
-    const a = Signal<number>()
-    const b = Signal<number>()
+    const a = Stream<number>()
+    const b = Stream<number>()
 
     r.link(r.pipe(a, once()), b)
 
@@ -147,7 +147,7 @@ describe('pipe', () => {
 
   it.skip('throttleTime delays the execution', async () => {
     const r = new Engine()
-    const a = Signal<number>()
+    const a = Stream<number>()
     const b = r.pipe(a, throttleTime(60))
     const spy = vi.fn()
     r.sub(b, spy)
@@ -169,7 +169,7 @@ describe('pipe', () => {
 
   it('debounceTime bounces the execution', async () => {
     const r = new Engine()
-    const a = Signal<number>()
+    const a = Stream<number>()
     const b = r.pipe(a, debounceTime(60))
     const spy = vi.fn()
     r.sub(b, spy)
@@ -206,21 +206,22 @@ describe('pipe', () => {
     expect(spy).toHaveBeenCalledWith([3, 4, 7], r)
   })
 
-  it('supports value-less signals', () => {
-    const a = Signal()
-    const b = Cell(1)
-    const r = new Engine()
+  it('supports value-less stream', () => {
+    const a$ = Stream(false)
+    const b$ = Cell(1)
 
-    r.link(
-      r.pipe(
-        a,
-        withLatestFrom(b),
+    E.link(
+      E.pipe(
+        a$,
+        withLatestFrom(b$),
         map(([, b]) => b + 1)
       ),
-      b
+      b$
     )
-    expect(r.getValue(b)).toBe(1)
-    r.pub(a)
-    expect(r.getValue(b)).toBe(2)
+
+    const e = new Engine()
+    expect(e.getValue(b$)).toBe(1)
+    e.pub(a$)
+    expect(e.getValue(b$)).toBe(2)
   })
 })

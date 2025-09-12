@@ -9,7 +9,7 @@ import { type NodeRef, type Out } from './types'
  * @typeParam Out - The type of values that the resulting node will emit.
  * @category Operators
  */
-export type Operator<I, O> = (source: Out<I>, realm: Engine) => NodeRef<O>
+export type Operator<I, O> = (source: Out<I>, engine: Engine) => NodeRef<O>
 
 /**
  * Shorter alias for {@link Operator}, to avoid extra long type signatures.
@@ -35,7 +35,7 @@ function traceOperator(r: Engine, opName: string, source: symbol, value: unknown
  */
 export function map<I, O>(mapFunction: (value: I) => O) {
   return ((source, r) => {
-    const sink = r.signalInstance<O>()
+    const sink = r.streamInstance<O>()
     r.connect({
       map: (done) => (value) => {
         traceOperator(r, 'map', source, value, mapFunction.name)
@@ -73,7 +73,7 @@ export function withLatestFrom<I, T1, T2, T3, T4, T5, T6, T7, T8>(
 ): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5, T6, T7, T8]> // prettier-ignore
 export function withLatestFrom<I>(...nodes: Out[]) {
   return ((source, r) => {
-    const sink = r.signalInstance()
+    const sink = r.streamInstance()
     r.connect({
       map:
         (done) =>
@@ -95,7 +95,7 @@ export function withLatestFrom<I>(...nodes: Out[]) {
  */
 export function mapTo<I, O>(value: O): Operator<I, O> {
   return (source, r) => {
-    const sink = r.signalInstance<O>()
+    const sink = r.streamInstance<O>()
     r.connect({
       map: (done) => () => {
         traceOperator(r, 'mapTo', source, '', value)
@@ -115,7 +115,7 @@ export function mapTo<I, O>(value: O): Operator<I, O> {
  */
 export function filter<I, O = I>(predicate: (value: I) => boolean): Operator<I, O> {
   return (source, r) => {
-    const sink = r.signalInstance<O>()
+    const sink = r.streamInstance<O>()
     r.connect({
       map: (done) => (value) => {
         traceOperator(r, 'filter', source, value, predicate.name || '<anonymous>')
@@ -137,7 +137,7 @@ export function filter<I, O = I>(predicate: (value: I) => boolean): Operator<I, 
  */
 export function once<I>(): Operator<I, I> {
   return (source, r) => {
-    const sink = r.signalInstance<I>()
+    const sink = r.streamInstance<I>()
 
     let passed = false
     r.connect({
@@ -162,7 +162,7 @@ export function once<I>(): Operator<I, I> {
  */
 export function scan<I, O>(accumulator: (current: O, value: I) => O, seed: O): Operator<I, O> {
   return (source, r) => {
-    const sink = r.signalInstance<O>()
+    const sink = r.streamInstance<O>()
     r.connect({
       map: (done) => (value) => {
         traceOperator(r, 'scan', source, value, seed)
@@ -181,7 +181,7 @@ export function scan<I, O>(accumulator: (current: O, value: I) => O, seed: O): O
  */
 export function throttleTime<I>(delay: number): Operator<I, I> {
   return (source, r) => {
-    const sink = r.signalInstance<I>()
+    const sink = r.streamInstance<I>()
     let currentValue: I | undefined
     let timeout: null | ReturnType<typeof setTimeout> = null
 
@@ -209,7 +209,7 @@ export function throttleTime<I>(delay: number): Operator<I, I> {
  */
 export function debounceTime<I>(delay: number): Operator<I, I> {
   return (source, r) => {
-    const sink = r.signalInstance<I>()
+    const sink = r.streamInstance<I>()
     let currentValue: I | undefined
     let timeout: null | ReturnType<typeof setTimeout> = null
 
@@ -236,7 +236,7 @@ export function debounceTime<I>(delay: number): Operator<I, I> {
  */
 export function delayWithMicrotask<I>(): Operator<I, I> {
   return (source, r) => {
-    const sink = r.signalInstance<I>()
+    const sink = r.streamInstance<I>()
     r.sub(source, (value) => {
       traceOperator(r, 'delayWithMicrotask', source, value)
       queueMicrotask(() => {
@@ -253,7 +253,7 @@ export function delayWithMicrotask<I>(): Operator<I, I> {
  */
 export function onNext<I, O>(bufNode: NodeRef<O>): Operator<I, [I, O]> {
   return (source, r) => {
-    const sink = r.signalInstance<[I, O]>()
+    const sink = r.streamInstance<[I, O]>()
     const bufferValue = Symbol()
     let pendingValue: I | typeof bufferValue = bufferValue
     r.connect({
@@ -284,7 +284,7 @@ export function handlePromise<I, OutSuccess, OnLoad, OutError>(
   onError: (error: unknown) => OutError
 ): Operator<I | Promise<I>, OnLoad | OutError | OutSuccess> {
   return (source, r) => {
-    const sink = r.signalInstance<OnLoad | OutError | OutSuccess>()
+    const sink = r.streamInstance<OnLoad | OutError | OutSuccess>()
     r.sub(source, (value) => {
       if (value !== null && typeof value === 'object' && 'then' in value) {
         r.pub(sink, onLoad())

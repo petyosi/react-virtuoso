@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest'
 
-import { Action, Cell, DerivedCell, E, Engine, Signal } from '../..'
+import { Action, Cell, DerivedCell, E, Engine, Stream } from '../..'
 import { filter, handlePromise, map } from '../../operators'
 
-describe('gurx cells/signals', () => {
+describe('cells/streams', () => {
   let r: Engine
   beforeEach(() => {
     r = new Engine()
@@ -16,11 +16,11 @@ describe('gurx cells/signals', () => {
     expect(r.getValue(cell)).toEqual('world')
   })
 
-  it('registers signals', () => {
-    const signal = Signal<string>()
+  it('registers streams', () => {
+    const stream = Stream<string>()
     const callback = vi.fn()
-    r.sub(signal, callback)
-    r.pub(signal, 'hello')
+    r.sub(stream, callback)
+    r.pub(stream, 'hello')
     expect(callback).toHaveBeenCalledWith('hello', r)
   })
 
@@ -42,30 +42,33 @@ describe('gurx cells/signals', () => {
   })
 
   it('supports init function for cells', () => {
-    const a = Cell(2)
-    const b = Cell(2, (r) => {
-      r.link(b, a)
-    })
-    r.pub(b, 3)
-    expect(r.getValue(a)).toEqual(3)
+    const a$ = Cell(2)
+    const b$ = Cell(2)
+
+    E.link(b$, a$)
+    r.pub(b$, 3)
+    expect(r.getValue(a$)).toEqual(3)
   })
 
-  it('supports init function for signals', () => {
-    const a = Cell(2)
-    const b = Signal((r) => {
-      r.link(b, a)
-    })
-    r.pub(b, 3)
-    expect(r.getValue(a)).toEqual(3)
+  it('supports init function for streams', () => {
+    const a$ = Cell(2)
+    const b$ = Stream()
+
+    E.link(b$, a$)
+    r.pub(b$, 3)
+    expect(r.getValue(a$)).toEqual(3)
   })
 
   it('supports init function for actions', () => {
-    const a = Cell(2)
-    const b = Action((r) => {
-      r.pub(a, 3)
+    const a$ = Cell(2)
+    const b$ = Action()
+
+    E.addNodeInit(b$, (r) => {
+      r.pub(a$, 3)
     })
-    r.pub(b)
-    expect(r.getValue(a)).toEqual(3)
+
+    r.pub(b$)
+    expect(r.getValue(a$)).toEqual(3)
   })
 
   it('gets multiple values', () => {
@@ -77,7 +80,7 @@ describe('gurx cells/signals', () => {
   })
 })
 
-describe('realm features', () => {
+describe('engine features', () => {
   let r: Engine
 
   beforeEach(() => {
@@ -85,7 +88,7 @@ describe('realm features', () => {
   })
 
   it('supports pub/sub', () => {
-    const n = Signal()
+    const n = Stream()
     const spy = vi.fn()
     r.sub(n, spy)
     r.pub(n, 'foo')
@@ -112,8 +115,8 @@ describe('realm features', () => {
   })
 
   it('connects nodes', () => {
-    const a = Signal<number>()
-    const b = Signal<number>()
+    const a = Stream<number>()
+    const b = Stream<number>()
     r.connect<[number]>({
       map: (done) => (value) => {
         done(value * 2)
@@ -130,10 +133,10 @@ describe('realm features', () => {
   })
 
   it('publishes once with diamond dependencies', () => {
-    const a = Signal<number>()
-    const b = Signal<number>()
-    const c = Signal<number>()
-    const d = Signal<number>()
+    const a = Stream<number>()
+    const b = Stream<number>()
+    const c = Stream<number>()
+    const d = Stream<number>()
     // const e = r.node<number>()
 
     r.connect<[number]>({
@@ -169,10 +172,10 @@ describe('realm features', () => {
   })
 
   it('handles multiple conditional execution paths', () => {
-    const a = Signal<number>()
-    const b = Signal<number>()
-    const c = Signal<number>()
-    const d = Signal<number>()
+    const a = Stream<number>()
+    const b = Stream<number>()
+    const c = Stream<number>()
+    const d = Stream<number>()
 
     r.connect<[number]>({
       map: (done) => (value) => {
@@ -227,14 +230,14 @@ describe('realm features', () => {
   })
 
   it('handles pull dependencies', () => {
-    const a = Signal<number>()
-    const b = Signal<number>()
-    const c = Signal<number>()
-    const d = Signal<number>()
-    const e = Signal<number>()
-    const f = Signal<number>()
-    const g = Signal<number>()
-    const h = Signal<number>()
+    const a = Stream<number>()
+    const b = Stream<number>()
+    const c = Stream<number>()
+    const d = Stream<number>()
+    const e = Stream<number>()
+    const f = Stream<number>()
+    const g = Stream<number>()
+    const h = Stream<number>()
 
     r.connect<[number]>({
       map: (done) => (value) => {
@@ -301,8 +304,8 @@ describe('realm features', () => {
   })
 
   it('supports conditional connections', () => {
-    const a = Signal<number>()
-    const b = Signal<number>()
+    const a = Stream<number>()
+    const b = Stream<number>()
 
     r.connect<[number]>({
       map: (done) => (value) => {
@@ -329,10 +332,10 @@ describe('realm features', () => {
   })
 
   it('canceled connection cancels further execution', () => {
-    const a = Signal<number>()
-    const b = Signal<number>()
-    const c = Signal<number>()
-    const d = Signal<number>()
+    const a = Stream<number>()
+    const b = Stream<number>()
+    const c = Stream<number>()
+    const d = Stream<number>()
 
     r.connect<[number]>({
       map: (done) => (value) => {
@@ -375,9 +378,9 @@ describe('realm features', () => {
   })
 
   it('supports publishing in multiple nodes with a single call', () => {
-    const a = Signal<number>()
-    const b = Signal<number>()
-    const c = Signal<number>()
+    const a = Stream<number>()
+    const b = Stream<number>()
+    const c = Stream<number>()
 
     r.connect<[number, number]>({
       map: (done) => (a, b) => {
@@ -397,8 +400,8 @@ describe('realm features', () => {
 
   it('pulls from stateful nodes', () => {
     const a = Cell('foo')
-    const b = Signal()
-    const c = Signal()
+    const b = Stream()
+    const c = Stream()
 
     r.connect<[number, number]>({
       map: (done) => (b, a) => {
@@ -441,13 +444,7 @@ describe('realm features', () => {
   })
 
   it('supports custom comparator when distinct flag is set', () => {
-    const a = Cell(
-      { id: 'foo' },
-      () => {
-        // noop
-      },
-      (current, next) => (current !== undefined ? current.id === next.id : false)
-    )
+    const a = Cell({ id: 'foo' }, (current, next) => (current !== undefined ? current.id === next.id : false))
     const spy = vi.fn()
     r.sub(a, spy)
     r.pub(a, { id: 'foo' })
@@ -490,7 +487,7 @@ describe('realm features', () => {
 describe('singleton subscription', () => {
   it('calls the subscription', () => {
     const r = new Engine()
-    const a = Signal<number>()
+    const a = Stream<number>()
     const spy1 = vi.fn()
     r.singletonSub(a, spy1)
     r.pub(a, 2)
@@ -499,7 +496,7 @@ describe('singleton subscription', () => {
 
   it('replaces the subscription', () => {
     const r = new Engine()
-    const a = Signal<number>()
+    const a = Stream<number>()
     const spy1 = vi.fn()
     const spy2 = vi.fn()
     r.singletonSub(a, spy1)
@@ -512,7 +509,7 @@ describe('singleton subscription', () => {
 
   it('returns an unsubscribe handler', () => {
     const r = new Engine()
-    const a = Signal<number>()
+    const a = Stream<number>()
     const spy1 = vi.fn()
     const unsub = r.singletonSub(a, spy1)
     r.pub(a, 2)
@@ -524,7 +521,7 @@ describe('singleton subscription', () => {
   it('supports changing a cell value', () => {
     const r = new Engine()
     const a = Cell(1)
-    const b = Signal<number>()
+    const b = Stream<number>()
 
     r.changeWith(a, b, (a, b) => a + b)
     r.pub(b, 2)
@@ -536,7 +533,7 @@ describe('singleton subscription', () => {
   it('supports creating transformer nodes', () => {
     const r = new Engine()
     const a = Cell('foo')
-    const s = Signal<number>()
+    const s = Stream<number>()
     const b = r.transformer(
       map((x: number) => x + 1),
       map((x) => `foo${x}`)
@@ -550,7 +547,7 @@ describe('singleton subscription', () => {
   it('supports promise resolution', async () => {
     const r = new Engine()
     const a = Cell<'error' | 'loaded' | 'loading' | 'none'>('none')
-    const s = Signal<number>()
+    const s = Stream<number>()
 
     r.link(
       r.pipe(
@@ -607,7 +604,7 @@ describe('global connectors', () => {
 
   it('supports global link', () => {
     const foo$ = Cell('foo')
-    const bar$ = Signal<string>()
+    const bar$ = Stream<string>()
     E.link(foo$, bar$)
     const spy = vi.fn()
     r.sub(bar$, spy)
@@ -651,7 +648,7 @@ describe('global connectors', () => {
 
   it('supports global changeWith', () => {
     const foo$ = Cell('foo')
-    const bar$ = Signal<string>()
+    const bar$ = Stream<string>()
     E.changeWith(foo$, bar$, (foo, bar) => `${foo}-${bar}`)
     const spy = vi.fn()
     r.sub(foo$, spy)
@@ -671,12 +668,12 @@ describe('global connectors', () => {
   })
 
   it('supports global combine', () => {
-    const foo$ = Signal<number>()
+    const foo$ = Stream<number>()
     const fooPlusOne$ = E.pipe(
       foo$,
       map((v) => v + 1)
     )
-    const bar$ = Signal<number>()
+    const bar$ = Stream<number>()
 
     E.link(
       E.pipe(

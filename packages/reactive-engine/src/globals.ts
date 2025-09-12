@@ -1,9 +1,9 @@
 import { SetMap } from './SetMap'
-import { CellDefinition, NodeInit, NodeRef, SignalDefinition } from './types'
+import { CellDefinition, NodeInit, NodeRef, StreamDefinition } from './types'
 
 export const CELL_TYPE = 'cell'
 
-export const SIGNAL_TYPE = 'signal'
+export const STREAM_TYPE = 'stream'
 
 /**
  * The default comparator for distinct nodes - a function to determine if two values are equal. Works for primitive values.
@@ -14,7 +14,7 @@ export function defaultComparator<T>(current: T, next: T) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const nodeDefs$$ = new Map<symbol, CellDefinition<any> | SignalDefinition<any>>()
+export const nodeDefs$$ = new Map<symbol, CellDefinition<any> | StreamDefinition<any>>()
 export const nodeLabels$$ = new Map<symbol, string>()
 export const nodeInits$$ = new SetMap<NodeInit<unknown>>()
 

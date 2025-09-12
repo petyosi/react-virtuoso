@@ -19,7 +19,7 @@ import {
 import { tap } from './utils'
 
 /**
- * The realm is the actual "engine" that orchestrates any cells and signals that it touches. The realm also stores the state and the dependencies of the nodes that are referred through it.
+ * The engine orchestrates any cells and streams that it touches. The engine also stores the state and the dependencies of the nodes that are referred through it.
  */
 export class Engine {
   public get tracer() {
@@ -37,8 +37,8 @@ export class Engine {
   private readonly subscriptions = new SetMap<Subscription<unknown>>()
 
   /**
-   * Creates a new realm.
-   * @param initialValues - the initial cell values that will populate the realm.
+   * Creates a new engine.
+   * @param initialValues - the initial cell values that will populate the engine.
    * Those values will not trigger a recomputation cycle, and will overwrite the initial values specified for each cell.
    */
   constructor(initialValues: Record<symbol, unknown> = {}) {
@@ -48,11 +48,11 @@ export class Engine {
   }
 
   /**
-   * Creates or resolves an existing cell instance in the realm. Useful as a joint point when building your own operators.
+   * Creates or resolves an existing cell instance in the engine. Useful as a joint point when building your own operators.
    * @returns a reference to the cell.
    * @param value - the initial value of the cell
-   * @param distinct - true by default. Pass false to mark the signal as a non-distinct one, meaning that publishing the same value multiple times will re-trigger a recomputation cycle.
-   * @param node - optional, a reference to a cell. If the cell has not been touched in the realm before, the realm will instantiate a reference to it. If it's registered already, the function will return the reference.
+   * @param distinct - true by default. Pass false to mark the stream as a non-distinct one, meaning that publishing the same value multiple times will re-trigger a recomputation cycle.
+   * @param node - optional, a reference to a cell. If the cell has not been touched in the engine before, the engine will instantiate a reference to it. If it's registered already, the function will return the reference.
    */
   cellInstance<T>(value: T, distinct: Distinct<T> = true, node = Symbol()): NodeRef<T> {
     if (!this.state.has(node)) {
@@ -74,19 +74,19 @@ export class Engine {
    * @example
    * ```ts
    * const items$ = Cell<string[]([])
-   * const addItem$ = Signal<string>(false, (r) => {
+   * const addItem$ = Stream<string>(false, (r) => {
    *   r.changeWith(items$, addItem$, (items, item) => [...items, item])
    * })
-   * const r = new Realm()
+   * const r = new Engine()
    * r.pub(addItem$, 'foo')
    * r.pub(addItem$, 'bar')
    * r.getValue(items$) // ['foo', 'bar']
    * ```
    */
-  changeWith<T, K>(cell: Inp<T>, source: Out<K>, map: (cellValue: T, signalValue: K) => T) {
+  changeWith<T, K>(cell: Inp<T>, source: Out<K>, map: (cellValue: T, streamValue: K) => T) {
     this.connect({
-      map: (done) => (signalValue: K, cellValue: T) => {
-        done(map(cellValue, signalValue))
+      map: (done) => (streamValue: K, cellValue: T) => {
+        done(map(cellValue, streamValue))
       },
       pulls: [cell],
       sink: cell,
@@ -119,7 +119,7 @@ export class Engine {
   combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>, Out<T16>, Out<T17>, Out<T18> ]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18]> // prettier-ignore
   combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>, Out<T16>, Out<T17>, Out<T18>, Out<T19> ]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19]> // prettier-ignore
   combine(...sources: Out[]): Out {
-    return tap(this.signalInstance(), (sink) => {
+    return tap(this.streamInstance(), (sink) => {
       this.connect({
         map:
           (done) =>
@@ -224,7 +224,7 @@ export class Engine {
    * ```ts
    * const foo$ = Cell('foo')
    *
-   * const r = new Realm()
+   * const r = new Engine()
    * r.getValue(foo$) // 'foo'
    * r.pub(foo$, 'bar')
    * //...
@@ -274,12 +274,12 @@ export class Engine {
    * Creates a new node that emits the values of the source node transformed through the specified operators.
    * @example
    * ```ts
-   * const signal$ = Signal<number>(true, (r) => {
-   *   const signalPlusOne$ = r.pipe(signal$, map(i => i + 1))
-   *   r.sub(signalPlusOne$, console.log)
+   * const stream = Stream<number>(true, (r) => {
+   *   const streamPlusOne = r.pipe(stream, map(i => i + 1))
+   *   r.sub(streamPlusOne, console.log)
    * })
-   * const r = new Realm()
-   * r.pub(signal$, 1)
+   * const r = new Engine()
+   * r.pub(stream, 1)
    */
   pipe<T>(s: Out<T>): NodeRef<T> // prettier-ignore
   pipe<T, O1>(s: Out<T>, o1: O<T, O1>): NodeRef<O1> // prettier-ignore
@@ -303,7 +303,7 @@ export class Engine {
    *  r.sub(foo$, console.log)
    * })
    *
-   * const r = new Realm()
+   * const r = new Engine()
    * r.pub(foo$)
    */
   pub<T>(node: Inp<T>): void
@@ -312,7 +312,7 @@ export class Engine {
    * @example
    * ```ts
    * const foo$ = Cell('foo')
-   * const r = new Realm()
+   * const r = new Engine()
    * r.pub(foo$, 'bar')
    */
   // eslint-disable-next-line @typescript-eslint/unified-signatures
@@ -329,7 +329,7 @@ export class Engine {
    * const foo$ = Cell('foo')
    * const bar$ = Cell('bar')
    *
-   * const r = new Realm()
+   * const r = new Engine()
    * r.pubIn({[foo$]: 'foo1', [bar$]: 'bar1'})
    * ```
    */
@@ -420,9 +420,10 @@ export class Engine {
     }
     this.tracer.groupEnd()
   }
+
   /**
-   * Explicitly includes the specified cell/signal/pipe reference in the realm.
-   * Most of the time you don't need to do that, since any interaction with the node through a realm will register it.
+   * Explicitly includes the specified cell/stream reference in the engine.
+   * Most of the time you don't need to do that, since any interaction with the node through an engine will register it.
    * The only exception of that rule should be when the interaction is conditional, and the node definition includes an init function that needs to be eagerly evaluated.
    */
   register(node$: NodeRef) {
@@ -435,19 +436,18 @@ export class Engine {
     if (!this.definitionRegistry.has(node$)) {
       this.definitionRegistry.add(node$)
 
-      return tap(
+      const instance$ =
         definition.type === CELL_TYPE
           ? this.cellInstance(definition.initial, definition.distinct, node$)
-          : this.signalInstance(definition.distinct, node$),
-        (theNode$) => {
-          definition.init(this, theNode$)
-          nodeInits$$.use(node$, (inits) => {
-            for (const init of inits) {
-              init(this, node$)
-            }
-          })
+          : this.streamInstance(definition.distinct, node$)
+
+      nodeInits$$.use(instance$, (inits) => {
+        for (const init of inits) {
+          init(this, node$)
         }
-      )
+      })
+
+      return instance$
     }
     return node$
   }
@@ -459,22 +459,10 @@ export class Engine {
   }
 
   /**
-   * Sets the console instance used by the realm tracing.
+   * Sets the console instance used by the engine tracing.
    */
   setTracerConsole(console: TracerConsole | undefined) {
     this._tracer.setConsole(console)
-  }
-  /**
-   * Creates or resolves an existing signal instance in the realm. Useful as a joint point when building your own operators.
-   * @returns a reference to the signal.
-   * @param distinct - true by default. Pass false to mark the signal as a non-distinct one, meaning that publishing the same value multiple times will re-trigger a recomputation cycle.
-   * @param node - optional, a reference to a signal. If the signal has not been touched in the realm before, the realm will instantiate a reference to it. If it's registered already, the function will return the reference.
-   */
-  signalInstance<T>(distinct: Distinct<T> = true, node = Symbol()): NodeRef<T> {
-    if (distinct !== false) {
-      this.distinctNodes.set(node, distinct === true ? defaultComparator : (distinct as Comparator<unknown>))
-    }
-    return node as NodeRef<T>
   }
   /**
    * Subscribes exclusively to values in the referred node.
@@ -484,13 +472,13 @@ export class Engine {
    *
    * @example
    * ```ts
-   * const signal$ = Signal<number>()
-   * const r = new Realm()
+   * const stream = Stream<number>()
+   * const r = new Engine()
    * // console.log will run only once.
-   * r.singletonSub(signal$, console.log)
-   * r.singletonSub(signal$, console.log)
-   * r.singletonSub(signal$, console.log)
-   * r.pub(signal$, 2)
+   * r.singletonSub(stream, console.log)
+   * r.singletonSub(stream, console.log)
+   * r.singletonSub(stream, console.log)
+   * r.pub(stream, 2)
    * ```
    */
   singletonSub<T>(node: Out<T>, subscription: Subscription<T> | undefined): UnsubscribeHandle {
@@ -503,19 +491,31 @@ export class Engine {
     return () => this.singletonSubscriptions.delete(node)
   }
   /**
+   * Creates or resolves an existing stream instance in the engine. Useful as a joint point when building your own operators.
+   * @returns a reference to the stream.
+   * @param distinct - true by default. Pass false to mark the stream as a non-distinct one, meaning that publishing the same value multiple times will re-trigger a recomputation cycle.
+   * @param node - optional, a reference to a stream. If the signal has not been touched in the engine before, the engine will instantiate a reference to it. If it's registered already, the function will return the reference.
+   */
+  streamInstance<T>(distinct: Distinct<T> = true, node = Symbol()): NodeRef<T> {
+    if (distinct !== false) {
+      this.distinctNodes.set(node, distinct === true ? defaultComparator : (distinct as Comparator<unknown>))
+    }
+    return node as NodeRef<T>
+  }
+  /**
    * Subscribes to the values published in the referred node.
-   * @param node - the cell/signal to subscribe to.
+   * @param node - the cell/stream to subscribe to.
    * @param subscription - the callback to execute when the node receives a new value.
    * @returns a function that, when called, will cancel the subscription.
    *
    * @example
    * ```ts
-   * const signal$ = Signal<number>()
-   * const r = new Realm()
-   * const unsub = r.sub(signal$, console.log)
-   * r.pub(signal$, 2)
+   * const stream = Stream<number>()
+   * const r = new Engine()
+   * const unsub = r.sub(stream, console.log)
+   * r.pub(stream, 2)
    * unsub()
-   * r.pub(signal$, 3)
+   * r.pub(stream, 3)
    * ```
    */
   sub<T>(node: Out<T>, subscription: Subscription<T>): UnsubscribeHandle {
@@ -534,12 +534,12 @@ export class Engine {
    * const foo$ = Cell('foo')
    * const bar$ = Cell('bar')
    *
-   * const trigger$ = Signal<number>(true, (r) => {
+   * const trigger$ = Stream<number>(true, (r) => {
    *   r.link(r.pipe(trigger$, map(i => `foo${i}`)), foo$)
    *   r.link(r.pipe(trigger$, map(i => `bar${i}`)), bar$)
    * })
    *
-   * const r = new Realm()
+   * const r = new Engine()
    * r.subMultiple([foo$, bar$], ([foo, bar]) => console.log(foo, bar))
    * r.pub(trigger$, 2)
    * ```
@@ -556,7 +556,7 @@ export class Engine {
   subMultiple(nodes: Out[], subscription: Subscription<any>): UnsubscribeHandle
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   subMultiple(nodes: Out[], subscription: Subscription<any>): UnsubscribeHandle {
-    const sink = this.signalInstance()
+    const sink = this.streamInstance()
     this.connect({
       map:
         (done) =>
@@ -576,7 +576,7 @@ export class Engine {
    * ```ts
    * const foo$ = Cell('foo')
    * const bar$ = Cell('bar')
-   * const entry$ = Signal<number>(true, (r) => {
+   * const entry$ = Stream<number>(true, (r) => {
    *  const transform = r.transformer(map(x: number => `num${x}`))
    *  const transformFoo$ = transform(foo$)
    *  const transformBar$ = transform(bar$)
@@ -584,7 +584,7 @@ export class Engine {
    *  r.link(entry$, transformBar$)
    * })
    *
-   * const r = new Realm()
+   * const r = new Engine()
    * r.pub(entry$, 1) // Both foo$ and bar$ now contain `num1`
    * ```
    */
@@ -598,7 +598,7 @@ export class Engine {
   transformer<In, Out>(...operators: O<unknown, unknown>[]): (s: Inp<Out>) => Inp<In>
   transformer<In, Out>(...operators: O<unknown, unknown>[]): (s: Inp<Out>) => Inp<In> {
     return (sink: Inp<Out>) => {
-      return tap(this.signalInstance<In>(), (source) => {
+      return tap(this.streamInstance<In>(), (source) => {
         this.link(this.pipe(source, ...operators), sink)
         return source
       })

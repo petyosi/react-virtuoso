@@ -1,5 +1,5 @@
 import { Engine } from './engine'
-import { CELL_TYPE, SIGNAL_TYPE } from './globals'
+import { CELL_TYPE, STREAM_TYPE } from './globals'
 import { RefCount } from './RefCount'
 import { SetMap } from './SetMap'
 
@@ -17,7 +17,7 @@ export type Out<T = unknown> = NodeRef<T>
  * A function that is called when a node emits a value.
  * @typeParam T - The type of values that the node emits.
  */
-export type Subscription<T> = (value: T, realm: Engine) => unknown
+export type Subscription<T> = (value: T, engine: Engine) => unknown
 
 /**
  * The resulting type of a subscription to a node. Can be used to cancel the subscription.
@@ -52,7 +52,7 @@ export interface ExecutionMap {
 export type Comparator<T> = (previous: T | undefined, current: T) => boolean
 
 /**
- * A type for the distinct parameter to the {@link Cell} and {@link Signal} constructors.
+ * A type for the distinct parameter to the {@link Cell} and {@link Stream} constructors.
  * @typeParam T - The type of values that the node emits.
  * @category Nodes
  */
@@ -65,13 +65,11 @@ export type NodeInit<T> = (r: Engine, node$: NodeRef<T>) => void
 
 export interface CellDefinition<T> {
   distinct: Distinct<T>
-  init: NodeInit<T>
   initial: T
   type: typeof CELL_TYPE
 }
 
-export interface SignalDefinition<T> {
+export interface StreamDefinition<T> {
   distinct: Distinct<T>
-  init: NodeInit<T>
-  type: typeof SIGNAL_TYPE
+  type: typeof STREAM_TYPE
 }

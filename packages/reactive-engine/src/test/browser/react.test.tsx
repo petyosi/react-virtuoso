@@ -3,16 +3,16 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { Action, Cell, mapTo, RealmProvider, useCell, useCellValue, useCellValues, usePublisher } from '../../'
+import { Action, Cell, E, EngineProvider, mapTo, useCell, useCellValue, useCellValues, usePublisher } from '../../'
 import { renderHook } from './renderHook'
 
 const cell$ = Cell('hello')
 
-describe('gurx realm react', () => {
+describe('Reactive Engine in React', () => {
   it('gets a cell value with useCell', () => {
     const { result } = renderHook(useCell, {
       initialProps: cell$,
-      wrapper: ({ children }) => <RealmProvider>{children}</RealmProvider>,
+      wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider>,
     })
     expect(result.current?.[0]).toEqual('hello')
   })
@@ -20,7 +20,7 @@ describe('gurx realm react', () => {
   it('has working setters', () => {
     const { rerender, result } = renderHook(useCell, {
       initialProps: cell$,
-      wrapper: RealmProvider,
+      wrapper: EngineProvider,
     })
     expect(result.current?.[0]).toEqual('hello')
     result.current?.[1]('world')
@@ -29,19 +29,19 @@ describe('gurx realm react', () => {
   })
 
   it('supports actions', () => {
-    const cell = Cell('hello')
+    const cell$ = Cell('hello')
 
-    const action = Action((r) => {
-      r.link(r.pipe(action, mapTo('world')), cell)
-    })
+    const action$ = Action()
+
+    E.link(E.pipe(action$, mapTo('world')), cell$)
 
     const { rerender, result } = renderHook(
       () => {
-        const proc = usePublisher(action)
-        const value = useCellValue(cell)
+        const proc = usePublisher(action$)
+        const value = useCellValue(cell$)
         return [value, proc] as const
       },
-      { initialProps: undefined, wrapper: RealmProvider }
+      { initialProps: undefined, wrapper: EngineProvider }
     )
     expect(result.current?.[0]).toEqual('hello')
     result.current?.[1]()
@@ -50,11 +50,11 @@ describe('gurx realm react', () => {
   })
 
   it('supports multiple values', () => {
-    const a = Cell('a')
-    const b = Cell('b')
-    const { result } = renderHook(() => useCellValues(a, b), {
+    const a$ = Cell('a')
+    const b$ = Cell('b')
+    const { result } = renderHook(() => useCellValues(a$, b$), {
       initialProps: undefined,
-      wrapper: RealmProvider,
+      wrapper: EngineProvider,
     })
 
     expect(result.current).toEqual(['a', 'b'])
@@ -65,7 +65,7 @@ describe('gurx realm react', () => {
       const { result } = renderHook(useCell, {
         initialProps: cell$,
         wrapper: ({ children }) => {
-          return <RealmProvider initWith={{ [cell$]: 'world' }}>{children}</RealmProvider>
+          return <EngineProvider initWith={{ [cell$]: 'world' }}>{children}</EngineProvider>
         },
       })
       expect(result.current?.[0]).toEqual('world')
@@ -77,18 +77,18 @@ describe('gurx realm react', () => {
         return <div data-testid="cell-value">{value}</div>
       }
       const screen = render(
-        <RealmProvider initWith={{ [cell$]: '1' }}>
+        <EngineProvider initWith={{ [cell$]: '1' }}>
           <Child />
-        </RealmProvider>
+        </EngineProvider>
       )
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await expect.element(screen.getByTestId('cell-value') as any).toHaveTextContent('1')
 
       screen.rerender(
-        <RealmProvider updateWith={{ [cell$]: '2' }}>
+        <EngineProvider updateWith={{ [cell$]: '2' }}>
           <Child />
-        </RealmProvider>
+        </EngineProvider>
       )
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

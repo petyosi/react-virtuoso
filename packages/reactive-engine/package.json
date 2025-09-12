@@ -9,7 +9,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc && vite build",
-    "test": "vitest",
+    "test": "vitest --run --browser.headless",
     "ci-lint": "eslint",
     "lint": "eslint",
     "typecheck": "tsc --noEmit"

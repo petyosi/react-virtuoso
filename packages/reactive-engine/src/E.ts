@@ -1,5 +1,5 @@
 import { addNodeInit } from './globals'
-import { Signal } from './nodes'
+import { Stream } from './nodes'
 import { O } from './operators'
 import { NodeRef, Subscription } from './types'
 import { Out } from './types'
@@ -27,7 +27,7 @@ function combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T1
 function combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>, Out<T16>, Out<T17>, Out<T18>, Out<T19>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19]>; // prettier-ignore
 function combine(...nodes: Out[]): Out
 function combine(...nodes: Out[]): Out {
-  return tap(Signal<unknown>(), (sink$) => {
+  return tap(Stream<unknown>(), (sink$) => {
     addNodeInit(nodes[0], (r) => {
       // @ts-expect-error this is fine
       // eslint-disable-next-line prefer-spread
@@ -65,7 +65,7 @@ function pipe<T, O1, O2, O3, O4, O5, O6, O7, O8>( s: Out<T>, ...o: [O<T, O1>, O<
 function pipe<T, O1, O2, O3, O4, O5, O6, O7, O8, O9>( s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>, O<O7, O8>, O<O8, O9>]): NodeRef<O9> // prettier-ignore
 function pipe<T>(source$: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef
 function pipe<T>(source$: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef {
-  return tap(Signal<unknown>(), (sink$) => {
+  return tap(Stream<unknown>(), (sink$) => {
     addNodeInit(source$, (r) => {
       r.link(r.pipe.apply(r, [source$, ...operators]), sink$)
     })
@@ -73,12 +73,13 @@ function pipe<T>(source$: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef 
 }
 
 export const E = {
-  changeWith<T, K>(cell: Inp<T>, source: Out<K>, map: (cellValue: T, signalValue: K) => T) {
+  addNodeInit,
+
+  changeWith<T, K>(cell: Inp<T>, source: Out<K>, map: (cellValue: T, streamValue: K) => T) {
     addNodeInit(source, (r) => {
       r.changeWith(cell, source, map)
     })
   },
-
   /**
    * Combines the values from multiple nodes into a single node that emits an array of the latest values of the nodes.
    *
@@ -94,11 +95,11 @@ export const E = {
    * Creates a new node that emits the values of the source node transformed through the specified operators.
    * @example
    * ```ts
-   * const signal$ = Signal<number>(true)
-   * const signalPlusOne$ = R.pipe(signal$, map(i => i + 1))
-   * R.sub(signalPlusOne$, console.log)
-   * const r = new Realm()
-   * r.pub(signal$, 1)
+   * const stream = Stream<number>(true)
+   * const streamPlusOne = R.pipe(stream, map(i => i + 1))
+   * R.sub(streamPlusOne, console.log)
+   * const r = new Engine()
+   * r.pub(stream, 1)
    * ```
    */
   pipe,
