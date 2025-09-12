@@ -1,7 +1,8 @@
 import * as React from 'react'
 
-import { Engine } from './engine'
-import { TracerConsole } from './Tracer'
+import type { TracerConsole } from './types'
+
+import { Engine } from './Engine'
 
 /**
  * @category React Components

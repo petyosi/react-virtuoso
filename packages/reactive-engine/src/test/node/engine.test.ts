@@ -1,123 +1,117 @@
-import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { Action, Cell, DerivedCell, E, Engine, Stream } from '../..'
-import { filter, handlePromise, map } from '../../operators'
+import { Cell, DerivedCell, e, Engine, Pipe, Stream, Trigger } from '../..'
+import { map } from '../../operators'
 
 describe('cells/streams', () => {
-  let r: Engine
+  let eng: Engine
   beforeEach(() => {
-    r = new Engine()
+    eng = new Engine()
   })
 
   it('registers cells so that their value is accessed', () => {
     const cell = Cell('hello')
-    expect(r.getValue(cell)).toEqual('hello')
-    r.pub(cell, 'world')
-    expect(r.getValue(cell)).toEqual('world')
+    expect(eng.getValue(cell)).toEqual('hello')
+    eng.pub(cell, 'world')
+    expect(eng.getValue(cell)).toEqual('world')
   })
 
   it('registers streams', () => {
     const stream = Stream<string>()
     const callback = vi.fn()
-    r.sub(stream, callback)
-    r.pub(stream, 'hello')
-    expect(callback).toHaveBeenCalledWith('hello', r)
+    eng.sub(stream, callback)
+    eng.pub(stream, 'hello')
+    expect(callback).toHaveBeenCalledWith('hello', eng)
   })
 
   it('implicitly registers cells used with combine', () => {
     const foo$ = Cell('foo')
     const bar$ = Cell('bar')
-    const fooBar$ = r.combine(foo$, bar$)
+    const fooBar$ = eng.combine(foo$, bar$)
 
     const callback = vi.fn()
-    r.sub(fooBar$, callback)
-    r.pub(foo$, 'foo2')
-    expect(callback).toHaveBeenCalledWith(['foo2', 'bar'], r)
+    eng.sub(fooBar$, callback)
+    eng.pub(foo$, 'foo2')
+    expect(callback).toHaveBeenCalledWith(['foo2', 'bar'], eng)
   })
 
   it('accepts initial cell values', () => {
     const cell = Cell('foo')
-    r = new Engine({ [cell]: 'bar' })
-    expect(r.getValue(cell)).toEqual('bar')
+    eng = new Engine({ [cell]: 'bar' })
+    expect(eng.getValue(cell)).toEqual('bar')
   })
 
   it('supports init function for cells', () => {
     const a$ = Cell(2)
     const b$ = Cell(2)
 
-    E.link(b$, a$)
-    r.pub(b$, 3)
-    expect(r.getValue(a$)).toEqual(3)
+    e.link(b$, a$)
+    eng.pub(b$, 3)
+    expect(eng.getValue(a$)).toEqual(3)
   })
 
   it('supports init function for streams', () => {
     const a$ = Cell(2)
     const b$ = Stream()
 
-    E.link(b$, a$)
-    r.pub(b$, 3)
-    expect(r.getValue(a$)).toEqual(3)
+    e.link(b$, a$)
+    eng.pub(b$, 3)
+    expect(eng.getValue(a$)).toEqual(3)
   })
 
-  it('supports init function for actions', () => {
+  it('supports init function for triggers', () => {
     const a$ = Cell(2)
-    const b$ = Action()
+    const b$ = Trigger()
 
-    E.addNodeInit(b$, (r) => {
+    e.addNodeInit(b$, (r) => {
       r.pub(a$, 3)
     })
 
-    r.pub(b$)
-    expect(r.getValue(a$)).toEqual(3)
-  })
-
-  it('gets multiple values', () => {
-    const a = Cell(2)
-    const b = Cell('foo')
-    const result = r.getValues([a, b])
-    expectTypeOf(result).toExtend<[number, string]>()
-    expect(result).toEqual([2, 'foo'])
+    eng.pub(b$)
+    expect(eng.getValue(a$)).toEqual(3)
   })
 })
 
 describe('engine features', () => {
-  let r: Engine
+  let eng: Engine
 
   beforeEach(() => {
-    r = new Engine()
+    eng = new Engine()
   })
 
   it('supports pub/sub', () => {
     const n = Stream()
     const spy = vi.fn()
-    r.sub(n, spy)
-    r.pub(n, 'foo')
-    expect(spy).toHaveBeenCalledWith('foo', r)
+    eng.sub(n, spy)
+    eng.pub(n, 'foo')
+    expect(spy).toHaveBeenCalledWith('foo', eng)
   })
 
   it('supports undefined initial value', () => {
     const n = Cell<string | undefined>(undefined)
     const q = Cell(1)
     const tc = Cell<number>(0)
-    r.link(
-      r.pipe(
-        r.combine(n, q),
-        filter(([data]) => data !== undefined),
-        map(([data]) => data?.length)
+
+    e.link(
+      e.pipe(
+        e.combine(n, q),
+        e.filter(([data]) => data !== undefined),
+        e.map(([data]) => data?.length)
       ),
       tc
     )
 
     const spy = vi.fn()
-    r.sub(tc, spy)
-    r.pub(n, 'foo')
-    expect(spy).toHaveBeenCalledWith(3, r)
+    e.sub(tc, spy)
+
+    eng.pub(n, 'foo')
+    expect(spy).toHaveBeenCalledWith(3, eng)
   })
 
   it('connects nodes', () => {
     const a = Stream<number>()
     const b = Stream<number>()
-    r.connect<[number]>({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         done(value * 2)
       },
@@ -126,9 +120,9 @@ describe('engine features', () => {
     })
 
     const spy = vi.fn()
-    r.sub(b, spy)
-    r.pub(a, 2)
-    expect(spy).toHaveBeenCalledWith(4, r)
+    eng.sub(b, spy)
+    eng.pub(a, 2)
+    expect(spy).toHaveBeenCalledWith(4, eng)
     expect(spy).toHaveBeenCalledTimes(1)
   })
 
@@ -139,7 +133,7 @@ describe('engine features', () => {
     const d = Stream<number>()
     // const e = r.node<number>()
 
-    r.connect<[number]>({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         done(value * 2)
       },
@@ -147,7 +141,7 @@ describe('engine features', () => {
       sources: [a],
     })
 
-    r.connect<[number]>({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         done(value * 3)
       },
@@ -155,7 +149,7 @@ describe('engine features', () => {
       sources: [a],
     })
 
-    r.connect<[number, number]>({
+    eng.connect<[number, number]>({
       map: (done) => (b, c) => {
         done(b + c)
       },
@@ -164,11 +158,11 @@ describe('engine features', () => {
     })
 
     const spy = vi.fn()
-    r.sub(d, spy)
-    r.pub(a, 2)
+    eng.sub(d, spy)
+    eng.pub(a, 2)
 
     expect(spy).toHaveBeenCalledTimes(1)
-    expect(spy).toHaveBeenCalledWith(10, r)
+    expect(spy).toHaveBeenCalledWith(10, eng)
   })
 
   it('handles multiple conditional execution paths', () => {
@@ -177,7 +171,7 @@ describe('engine features', () => {
     const c = Stream<number>()
     const d = Stream<number>()
 
-    r.connect<[number]>({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         if (value % 2 === 0) {
           done(value)
@@ -187,7 +181,7 @@ describe('engine features', () => {
       sources: [a],
     })
 
-    r.connect<[number]>({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         if (value % 2 === 0) {
           done(value)
@@ -197,7 +191,7 @@ describe('engine features', () => {
       sources: [b],
     })
 
-    r.connect<[number]>({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         done(value * 2)
       },
@@ -206,26 +200,26 @@ describe('engine features', () => {
     })
 
     const spy = vi.fn()
-    r.sub(c, spy)
+    eng.sub(c, spy)
     const spy2 = vi.fn()
-    r.sub(d, spy2)
+    eng.sub(d, spy2)
 
-    r.pubIn({
+    eng.pubIn({
       [a]: 2,
       [b]: 3,
     })
-    expect(spy).toHaveBeenCalledWith(2, r)
+    expect(spy).toHaveBeenCalledWith(2, eng)
     expect(spy).toHaveBeenCalledTimes(1)
-    expect(spy2).toHaveBeenCalledWith(4, r)
+    expect(spy2).toHaveBeenCalledWith(4, eng)
     expect(spy2).toHaveBeenCalledTimes(1)
 
-    r.pubIn({
+    eng.pubIn({
       [a]: 3,
       [b]: 4,
     })
-    expect(spy).toHaveBeenCalledWith(4, r)
+    expect(spy).toHaveBeenCalledWith(4, eng)
     expect(spy).toHaveBeenCalledTimes(2)
-    expect(spy2).toHaveBeenCalledWith(8, r)
+    expect(spy2).toHaveBeenCalledWith(8, eng)
     expect(spy2).toHaveBeenCalledTimes(2)
   })
 
@@ -239,7 +233,7 @@ describe('engine features', () => {
     const g = Stream<number>()
     const h = Stream<number>()
 
-    r.connect<[number]>({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         done(value + 1)
       },
@@ -247,7 +241,7 @@ describe('engine features', () => {
       sources: [a],
     })
 
-    r.connect<[number]>({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         done(value + 1)
       },
@@ -255,7 +249,7 @@ describe('engine features', () => {
       sources: [b],
     })
 
-    r.connect<[number]>({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         done(value + 1)
       },
@@ -263,7 +257,7 @@ describe('engine features', () => {
       sources: [c],
     })
 
-    r.connect<[number]>({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         done(value + 1)
       },
@@ -271,7 +265,7 @@ describe('engine features', () => {
       sources: [d],
     })
 
-    r.connect<[number, number]>({
+    eng.connect<[number, number]>({
       map: (done) => (a, e) => {
         done(a + e + 1)
       },
@@ -280,7 +274,7 @@ describe('engine features', () => {
       sources: [a],
     })
 
-    r.connect<[number]>({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         done(value + 1)
       },
@@ -288,7 +282,7 @@ describe('engine features', () => {
       sources: [f],
     })
 
-    r.connect<[number]>({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         done(value + 1)
       },
@@ -297,17 +291,17 @@ describe('engine features', () => {
     })
 
     const spy = vi.fn()
-    r.sub(f, spy)
-    r.pub(a, 1)
+    eng.sub(f, spy)
+    eng.pub(a, 1)
     expect(spy).toHaveBeenCalledTimes(1)
-    expect(spy).toHaveBeenCalledWith(7, r)
+    expect(spy).toHaveBeenCalledWith(7, eng)
   })
 
   it('supports conditional connections', () => {
     const a = Stream<number>()
     const b = Stream<number>()
 
-    r.connect<[number]>({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         if (value % 2 === 0) {
           done(value)
@@ -318,16 +312,16 @@ describe('engine features', () => {
     })
 
     const spy = vi.fn()
-    r.sub(b, spy)
-    r.pub(a, 1)
-    r.pub(a, 2)
-    r.pub(a, 3)
-    r.pub(a, 4)
+    eng.sub(b, spy)
+    eng.pub(a, 1)
+    eng.pub(a, 2)
+    eng.pub(a, 3)
+    eng.pub(a, 4)
 
-    expect(spy).toHaveBeenCalledWith(2, r)
-    expect(spy).not.toHaveBeenCalledWith(3, r)
-    expect(spy).not.toHaveBeenCalledWith(1, r)
-    expect(spy).toHaveBeenCalledWith(4, r)
+    expect(spy).toHaveBeenCalledWith(2, eng)
+    expect(spy).not.toHaveBeenCalledWith(3, eng)
+    expect(spy).not.toHaveBeenCalledWith(1, eng)
+    expect(spy).toHaveBeenCalledWith(4, eng)
     expect(spy).toHaveBeenCalledTimes(2)
   })
 
@@ -337,7 +331,7 @@ describe('engine features', () => {
     const c = Stream<number>()
     const d = Stream<number>()
 
-    r.connect<[number]>({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         if (value % 2 === 0) {
           done(value)
@@ -347,7 +341,7 @@ describe('engine features', () => {
       sources: [a],
     })
 
-    r.connect({
+    eng.connect({
       map: (done) => (value) => {
         done(value)
       },
@@ -355,7 +349,7 @@ describe('engine features', () => {
       sources: [b],
     })
 
-    r.connect({
+    eng.connect({
       map: (done) => (value) => {
         done(value)
       },
@@ -364,16 +358,16 @@ describe('engine features', () => {
     })
 
     const spy = vi.fn()
-    r.sub(d, spy)
-    r.pub(a, 1)
-    r.pub(a, 2)
-    r.pub(a, 3)
-    r.pub(a, 4)
+    eng.sub(d, spy)
+    eng.pub(a, 1)
+    eng.pub(a, 2)
+    eng.pub(a, 3)
+    eng.pub(a, 4)
 
-    expect(spy).toHaveBeenCalledWith(2, r)
-    expect(spy).not.toHaveBeenCalledWith(3, r)
-    expect(spy).not.toHaveBeenCalledWith(1, r)
-    expect(spy).toHaveBeenCalledWith(4, r)
+    expect(spy).toHaveBeenCalledWith(2, eng)
+    expect(spy).not.toHaveBeenCalledWith(3, eng)
+    expect(spy).not.toHaveBeenCalledWith(1, eng)
+    expect(spy).toHaveBeenCalledWith(4, eng)
     expect(spy).toHaveBeenCalledTimes(2)
   })
 
@@ -382,7 +376,7 @@ describe('engine features', () => {
     const b = Stream<number>()
     const c = Stream<number>()
 
-    r.connect<[number, number]>({
+    eng.connect<[number, number]>({
       map: (done) => (a, b) => {
         done(a + b)
       },
@@ -391,10 +385,10 @@ describe('engine features', () => {
     })
 
     const spy = vi.fn()
-    r.sub(c, spy)
-    r.pubIn({ [a]: 2, [b]: 3 })
+    eng.sub(c, spy)
+    eng.pubIn({ [a]: 2, [b]: 3 })
 
-    expect(spy).toHaveBeenCalledWith(5, r)
+    expect(spy).toHaveBeenCalledWith(5, eng)
     expect(spy).toHaveBeenCalledTimes(1)
   })
 
@@ -403,7 +397,7 @@ describe('engine features', () => {
     const b = Stream()
     const c = Stream()
 
-    r.connect<[number, number]>({
+    eng.connect<[number, number]>({
       map: (done) => (b, a) => {
         done(a + b)
       },
@@ -413,16 +407,16 @@ describe('engine features', () => {
     })
 
     const spy = vi.fn()
-    r.sub(c, spy)
-    r.pub(b, 'bar')
-    expect(spy).toHaveBeenCalledWith('foobar', r)
+    eng.sub(c, spy)
+    eng.pub(b, 'bar')
+    expect(spy).toHaveBeenCalledWith('foobar', eng)
   })
 
   it('does not recall subscriptions for distinct stateful nodes', () => {
     const a = Cell('foo')
     const spy = vi.fn()
-    r.sub(a, spy)
-    r.pub(a, 'foo')
+    eng.sub(a, spy)
+    eng.pub(a, 'foo')
 
     expect(spy).toHaveBeenCalledTimes(0)
   })
@@ -431,14 +425,14 @@ describe('engine features', () => {
     const a = Cell('bar')
     const b = Cell('foo')
     const spy = vi.fn()
-    r.connect({
+    eng.connect({
       map: (value) => value,
       sink: b,
       sources: [a],
     })
-    r.sub(b, spy)
-    r.pub(a, 'foo')
-    r.pub(a, 'foo')
+    eng.sub(b, spy)
+    eng.pub(a, 'foo')
+    eng.pub(a, 'foo')
 
     expect(spy).toHaveBeenCalledTimes(0)
   })
@@ -446,8 +440,8 @@ describe('engine features', () => {
   it('supports custom comparator when distinct flag is set', () => {
     const a = Cell({ id: 'foo' }, (current, next) => (current !== undefined ? current.id === next.id : false))
     const spy = vi.fn()
-    r.sub(a, spy)
-    r.pub(a, { id: 'foo' })
+    eng.sub(a, spy)
+    eng.pub(a, { id: 'foo' })
 
     expect(spy).toHaveBeenCalledTimes(0)
   })
@@ -456,20 +450,20 @@ describe('engine features', () => {
     const a = Cell('bar')
     const b = Cell('foo')
     const spy = vi.fn()
-    r.connect({
+    eng.connect({
       map: (value) => value,
       sink: b,
       sources: [a],
     })
 
-    r.subMultiple([a, b], spy)
+    eng.subMultiple([a, b], spy)
 
-    r.pubIn({
+    eng.pubIn({
       [a]: 'qux',
       [b]: 'mu',
     })
 
-    expect(spy).toHaveBeenCalledWith(['qux', 'mu'], r)
+    expect(spy).toHaveBeenCalledWith(['qux', 'mu'], eng)
     expect(spy).toHaveBeenCalledTimes(1)
   })
 
@@ -477,82 +471,87 @@ describe('engine features', () => {
     const a = Cell('1')
     const b = Cell('2')
     const spy = vi.fn()
-    r.subMultiple([a, b], spy)
-    r.pub(a, '2')
-    expect(spy).toHaveBeenCalledWith(['2', '2'], r)
+    eng.subMultiple([a, b], spy)
+    eng.pub(a, '2')
+    expect(spy).toHaveBeenCalledWith(['2', '2'], eng)
     expect(spy).toHaveBeenCalledTimes(1)
   })
 })
 
-describe('singleton subscription', () => {
+describe('instance subscriptions', () => {
+  let eng: Engine
+
+  beforeEach(() => {
+    eng = new Engine()
+  })
+
   it('calls the subscription', () => {
-    const r = new Engine()
     const a = Stream<number>()
     const spy1 = vi.fn()
-    r.singletonSub(a, spy1)
-    r.pub(a, 2)
-    expect(spy1).toHaveBeenCalledWith(2, r)
+    e.singletonSub(a, spy1)
+
+    eng.pub(a, 2)
+    expect(spy1).toHaveBeenCalledWith(2, eng)
   })
 
   it('replaces the subscription', () => {
-    const r = new Engine()
+    const eng = new Engine()
     const a = Stream<number>()
     const spy1 = vi.fn()
     const spy2 = vi.fn()
-    r.singletonSub(a, spy1)
-    r.pub(a, 2)
-    r.singletonSub(a, spy2)
-    r.pub(a, 3)
+    eng.singletonSub(a, spy1)
+    eng.pub(a, 2)
+    eng.singletonSub(a, spy2)
+    eng.pub(a, 3)
     expect(spy1).toHaveBeenCalledTimes(1)
     expect(spy2).toHaveBeenCalledTimes(1)
   })
 
   it('returns an unsubscribe handler', () => {
-    const r = new Engine()
+    const eng = new Engine()
     const a = Stream<number>()
     const spy1 = vi.fn()
-    const unsub = r.singletonSub(a, spy1)
-    r.pub(a, 2)
+    const unsub = eng.singletonSub(a, spy1)
+    eng.pub(a, 2)
     unsub()
-    r.pub(a, 3)
+    eng.pub(a, 3)
     expect(spy1).toHaveBeenCalledTimes(1)
   })
 
   it('supports changing a cell value', () => {
-    const r = new Engine()
     const a = Cell(1)
     const b = Stream<number>()
 
-    r.changeWith(a, b, (a, b) => a + b)
-    r.pub(b, 2)
-    expect(r.getValue(a)).toEqual(3)
-    r.pub(b, 2)
-    expect(r.getValue(a)).toEqual(5)
+    e.changeWith(a, b, (a, b) => a + b)
+
+    eng.pub(b, 2)
+    expect(eng.getValue(a)).toEqual(3)
+    eng.pub(b, 2)
+    expect(eng.getValue(a)).toEqual(5)
   })
 
-  it('supports creating transformer nodes', () => {
-    const r = new Engine()
-    const a = Cell('foo')
-    const s = Stream<number>()
-    const b = r.transformer(
-      map((x: number) => x + 1),
-      map((x) => `foo${x}`)
+  it('supports Pipe nodes', () => {
+    const a$ = Cell('foo')
+    const [i$, o$] = Pipe(
+      e.map<number, string>((x) => (x + 1).toString()),
+      e.map((x) => `foo${x}`)
     )
 
-    r.link(s, b(a))
-    r.pub(s, 2)
-    expect(r.getValue(a)).toEqual('foo3')
+    e.link(o$, a$)
+
+    const eng = new Engine()
+    eng.pub(i$, 2)
+    expect(eng.getValue(a$)).toEqual('foo3')
   })
 
   it('supports promise resolution', async () => {
-    const r = new Engine()
     const a = Cell<'error' | 'loaded' | 'loading' | 'none'>('none')
     const s = Stream<number>()
 
-    r.link(
-      r.pipe(
+    e.link(
+      e.pipe(
         s,
-        map(async (val) => {
+        e.map(async (val) => {
           return await new Promise<string>((resolve, reject) => {
             if (val === 2) {
               resolve('loaded')
@@ -561,7 +560,7 @@ describe('singleton subscription', () => {
             }
           })
         }),
-        handlePromise(
+        e.handlePromise(
           () => 'loading',
           (value) => value,
           (error) => error
@@ -570,65 +569,74 @@ describe('singleton subscription', () => {
       a
     )
 
-    r.pub(s, 2)
+    eng.pub(s, 2)
     await new Promise((resolve) => setTimeout(resolve, 0))
-    expect(r.getValue(a)).toEqual('loaded')
+    expect(eng.getValue(a)).toEqual('loaded')
 
-    r.pub(s, 3)
+    eng.pub(s, 3)
     await new Promise((resolve) => setTimeout(resolve, 0))
-    expect(r.getValue(a)).toMatchObject(new Error('something went wrong'))
+    expect(eng.getValue(a)).toMatchObject(new Error('something went wrong'))
   })
 })
 
 describe('Derived cell', () => {
+  let eng: Engine
+
+  beforeEach(() => {
+    eng = new Engine()
+  })
+
   it('creates a derived cell', () => {
     const foo$ = Cell('foo')
-    const bar$ = DerivedCell('foo-bar', (r) =>
-      r.pipe(
+    const bar$ = DerivedCell(
+      'foo-bar',
+      e.pipe(
         foo$,
         map((val) => `${val}-bar`)
       )
     )
-    const r = new Engine()
-    r.register(bar$)
-    r.pub(foo$, 'baz')
-    expect(r.getValue(bar$)).toEqual('baz-bar')
+
+    eng.register(bar$)
+    eng.pub(foo$, 'baz')
+    expect(eng.getValue(bar$)).toEqual('baz-bar')
   })
 })
 
 describe('global connectors', () => {
-  let r: Engine
+  let eng: Engine
   beforeEach(() => {
-    r = new Engine()
+    eng = new Engine()
   })
 
   it('supports global link', () => {
     const foo$ = Cell('foo')
     const bar$ = Stream<string>()
-    E.link(foo$, bar$)
+    e.link(foo$, bar$)
     const spy = vi.fn()
-    r.sub(bar$, spy)
-    r.pub(foo$, 'baz')
-    expect(spy).toHaveBeenCalledWith('baz', r)
+    eng.sub(bar$, spy)
+    eng.pub(foo$, 'baz')
+    expect(spy).toHaveBeenCalledWith('baz', eng)
   })
 
   it('supports global sub', () => {
     const foo$ = Cell('foo')
     const spy = vi.fn()
-    E.sub(foo$, spy)
-    r.pub(foo$, 'baz')
-    expect(spy).toHaveBeenCalledWith('baz', r)
+    e.sub(foo$, spy)
+
+    eng.pub(foo$, 'baz')
+    expect(spy).toHaveBeenCalledWith('baz', eng)
   })
 
   it('supports global singletonSub', () => {
     const foo$ = Cell('foo')
     const spy = vi.fn()
     const spy2 = vi.fn()
-    E.singletonSub(foo$, spy)
-    E.singletonSub(foo$, spy2)
-    r.pub(foo$, 'baz')
-    expect(spy).not.toHaveBeenCalledWith('baz', r)
-    expect(spy2).toHaveBeenCalledWith('baz', r)
+    e.singletonSub(foo$, spy)
+    e.singletonSub(foo$, spy2)
+
+    eng.pub(foo$, 'baz')
+    expect(spy).not.toHaveBeenCalledWith('baz', eng)
+    expect(spy2).toHaveBeenCalledWith('baz', eng)
   })
 
   it('supports global subMultiple', () => {
@@ -636,47 +644,48 @@ describe('global connectors', () => {
     const b = Cell('foo')
     const spy = vi.fn()
 
-    E.subMultiple([a, b], spy)
+    e.subMultiple([a, b], spy)
 
-    r.pubIn({
+    eng.pubIn({
       [a]: 'qux',
       [b]: 'mu',
     })
 
-    expect(spy).toHaveBeenCalledWith(['qux', 'mu'], r)
+    expect(spy).toHaveBeenCalledWith(['qux', 'mu'], eng)
   })
 
   it('supports global changeWith', () => {
     const foo$ = Cell('foo')
     const bar$ = Stream<string>()
-    E.changeWith(foo$, bar$, (foo, bar) => `${foo}-${bar}`)
+    e.changeWith(foo$, bar$, (foo, bar) => `${foo}-${bar}`)
     const spy = vi.fn()
-    r.sub(foo$, spy)
-    r.pub(bar$, 'baz')
-    expect(spy).toHaveBeenCalledWith('foo-baz', r)
+    e.sub(foo$, spy)
+
+    eng.pub(bar$, 'baz')
+    expect(spy).toHaveBeenCalledWith('foo-baz', eng)
   })
 
   it('supports global combine', () => {
     const foo$ = Cell('foo')
     const bar$ = Cell('bar')
-    const fooBar$ = E.combine(foo$, bar$)
-
+    const fooBar$ = e.combine(foo$, bar$)
     const callback = vi.fn()
-    r.sub(fooBar$, callback)
-    r.pub(foo$, 'foo2')
-    expect(callback).toHaveBeenCalledWith(['foo2', 'bar'], r)
+    e.sub(fooBar$, callback)
+
+    eng.pub(foo$, 'foo2')
+    expect(callback).toHaveBeenCalledWith(['foo2', 'bar'], eng)
   })
 
   it('supports global combine', () => {
     const foo$ = Stream<number>()
-    const fooPlusOne$ = E.pipe(
+    const fooPlusOne$ = e.pipe(
       foo$,
       map((v) => v + 1)
     )
     const bar$ = Stream<number>()
 
-    E.link(
-      E.pipe(
+    e.link(
+      e.pipe(
         foo$,
         map((v) => v + 1)
       ),
@@ -685,11 +694,11 @@ describe('global connectors', () => {
 
     const callback = vi.fn()
     const callback2 = vi.fn()
-    // r.setTracerConsole(console)
-    r.sub(fooPlusOne$, callback)
-    r.sub(bar$, callback2)
-    r.pub(foo$, 1)
-    expect(callback).toHaveBeenCalledWith(2, r)
-    expect(callback2).toHaveBeenCalledWith(2, r)
+    e.sub(fooPlusOne$, callback)
+    e.sub(bar$, callback2)
+
+    eng.pub(foo$, 1)
+    expect(callback).toHaveBeenCalledWith(2, eng)
+    expect(callback2).toHaveBeenCalledWith(2, eng)
   })
 })

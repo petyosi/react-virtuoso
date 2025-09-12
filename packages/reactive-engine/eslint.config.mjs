@@ -10,4 +10,7 @@ export default [
       },
     },
   },
+  {
+    rules: {},
+  },
 ]

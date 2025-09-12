@@ -28,6 +28,13 @@ export default tseslint.config(
 
     plugins: { 'react-hooks': reactHooks },
     rules: {
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {
+          fixStyle: 'separate-type-imports',
+          prefer: 'type-imports',
+        },
+      ],
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {

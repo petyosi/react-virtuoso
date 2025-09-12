@@ -12,7 +12,7 @@ describe('gurx realm react', () => {
   it('gets a cell value with useCell', () => {
     const { result } = renderHook(useCell, {
       initialProps: cell$,
-      wrapper: ({ children }) => <RealmProvider>{children}</RealmProvider>,
+      wrapper: RealmProvider,
     })
     expect(result.current?.[0]).toEqual('hello')
   })

@@ -1,6 +1,6 @@
-import { type Engine } from './engine'
-import { getNodeLabel } from './globals'
-import { CC } from './Tracer'
+import { CC } from './CC'
+import { type Engine } from './Engine'
+import { getNodeLabel } from './nodeUtils'
 import { type NodeRef, type Out } from './types'
 
 /**
@@ -17,8 +17,8 @@ export type Operator<I, O> = (source: Out<I>, engine: Engine) => NodeRef<O>
  */
 export type O<In, Out> = Operator<In, Out>
 
-function traceOperator(r: Engine, opName: string, source: symbol, value: unknown, what?: unknown): void {
-  r.tracer.log(
+function traceOperator(eng: Engine, opName: string, source: symbol, value: unknown, what?: unknown): void {
+  eng.tracer.log(
     CC.blue(`OP: ${opName}`),
     CC.plain(' '),
     CC.gray(getNodeLabel(source)),
@@ -34,11 +34,11 @@ function traceOperator(r: Engine, opName: string, source: symbol, value: unknown
  * @category Operators
  */
 export function map<I, O>(mapFunction: (value: I) => O) {
-  return ((source, r) => {
-    const sink = r.streamInstance<O>()
-    r.connect({
+  return ((source, eng) => {
+    const sink = eng.streamInstance<O>()
+    eng.connect({
       map: (done) => (value) => {
-        traceOperator(r, 'map', source, value, mapFunction.name)
+        traceOperator(eng, 'map', source, value, mapFunction.name)
         done(mapFunction(value as I))
       },
       sink,
@@ -56,29 +56,19 @@ export function map<I, O>(mapFunction: (value: I) => O) {
 export function withLatestFrom<I, T1>(...nodes: [Out<T1>]): (source: Out<I>) => NodeRef<[I, T1]> // prettier-ignore
 export function withLatestFrom<I, T1, T2>(...nodes: [Out<T1>, Out<T2>]): (source: Out<I>) => NodeRef<[I, T1, T2]> // prettier-ignore
 export function withLatestFrom<I, T1, T2, T3>(...nodes: [Out<T1>, Out<T2>, Out<T3>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3]> // prettier-ignore
-export function withLatestFrom<I, T1, T2, T3, T4>(
-  ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>]
-): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4]> // prettier-ignore
-export function withLatestFrom<I, T1, T2, T3, T4, T5>(
-  ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>]
-): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5]> // prettier-ignore
-export function withLatestFrom<I, T1, T2, T3, T4, T5, T6>(
-  ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>]
-): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5, T6]> // prettier-ignore
-export function withLatestFrom<I, T1, T2, T3, T4, T5, T6, T7>(
-  ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>]
-): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5, T6, T7]> // prettier-ignore
-export function withLatestFrom<I, T1, T2, T3, T4, T5, T6, T7, T8>(
-  ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>]
-): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5, T6, T7, T8]> // prettier-ignore
+export function withLatestFrom<I, T1, T2, T3, T4>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4]> // prettier-ignore
+export function withLatestFrom<I, T1, T2, T3, T4, T5>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5]> // prettier-ignore
+export function withLatestFrom<I, T1, T2, T3, T4, T5, T6>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5, T6]> // prettier-ignore
+export function withLatestFrom<I, T1, T2, T3, T4, T5, T6, T7>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5, T6, T7]> // prettier-ignore
+export function withLatestFrom<I, T1, T2, T3, T4, T5, T6, T7, T8>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5, T6, T7, T8]> // prettier-ignore
 export function withLatestFrom<I>(...nodes: Out[]) {
-  return ((source, r) => {
-    const sink = r.streamInstance()
-    r.connect({
+  return ((source, eng) => {
+    const sink = eng.streamInstance()
+    eng.connect({
       map:
         (done) =>
         (...args) => {
-          traceOperator(r, 'withLatestFrom', source, args)
+          traceOperator(eng, 'withLatestFrom', source, args)
           done(args)
         },
       pulls: nodes,
@@ -94,11 +84,11 @@ export function withLatestFrom<I>(...nodes: Out[]) {
  * @category Operators
  */
 export function mapTo<I, O>(value: O): Operator<I, O> {
-  return (source, r) => {
-    const sink = r.streamInstance<O>()
-    r.connect({
+  return (source, eng) => {
+    const sink = eng.streamInstance<O>()
+    eng.connect({
       map: (done) => () => {
-        traceOperator(r, 'mapTo', source, '', value)
+        traceOperator(eng, 'mapTo', source, '', value)
         done(value)
       },
       sink,
@@ -114,11 +104,11 @@ export function mapTo<I, O>(value: O): Operator<I, O> {
  * @category Operators
  */
 export function filter<I, O = I>(predicate: (value: I) => boolean): Operator<I, O> {
-  return (source, r) => {
-    const sink = r.streamInstance<O>()
-    r.connect({
+  return (source, eng) => {
+    const sink = eng.streamInstance<O>()
+    eng.connect({
       map: (done) => (value) => {
-        traceOperator(r, 'filter', source, value, predicate.name || '<anonymous>')
+        traceOperator(eng, 'filter', source, value, predicate.name || '<anonymous>')
         if (predicate(value as I)) {
           done(value)
         }
@@ -136,14 +126,14 @@ export function filter<I, O = I>(predicate: (value: I) => boolean): Operator<I, 
  * @category Operators
  */
 export function once<I>(): Operator<I, I> {
-  return (source, r) => {
-    const sink = r.streamInstance<I>()
+  return (source, eng) => {
+    const sink = eng.streamInstance<I>()
 
     let passed = false
-    r.connect({
+    eng.connect({
       map: (done) => (value) => {
         if (!passed) {
-          traceOperator(r, 'once', source, value)
+          traceOperator(eng, 'once', source, value)
           passed = true
           done(value)
         }
@@ -161,11 +151,11 @@ export function once<I>(): Operator<I, I> {
  * @category Operators
  */
 export function scan<I, O>(accumulator: (current: O, value: I) => O, seed: O): Operator<I, O> {
-  return (source, r) => {
-    const sink = r.streamInstance<O>()
-    r.connect({
+  return (source, eng) => {
+    const sink = eng.streamInstance<O>()
+    eng.connect({
       map: (done) => (value) => {
-        traceOperator(r, 'scan', source, value, seed)
+        traceOperator(eng, 'scan', source, value, seed)
         done((seed = accumulator(seed, value as I)))
       },
       sink,
@@ -180,13 +170,13 @@ export function scan<I, O>(accumulator: (current: O, value: I) => O, seed: O): O
  * @category Operators
  */
 export function throttleTime<I>(delay: number): Operator<I, I> {
-  return (source, r) => {
-    const sink = r.streamInstance<I>()
+  return (source, eng) => {
+    const sink = eng.streamInstance<I>()
     let currentValue: I | undefined
     let timeout: null | ReturnType<typeof setTimeout> = null
 
-    r.sub(source, (value) => {
-      traceOperator(r, 'throttle', source, value, `${delay}ms`)
+    eng.sub(source, (value) => {
+      traceOperator(eng, 'throttle', source, value, `${delay}ms`)
       currentValue = value
 
       if (timeout !== null) {
@@ -195,7 +185,7 @@ export function throttleTime<I>(delay: number): Operator<I, I> {
 
       timeout = setTimeout(() => {
         timeout = null
-        r.pub(sink, currentValue)
+        eng.pub(sink, currentValue)
       }, delay)
     })
 
@@ -208,13 +198,13 @@ export function throttleTime<I>(delay: number): Operator<I, I> {
  * @category Operators
  */
 export function debounceTime<I>(delay: number): Operator<I, I> {
-  return (source, r) => {
-    const sink = r.streamInstance<I>()
+  return (source, eng) => {
+    const sink = eng.streamInstance<I>()
     let currentValue: I | undefined
     let timeout: null | ReturnType<typeof setTimeout> = null
 
-    r.sub(source, (value) => {
-      traceOperator(r, 'debounceTime', source, value, `${delay}ms`)
+    eng.sub(source, (value) => {
+      traceOperator(eng, 'debounceTime', source, value, `${delay}ms`)
       currentValue = value
 
       if (timeout !== null) {
@@ -222,7 +212,7 @@ export function debounceTime<I>(delay: number): Operator<I, I> {
       }
 
       timeout = setTimeout(() => {
-        r.pub(sink, currentValue)
+        eng.pub(sink, currentValue)
       }, delay)
     })
 
@@ -235,12 +225,12 @@ export function debounceTime<I>(delay: number): Operator<I, I> {
  * @category Operators
  */
 export function delayWithMicrotask<I>(): Operator<I, I> {
-  return (source, r) => {
-    const sink = r.streamInstance<I>()
-    r.sub(source, (value) => {
-      traceOperator(r, 'delayWithMicrotask', source, value)
+  return (source, eng) => {
+    const sink = eng.streamInstance<I>()
+    eng.sub(source, (value) => {
+      traceOperator(eng, 'delayWithMicrotask', source, value)
       queueMicrotask(() => {
-        r.pub(sink, value)
+        eng.pub(sink, value)
       })
     })
     return sink
@@ -252,14 +242,14 @@ export function delayWithMicrotask<I>(): Operator<I, I> {
  * @category Operators
  */
 export function onNext<I, O>(bufNode: NodeRef<O>): Operator<I, [I, O]> {
-  return (source, r) => {
-    const sink = r.streamInstance<[I, O]>()
+  return (source, eng) => {
+    const sink = eng.streamInstance<[I, O]>()
     const bufferValue = Symbol()
     let pendingValue: I | typeof bufferValue = bufferValue
-    r.connect({
+    eng.connect({
       map: (done) => (value) => {
         if (pendingValue !== bufferValue) {
-          traceOperator(r, 'onNext', source, [pendingValue, value])
+          traceOperator(eng, 'onNext', source, [pendingValue, value])
           done([pendingValue, value])
           pendingValue = bufferValue
         }
@@ -267,7 +257,7 @@ export function onNext<I, O>(bufNode: NodeRef<O>): Operator<I, [I, O]> {
       sink,
       sources: [bufNode],
     })
-    r.sub(source, (value) => {
+    eng.sub(source, (value) => {
       pendingValue = value
     })
     return sink
@@ -283,22 +273,22 @@ export function handlePromise<I, OutSuccess, OnLoad, OutError>(
   onSuccess: (value: I) => OutSuccess,
   onError: (error: unknown) => OutError
 ): Operator<I | Promise<I>, OnLoad | OutError | OutSuccess> {
-  return (source, r) => {
-    const sink = r.streamInstance<OnLoad | OutError | OutSuccess>()
-    r.sub(source, (value) => {
+  return (source, eng) => {
+    const sink = eng.streamInstance<OnLoad | OutError | OutSuccess>()
+    eng.sub(source, (value) => {
       if (value !== null && typeof value === 'object' && 'then' in value) {
-        r.pub(sink, onLoad())
+        eng.pub(sink, onLoad())
         value
           .then((value) => {
-            traceOperator(r, 'handlePromise', source, value)
-            r.pub(sink, onSuccess(value))
+            traceOperator(eng, 'handlePromise', source, value)
+            eng.pub(sink, onSuccess(value))
             return
           })
           .catch((error: unknown) => {
-            r.pub(sink, onError(error))
+            eng.pub(sink, onError(error))
           })
       } else {
-        r.pub(sink, onSuccess(value))
+        eng.pub(sink, onSuccess(value))
       }
     })
     return sink

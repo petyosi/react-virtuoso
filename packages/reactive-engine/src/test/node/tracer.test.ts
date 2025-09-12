@@ -1,6 +1,7 @@
 import { describe, it } from 'vitest'
 
-import { CC, Tracer } from '../../Tracer'
+import { CC } from '../../CC'
+import { Tracer } from '../../Tracer'
 
 describe('tracer', () => {
   it('logs a message', () => {

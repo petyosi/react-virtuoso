@@ -1,8 +1,4 @@
-import { getNodeLabel } from './globals'
-import { type Realm } from './realm'
-import { CC } from './Tracer'
-import { type Out } from './types'
-import { type NodeRef } from './types'
+import type { NodeRef, Out, Realm } from './realm'
 
 /**
  * An operator that transforms a node into another node, used in the {@link Realm.pipe} method.
@@ -18,18 +14,6 @@ export type Operator<I, O> = (source: Out<I>, realm: Realm) => NodeRef<O>
  */
 export type O<In, Out> = Operator<In, Out>
 
-function traceOperator(r: Realm, opName: string, source: symbol, value: unknown, what?: unknown): void {
-  r.tracer.log(
-    CC.blue(`OP: ${opName}`),
-    CC.plain(' '),
-    CC.gray(getNodeLabel(source)),
-    CC.plain(' (value: '),
-    CC.plain(JSON.stringify(value)),
-    CC.plain(') with '),
-    CC.yellow(JSON.stringify(what))
-  )
-}
-
 /**
  * Maps a the passed value with a projection function.
  * @category Operators
@@ -39,14 +23,13 @@ export function map<I, O>(mapFunction: (value: I) => O) {
     const sink = r.signalInstance<O>()
     r.connect({
       map: (done) => (value) => {
-        traceOperator(r, 'map', source, value, mapFunction.name)
         done(mapFunction(value as I))
       },
       sink,
       sources: [source],
     })
     return sink
-  }) satisfies Operator<I, O>
+  }) as Operator<I, O>
 }
 
 /**
@@ -79,7 +62,6 @@ export function withLatestFrom<I>(...nodes: Out[]) {
       map:
         (done) =>
         (...args) => {
-          traceOperator(r, 'withLatestFrom', source, args)
           done(args)
         },
       pulls: nodes,
@@ -99,7 +81,6 @@ export function mapTo<I, O>(value: O): Operator<I, O> {
     const sink = r.signalInstance<O>()
     r.connect({
       map: (done) => () => {
-        traceOperator(r, 'mapTo', source, '', value)
         done(value)
       },
       sink,
@@ -119,7 +100,6 @@ export function filter<I, O = I>(predicate: (value: I) => boolean): Operator<I, 
     const sink = r.signalInstance<O>()
     r.connect({
       map: (done) => (value) => {
-        traceOperator(r, 'filter', source, value, predicate.name || '<anonymous>')
         if (predicate(value as I)) {
           done(value)
         }
@@ -144,7 +124,6 @@ export function once<I>(): Operator<I, I> {
     r.connect({
       map: (done) => (value) => {
         if (!passed) {
-          traceOperator(r, 'once', source, value)
           passed = true
           done(value)
         }
@@ -166,7 +145,8 @@ export function scan<I, O>(accumulator: (current: O, value: I) => O, seed: O): O
     const sink = r.signalInstance<O>()
     r.connect({
       map: (done) => (value) => {
-        traceOperator(r, 'scan', source, value, seed)
+        // biome-ignore lint/style/noParameterAssign: this saves space
+        // biome-ignore lint/suspicious/noAssignInExpressions: this saves space
         done((seed = accumulator(seed, value as I)))
       },
       sink,
@@ -187,7 +167,6 @@ export function throttleTime<I>(delay: number): Operator<I, I> {
     let timeout: null | ReturnType<typeof setTimeout> = null
 
     r.sub(source, (value) => {
-      traceOperator(r, 'throttle', source, value, `${delay}ms`)
       currentValue = value
 
       if (timeout !== null) {
@@ -215,7 +194,6 @@ export function debounceTime<I>(delay: number): Operator<I, I> {
     let timeout: null | ReturnType<typeof setTimeout> = null
 
     r.sub(source, (value) => {
-      traceOperator(r, 'debounceTime', source, value, `${delay}ms`)
       currentValue = value
 
       if (timeout !== null) {
@@ -239,7 +217,6 @@ export function delayWithMicrotask<I>(): Operator<I, I> {
   return (source, r) => {
     const sink = r.signalInstance<I>()
     r.sub(source, (value) => {
-      traceOperator(r, 'delayWithMicrotask', source, value)
       queueMicrotask(() => {
         r.pub(sink, value)
       })
@@ -260,7 +237,6 @@ export function onNext<I, O>(bufNode: NodeRef<O>): Operator<I, [I, O]> {
     r.connect({
       map: (done) => (value) => {
         if (pendingValue !== bufferValue) {
-          traceOperator(r, 'onNext', source, [pendingValue, value])
           done([pendingValue, value])
           pendingValue = bufferValue
         }
@@ -291,7 +267,6 @@ export function handlePromise<I, OutSuccess, OnLoad, OutError>(
         r.pub(sink, onLoad())
         value
           .then((value) => {
-            traceOperator(r, 'handlePromise', source, value)
             r.pub(sink, onSuccess(value))
             return
           })

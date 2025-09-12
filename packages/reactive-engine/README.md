@@ -20,17 +20,17 @@ Welcome to the README of Reactive Engine, a TypeScript-native reactive state man
 
 The library is based on the concept of node **definitions**, which are instantiated into **nodes** in a graph-based structure called an **Engine**. The nodes are connected through **dependencies** and **transformations** that describe how the values that flow through the nodes map and transform.
 
-### Cells, Streams, and Actions
+### Cells, Streams, and Triggers
 
-Reactive Engine has three types of node definitions: **cells**, **streams**, and **actions**. The cells are stateful, which means that the values that flow through them are stored in the engine between computations. The streams are stateless cells; you can publish a value through a stream that will trigger the specified computations and you can subscribe to stream updates, but you can't query the current value of a stream.
+Reactive Engine has three types of node definitions: **cells**, **streams**, and **triggers**. The cells are stateful, which means that the values that flow through them are stored in the engine between computations. The streams are stateless cells; you can publish a value through a stream that will trigger the specified computations and you can subscribe to stream updates, but you can't query the current value of a stream.
 
-Finally, actions are value-less streams - they are meant to trigger some recalculation without a parameter.
+Finally, triggers are value-less streams - they are meant to trigger a state update without a parameter.
 
 ### The Engine
 
-The cells, streams, and actions are just blueprints **and** references to nodes in an engine. The actual instantiation and interaction (publishing, subscribing, etc.) happens through an Engine instance. An engine is initially empty; it creates its node instances when you subscribe or publish to a cell/stream through the engine's methods. If a cell/stream refers to other nodes in its initialization function, the engine will automatically recursively include those nodes as well.
+The `Cell`, `Stream`, and `Trigger` calls are just definitions **and** references to nodes in an engine. The actual instantiation and interaction (publishing, subscribing, etc., current state) happens inside an Engine instance. An engine is initially empty; it creates its node instances when you subscribe or publish to a node through the engine's methods - usually, this happens through the provided React hooks. If a node refers to other nodes, the engine will automatically recursively initialize those nodes as well.
 
-A cell/stream has a single instance in an engine that has referred to it. If you subscribe to a cell/stream multiple times, the engine will operate on the same instance. In practice, you don't have to care about the difference between a node instance and a definition.
+A node has a single instance in an engine that has referred to it. If you subscribe to a node multiple times, the engine will use the same instance. In practice, you don't have to care about the difference between a node instance and a definition.
 
 ## Installation
 

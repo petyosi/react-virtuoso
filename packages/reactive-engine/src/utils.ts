@@ -9,3 +9,11 @@ export function tap<T>(arg: T, callback: (arg: T) => unknown): T {
 export function noop() {
   // do nothing
 }
+/**
+ * The default comparator for distinct nodes - a function to determine if two values are equal. Works for primitive values.
+ * @category Nodes
+ */
+
+export function defaultComparator<T>(current: T | undefined, next: T) {
+  return current === next
+}

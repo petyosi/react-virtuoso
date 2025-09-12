@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { Action, Cell, E, EngineProvider, mapTo, useCell, useCellValue, useCellValues, usePublisher } from '../../'
+import { Cell, e, EngineProvider, mapTo, Trigger, useCell, useCellValue, useCellValues, usePublisher } from '../../'
 import { renderHook } from './renderHook'
 
 const cell$ = Cell('hello')
@@ -28,16 +28,16 @@ describe('Reactive Engine in React', () => {
     expect(result.current?.[0]).toEqual('world')
   })
 
-  it('supports actions', () => {
+  it('supports triggers', () => {
     const cell$ = Cell('hello')
 
-    const action$ = Action()
+    const trigger$ = Trigger()
 
-    E.link(E.pipe(action$, mapTo('world')), cell$)
+    e.link(e.pipe(trigger$, mapTo('world')), cell$)
 
     const { rerender, result } = renderHook(
       () => {
-        const proc = usePublisher(action$)
+        const proc = usePublisher(trigger$)
         const value = useCellValue(cell$)
         return [value, proc] as const
       },

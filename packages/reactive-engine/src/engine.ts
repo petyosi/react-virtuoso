@@ -1,10 +1,5 @@
 import type { O } from './operators'
-
-import { CELL_TYPE, defaultComparator, getNodeLabel, nodeDefs$$, nodeInits$$ } from './globals'
-import { RefCount } from './RefCount'
-import { SetMap } from './SetMap'
-import { CC, Tracer, TracerConsole } from './Tracer'
-import {
+import type {
   Comparator,
   Distinct,
   ExecutionMap,
@@ -14,9 +9,17 @@ import {
   Out,
   ProjectionFunc,
   Subscription,
+  TracerConsole,
   UnsubscribeHandle,
 } from './types'
-import { tap } from './utils'
+
+import { CC } from './CC'
+import { CELL_TYPE, inEngineContext, nodeDefs$$, nodeInits$$ } from './globals'
+import { getNodeLabel } from './nodeUtils'
+import { RefCount } from './RefCount'
+import { SetMap } from './SetMap'
+import { Tracer } from './Tracer'
+import { defaultComparator, tap } from './utils'
 
 /**
  * The engine orchestrates any cells and streams that it touches. The engine also stores the state and the dependencies of the nodes that are referred through it.
@@ -65,24 +68,6 @@ export class Engine {
     return node as NodeRef<T>
   }
 
-  /**
-   * Convenient for mutation of cells that contian non-primitive values (e.g. arrays, or objects).
-   * Specifies that the cell value should be changed when source emits, with the result of the map callback parameter.
-   * the map parameter gets called with the current value of the cell and the value published through the source.
-   * @typeParam T - the type of the cell value.
-   * @typeParam K - the type of the value published through the source.
-   * @example
-   * ```ts
-   * const items$ = Cell<string[]([])
-   * const addItem$ = Stream<string>(false, (r) => {
-   *   r.changeWith(items$, addItem$, (items, item) => [...items, item])
-   * })
-   * const r = new Engine()
-   * r.pub(addItem$, 'foo')
-   * r.pub(addItem$, 'bar')
-   * r.getValue(items$) // ['foo', 'bar']
-   * ```
-   */
   changeWith<T, K>(cell: Inp<T>, source: Out<K>, map: (cellValue: T, streamValue: K) => T) {
     this.connect({
       map: (done) => (streamValue: K, cellValue: T) => {
@@ -94,30 +79,6 @@ export class Engine {
     })
   }
 
-  /**
-   * Combines the values from multiple nodes into a single node that emits an array of the latest values of the nodes.
-   *
-   * When one of the source nodes emits a value, the combined node emits an array of the latest values from each node.
-   */
-  combine<T1>(...nodes: [Out<T1>]): Out<T1> // prettier-ignore
-  combine<T1, T2>(...nodes: [Out<T1>, Out<T2>]): Out<[T1, T2]> // prettier-ignore
-  combine<T1, T2, T3>(...nodes: [Out<T1>, Out<T2>, Out<T3>]): Out<[T1, T2, T3]> // prettier-ignore
-  combine<T1, T2, T3, T4>(...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>]): Out<[T1, T2, T3, T4]> // prettier-ignore
-  combine<T1, T2, T3, T4, T5>(...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>]): Out<[T1, T2, T3, T4, T5]> // prettier-ignore
-  combine<T1, T2, T3, T4, T5, T6>(...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>]): Out<[T1, T2, T3, T4, T5, T6]> // prettier-ignore
-  combine<T1, T2, T3, T4, T5, T6, T7>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>]): Out<[T1, T2, T3, T4, T5, T6, T7]> // prettier-ignore
-  combine<T1, T2, T3, T4, T5, T6, T7, T8>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8]> // prettier-ignore
-  combine<T1, T2, T3, T4, T5, T6, T7, T8, T9>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9]> // prettier-ignore
-  combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10]> // prettier-ignore
-  combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11]> // prettier-ignore
-  combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12]> // prettier-ignore
-  combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13]> // prettier-ignore
-  combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14]> // prettier-ignore
-  combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>] ): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15]> // prettier-ignore
-  combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>, Out<T16>] ): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16]> // prettier-ignore
-  combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>, Out<T16>, Out<T17>] ): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17]> // prettier-ignore
-  combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>, Out<T16>, Out<T17>, Out<T18> ]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18]> // prettier-ignore
-  combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>, Out<T16>, Out<T17>, Out<T18>, Out<T19> ]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19]> // prettier-ignore
   combine(...sources: Out[]): Out {
     return tap(this.streamInstance(), (sink) => {
       this.connect({
@@ -131,6 +92,7 @@ export class Engine {
       })
     })
   }
+
   /**
    * Combines the values from multiple nodes into a cell that's an array of the latest values of the nodes.
    */
@@ -174,8 +136,10 @@ export class Engine {
       }
     )
   }
+
   /**
-   * A low-level utility that connects multiple nodes to a sink node with a map function. Used as a foundation for the higher-level operators.
+   * A low-level utility that connects multiple nodes to a sink node with a map function.
+   * Used as a foundation for the higher-level operators.
    * The nodes can be active (sources) or passive (pulls).
    */
   connect<T extends unknown[] = unknown[]>({
@@ -215,46 +179,10 @@ export class Engine {
 
     this.executionMaps.clear()
   }
-  /**
-   * Gets the current value of a node. The node must be stateful.
-   * @remark if possible, use {@link withLatestFrom} or {@link combine}, as getValue will not create a dependency to the passed node,
-   * which means that if you call it within a computational cycle, you may not get the correct value.
-   * @param node - the node instance.
-   * @example
-   * ```ts
-   * const foo$ = Cell('foo')
-   *
-   * const r = new Engine()
-   * r.getValue(foo$) // 'foo'
-   * r.pub(foo$, 'bar')
-   * //...
-   * r.getValue(foo$) // 'bar'
-   * ```
-   */
+
   getValue<T>(node: Out<T>): T {
     this.register(node)
     return this.state.get(node) as T
-  }
-
-  /**
-   * Gets the current values of the specified nodes. Works just like {@link getValue}, but with an array of node references.
-   */
-  getValues<T1>(nodes: [Out<T1>]): [T1] // prettier-ignore
-  getValues<T1, T2>(nodes: [Out<T1>, Out<T2>]): [T1, T2] // prettier-ignore
-  getValues<T1, T2, T3>(nodes: [Out<T1>, Out<T2>, Out<T3>]): [T1, T2, T3] // prettier-ignore
-  getValues<T1, T2, T3, T4>(nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>]): [T1, T2, T3, T4] // prettier-ignore
-  getValues<T1, T2, T3, T4, T5>(nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>]): [T1, T2, T3, T4, T5] // prettier-ignore
-  getValues<T1, T2, T3, T4, T5, T6>(nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>]): [T1, T2, T3, T4, T5, T6] // prettier-ignore
-  getValues<T1, T2, T3, T4, T5, T6, T7>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>]): [T1, T2, T3, T4, T5, T6, T7] // prettier-ignore
-  getValues<T1, T2, T3, T4, T5, T6, T7, T8>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>]): [T1, T2, T3, T4, T5, T6, T7, T8] // prettier-ignore
-  getValues<T1, T2, T3, T4, T5, T6, T7, T8, T9>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>]): [T1, T2, T3, T4, T5, T6, T7, T8, T9] // prettier-ignore
-  getValues<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>]): [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10] // prettier-ignore
-  getValues<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>]): [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11] // prettier-ignore
-  getValues<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>]): [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12] // prettier-ignore
-  getValues<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>]): [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13] // prettier-ignore
-  getValues<T>(nodes: Out<T>[]): unknown[]
-  getValues(nodes: Out[]) {
-    return nodes.map((node) => this.getValue(node))
   }
 
   /**
@@ -270,38 +198,17 @@ export class Engine {
     })
   }
 
-  /**
-   * Creates a new node that emits the values of the source node transformed through the specified operators.
-   * @example
-   * ```ts
-   * const stream = Stream<number>(true, (r) => {
-   *   const streamPlusOne = r.pipe(stream, map(i => i + 1))
-   *   r.sub(streamPlusOne, console.log)
-   * })
-   * const r = new Engine()
-   * r.pub(stream, 1)
-   */
-  pipe<T>(s: Out<T>): NodeRef<T> // prettier-ignore
-  pipe<T, O1>(s: Out<T>, o1: O<T, O1>): NodeRef<O1> // prettier-ignore
-  pipe<T, O1, O2>(s: Out<T>, ...o: [O<T, O1>, O<O1, O2>]): NodeRef<O2> // prettier-ignore
-  pipe<T, O1, O2, O3>(s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>]): NodeRef<O3> // prettier-ignore
-  pipe<T, O1, O2, O3, O4>(s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>]): NodeRef<O4> // prettier-ignore
-  pipe<T, O1, O2, O3, O4, O5>(s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>]): NodeRef<O5> // prettier-ignore
-  pipe<T, O1, O2, O3, O4, O5, O6>(s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>]): NodeRef<O6> // prettier-ignore
-  pipe<T, O1, O2, O3, O4, O5, O6, O7>( s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>]): NodeRef<O7> // prettier-ignore
-  pipe<T, O1, O2, O3, O4, O5, O6, O7, O8>( s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>, O<O7, O8>]): NodeRef<O8> // prettier-ignore
-  pipe<T, O1, O2, O3, O4, O5, O6, O7, O8, O9>( s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>, O<O7, O8>, O<O8, O9>]): NodeRef<O9> // prettier-ignore
-  pipe<T>(source: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef
   pipe<T>(source: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef {
     return this.combineOperators(...operators)(source)
   }
+
   /**
-   * Runs the subscrptions of this node.
+   * Runs the subscriptions of this node.
    * @example
    * ```ts
-   * const foo$ = Action((r) => {
-   *  r.sub(foo$, console.log)
-   * })
+   * const foo$ = Action()
+   *
+   * e.sub(foo$, console.log)
    *
    * const r = new Engine()
    * r.pub(foo$)
@@ -320,6 +227,7 @@ export class Engine {
   pub<T>(node: Inp<T>, value?: T) {
     this.pubIn({ [node]: value })
   }
+
   /**
    * Publishes into multiple nodes simultaneously, triggering a single re-computation cycle.
    * @param values - a record of node references and their values.
@@ -406,13 +314,15 @@ export class Engine {
         const value = transientState.get(id)
 
         this.tracer.log(CC.blue('Value resolved: '), value)
-        this.subscriptions.use(id, (nodeSubscriptions) => {
-          for (const subscription of nodeSubscriptions) {
-            this.tracer.log(CC.blue('Calling subscription: '), subscription.name || '<anonymous>', value)
-            subscription(value, this)
-          }
+        inEngineContext(this, () => {
+          this.subscriptions.use(id, (nodeSubscriptions) => {
+            for (const subscription of nodeSubscriptions) {
+              this.tracer.log(CC.blue('Calling subscription: '), subscription.name || '<anonymous>', value)
+              subscription(value, this)
+            }
+          })
+          this.singletonSubscriptions.get(id)?.(value, this)
         })
-        this.singletonSubscriptions.get(id)?.(value, this)
       } else {
         nodeWillNotEmit(id)
       }
@@ -428,7 +338,7 @@ export class Engine {
    */
   register(node$: NodeRef) {
     const definition = nodeDefs$$.get(node$)
-    // local node
+    // node that's within the instance
     if (definition === undefined) {
       return node$
     }
@@ -441,10 +351,12 @@ export class Engine {
           ? this.cellInstance(definition.initial, definition.distinct, node$)
           : this.streamInstance(definition.distinct, node$)
 
-      nodeInits$$.use(instance$, (inits) => {
-        for (const init of inits) {
-          init(this, node$)
-        }
+      inEngineContext(this, () => {
+        nodeInits$$.use(instance$, (inits) => {
+          for (const init of inits) {
+            init(this, node$)
+          }
+        })
       })
 
       return instance$
@@ -464,23 +376,7 @@ export class Engine {
   setTracerConsole(console: TracerConsole | undefined) {
     this._tracer.setConsole(console)
   }
-  /**
-   * Subscribes exclusively to values in the referred node.
-   * Calling this multiple times on a single node will remove the previous subscription created through `singletonSub`.
-   * Subscriptions created through `sub` are not affected.
-   * @returns a function that, when called, will cancel the subscription.
-   *
-   * @example
-   * ```ts
-   * const stream = Stream<number>()
-   * const r = new Engine()
-   * // console.log will run only once.
-   * r.singletonSub(stream, console.log)
-   * r.singletonSub(stream, console.log)
-   * r.singletonSub(stream, console.log)
-   * r.pub(stream, 2)
-   * ```
-   */
+
   singletonSub<T>(node: Out<T>, subscription: Subscription<T> | undefined): UnsubscribeHandle {
     this.register(node)
     if (subscription === undefined) {
@@ -490,6 +386,7 @@ export class Engine {
     }
     return () => this.singletonSubscriptions.delete(node)
   }
+
   /**
    * Creates or resolves an existing stream instance in the engine. Useful as a joint point when building your own operators.
    * @returns a reference to the stream.
@@ -502,22 +399,7 @@ export class Engine {
     }
     return node as NodeRef<T>
   }
-  /**
-   * Subscribes to the values published in the referred node.
-   * @param node - the cell/stream to subscribe to.
-   * @param subscription - the callback to execute when the node receives a new value.
-   * @returns a function that, when called, will cancel the subscription.
-   *
-   * @example
-   * ```ts
-   * const stream = Stream<number>()
-   * const r = new Engine()
-   * const unsub = r.sub(stream, console.log)
-   * r.pub(stream, 2)
-   * unsub()
-   * r.pub(stream, 3)
-   * ```
-   */
+
   sub<T>(node: Out<T>, subscription: Subscription<T>): UnsubscribeHandle {
     this.register(node)
     const nodeSubscriptions = this.subscriptions.getOrCreate(node)
@@ -525,35 +407,6 @@ export class Engine {
     return () => nodeSubscriptions.delete(subscription as Subscription<unknown>)
   }
 
-  /**
-   * Subscribes to multiple nodes at once. If any of the nodes emits a value, the subscription will be called with an array of the latest values from each node.
-   * If the nodes change within a single execution cycle, the subscription will be called only once with the final node values.
-   *
-   * @example
-   * ```ts
-   * const foo$ = Cell('foo')
-   * const bar$ = Cell('bar')
-   *
-   * const trigger$ = Stream<number>(true, (r) => {
-   *   r.link(r.pipe(trigger$, map(i => `foo${i}`)), foo$)
-   *   r.link(r.pipe(trigger$, map(i => `bar${i}`)), bar$)
-   * })
-   *
-   * const r = new Engine()
-   * r.subMultiple([foo$, bar$], ([foo, bar]) => console.log(foo, bar))
-   * r.pub(trigger$, 2)
-   * ```
-   */
-  subMultiple<T1>(nodes: [Out<T1>], subscription: Subscription<[T1]>): UnsubscribeHandle
-  subMultiple<T1, T2>(nodes: [Out<T1>, Out<T2>], subscription: Subscription<[T1, T2]>): UnsubscribeHandle
-  subMultiple<T1, T2, T3>(nodes: [Out<T1>, Out<T2>, Out<T3>], subscription: Subscription<[T1, T2, T3]>): UnsubscribeHandle
-  subMultiple<T1, T2, T3, T4>(nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>], subscription: Subscription<[T1, T2, T3, T4]>): UnsubscribeHandle
-  subMultiple<T1, T2, T3, T4, T5>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>], subscription: Subscription<[T1, T2, T3, T4, T5]>): UnsubscribeHandle // prettier-ignore
-  subMultiple<T1, T2, T3, T4, T5, T6>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>], subscription: Subscription<[T1, T2, T3, T4, T5, T6]>): UnsubscribeHandle // prettier-ignore
-  subMultiple<T1, T2, T3, T4, T5, T6, T7>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>], subscription: Subscription<[T1, T2, T3, T4, T5, T6, T7]>): UnsubscribeHandle // prettier-ignore
-  subMultiple<T1, T2, T3, T4, T5, T6, T7, T8>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>], subscription: Subscription<[T1, T2, T3, T4, T5, T6, T7, T8]>): UnsubscribeHandle // prettier-ignore
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  subMultiple(nodes: Out[], subscription: Subscription<any>): UnsubscribeHandle
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   subMultiple(nodes: Out[], subscription: Subscription<any>): UnsubscribeHandle {
     const sink = this.streamInstance()
@@ -567,42 +420,6 @@ export class Engine {
       sources: nodes,
     })
     return this.sub(sink, subscription)
-  }
-
-  /**
-   * Works as a reverse pipe.
-   * Constructs a function, that, when passed a certain node (sink), will create a node that will work as a publisher through the specified pipes into the sink.
-   * @example
-   * ```ts
-   * const foo$ = Cell('foo')
-   * const bar$ = Cell('bar')
-   * const entry$ = Stream<number>(true, (r) => {
-   *  const transform = r.transformer(map(x: number => `num${x}`))
-   *  const transformFoo$ = transform(foo$)
-   *  const transformBar$ = transform(bar$)
-   *  r.link(entry$, transformFoo$)
-   *  r.link(entry$, transformBar$)
-   * })
-   *
-   * const r = new Engine()
-   * r.pub(entry$, 1) // Both foo$ and bar$ now contain `num1`
-   * ```
-   */
-  transformer<In>(...o: []): (s: Inp<In>) => Inp<In> // prettier-ignore
-  transformer<In, Out>(...o: [O<In, Out>]): (s: Inp<Out>) => Inp<In> // prettier-ignore
-  transformer<In, Out, O1>(...o: [O<In, O1>, O<O1, Out>]): (s: Inp<Out>) => Inp<In> // prettier-ignore
-  transformer<In, Out, O1, O2>(...o: [O<In, O1>, O<O1, O2>, O<O2, Out>]): (s: Inp<Out>) => Inp<In> // prettier-ignore
-  transformer<In, Out, O1, O2, O3>(...o: [O<In, O1>, O<O1, O2>, O<O2, O3>, O<O3, Out>]): (s: Inp<Out>) => Inp<In> // prettier-ignore
-  transformer<In, Out, O1, O2, O3, O4>(...o: [O<In, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, Out>]): (s: Inp<Out>) => Inp<In> // prettier-ignore
-  transformer<In, Out, O1, O2, O3, O4, O5>( ...o: [O<In, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, Out>]): (s: Inp<Out>) => Inp<In> // prettier-ignore
-  transformer<In, Out>(...operators: O<unknown, unknown>[]): (s: Inp<Out>) => Inp<In>
-  transformer<In, Out>(...operators: O<unknown, unknown>[]): (s: Inp<Out>) => Inp<In> {
-    return (sink: Inp<Out>) => {
-      return tap(this.streamInstance<In>(), (source) => {
-        this.link(this.pipe(source, ...operators), sink)
-        return source
-      })
-    }
   }
 
   private calculateExecutionMap(nodes: symbol[]) {
@@ -622,7 +439,6 @@ export class Engine {
       this.register(node as NodeRef)
 
       pendingPulls.use(node, (pulls) => {
-        // biome-ignore lint/style/noParameterAssign: this saves space
         insertIndex = Math.max(...Array.from(pulls).map((key) => participatingNodes.indexOf(key))) + 1
       })
 

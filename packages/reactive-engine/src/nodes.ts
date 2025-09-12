@@ -1,6 +1,9 @@
-import { Engine } from './engine'
-import { addNodeInit, CELL_TYPE, nodeDefs$$ } from './globals'
-import { Distinct, NodeRef } from './types'
+import type { O } from './operators'
+import type { Distinct, Inp, NodeRef, Out } from './types'
+
+import { link, pipe } from './combinators'
+import { CELL_TYPE, nodeDefs$$ } from './globals'
+import { addNodeInit } from './nodeUtils'
 import { tap } from './utils'
 
 /**
@@ -9,16 +12,17 @@ import { tap } from './utils'
  * @param init - an optional function that will be called when the node is registered in an engine. Can be used to create subscriptions and define relationships to other nodes. Any referred nodes will be registered in the engine automatically.
  * @example
  * ```ts
- * const foo$ = Action((r) => {
- *   r.sub(foo$, () => console.log('foo action'))
- * })
+ * const foo$ = Trigger()
+ *
+ * e.sub(foo$, () => console.log('foo trigger'))
+ *
  * const r = new Engine()
  * r.pub(foo$)
  * ```
  * @category Nodes
- * @remark An action is just a signal with `void` value. It can be used to trigger side effects.
+ * @remark A trigger is just a signal with `void` value. It can be used to trigger side effects.
  */
-export function Action(): NodeRef<void> {
+export function Trigger(): NodeRef<void> {
   return tap(Symbol(), (id) => {
     nodeDefs$$.set(id, { distinct: false, type: 'stream' })
   }) as NodeRef<void>
@@ -80,16 +84,14 @@ export function Cell<T>(value: T, distinct: Distinct<T> = true): NodeRef<T> {
  * @example
  * ```ts
  * const bar$ = Cell('bar')
- * const foo$ = DerivedCell('foo',  (r, cell$) => {
- * r.sub(cell$, console.log)
- * return r.pipe(bar$, (bar) => `foo${bar}`)
- * }, true)
+ * const foo$ = DerivedCell('foo', e.pipe(bar$, (bar) => `foo${bar}`), true)
+ *
  * const r = new Engine()
  * r.pub(bar$, '-bar') // the subscription will log 'bar'
  * ```
  * @category Nodes
  */
-export function DerivedCell<T>(value: T, linkFn: (r: Engine, cell: NodeRef<T>) => NodeRef<T>, distinct: Distinct<T> = true): NodeRef<T> {
+export function DerivedCell<T>(value: T, source$: NodeRef<T>, distinct: Distinct<T> = true): NodeRef<T> {
   return tap(Symbol(), (id) => {
     nodeDefs$$.set(id, {
       distinct,
@@ -98,7 +100,25 @@ export function DerivedCell<T>(value: T, linkFn: (r: Engine, cell: NodeRef<T>) =
     })
 
     addNodeInit(id as NodeRef<T>, (r, node$) => {
-      r.link(linkFn(r, node$), node$)
+      r.link(source$, node$)
     })
   }) as NodeRef<T>
+}
+
+export function Pipe<T, O1>( o1: O<T, O1>): [Inp<T>, Out<O1>] // prettier-ignore
+export function Pipe<T, O1, O2>( ...o: [O<T, O1>, O<O1, O2>]): [Inp<T>, Out<O2>] // prettier-ignore
+export function Pipe<T, O1, O2, O3>( ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>]): [Inp<T>, Out<O3>] // prettier-ignore
+export function Pipe<T, O1, O2, O3, O4>( ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>]): [Inp<T>, Out<O4>] // prettier-ignore
+export function Pipe<T, O1, O2, O3, O4, O5>( ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>]): [Inp<T>, Out<O5>] // prettier-ignore
+export function Pipe<T, O1, O2, O3, O4, O5, O6>( ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>]): [Inp<T>, Out<O6>] // prettier-ignore
+export function Pipe<T, O1, O2, O3, O4, O5, O6, O7>(  ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>]): [Inp<T>, Out<O7>] // prettier-ignore
+export function Pipe<T, O1, O2, O3, O4, O5, O6, O7, O8>(  ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>, O<O7, O8>]): [Inp<T>, Out<O8>] // prettier-ignore
+export function Pipe<T, O1, O2, O3, O4, O5, O6, O7, O8, O9>( ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>, O<O7, O8>, O<O8, O9>]): [Inp<T>, Out<O9>] // prettier-ignore
+export function Pipe<T>(...operators: O<unknown, unknown>[]): [Inp<T>, Out]
+export function Pipe<T>(...operators: O<unknown, unknown>[]): [Inp<T>, Out] {
+  const input$ = Stream<T>()
+  const output$ = Stream<unknown>()
+  link(pipe(input$, ...operators), output$)
+
+  return [input$, output$]
 }

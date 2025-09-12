@@ -1,7 +1,7 @@
-import { Engine } from './engine'
-import { CELL_TYPE, STREAM_TYPE } from './globals'
-import { RefCount } from './RefCount'
-import { SetMap } from './SetMap'
+import type { Engine } from './Engine'
+import type { CELL_TYPE, STREAM_TYPE } from './globals'
+import type { RefCount } from './RefCount'
+import type { SetMap } from './SetMap'
 
 /**
  * A typed reference to a node.
@@ -73,3 +73,5 @@ export interface StreamDefinition<T> {
   distinct: Distinct<T>
   type: typeof STREAM_TYPE
 }
+
+export type TracerConsole = Pick<Console, 'groupCollapsed' | 'groupEnd' | 'log'>
