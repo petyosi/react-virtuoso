@@ -20,4 +20,9 @@ describe('tracer', () => {
     }
     tracer.log('Back to the first level', CC.yellow('Still inside the first span'))
   })
+  it('Prefixes with a label', () => {
+    const tracer = new Tracer(console)
+    tracer.setInstanceLabel('[MyInstance]')
+    tracer.log('This log is prefixed')
+  })
 })

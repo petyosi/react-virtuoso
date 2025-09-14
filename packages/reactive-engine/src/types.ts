@@ -75,3 +75,8 @@ export interface StreamDefinition<T> {
 }
 
 export type TracerConsole = Pick<Console, 'groupCollapsed' | 'groupEnd' | 'log'>
+
+export interface CombinedCellRecord {
+  cell: NodeRef
+  sources: symbol[]
+}

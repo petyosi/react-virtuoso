@@ -1,3 +1,5 @@
+import type { ProjectionFunc } from './types'
+
 /**
  * Calls callback with the first argument, and returns it.
  */
@@ -16,4 +18,10 @@ export function noop() {
 
 export function defaultComparator<T>(current: T | undefined, next: T) {
   return current === next
+}
+
+export const combinedCellProjection: ProjectionFunc = (done) => {
+  return (...args) => {
+    done(args)
+  }
 }

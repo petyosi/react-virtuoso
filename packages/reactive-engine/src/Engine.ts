@@ -1,5 +1,6 @@
 import type { O } from './operators'
 import type {
+  CombinedCellRecord,
   Comparator,
   Distinct,
   ExecutionMap,
@@ -19,22 +20,20 @@ import { getNodeLabel } from './nodeUtils'
 import { RefCount } from './RefCount'
 import { SetMap } from './SetMap'
 import { Tracer } from './Tracer'
-import { defaultComparator, tap } from './utils'
+import { combinedCellProjection, defaultComparator, tap } from './utils'
 
 /**
  * The engine orchestrates any cells and streams that it touches. The engine also stores the state and the dependencies of the nodes that are referred through it.
  */
 export class Engine {
-  public get tracer() {
-    return this._tracer
-  }
-
-  private readonly _tracer = new Tracer()
+  public readonly tracer = new Tracer()
+  private readonly combinedCells: CombinedCellRecord[] = []
   private readonly definitionRegistry = new Set<symbol>()
   private readonly distinctNodes = new Map<symbol, Comparator<unknown>>()
   private readonly executionMaps = new Map<symbol | symbol[], ExecutionMap>()
   private readonly graph = new SetMap<NodeProjection>()
   private readonly singletonSubscriptions = new Map<symbol, Subscription<unknown>>()
+
   private readonly state = new Map<symbol, unknown>()
 
   private readonly subscriptions = new SetMap<Subscription<unknown>>()
@@ -96,43 +95,28 @@ export class Engine {
   /**
    * Combines the values from multiple nodes into a cell that's an array of the latest values of the nodes.
    */
-  combineCells<T1>(...nodes: [Out<T1>]): Out<[T1]> // prettier-ignore
-  combineCells<T1, T2>(...nodes: [Out<T1>, Out<T2>]): Out<[T1, T2]> // prettier-ignore
-  combineCells<T1, T2, T3>(...nodes: [Out<T1>, Out<T2>, Out<T3>]): Out<[T1, T2, T3]> // prettier-ignore
-  combineCells<T1, T2, T3, T4>(...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>]): Out<[T1, T2, T3, T4]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5>(...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>]): Out<[T1, T2, T3, T4, T5]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6>(...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>]): Out<[T1, T2, T3, T4, T5, T6]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6, T7>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>]): Out<[T1, T2, T3, T4, T5, T6, T7]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6, T7, T8>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6, T7, T8, T9>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>] ): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>, Out<T16>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>, Out<T16>, Out<T17>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>, Out<T16>, Out<T17>, Out<T18>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>, Out<T16>, Out<T17>, Out<T18>, Out<T19>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>, Out<T16>, Out<T17>, Out<T18>, Out<T19>, Out<T20>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20]> // prettier-ignore
-  combineCells<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>( ...nodes: [ Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>, Out<T16>, Out<T17>, Out<T18>, Out<T19>, Out<T20>, Out<T21>, ]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21]> // prettier-ignore
-  combineCells(...sources: Out[]): Out {
+  combineCells(sources: Out[]): Out<unknown[]> {
+    const existing = this.combinedCells.find((entry) => {
+      return sources.length === entry.sources.length && sources.every((s, i) => s === entry.sources[i])
+    })
+
+    if (existing) {
+      return existing.cell as Out<unknown[]>
+    }
+
     return tap(
       this.cellInstance(
         sources.map((source) => this.getValue(source)),
         true
       ),
-      (sink) => {
+      (combinedCell) => {
         this.connect({
-          map:
-            (done) =>
-            (...args) => {
-              done(args)
-            },
-          sink,
+          map: combinedCellProjection,
+          sink: combinedCell,
           sources,
         })
+
+        this.combinedCells.push({ cell: combinedCell, sources })
       }
     )
   }
@@ -227,7 +211,6 @@ export class Engine {
   pub<T>(node: Inp<T>, value?: T) {
     this.pubIn({ [node]: value })
   }
-
   /**
    * Publishes into multiple nodes simultaneously, triggering a single re-computation cycle.
    * @param values - a record of node references and their values.
@@ -345,6 +328,7 @@ export class Engine {
 
     if (!this.definitionRegistry.has(node$)) {
       this.definitionRegistry.add(node$)
+      this.tracer.log(CC.blue(`Registration `), getNodeLabel(node$))
 
       const instance$ =
         definition.type === CELL_TYPE
@@ -363,18 +347,22 @@ export class Engine {
     }
     return node$
   }
+
   /**
    * Clears all exclusive subscriptions.
    */
   resetSingletonSubs() {
     this.singletonSubscriptions.clear()
   }
+  setLabel(label: string) {
+    this.tracer.setInstanceLabel(label)
+  }
 
   /**
    * Sets the console instance used by the engine tracing.
    */
   setTracerConsole(console: TracerConsole | undefined) {
-    this._tracer.setConsole(console)
+    this.tracer.setConsole(console)
   }
 
   singletonSub<T>(node: Out<T>, subscription: Subscription<T> | undefined): UnsubscribeHandle {
