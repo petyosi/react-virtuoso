@@ -5,7 +5,7 @@ exports[`VirtuosoMockContext > Grid > correctly renders items 1`] = `
   <div
     data-testid="virtuoso-scroller"
     data-virtuoso-scroller="true"
-    style="height: 100%; outline: none; overflow-y: auto; position: relative;"
+    style="height: 100%; outline: none; overflow-y: auto; position: relative; -webkit-overflow-scrolling: touch;"
     tabindex="0"
   >
     <div
@@ -14,7 +14,7 @@ exports[`VirtuosoMockContext > Grid > correctly renders items 1`] = `
       <div
         class="virtuoso-grid-list"
         data-testid="virtuoso-item-list"
-        style="padding-bottom: 100px; padding-top: 0px;"
+        style="padding-top: 0px; padding-bottom: 100px;"
       >
         <div
           class="virtuoso-grid-item"
@@ -70,7 +70,7 @@ exports[`VirtuosoMockContext > Grid > correctly renders items with useWindowScro
       <div
         class="virtuoso-grid-list"
         data-testid="virtuoso-item-list"
-        style="padding-bottom: 100px; padding-top: 0px;"
+        style="padding-top: 0px; padding-bottom: 100px;"
       >
         <div
           class="virtuoso-grid-item"
@@ -119,7 +119,7 @@ exports[`VirtuosoMockContext > List > correctly renders items 1`] = `
   <div
     data-testid="virtuoso-scroller"
     data-virtuoso-scroller="true"
-    style="height: 100%; outline: none; overflow-y: auto; position: relative;"
+    style="height: 100%; outline: none; overflow-y: auto; position: relative; -webkit-overflow-scrolling: touch;"
     tabindex="0"
   >
     <div
@@ -128,7 +128,7 @@ exports[`VirtuosoMockContext > List > correctly renders items 1`] = `
     >
       <div
         data-testid="virtuoso-item-list"
-        style="box-sizing: border-box; margin-top: 0px; padding-bottom: 500px; padding-top: 0px;"
+        style="box-sizing: border-box; margin-top: 0px; padding-top: 0px; padding-bottom: 500px;"
       >
         <div
           data-index="0"
@@ -172,7 +172,7 @@ exports[`VirtuosoMockContext > List > correctly renders items with useWindowScro
     >
       <div
         data-testid="virtuoso-item-list"
-        style="box-sizing: border-box; margin-top: 0px; padding-bottom: 500px; padding-top: 0px;"
+        style="box-sizing: border-box; margin-top: 0px; padding-top: 0px; padding-bottom: 500px;"
       >
         <div
           data-index="0"
@@ -209,7 +209,7 @@ exports[`VirtuosoMockContext > Table > correctly renders items 1`] = `
   <div
     data-testid="virtuoso-scroller"
     data-virtuoso-scroller="true"
-    style="height: 100%; outline: none; overflow-y: auto; position: relative;"
+    style="height: 100%; outline: none; overflow-y: auto; position: relative; -webkit-overflow-scrolling: touch;"
     tabindex="0"
   >
     <div
@@ -217,7 +217,7 @@ exports[`VirtuosoMockContext > Table > correctly renders items 1`] = `
       style="height: 100%; position: absolute; top: 0px; width: 100%;"
     >
       <table
-        style="border-spacing: 0; overflow-anchor: none;"
+        style="border-spacing: 0px; overflow-anchor: none;"
       >
         <tbody
           data-testid="virtuoso-item-list"
@@ -278,7 +278,7 @@ exports[`VirtuosoMockContext > Table > correctly renders items with useWindowScr
       style="height: 100%; position: absolute; top: 0px; width: 100%;"
     >
       <table
-        style="border-spacing: 0; overflow-anchor: none;"
+        style="border-spacing: 0px; overflow-anchor: none;"
       >
         <tbody
           data-testid="virtuoso-item-list"
