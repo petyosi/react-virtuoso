@@ -37,7 +37,7 @@ export function Example() {
 
   useEffect(() => {
     setTimeout(() => {
-      setItems(getItems(Number(id)))
+      setItems(getItems(id))
       setFirstItemIndex(ITEM_INDEX)
     }, 200)
 

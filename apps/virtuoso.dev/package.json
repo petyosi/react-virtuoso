@@ -52,7 +52,7 @@
     "style-loader": "^4.0.0",
     "typedoc": "^0.28.1",
     "typedoc-plugin-markdown": "^4.6.0",
-    "typescript": "~5.7.3"
+    "typescript": "~5.9.2"
   },
   "devDependencies": {
     "@eslint/markdown": "^6.3.0",

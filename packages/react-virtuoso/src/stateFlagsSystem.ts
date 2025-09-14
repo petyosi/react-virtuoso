@@ -238,7 +238,7 @@ export const stateFlagsSystem = u.system(([{ footerHeight, headerHeight, scrollB
       scrollTop,
       u.throttleTime(100),
       u.withLatestFrom(isScrolling),
-      u.filter(([_, isScrolling]) => !!isScrolling),
+      u.filter(([_, isScrolling]) => isScrolling),
       u.scan(([_, prev], [next]) => [prev, next], [0, 0]),
       u.map(([prev, next]) => next - prev)
     ),

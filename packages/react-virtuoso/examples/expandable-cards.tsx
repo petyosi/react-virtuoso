@@ -33,13 +33,13 @@ const Row = (props: any) => {
     </div>
   )
 }
-type IExpanded = Record<number, boolean>
+
 export function Example() {
-  const [expanded, setExpanded] = useState<IExpanded>({})
+  const [expanded, setExpanded] = useState<Record<number, boolean>>({})
 
   const itemContent = (rowIndex: number) => (
     <Row
-      expanded={!!expanded[rowIndex]}
+      expanded={expanded[rowIndex]}
       rowIndex={rowIndex}
       setExpanded={(expanded: boolean) => {
         setExpanded((old) => Object.assign(old, { [rowIndex]: expanded }))
