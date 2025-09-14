@@ -33,9 +33,7 @@ export class Engine {
   private readonly executionMaps = new Map<symbol | symbol[], ExecutionMap>()
   private readonly graph = new SetMap<NodeProjection>()
   private readonly singletonSubscriptions = new Map<symbol, Subscription<unknown>>()
-
   private readonly state = new Map<symbol, unknown>()
-
   private readonly subscriptions = new SetMap<Subscription<unknown>>()
 
   /**
@@ -164,6 +162,17 @@ export class Engine {
     this.executionMaps.clear()
   }
 
+  dispose() {
+    this.combinedCells.length = 0
+    this.definitionRegistry.clear()
+    this.distinctNodes.clear()
+    this.executionMaps.clear()
+    this.graph.clear()
+    this.singletonSubscriptions.clear()
+    this.state.clear()
+    this.subscriptions.clear()
+  }
+
   getValue<T>(node: Out<T>): T {
     this.register(node)
     return this.state.get(node) as T
@@ -185,7 +194,6 @@ export class Engine {
   pipe<T>(source: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef {
     return this.combineOperators(...operators)(source)
   }
-
   /**
    * Runs the subscriptions of this node.
    * @example
@@ -211,6 +219,7 @@ export class Engine {
   pub<T>(node: Inp<T>, value?: T) {
     this.pubIn({ [node]: value })
   }
+
   /**
    * Publishes into multiple nodes simultaneously, triggering a single re-computation cycle.
    * @param values - a record of node references and their values.
@@ -354,6 +363,7 @@ export class Engine {
   resetSingletonSubs() {
     this.singletonSubscriptions.clear()
   }
+
   setLabel(label: string) {
     this.tracer.setInstanceLabel(label)
   }
@@ -410,6 +420,10 @@ export class Engine {
     return this.sub(sink, subscription)
   }
 
+  [Symbol.dispose]() {
+    this.dispose()
+  }
+
   private calculateExecutionMap(nodes: symbol[]) {
     const participatingNodes: symbol[] = []
     const visitedNodes = new Set()
@@ -449,7 +463,6 @@ export class Engine {
 
     return { participatingNodes, pendingPulls, projections, refCount }
   }
-
   private combineOperators<T>(...o: []): (s: Out<T>) => NodeRef<T> // prettier-ignore
   private combineOperators<T, O1>(...o: [O<T, O1>]): (s: Out<T>) => NodeRef<O1> // prettier-ignore
   private combineOperators<T, O1, O2>(...o: [O<T, O1>, O<O1, O2>]): (s: Out<T>) => NodeRef<O2> // prettier-ignore

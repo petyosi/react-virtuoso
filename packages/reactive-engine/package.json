@@ -12,7 +12,8 @@
     "test": "vitest --run --browser.headless",
     "ci-lint": "eslint",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "ladle": "ladle serve"
   },
   "publishConfig": {
     "access": "public"

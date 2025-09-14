@@ -15,7 +15,7 @@ export const EngineContext = React.createContext<Engine | null>(null)
  */
 export function EngineProvider({
   children,
-  console,
+  console: theEngineConsole,
   initWith,
   label,
   updateWith = {},
@@ -41,22 +41,29 @@ export function EngineProvider({
    */
   updateWith?: Record<string, unknown>
 }) {
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const engineInstance = React.useMemo(() => new Engine(initWith), [])
+  const [engine, setEngine] = React.useState<Engine | null>(null)
 
   useIsomorphicLayoutEffect(() => {
-    engineInstance.setTracerConsole(console)
-  }, [console, engineInstance])
+    const engine = new Engine(initWith)
+    setEngine(engine)
+    return () => {
+      engine.dispose()
+    }
+  }, [])
 
   useIsomorphicLayoutEffect(() => {
-    engineInstance.setLabel(label ?? '')
-  }, [label, engineInstance])
+    engine?.setTracerConsole(theEngineConsole)
+  }, [theEngineConsole, engine])
 
   useIsomorphicLayoutEffect(() => {
-    engineInstance.pubIn(updateWith)
-  }, [updateWith, engineInstance])
+    engine?.setLabel(label ?? '')
+  }, [label, engine])
 
-  return <EngineContext.Provider value={engineInstance}>{children}</EngineContext.Provider>
+  useIsomorphicLayoutEffect(() => {
+    engine?.pubIn(updateWith)
+  }, [updateWith, engine])
+
+  return engine && <EngineContext.Provider value={engine}>{children}</EngineContext.Provider>
 }
 
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? React.useLayoutEffect : React.useEffect
