@@ -14,14 +14,14 @@
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids"
   },
-  "dependencies": {
-    "@docusaurus/core": "^3.2.1",
-    "@docusaurus/module-type-aliases": "^3.2.1",
-    "@docusaurus/plugin-client-redirects": "^3.2.1",
-    "@docusaurus/preset-classic": "^3.2.1",
-    "@docusaurus/theme-live-codeblock": "^3.2.1",
-    "@docusaurus/tsconfig": "^3.2.1",
-    "@docusaurus/types": "^3.2.1",
+  "devDependencies": {
+    "@docusaurus/core": "^3.8.1",
+    "@docusaurus/module-type-aliases": "^3.8.1",
+    "@docusaurus/plugin-client-redirects": "^3.8.1",
+    "@docusaurus/preset-classic": "^3.8.1",
+    "@docusaurus/theme-live-codeblock": "^3.8.1",
+    "@docusaurus/tsconfig": "^3.8.1",
+    "@docusaurus/types": "^3.8.1",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
     "@mdx-js/react": "^3.0.0",
@@ -36,7 +36,7 @@
     "@virtuoso.dev/react-monaco-editor": "^0.60.0",
     "clsx": "^2.0.0",
     "css-loader": "^7.1.2",
-    "docusaurus-plugin-typedoc": "^1.2.3",
+    "docusaurus-plugin-typedoc": "^1.4.2",
     "dotenv": "^16.4.5",
     "esbuild-wasm": "0.25.1",
     "monaco-editor": "^0.52.2",
@@ -50,19 +50,8 @@
     "search-insights": "^2.13.0",
     "simplebar-react": "^3.3.1",
     "style-loader": "^4.0.0",
-    "typedoc": "^0.28.1",
+    "typedoc": "^0.28.12",
     "typedoc-plugin-markdown": "^4.6.0",
-    "typescript": "~5.9.2"
-  },
-  "devDependencies": {
-    "@eslint/markdown": "^6.3.0",
-    "eslint": "^9.23.0",
-    "eslint-config-prettier": "^10.0.1",
-    "eslint-plugin-perfectionist": "^4.7.0",
-    "eslint-plugin-prettier": "^5.2.3",
-    "eslint-plugin-react": "^7.37.4",
-    "eslint-plugin-react-hooks": "^5.1.0",
-    "prettier": "^3.4.2",
     "typedoc-plugin-no-inherit": "^1.6.1"
   },
   "browserslist": {

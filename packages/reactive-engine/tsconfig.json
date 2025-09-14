@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "@virtuoso.dev/tooling/tsconfig.base.json",
-  "include": ["src", "vite.config.ts", "eslint.config.mjs", "prettier.config.mjs", "vitest.workspace.ts", ".ladle/components.tsx"],
+  "include": ["src", "vite.config.ts", "eslint.config.mjs", "prettier.config.mjs", "vitest.config.ts", ".ladle/components.tsx"],
   "compilerOptions": {
     "types": ["@vitest/browser/matchers"]
   }

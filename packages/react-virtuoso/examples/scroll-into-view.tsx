@@ -5,7 +5,7 @@ import { Virtuoso, VirtuosoHandle } from '../src'
 export function Example() {
   const ref = React.useRef<VirtuosoHandle>(null)
   const [currentItemIndex, setCurrentItemIndex] = React.useState(-1)
-  const listRef = React.useRef<HTMLElement>()
+  const listRef = React.useRef<HTMLElement | null>(null)
 
   const keyDownCallback = React.useCallback(
     (e: KeyboardEvent) => {
