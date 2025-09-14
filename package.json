@@ -15,6 +15,7 @@
     "dev:docs": "npm run dev --workspace  @virtuoso.dev/virtuoso.dev#dev"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "0.18.2",
     "@changesets/cli": "^2.27.12",
     "@eslint/js": "^9.23.0",
     "@eslint/markdown": "^7.2.0",

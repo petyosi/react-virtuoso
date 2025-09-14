@@ -1,19 +1,42 @@
 {
   "name": "@virtuoso.dev/reactive-engine",
+  "version": "0.1.0",
+  "description": "Reactive state management for complex web applications.",
+  "author": "Petyo Ivanov",
+  "homepage": "https://virtuoso.dev",
+  "bugs": {
+    "url": "https://github.com/petyosi/react-virtuoso/issues"
+  },
+  "keywords": [
+    "react",
+    "state-management",
+    "reactive",
+    "push-based",
+    "performance",
+    "state"
+  ],
   "private": false,
   "sideEffects": false,
   "type": "module",
-  "version": "1.1.0",
   "module": "dist/index.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
   "scripts": {
     "build": "tsc && vite build",
     "test": "vitest --run --browser.headless",
     "ci-lint": "eslint",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "ladle": "ladle serve"
+    "ladle": "ladle serve",
+    "are-the-types-wrong": "attw --profile esm-only --pack ."
   },
   "publishConfig": {
     "access": "public"

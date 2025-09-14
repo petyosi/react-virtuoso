@@ -14,11 +14,11 @@ Welcome to the README of Reactive Engine, a TypeScript-native reactive state man
 
 - **Testable**. You can easily initiate an engine and interact with your nodes outside of React. This makes it easy to unit-test your state management logic.
 
-- **React friendly**. Reactive Engine ships an Engine provider component and set of hooks that let you access the values and publish new values in the given nodes. Under the hood, the hooks use `useSyncExternalStore`.
+- **React friendly**. Reactive Engine ships an Engine provider component and set of hooks that let you access the values and publish new values in the given nodes.
 
 ## Conceptual Overview
 
-The library is based on the concept of node **definitions**, which are instantiated into **nodes** in a graph-based structure called an **Engine**. The nodes are connected through **dependencies** and **transformations** that describe how the values that flow through the nodes map and transform.
+The library is based on the concept of node **definitions**, which are instantiated as **nodes** in a graph-based structure called an **Engine**. The nodes are connected through **dependencies** and **transformations** that describe how the values that flow through the nodes map and transform.
 
 ### Cells, Streams, and Triggers
 
