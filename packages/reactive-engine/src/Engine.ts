@@ -24,6 +24,7 @@ import { combinedCellProjection, defaultComparator, tap } from './utils'
 
 /**
  * The engine orchestrates any cells and streams that it touches. The engine also stores the state and the dependencies of the nodes that are referred through it.
+ * @category Engine
  */
 export class Engine {
   public readonly tracer = new Tracer()
@@ -53,6 +54,7 @@ export class Engine {
    * @param value - the initial value of the cell
    * @param distinct - true by default. Pass false to mark the stream as a non-distinct one, meaning that publishing the same value multiple times will re-trigger a recomputation cycle.
    * @param node - optional, a reference to a cell. If the cell has not been touched in the engine before, the engine will instantiate a reference to it. If it's registered already, the function will return the reference.
+   * @typeParam T - The type of values that the cell will emit/accept.
    */
   cellInstance<T>(value: T, distinct: Distinct<T> = true, node = Symbol()): NodeRef<T> {
     if (!this.state.has(node)) {
@@ -65,6 +67,10 @@ export class Engine {
     return node as NodeRef<T>
   }
 
+  /**
+   * @typeParam T - The type of values that the cell will emit/accept.
+   * @typeParam K - The type of values that the source node will emit.
+   */
   changeWith<T, K>(cell: Inp<T>, source: Out<K>, map: (cellValue: T, streamValue: K) => T) {
     this.connect({
       map: (done) => (streamValue: K, cellValue: T) => {
@@ -76,6 +82,9 @@ export class Engine {
     })
   }
 
+  /**
+   * @typeParam T - The type of values that the combined node will emit.
+   */
   combine(...sources: Out[]): Out {
     return tap(this.streamInstance(), (sink) => {
       this.connect({
@@ -92,6 +101,7 @@ export class Engine {
 
   /**
    * Combines the values from multiple nodes into a cell that's an array of the latest values of the nodes.
+   * @typeParam T - The type of values that the combined cell will emit.
    */
   combineCells(sources: Out[]): Out<unknown[]> {
     const existing = this.combinedCells.find((entry) => {
@@ -173,6 +183,9 @@ export class Engine {
     this.subscriptions.clear()
   }
 
+  /**
+   * @typeParam T - The type of values that the node emits.
+   */
   getValue<T>(node: Out<T>): T {
     this.register(node)
     return this.state.get(node) as T
@@ -180,6 +193,7 @@ export class Engine {
 
   /**
    * Links the output of a node to the input of another node.
+   * @typeParam T - The type of values that the nodes will emit.
    */
   link<T>(source: Out<T>, sink: Inp<T>) {
     this.connect({
@@ -191,6 +205,9 @@ export class Engine {
     })
   }
 
+  /**
+   * @typeParam T - The type of values that the source node will emit.
+   */
   pipe<T>(source: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef {
     return this.combineOperators(...operators)(source)
   }
@@ -204,6 +221,7 @@ export class Engine {
    *
    * const r = new Engine()
    * r.pub(foo$)
+   * ```
    */
   pub<T>(node: Inp<T>): void
   /**
@@ -213,6 +231,7 @@ export class Engine {
    * const foo$ = Cell('foo')
    * const r = new Engine()
    * r.pub(foo$, 'bar')
+   * ```
    */
   // eslint-disable-next-line @typescript-eslint/unified-signatures
   pub<T>(node: Inp<T>, value: T): void
@@ -375,6 +394,9 @@ export class Engine {
     this.tracer.setConsole(console)
   }
 
+  /**
+   * @typeParam T - The type of values that the node will emit.
+   */
   singletonSub<T>(node: Out<T>, subscription: Subscription<T> | undefined): UnsubscribeHandle {
     this.register(node)
     if (subscription === undefined) {
@@ -390,6 +412,7 @@ export class Engine {
    * @returns a reference to the stream.
    * @param distinct - true by default. Pass false to mark the stream as a non-distinct one, meaning that publishing the same value multiple times will re-trigger a recomputation cycle.
    * @param node - optional, a reference to a stream. If the signal has not been touched in the engine before, the engine will instantiate a reference to it. If it's registered already, the function will return the reference.
+   * @typeParam T - The type of values that the stream will emit/accept.
    */
   streamInstance<T>(distinct: Distinct<T> = true, node = Symbol()): NodeRef<T> {
     if (distinct !== false) {
@@ -398,6 +421,9 @@ export class Engine {
     return node as NodeRef<T>
   }
 
+  /**
+   * @typeParam T - The type of values that the node will emit.
+   */
   sub<T>(node: Out<T>, subscription: Subscription<T>): UnsubscribeHandle {
     this.register(node)
     const nodeSubscriptions = this.subscriptions.getOrCreate(node)

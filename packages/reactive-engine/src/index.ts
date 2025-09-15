@@ -1,3 +1,8 @@
+/**
+ * Some intro about the API reference.
+ * @module @virtuoso.dev/reactive-engine
+ */
+
 export { CC } from './CC'
 export * from './combinators'
 export * from './e'

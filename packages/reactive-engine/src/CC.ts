@@ -20,6 +20,7 @@ const ansi = {
 
 /**
  * A console color utility for cross-environment logging.
+ * @category Logging
  */
 export const CC = {
   bgWarn: (s: unknown) =>

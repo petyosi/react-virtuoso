@@ -5,15 +5,15 @@ import { type NodeRef, type Out } from './types'
 
 /**
  * An operator that transforms a node into another node, used in the {@link Engine.pipe} method.
- * @typeParam In - The type of values that the incoming node will emit.
- * @typeParam Out - The type of values that the resulting node will emit.
+ * @typeParam I - The type of values that the incoming node will emit.
+ * @typeParam O - The type of values that the resulting node will emit.
  * @category Operators
  */
 export type Operator<I, O> = (source: Out<I>, engine: Engine) => NodeRef<O>
 
 /**
  * Shorter alias for {@link Operator}, to avoid extra long type signatures.
- * @category Operators
+ * @category Misc
  */
 export type O<In, Out> = Operator<In, Out>
 
@@ -31,6 +31,8 @@ function traceOperator(eng: Engine, opName: string, source: symbol, value: unkno
 
 /**
  * Maps a the passed value with a projection function.
+ * @typeParam I - The type of values that the incoming node will emit.
+ * @typeParam O - The type of values that the resulting node will emit.
  * @category Operators
  */
 export function map<I, O>(mapFunction: (value: I) => O) {
@@ -51,6 +53,8 @@ export function map<I, O>(mapFunction: (value: I) => O) {
 /**
  * Pulls the latest values from the passed nodes.
  * Note: The operator does not emit when the nodes emit. If you want to get that, use the `combine` function.
+ * @typeParam I - The type of values that the incoming node will emit.
+ * @typeParam T1 - The type of values that the first node will emit.
  * @category Operators
  */
 export function withLatestFrom<I, T1>(...nodes: [Out<T1>]): (source: Out<I>) => NodeRef<[I, T1]> // prettier-ignore
@@ -81,6 +85,8 @@ export function withLatestFrom<I>(...nodes: Out[]) {
 
 /**
  * Operator that maps the output of a node to a fixed value.
+ * @typeParam I - The type of values that the incoming node will emit.
+ * @typeParam O - The type of the fixed value to map to.
  * @category Operators
  */
 export function mapTo<I, O>(value: O): Operator<I, O> {
@@ -101,6 +107,8 @@ export function mapTo<I, O>(value: O): Operator<I, O> {
 /**
  * Operator that filters the output of a node.
  * If the predicate returns false, the emission is canceled.
+ * @typeParam I - The type of values that the incoming node will emit.
+ * @typeParam O - The type of values that the filtered node will emit.
  * @category Operators
  */
 export function filter<I, O = I>(predicate: (value: I) => boolean): Operator<I, O> {
@@ -123,6 +131,7 @@ export function filter<I, O = I>(predicate: (value: I) => boolean): Operator<I, 
 /**
  * Operator that captures the first emitted value of a node.
  * Useful if you want to execute a side effect only once.
+ * @typeParam I - The type of values that the node will emit.
  * @category Operators
  */
 export function once<I>(): Operator<I, I> {
@@ -148,6 +157,8 @@ export function once<I>(): Operator<I, I> {
 /**
  * Operator that runs with the latest and the current value of a node.
  * Works like the {@link https://rxjs.dev/api/operators/scan | RxJS scan operator}.
+ * @typeParam I - The type of values that the incoming node will emit.
+ * @typeParam O - The type of the accumulated value.
  * @category Operators
  */
 export function scan<I, O>(accumulator: (current: O, value: I) => O, seed: O): Operator<I, O> {
@@ -167,6 +178,7 @@ export function scan<I, O>(accumulator: (current: O, value: I) => O, seed: O): O
 
 /**
  * Throttles the output of a node with the specified delay.
+ * @typeParam I - The type of values that the node will emit.
  * @category Operators
  */
 export function throttleTime<I>(delay: number): Operator<I, I> {
@@ -195,6 +207,7 @@ export function throttleTime<I>(delay: number): Operator<I, I> {
 
 /**
  * Debounces the output of a node with the specified delay.
+ * @typeParam I - The type of values that the node will emit.
  * @category Operators
  */
 export function debounceTime<I>(delay: number): Operator<I, I> {
@@ -222,6 +235,7 @@ export function debounceTime<I>(delay: number): Operator<I, I> {
 
 /**
  * Delays the output of a node with `queueMicrotask`.
+ * @typeParam I - The type of values that the node will emit.
  * @category Operators
  */
 export function delayWithMicrotask<I>(): Operator<I, I> {
@@ -239,6 +253,8 @@ export function delayWithMicrotask<I>(): Operator<I, I> {
 
 /**
  * description Buffers the stream of a node until the passed note emits.
+ * @typeParam I - The type of values that the source node will emit.
+ * @typeParam O - The type of values that the buffer node will emit.
  * @category Operators
  */
 export function onNext<I, O>(bufNode: NodeRef<O>): Operator<I, [I, O]> {
@@ -266,6 +282,10 @@ export function onNext<I, O>(bufNode: NodeRef<O>): Operator<I, [I, O]> {
 
 /**
  * Handles a promise value through the specified callbacks.
+ * @typeParam I - The type of values that the incoming node will emit.
+ * @typeParam OutSuccess - The type of value returned on success.
+ * @typeParam OnLoad - The type of value returned during loading.
+ * @typeParam OutError - The type of value returned on error.
  * @category Operators
  */
 export function handlePromise<I, OutSuccess, OnLoad, OutError>(

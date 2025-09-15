@@ -2,6 +2,7 @@ import type { ProjectionFunc } from './types'
 
 /**
  * Calls callback with the first argument, and returns it.
+ * @typeParam T - The type of the argument that is passed and returned.
  */
 export function tap<T>(arg: T, callback: (arg: T) => unknown): T {
   callback(arg)
@@ -13,6 +14,7 @@ export function noop() {
 }
 /**
  * The default comparator for distinct nodes - a function to determine if two values are equal. Works for primitive values.
+ * @typeParam T - The type of values being compared.
  * @category Nodes
  */
 
