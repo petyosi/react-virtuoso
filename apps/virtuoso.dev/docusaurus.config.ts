@@ -159,6 +159,67 @@ const config: Config = {
       },
     ],
     [
+      'docusaurus-plugin-typedoc',
+      {
+        id: '@virtuoso.dev/reactive-engine',
+        sidebar: {
+          autoConfiguration: true,
+          typescript: true,
+          pretty: true,
+        },
+        projectDocuments: ['../../packages/reactive-engine/docs/*.md'],
+        // TypeDoc options
+        entryPoints: ['../../packages/reactive-engine/src/index.ts'],
+        tsconfig: 'tsconfig.reactive-engine.json',
+
+        // Plugin options
+        out: 'docs/virtuoso-reactive-engine-api',
+        plugin: ['typedoc-plugin-no-inherit'],
+
+        excludeExternals: false,
+        excludePrivate: true,
+        excludeInternal: true,
+        useHTMLEncodedBrackets: false,
+
+        categoryOrder: ['Guides', 'API Reference', 'Nodes', 'Hooks', 'Operators', 'Combinators', '*', 'Logging', 'Misc'],
+        groupOrder: ['Functions', 'Variables', 'Interfaces', 'Type Aliases', '*'],
+        sort: 'kind',
+        kindSortOrder: [
+          'Function',
+          'Reference',
+          'Project',
+          'Module',
+          'Namespace',
+          'Enum',
+          'EnumMember',
+          'Class',
+          'Interface',
+          'TypeAlias',
+          'Constructor',
+          'Property',
+          'Variable',
+          'Accessor',
+          'Method',
+          'Parameter',
+          'TypeParameter',
+          'TypeLiteral',
+          'CallSignature',
+          'ConstructorSignature',
+          'IndexSignature',
+          'GetSignature',
+          'SetSignature',
+        ],
+
+        disableSources: true,
+        // allReflectionsHaveOwnDocument: true,
+        hideBreadcrumbs: true,
+        parametersFormat: 'table',
+        watch: true,
+        router: 'module',
+      },
+    ],
+
+    [
       '@docusaurus/plugin-client-redirects',
       {
         redirects: [
@@ -245,13 +306,19 @@ const config: Config = {
           type: 'docSidebar',
           sidebarId: 'messageListApiSidebar',
           position: 'left',
-          label: 'Virtuoso Message List API',
+          label: 'Message List API',
         },
         {
           type: 'docSidebar',
           sidebarId: 'masonryApiSidebar',
           position: 'left',
-          label: 'Virtuoso Masonry API',
+          label: ' Masonry API',
+        },
+        {
+          type: 'docSidebar',
+          sidebarId: 'reactiveEngineSidebar',
+          position: 'left',
+          label: 'Reactive Engine',
         },
         {
           to: '/pricing',

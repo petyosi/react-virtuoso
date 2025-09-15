@@ -1,5 +1,8 @@
 import type { SidebarsConfig } from '@docusaurus/plugin-content-docs'
+import engineSidebar from './docs/virtuoso-reactive-engine-api/typedoc-sidebar'
+import { SidebarItemConfig } from '@docusaurus/plugin-content-docs/src/sidebars/types.js'
 
+const engineSidebarItems = engineSidebar.items as SidebarItemConfig[]
 /**
  * Creating a sidebar enables you to:
  - create an ordered group of docs
@@ -47,6 +50,27 @@ const sidebars: SidebarsConfig = {
         id: 'virtuoso-masonry-api/index',
       },
       items: require('./docs/virtuoso-masonry-api/typedoc-sidebar.cjs'),
+    },
+  ],
+  reactiveEngineSidebar: [
+    {
+      type: 'category',
+      collapsible: false,
+      label: 'Reactive Engine',
+      link: {
+        type: 'doc',
+        id: 'virtuoso-reactive-engine-api/index',
+      },
+      items: [
+        ...engineSidebarItems.slice(0, -1),
+
+        {
+          type: 'doc',
+          // @ts-ignore
+          id: engineSidebarItems.at(-1).items[0].id,
+          label: 'API Reference',
+        },
+      ],
     },
   ],
   /*

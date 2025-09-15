@@ -5,6 +5,7 @@
 /build
 docs/virtuoso-api/*
 docs/virtuoso-message-list-api/*
+docs/virtuoso-reactive-engine-api/*
 
 # Generated files
 .docusaurus
