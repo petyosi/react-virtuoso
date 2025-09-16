@@ -61,6 +61,7 @@ We will use the add the new message counter next to the scroll to bottom button,
 ```tsx
 interface MessageListContext {
   loadingNewer: boolean
+  loading: boolean
   channel: ChatChannel
   // highlight-next-line
   unseenMessages: number
@@ -70,14 +71,14 @@ interface MessageListContext {
 <VirtuosoMessageList<ChatMessage, MessageListContext>
   key={channel.name}
 // highlight-next-line
-  context={{ loadingNewer, channel, unseenMessages }}
+  context={{ loading, loadingNewer, currentUser, unseenMessages }}
 ```
 
 Now, change the `StickyFooter` component to display the new message counter:
 
 ```tsx
 // highlight-next-line
-const StickyFooter: VirtuosoProps['StickyFooter'] = ({ context: { unseenMessages } }) => {
+const StickyFooter: MessageListProps['StickyFooter'] = ({ context: { unseenMessages } }) => {
   const location = useVirtuosoLocation()
   const virtuosoMethods = useVirtuosoMethods()
   return (

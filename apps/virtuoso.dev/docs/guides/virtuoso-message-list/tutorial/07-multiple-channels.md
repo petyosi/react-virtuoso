@@ -56,6 +56,7 @@ Add some styling to the main div, and render a side bar with buttons for each ch
     <div style={{ height: 'calc(100vh - 6rem)', display: 'flex', flexDirection: 'column', flexGrow: '1' }}>
       <VirtuosoMessageListLicense licenseKey="">
   //...
+  </div>)
 ```
 
 If everything is set up correctly, you should see a list of buttons on the left side of the screen. Clicking on a them should switch the message list to that channel or create a new channel.

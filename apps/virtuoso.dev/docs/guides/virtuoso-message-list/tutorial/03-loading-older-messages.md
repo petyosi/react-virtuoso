@@ -18,9 +18,11 @@ The `onScroll` event handler receives a `ListScrollLoaction` object as a paramet
 // Add loadingNewer to the message list context
 interface MessageListContext {
   currentUser: ChatUser
+  loading: boolean
   loadingNewer: boolean
 }
 
+// ...
 const [loadingNewer, setLoadingNewer] = useState(false)
 // ...
 // prepend older messages when the user scrolls to the top
@@ -28,8 +30,10 @@ const onScroll = useCallback(
   (location: ListScrollLocation) => {
     // offset is 0 at the top, -totalScrollSize + viewportHeight at the bottom
     if (location.listOffset > -100 && !loadingNewer && messageListData !== null && messageListData.data?.length) {
+      console.log('loading newer messages...')
       setLoadingNewer(true)
       setTimeout(() => {
+        console.log('loaded newer messages')
         setMessageListData((current) => {
           return {
             data: [...Array.from({ length: 10 }, (_, i) => createMessage(i % 3 === 0 ? currentUser : otherUser)), ...(current?.data ?? [])],
@@ -52,7 +56,7 @@ Let's add the event handler to the `VirtuosoMessageList` component:
   <VirtuosoMessageList<ChatMessage, MessageListContext>
     // highlight-start
     onScroll={onScroll}
-    context={{ loadingNewer, channel }}
+    context={{ loadingNewer, loading, currentUser }}
     // highlight-end
 ```
 

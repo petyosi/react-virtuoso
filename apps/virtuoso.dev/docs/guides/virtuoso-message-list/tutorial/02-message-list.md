@@ -83,6 +83,8 @@ function App() {
     return [createUser(1), createUser(2)]
   }, [])
 
+  const [loading, setLoading] = useState(false)
+
   // this loads the initial data in the channel, simulating a network request
   useEffect(() => {
     if (messageListData === null || messageListData.data === null) {
@@ -103,6 +105,8 @@ function App() {
 
   return <div>Coming soon</div>
 }
+
+export default App
 ```
 
 Initially, we make a single-channel interface; In the next steps of the
@@ -195,6 +199,8 @@ utility types:
 // we will use this context to pass the current user to the message list item
 interface MessageListContext {
   currentUser: ChatUser
+  // we will later use this to show loading in progress.
+  loading: boolean
 }
 
 // a shorthand for the message list props
@@ -274,15 +280,15 @@ component to render when the no data is present. Let's use it add a simple loadi
 indicator to the component.
 
 ```tsx
-const EmptyPlaceholder: VirtuosoProps['EmptyPlaceholder'] = ({ context }) => {
-  return <div>{!context.channel.loaded ? 'Loading...' : 'Empty'}</div>
+const EmptyPlaceholder: MessageListProps['EmptyPlaceholder'] = ({ context }) => {
+  return <div>{context.loading ? 'Loading...' : 'Empty'}</div>
 }
 //.... Add the prop to the component
 return (
   <div>
     <VirtuosoMessageList<ChatMessage, MessageListContext>
       style={{ height: '80vh' }}
-      context={{ currentUser }}
+      context={{ currentUser, loading }}
       ItemContent={ItemContent}
       // highlight-next-line
       EmptyPlaceholder={EmptyPlaceholder}
