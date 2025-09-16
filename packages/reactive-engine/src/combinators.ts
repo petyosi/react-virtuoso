@@ -6,14 +6,6 @@ import { Stream } from './nodes'
 import { addNodeInit } from './nodeUtils'
 import { tap } from './utils'
 
-/**
- * Combines the values from multiple nodes into a single node that emits an array of the latest values of the nodes.
- *
- * When one of the source nodes emits a value, the combined node emits an array of the latest values from each node.
- * @typeParam T1 - The type of values that the first node will emit.
- * @category Combinators
- */
-export function combine(...nodes: Out[]): Out
 /** @hidden */
 export function combine<T1>(...nodes: [Out<T1>]): Out<T1>; // prettier-ignore
 /** @hidden */
@@ -52,6 +44,14 @@ export function combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, 
 export function combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18>(...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>, Out<T16>, Out<T17>, Out<T18>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18]>; // prettier-ignore
 /** @hidden */
 export function combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19>(...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>, Out<T14>, Out<T15>, Out<T16>, Out<T17>, Out<T18>, Out<T19>]): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19]>; // prettier-ignore
+export function combine(...nodes: Out[]): Out
+/**
+ * Combines the values from multiple nodes into a single node that emits an array of the latest values of the nodes.
+ *
+ * When one of the source nodes emits a value, the combined node emits an array of the latest values from each node.
+ * @typeParam T1 - The type of values that the first node will emit.
+ * @category Combinators
+ */
 export function combine(...nodes: Out[]): Out {
   return tap(Stream<unknown>(), (sink$) => {
     addNodeInit(nodes[0], (r) => {
@@ -61,6 +61,23 @@ export function combine(...nodes: Out[]): Out {
   })
 }
 
+/** @hidden */
+export function subMultiple<T1>(nodes: [Out<T1>], subscription: Subscription<[T1]>): void
+/** @hidden */
+export function subMultiple<T1, T2>(nodes: [Out<T1>, Out<T2>], subscription: Subscription<[T1, T2]>): void
+/** @hidden */
+export function subMultiple<T1, T2, T3>(nodes: [Out<T1>, Out<T2>, Out<T3>], subscription: Subscription<[T1, T2, T3]>): void
+/** @hidden */
+export function subMultiple<T1, T2, T3, T4>(nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>], subscription: Subscription<[T1, T2, T3, T4]>): void
+/** @hidden */
+export function subMultiple<T1, T2, T3, T4, T5>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>], subscription: Subscription<[T1, T2, T3, T4, T5]>): void // prettier-ignore
+/** @hidden */
+export function subMultiple<T1, T2, T3, T4, T5, T6>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>], subscription: Subscription<[T1, T2, T3, T4, T5, T6]>): void // prettier-ignore
+/** @hidden */
+export function subMultiple<T1, T2, T3, T4, T5, T6, T7>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>], subscription: Subscription<[T1, T2, T3, T4, T5, T6, T7]>): void // prettier-ignore
+/** @hidden */
+export function subMultiple<T1, T2, T3, T4, T5, T6, T7, T8>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>], subscription: Subscription<[T1, T2, T3, T4, T5, T6, T7, T8]>): void // prettier-ignore
+export function subMultiple(nodes: Out[], subscription: Subscription<any>): void
 /**
  * Subscribes to multiple nodes at once. If any of the nodes emits a value, the subscription will be called with an array of the latest values from each node.
  * If the nodes change within a single execution cycle, the subscription will be called only once with the final node values.
@@ -83,49 +100,13 @@ export function combine(...nodes: Out[]): Out {
  * r.pub(trigger$, 2)
  * ```
  */
-export function subMultiple(nodes: Out[], subscription: Subscription<any>): void
-/** @hidden */
-export function subMultiple<T1>(nodes: [Out<T1>], subscription: Subscription<[T1]>): void
-/** @hidden */
-export function subMultiple<T1, T2>(nodes: [Out<T1>, Out<T2>], subscription: Subscription<[T1, T2]>): void
-/** @hidden */
-export function subMultiple<T1, T2, T3>(nodes: [Out<T1>, Out<T2>, Out<T3>], subscription: Subscription<[T1, T2, T3]>): void
-/** @hidden */
-export function subMultiple<T1, T2, T3, T4>(nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>], subscription: Subscription<[T1, T2, T3, T4]>): void
-/** @hidden */
-export function subMultiple<T1, T2, T3, T4, T5>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>], subscription: Subscription<[T1, T2, T3, T4, T5]>): void // prettier-ignore
-/** @hidden */
-export function subMultiple<T1, T2, T3, T4, T5, T6>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>], subscription: Subscription<[T1, T2, T3, T4, T5, T6]>): void // prettier-ignore
-/** @hidden */
-export function subMultiple<T1, T2, T3, T4, T5, T6, T7>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>], subscription: Subscription<[T1, T2, T3, T4, T5, T6, T7]>): void // prettier-ignore
-/** @hidden */
-export function subMultiple<T1, T2, T3, T4, T5, T6, T7, T8>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>], subscription: Subscription<[T1, T2, T3, T4, T5, T6, T7, T8]>): void // prettier-ignore
-
 export function subMultiple(nodes: Out[], subscription: Subscription<any>): void {
   addNodeInit(nodes[0], (r) => {
     r.subMultiple(nodes, subscription)
   })
 }
 
-/**
- * Creates a new node that emits the values of the source node transformed through the specified operators.
- *
- * @typeParam T - The type of values that the source node will emit.
- * @category Combinators
- *
- * @example
- * ```ts
- * const stream = Stream<number>(true, (r) => {
- *   const streamPlusOne = r.pipe(stream, map(i => i + 1))
- *   r.sub(streamPlusOne, console.log)
- * })
- * const r = new Engine()
- * r.pub(stream, 1)
- * ```
- */
-export function pipe<T>(source$: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef
-/** @hidden */
-export function pipe<T>(s$: Out<T>): NodeRef<T> // prettier-ignore
+export function pipe<T>(s$: Out<T>): NodeRef<T> /** @hidden */ // prettier-ignore
 /** @hidden */
 export function pipe<T, O1>(s: Out<T>, o1: O<T, O1>): NodeRef<O1> // prettier-ignore
 /** @hidden */
@@ -144,6 +125,23 @@ export function pipe<T, O1, O2, O3, O4, O5, O6, O7>( s: Out<T>, ...o: [O<T, O1>,
 export function pipe<T, O1, O2, O3, O4, O5, O6, O7, O8>( s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>, O<O7, O8>]): NodeRef<O8> // prettier-ignore
 /** @hidden */
 export function pipe<T, O1, O2, O3, O4, O5, O6, O7, O8, O9>( s: Out<T>, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>, O<O7, O8>, O<O8, O9>]): NodeRef<O9> // prettier-ignore
+export function pipe<T>(source$: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef
+/**
+ * Creates a new node that emits the values of the source node transformed through the specified operators.
+ *
+ * @typeParam T - The type of values that the source node will emit.
+ * @category Combinators
+ *
+ * @example
+ * ```ts
+ * const stream = Stream<number>(true, (r) => {
+ *   const streamPlusOne = r.pipe(stream, map(i => i + 1))
+ *   r.sub(streamPlusOne, console.log)
+ * })
+ * const r = new Engine()
+ * r.pub(stream, 1)
+ * ```
+ */
 export function pipe<T>(source$: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef {
   return tap(Stream<unknown>(), (sink$) => {
     addNodeInit(source$, (r) => {

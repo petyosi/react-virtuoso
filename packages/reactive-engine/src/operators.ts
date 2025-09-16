@@ -50,6 +50,23 @@ export function map<I, O>(mapFunction: (value: I) => O) {
   }) satisfies Operator<I, O>
 }
 
+/** @hidden */
+export function withLatestFrom<I, T1>(...nodes: [Out<T1>]): (source: Out<I>) => NodeRef<[I, T1]> // prettier-ignore
+/** @hidden */
+export function withLatestFrom<I, T1, T2>(...nodes: [Out<T1>, Out<T2>]): (source: Out<I>) => NodeRef<[I, T1, T2]> // prettier-ignore
+/** @hidden */
+export function withLatestFrom<I, T1, T2, T3>(...nodes: [Out<T1>, Out<T2>, Out<T3>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3]> // prettier-ignore
+/** @hidden */
+export function withLatestFrom<I, T1, T2, T3, T4>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4]> // prettier-ignore
+/** @hidden */
+export function withLatestFrom<I, T1, T2, T3, T4, T5>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5]> // prettier-ignore
+/** @hidden */
+export function withLatestFrom<I, T1, T2, T3, T4, T5, T6>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5, T6]> // prettier-ignore
+/** @hidden */
+export function withLatestFrom<I, T1, T2, T3, T4, T5, T6, T7>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5, T6, T7]> // prettier-ignore
+/** @hidden */
+export function withLatestFrom<I, T1, T2, T3, T4, T5, T6, T7, T8>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5, T6, T7, T8]> // prettier-ignore
+export function withLatestFrom<I>(...nodes: Out[]): Operator<I, unknown[]>
 /**
  * Pulls the latest values from the passed nodes.
  * Note: The operator does not emit when the nodes emit. If you want to get that, use the `combine` function.
@@ -57,14 +74,6 @@ export function map<I, O>(mapFunction: (value: I) => O) {
  * @typeParam T1 - The type of values that the first node will emit.
  * @category Operators
  */
-export function withLatestFrom<I, T1>(...nodes: [Out<T1>]): (source: Out<I>) => NodeRef<[I, T1]> // prettier-ignore
-export function withLatestFrom<I, T1, T2>(...nodes: [Out<T1>, Out<T2>]): (source: Out<I>) => NodeRef<[I, T1, T2]> // prettier-ignore
-export function withLatestFrom<I, T1, T2, T3>(...nodes: [Out<T1>, Out<T2>, Out<T3>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3]> // prettier-ignore
-export function withLatestFrom<I, T1, T2, T3, T4>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4]> // prettier-ignore
-export function withLatestFrom<I, T1, T2, T3, T4, T5>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5]> // prettier-ignore
-export function withLatestFrom<I, T1, T2, T3, T4, T5, T6>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5, T6]> // prettier-ignore
-export function withLatestFrom<I, T1, T2, T3, T4, T5, T6, T7>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5, T6, T7]> // prettier-ignore
-export function withLatestFrom<I, T1, T2, T3, T4, T5, T6, T7, T8>( ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>]): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5, T6, T7, T8]> // prettier-ignore
 export function withLatestFrom<I>(...nodes: Out[]) {
   return ((source, eng) => {
     const sink = eng.streamInstance()
