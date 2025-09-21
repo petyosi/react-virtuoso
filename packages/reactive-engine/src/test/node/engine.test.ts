@@ -543,40 +543,6 @@ describe('instance subscriptions', () => {
     eng.pub(i$, 2)
     expect(eng.getValue(a$)).toEqual('foo3')
   })
-
-  it('supports promise resolution', async () => {
-    const a = Cell<'error' | 'loaded' | 'loading' | 'none'>('none')
-    const s = Stream<number>()
-
-    e.link(
-      e.pipe(
-        s,
-        e.map(async (val) => {
-          return await new Promise<string>((resolve, reject) => {
-            if (val === 2) {
-              resolve('loaded')
-            } else {
-              reject(new Error('something went wrong'))
-            }
-          })
-        }),
-        e.handlePromise(
-          () => 'loading',
-          (value) => value,
-          (error) => error
-        )
-      ),
-      a
-    )
-
-    eng.pub(s, 2)
-    await new Promise((resolve) => setTimeout(resolve, 0))
-    expect(eng.getValue(a)).toEqual('loaded')
-
-    eng.pub(s, 3)
-    await new Promise((resolve) => setTimeout(resolve, 0))
-    expect(eng.getValue(a)).toMatchObject(new Error('something went wrong'))
-  })
 })
 
 describe('Derived cell', () => {

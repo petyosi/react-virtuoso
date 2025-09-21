@@ -22,6 +22,9 @@ import { SetMap } from './SetMap'
 import { Tracer } from './Tracer'
 import { combinedCellProjection, defaultComparator, tap } from './utils'
 
+// use this so that streams don't skip undefined values
+const emptyStreamValue = Symbol('empty stream')
+
 /**
  * The engine orchestrates any cells and streams that it touches. The engine also stores the state and the dependencies of the nodes that are referred through it.
  * @category Engine
@@ -292,7 +295,7 @@ export class Engine {
       let resolved = false
       const done = (value: unknown) => {
         const dnRef = this.distinctNodes.get(id)
-        if (dnRef?.(transientState.get(id), value)) {
+        if (transientState.has(id) && dnRef?.(transientState.get(id), value)) {
           this.tracer.log(`Skipping ${getNodeLabel(id)}, value is already`, value)
           resolved = false
           return
@@ -421,7 +424,7 @@ export class Engine {
   streamInstance<T>(distinct: Distinct<T> = true, node = Symbol()): NodeRef<T> {
     if (distinct !== false) {
       this.distinctNodes.set(node, distinct === true ? defaultComparator : (distinct as Comparator<unknown>))
-      this.streamState.set(node, undefined)
+      this.streamState.set(node, emptyStreamValue)
     }
     return node as NodeRef<T>
   }

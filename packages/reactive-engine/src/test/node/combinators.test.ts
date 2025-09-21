@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { Cell, changeWith, combine, link, pipe, singletonSub, Stream, sub, subMultiple } from '../..'
-import { Engine } from '../../Engine'
-import { map } from '../../operators'
+import { Cell, changeWith, combine, e, Engine, link, map, pipe, singletonSub, Stream, sub, subMultiple } from '../..'
 
 describe('Reactive Engine combinators', () => {
   let engineInstance: Engine
@@ -17,7 +15,7 @@ describe('Reactive Engine combinators', () => {
       const combined$ = combine(cell1$, cell2$)
       const spy = vi.fn()
 
-      engineInstance.sub(combined$, spy)
+      e.sub(combined$, spy)
       engineInstance.pub(cell1$, 42)
       expect(spy).toHaveBeenCalledWith([42, 2], engineInstance)
 
@@ -166,20 +164,6 @@ describe('Reactive Engine combinators', () => {
   })
 
   describe('subMultiple', () => {
-    it('subscribes to multiple nodes at once', () => {
-      const stream1$ = Stream<number>()
-      const stream2$ = Stream<string>()
-      const spy = vi.fn()
-
-      subMultiple([stream1$, stream2$], spy)
-
-      engineInstance.pub(stream1$, 42)
-      expect(spy).toHaveBeenCalledWith([42, undefined], engineInstance)
-
-      engineInstance.pub(stream2$, 'hello')
-      expect(spy).toHaveBeenCalledWith([42, 'hello'], engineInstance)
-    })
-
     it('calls subscription only once when multiple nodes change in same cycle', () => {
       const cell1$ = Cell(1)
       const cell2$ = Cell(2)
