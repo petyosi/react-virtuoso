@@ -35,6 +35,7 @@ export class Engine {
   private readonly graph = new SetMap<NodeProjection>()
   private readonly singletonSubscriptions = new Map<symbol, Subscription<unknown>>()
   private readonly state = new Map<symbol, unknown>()
+  private readonly streamState = new Map<symbol, unknown>()
   private readonly subscriptions = new SetMap<Subscription<unknown>>()
 
   /**
@@ -266,7 +267,7 @@ export class Engine {
     const map = this.getExecutionMap(ids)
     const refCount = map.refCount.clone()
     const participatingNodeKeys = map.participatingNodes.slice()
-    const transientState = new Map<symbol, unknown>(this.state)
+    const transientState = new Map<symbol, unknown>([...this.state, ...this.streamState])
 
     const nodeWillNotEmit = (key: symbol) => {
       this.graph.use(key, (projections) => {
@@ -303,6 +304,9 @@ export class Engine {
         if (this.state.has(id)) {
           this.tracer.log(CC.blue('Persisting state: '), value)
           this.state.set(id, value)
+        } else if (this.streamState.has(id)) {
+          this.tracer.log(CC.blue('Remembering last stream state: '), value)
+          this.streamState.set(id, value)
         }
       }
       if (Object.hasOwn(values, id)) {
@@ -411,12 +415,13 @@ export class Engine {
    * Creates or resolves an existing stream instance in the engine. Useful as a joint point when building your own operators.
    * @returns a reference to the stream.
    * @param distinct - true by default. Pass false to mark the stream as a non-distinct one, meaning that publishing the same value multiple times will re-trigger a recomputation cycle.
-   * @param node - optional, a reference to a stream. If the signal has not been touched in the engine before, the engine will instantiate a reference to it. If it's registered already, the function will return the reference.
+   * @param node - optional, a reference to a stream. If the stream has not been touched in the engine before, the engine will instantiate a reference to it. If it's registered already, the function will return the reference.
    * @typeParam T - The type of values that the stream will emit/accept.
    */
   streamInstance<T>(distinct: Distinct<T> = true, node = Symbol()): NodeRef<T> {
     if (distinct !== false) {
       this.distinctNodes.set(node, distinct === true ? defaultComparator : (distinct as Comparator<unknown>))
+      this.streamState.set(node, undefined)
     }
     return node as NodeRef<T>
   }

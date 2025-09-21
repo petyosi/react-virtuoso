@@ -47,9 +47,31 @@ export function combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, 
 export function combine(...nodes: Out[]): Out
 /**
  * Combines the values from multiple nodes into a single node that emits an array of the latest values of the nodes.
+ * This function is overloaded to support up to 19 nodes with proper type inference.
  *
- * When one of the source nodes emits a value, the combined node emits an array of the latest values from each node.
- * @typeParam T1 - The type of values that the first node will emit.
+ * @param nodes - The nodes to combine. Can be any number of output nodes.
+ *
+ * @returns A new node that emits an array containing the latest values from all input nodes.
+ * When any input node emits, the combined node emits an array of all current values.
+ * For a single node, returns an array with that node's value. For multiple nodes,
+ * returns a tuple array maintaining the order of input nodes.
+ *
+ * @typeParam T1, T2, ... - The types of values that each input node emits.
+ *
+ * @example
+ * ```ts
+ * import { Engine, Cell, combine } from '@virtuoso.dev/reactive-engine'
+ *
+ * const cell1$ = Cell(10)
+ * const cell2$ = Cell('hello')
+ * const combined$ = combine(cell1$, cell2$)
+ * const engine = new Engine()
+ *
+ * engine.sub(combined$, (values) => console.log(values))
+ * engine.pub(cell1$, 20) // logs [20, 'hello']
+ * engine.pub(cell2$, 'world') // logs [20, 'world']
+ * ```
+ *
  * @category Combinators
  */
 export function combine(...nodes: Out[]): Out {
@@ -79,26 +101,34 @@ export function subMultiple<T1, T2, T3, T4, T5, T6, T7>( nodes: [Out<T1>, Out<T2
 export function subMultiple<T1, T2, T3, T4, T5, T6, T7, T8>( nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>], subscription: Subscription<[T1, T2, T3, T4, T5, T6, T7, T8]>): void // prettier-ignore
 export function subMultiple(nodes: Out[], subscription: Subscription<any>): void
 /**
- * Subscribes to multiple nodes at once. If any of the nodes emits a value, the subscription will be called with an array of the latest values from each node.
- * If the nodes change within a single execution cycle, the subscription will be called only once with the final node values.
+ * Subscribes to multiple nodes at once. This function is overloaded to support up to 8 nodes with proper type inference.
+ * When any of the input nodes emits a value, the subscription will be called with an array of the latest values from each node.
  *
- * @typeParam T1 - The type of values that the first node will emit.
- * @category Combinators
+ * @param nodes - Array of nodes to subscribe to.
+ * @param subscription - Callback function that receives an array of current values and the engine instance.
+ *
+ * @typeParam T1, T2, ... - The types of values that each input node emits.
  *
  * @example
  * ```ts
- * const foo$ = Cell('foo')
- * const bar$ = Cell('bar')
+ * import { Engine, Cell, Stream, subMultiple } from '@virtuoso.dev/reactive-engine'
  *
- * const trigger$ = Stream<number>(true, (r) => {
- *   r.link(r.pipe(trigger$, map(i => `foo${i}`)), foo$)
- *   r.link(r.pipe(trigger$, map(i => `bar${i}`)), bar$)
+ * const cell1$ = Cell(1)
+ * const cell2$ = Cell('hello')
+ * const engine = new Engine()
+ *
+ * subMultiple([cell1$, cell2$], (values, eng) => {
+ *   console.log('Values:', values) // [number, string]
  * })
  *
- * const r = new Engine()
- * r.subMultiple([foo$, bar$], ([foo, bar]) => console.log(foo, bar))
- * r.pub(trigger$, 2)
+ * engine.pub(cell1$, 42) // logs 'Values: [42, "hello"]'
+ * engine.pub(cell2$, 'world') // logs 'Values: [42, "world"]'
  * ```
+ *
+ * @remarks The subscription is called for each individual node emission. If multiple nodes
+ * are updated in sequence, the subscription will be called once for each update.
+ *
+ * @category Combinators
  */
 export function subMultiple(nodes: Out[], subscription: Subscription<any>): void {
   addNodeInit(nodes[0], (r) => {
@@ -128,19 +158,36 @@ export function pipe<T, O1, O2, O3, O4, O5, O6, O7, O8, O9>( s: Out<T>, ...o: [O
 export function pipe<T>(source$: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef
 /**
  * Creates a new node that emits the values of the source node transformed through the specified operators.
+ * This function is overloaded to support up to 9 operators with proper type inference for chaining.
  *
- * @typeParam T - The type of values that the source node will emit.
- * @category Combinators
+ * @param source$ - The source node to transform.
+ * @param operators - Variable number of operators to apply in sequence.
+ *
+ * @returns A new node that emits the transformed values. If no operators are provided,
+ * returns a node that emits the same values as the source.
+ *
+ * @typeParam T - The type of values that the source node emits.
+ * @typeParam O1, O2, ... - The output types of each operator in the chain.
  *
  * @example
  * ```ts
- * const stream = Stream<number>(true, (r) => {
- *   const streamPlusOne = r.pipe(stream, map(i => i + 1))
- *   r.sub(streamPlusOne, console.log)
- * })
- * const r = new Engine()
- * r.pub(stream, 1)
+ * import { Engine, Stream, pipe } from '@virtuoso.dev/reactive-engine'
+ * import { map } from '@virtuoso.dev/reactive-engine/operators'
+ *
+ * const source$ = Stream<number>()
+ * const doubled$ = pipe(source$, map(x => x * 2))
+ * const doubledPlusOne$ = pipe(
+ *   source$,
+ *   map(x => x * 2),
+ *   map(x => x + 1)
+ * )
+ *
+ * const engine = new Engine()
+ * engine.sub(doubled$, console.log)
+ * engine.pub(source$, 5) // logs 10
  * ```
+ *
+ * @category Combinators
  */
 export function pipe<T>(source$: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef {
   return tap(Stream<unknown>(), (sink$) => {
@@ -151,25 +198,38 @@ export function pipe<T>(source$: Out<T>, ...operators: O<unknown, unknown>[]): N
 }
 
 /**
- * Convenient for mutation of cells that contian non-primitive values (e.g. arrays, or objects).
- * Specifies that the cell value should be changed when source emits, with the result of the map callback parameter.
- * the map parameter gets called with the current value of the cell and the value published through the source.
- * @typeParam T - the type of the cell value.
- * @typeParam K - the type of the value published through the source.
+ * Updates a cell's value based on emissions from a source node using a mapping function.
+ * This is particularly useful for updating cells containing non-primitive values (arrays, objects)
+ * in an immutable way.
  *
- * @category Combinators
+ * @param cell - The cell to update.
+ * @param source - The source node whose emissions trigger the update.
+ * @param map - Function that receives the current cell value and the source emission,
+ *   and returns the new value for the cell.
+ *
+ * @typeParam T - The type of the cell value.
+ * @typeParam K - The type of the value emitted by the source node.
  *
  * @example
  * ```ts
- * const items$ = Cell<string[]([])
- * const addItem$ = Stream<string>(false, (r) => {
- *   r.changeWith(items$, addItem$, (items, item) => [...items, item])
+ * import { Engine, Cell, Stream, changeWith } from '@virtuoso.dev/reactive-engine'
+ *
+ * const items$ = Cell<string[]>([])
+ * const addItem$ = Stream<string>()
+ * const engine = new Engine()
+ *
+ * changeWith(items$, addItem$, (currentItems, newItem) => {
+ *   return [...currentItems, newItem] // immutable update
  * })
- * const r = new Engine()
- * r.pub(addItem$, 'foo')
- * r.pub(addItem$, 'bar')
- * r.getValue(items$) // ['foo', 'bar']
+ *
+ * engine.pub(addItem$, 'foo')
+ * console.log(engine.getValue(items$)) // ['foo']
+ *
+ * engine.pub(addItem$, 'bar')
+ * console.log(engine.getValue(items$)) // ['foo', 'bar']
  * ```
+ *
+ * @category Combinators
  */
 export function changeWith<T, K>(cell: Inp<T>, source: Out<K>, map: (cellValue: T, streamValue: K) => T) {
   addNodeInit(source, (r) => {
@@ -178,8 +238,28 @@ export function changeWith<T, K>(cell: Inp<T>, source: Out<K>, map: (cellValue: 
 }
 
 /**
- * Links the output of a node to the input of another node.
- * @typeParam T - The type of values that the nodes will emit.
+ * Connects the output of a source node to the input of a sink node.
+ * When the source emits a value, that value is automatically published to the sink.
+ *
+ * @param source - The output node whose values will be forwarded.
+ * @param sink - The input node that will receive the forwarded values.
+ *
+ * @typeParam T - The type of values being linked between the nodes.
+ *
+ * @example
+ * ```ts
+ * import { Engine, Stream, Cell, link } from '@virtuoso.dev/reactive-engine'
+ *
+ * const source$ = Stream<number>()
+ * const target$ = Cell(0)
+ * const engine = new Engine()
+ *
+ * link(source$, target$)
+ *
+ * engine.pub(source$, 42)
+ * console.log(engine.getValue(target$)) // 42
+ * ```
+ *
  * @category Combinators
  */
 export function link<T>(source: Out<T>, sink: Inp<T>) {
@@ -189,23 +269,33 @@ export function link<T>(source: Out<T>, sink: Inp<T>) {
 }
 
 /**
- * Subscribes to the values published in the referred node.
- * @param node - the cell/stream to subscribe to.
- * @param subscription - the callback to execute when the node receives a new value.
- * @returns a function that, when called, will cancel the subscription.
- * @typeParam T - The type of values that the node will emit.
+ * Subscribes to the values emitted by a node. The subscription callback will be called
+ * each time the node emits a value.
  *
- * @category Combinators
+ * @param node - The output node to subscribe to (cell or stream).
+ * @param subscription - Callback function that receives the emitted value and engine instance.
+ *
+ * @typeParam T - The type of values that the node emits.
  *
  * @example
  * ```ts
- * const stream = Stream<number>()
- * const r = new Engine()
- * const unsub = r.sub(stream, console.log)
- * r.pub(stream, 2)
- * unsub()
- * r.pub(stream, 3)
+ * import { Engine, Stream, sub } from '@virtuoso.dev/reactive-engine'
+ *
+ * const stream$ = Stream<number>()
+ * const engine = new Engine()
+ *
+ * sub(stream$, (value) => {
+ *   console.log('Received:', value)
+ * })
+ *
+ * engine.pub(stream$, 42) // logs 'Received: 42'
+ * engine.pub(stream$, 43) // logs 'Received: 43'
  * ```
+ *
+ * @remarks This creates a persistent subscription that will remain active until the engine
+ * is disposed. Use this for ongoing subscriptions to node emissions.
+ *
+ * @category Combinators
  */
 export function sub<T>(node: Out<T>, subscription: Subscription<T>) {
   addNodeInit(node, (r) => {
@@ -214,24 +304,41 @@ export function sub<T>(node: Out<T>, subscription: Subscription<T>) {
 }
 
 /**
- * Subscribes exclusively to values in the referred node within an engine instance.
- * Calling this multiple times on a single node will remove the previous subscription created through `singletonSub`.
- * Subscriptions created through `sub` are not affected.
- * @returns a function that, when called, will cancel the subscription.
- * @typeParam T - The type of values that the node will emit.
+ * Creates an exclusive subscription to a node. Only one singleton subscription can exist
+ * per node - calling this multiple times on the same node will replace the previous
+ * singleton subscription. Regular subscriptions created with `sub` are not affected.
  *
- * @category Combinators
+ * @param node - The output node to subscribe to exclusively.
+ * @param subscription - Callback function that receives the emitted value and engine instance.
+ *
+ * @typeParam T - The type of values that the node emits.
  *
  * @example
  * ```ts
- * const stream = Stream<number>()
- * const r = new Engine()
- * // console.log will run only once.
- * r.singletonSub(stream, console.log)
- * r.singletonSub(stream, console.log)
- * r.singletonSub(stream, console.log)
- * r.pub(stream, 2)
+ * import { Engine, Stream, sub, singletonSub } from '@virtuoso.dev/reactive-engine'
+ *
+ * const stream$ = Stream<number>()
+ * const engine = new Engine()
+ *
+ * // Regular subscription - will persist
+ * sub(stream$, (value) => console.log('Regular:', value))
+ *
+ * // First singleton subscription
+ * singletonSub(stream$, (value) => console.log('Singleton 1:', value))
+ *
+ * // This replaces the first singleton subscription
+ * singletonSub(stream$, (value) => console.log('Singleton 2:', value))
+ *
+ * engine.pub(stream$, 42)
+ * // Output:
+ * // Regular: 42
+ * // Singleton 2: 42
  * ```
+ *
+ * @remarks Useful for scenarios where you need exactly one subscription of a particular
+ * type, such as UI updates or singleton services.
+ *
+ * @category Combinators
  */
 export function singletonSub<T>(node: Out<T>, subscription: Subscription<T>) {
   addNodeInit(node, (r) => {

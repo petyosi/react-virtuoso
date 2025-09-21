@@ -12,20 +12,25 @@ import { tap } from './utils'
 
 /**
  * Defines a new **stateless, valueless node** and returns a reference to it.
- * Once an engine instance publishes or subscribes to the node, an instance of that node it will be registered in the engine.
+ *
+ * @returns A node reference that can be published to without a value to trigger subscriptions.
  *
  * @example
  * ```ts
- * const foo$ = Trigger()
+ * import { Engine, Trigger } from '@virtuoso.dev/reactive-engine'
  *
- * e.sub(foo$, () => console.log('foo trigger'))
+ * const trigger$ = Trigger()
+ * const engine = new Engine()
  *
- * const r = new Engine()
- * r.pub(foo$)
+ * engine.sub(trigger$, () => console.log('triggered!'))
+ * engine.pub(trigger$) // logs 'triggered!'
  * ```
- * @category Nodes
  *
- * @remarks A trigger is just a signal with `void` value. It can be used to trigger side effects.
+ * @remarks A trigger is a signal with `void` value that activates subscriptions when published.
+ * It's useful for triggering side effects or coordinating actions without passing data.
+ * Triggers are not distinct by design - they will always emit when published.
+ *
+ * @category Nodes
  */
 export function Trigger(): NodeRef<void> {
   return tap(Symbol(), (id) => {
@@ -35,17 +40,39 @@ export function Trigger(): NodeRef<void> {
 
 /**
  * Defines a new **stateless node** and returns a reference to it.
- * Once an engine instance publishes or subscribes to the node, an instance of that node it will be registered in the engine.
- * @param distinct - true by default. The node emits values that are different from the previous value. Optionally, a custom distinct function can be provided if the node values are non-primitive.
- * @typeParam T - The type of values that the node emits/accepts.
+ *
+ * @param distinct - Controls duplicate value emission. Default is `true` (distinct).
+ *   - `true`: Only emits when the new value is different from the previous value
+ *   - `false`: Always emits when published, even with duplicate values
+ *   - Custom function: `(prev: T | undefined, next: T) => boolean` - return `true` if values are considered equal
+ *
+ * @typeParam T - The type of values that the node emits and accepts.
+ *
+ * @returns A node reference that can be published to with values of type T.
+ *
  * @example
  * ```ts
- * const foo$ = Stream<string>(true, (r) => {
- *   r.sub(foo$, console.log)
- * })
- * const r = new Engine()
- * r.pub(foo$, 'bar') // the subscription will log 'bar'
+ * import { Engine, Stream } from '@virtuoso.dev/reactive-engine'
+ *
+ * // Basic usage with default distinct behavior
+ * const stream$ = Stream<number>()
+ * const engine = new Engine()
+ *
+ * engine.sub(stream$, (value) => console.log('received:', value))
+ * engine.pub(stream$, 42) // logs 'received: 42'
+ * engine.pub(stream$, 42) // no output (duplicate filtered)
+ * engine.pub(stream$, 43) // logs 'received: 43'
+ *
+ * // With custom distinct comparator
+ * const objStream$ = Stream<{id: number}>((a, b) => a?.id === b?.id)
+ * engine.sub(objStream$, console.log)
+ * engine.pub(objStream$, {id: 1}) // emits
+ * engine.pub(objStream$, {id: 1}) // filtered (same id)
  * ```
+ *
+ * @remarks Streams are stateless - they don't hold values between publications.
+ * Use {@link Cell} if you need stateful behavior with initial values.
+ *
  * @category Nodes
  */
 
@@ -57,20 +84,45 @@ export function Stream<T>(distinct: Distinct<T> = true): NodeRef<T> {
 
 /**
  * Defines a new **stateful node** and returns a reference to it.
- * Once an engine instance publishes or subscribes to the node, an instance of that node it will be registered in the engine.
- * @param value - the initial value of the node. Stateful nodes always have a value.
- * @param distinct - if true, the node will only emit values that are different from the previous value. Optionally, a custom comparator function can be provided if the node values are non-primitive.
- * @typeParam T - The type of values that the node emits/accepts.
+ *
+ * @param value - The initial value of the node. Stateful nodes always have a current value.
+ * @param distinct - Controls duplicate value emission. Default is `true` (distinct).
+ *   - `true`: Only emits when the new value is different from the current value
+ *   - `false`: Always emits when published, even with duplicate values
+ *   - Custom function: `(prev: T | undefined, next: T) => boolean` - return `true` if values are considered equal
+ *
+ * @typeParam T - The type of values that the node stores, emits, and accepts.
+ *
+ * @returns A node reference that maintains state and can be published to with values of type T.
+ *
  * @example
  * ```ts
- * const foo$ = Cell('foo',  (r) => {
- *   r.sub(foo$, console.log)
- * }, true)
- * const r = new Engine()
- * r.pub(foo$, 'bar') // the subscription will log 'bar'
+ * import { Engine, Cell } from '@virtuoso.dev/reactive-engine'
+ *
+ * // Basic usage
+ * const counter$ = Cell(0)
+ * const engine = new Engine()
+ *
+ * console.log(engine.getValue(counter$)) // 0 (initial value)
+ *
+ * engine.sub(counter$, (value) => console.log('counter:', value))
+ * engine.pub(counter$, 1) // logs 'counter: 1'
+ * console.log(engine.getValue(counter$)) // 1 (updated value)
+ *
+ * // Distinct behavior (default)
+ * engine.pub(counter$, 1) // no output (same value)
+ * engine.pub(counter$, 2) // logs 'counter: 2'
+ *
+ * // Non-distinct cell
+ * const alwaysEmit$ = Cell(0, false)
+ * engine.sub(alwaysEmit$, console.log)
+ * engine.pub(alwaysEmit$, 0) // emits even though it's the same value
  * ```
- * @remarks Unlike the RxJS `BehaviorSubject`, a stateful node does not immediately invoke its subscriptions when subscribed to. It only emits values when you publish something in it, either directly or through its relationships.
- * If you need to get the current value of a stateful node, use {@link Engine.getValue}.
+ *
+ * @remarks Unlike RxJS `BehaviorSubject`, a Cell does not immediately invoke its subscriptions
+ * when subscribed to. It only emits values when published to, either directly or through
+ * its relationships. Use {@link Engine.getValue} to access the current value at any time.
+ *
  * @category Nodes
  */
 

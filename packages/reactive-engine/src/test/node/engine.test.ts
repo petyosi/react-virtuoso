@@ -520,7 +520,7 @@ describe('instance subscriptions', () => {
 
   it('supports changing a cell value', () => {
     const a = Cell(1)
-    const b = Stream<number>()
+    const b = Stream<number>(false)
 
     e.changeWith(a, b, (a, b) => a + b)
 

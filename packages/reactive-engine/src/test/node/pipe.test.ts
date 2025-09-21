@@ -108,8 +108,8 @@ describe('pipe', () => {
   })
 
   it('onNext publishes only once, when the trigger stream emits', () => {
-    const a = Stream<number>()
-    const b = Stream<number>()
+    const a = Stream<number>(false)
+    const b = Stream<number>(false)
 
     const c = e.pipe(a, onNext(b))
 

@@ -61,7 +61,7 @@ export interface ExecutionMap {
  * @returns true if values should be considered equal.
  * @category Misc
  */
-export type Comparator<T> = (previous: T | undefined, current: T) => boolean
+export type Comparator<T> = (previous: T | undefined, current: T) => boolean | null | undefined
 
 /**
  * A type for the distinct parameter to the {@link Cell} and {@link Stream} constructors.
