@@ -17,6 +17,8 @@ describe('Reactive Engine nodes', () => {
       expect(spy).toHaveBeenCalledTimes(0)
       engineInstance.pub(trigger$)
       expect(spy).toHaveBeenCalledTimes(1)
+      engineInstance.pub(trigger$)
+      expect(spy).toHaveBeenCalledTimes(2)
     })
   })
   describe('Stream', () => {

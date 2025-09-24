@@ -4,18 +4,18 @@ import type { RefCount } from './RefCount'
 import type { SetMap } from './SetMap'
 
 /**
- * A typed reference to a node.
+ * A typed reference to a node ({@link Cell}, {@link Stream}, or {@link Trigger}).
  * @typeParam T - The type of values that the node emits.
  * @category Nodes
  */
 export type NodeRef<T = unknown> = symbol & { valType: T }
 
-/** An alias for the NodeRef, signifying that the ref will be used only for publishing
+/** An alias for the NodeRef, signifying that the ref will be used only for publishing.
  * @category Misc
  */
 export type Inp<T = unknown> = NodeRef<T>
 
-/** An alias for the NodeRef, signifying that the ref will be used only for subscriptions
+/** An alias for the NodeRef, signifying that the ref will be used only for subscriptions.
  * @category Misc
  */
 export type Out<T = unknown> = NodeRef<T>

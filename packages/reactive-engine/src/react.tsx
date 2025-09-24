@@ -4,91 +4,7 @@ import type { Inp, NodeRef, Out, Subscription, TracerConsole } from './types'
 
 import { Engine } from './Engine'
 
-/**
- * The context that provides the engine for the built-in hooks.
- * @category React Components
- * @function
- */
-export const EngineContext = React.createContext<Engine | null>(null)
-
-/**
- * @inline
- * @category React Components
- */
-export interface EngineProviderProps {
-  /**
-   * The children to render
-   */
-  children: React.ReactNode
-  /**
-   * A console instance (usually, the browser console, but you can pass your own logger) that enables diagnostic messages about the engine state cycles.
-   */
-  console?: TracerConsole
-  /**
-   * The initial values to set in the engine
-   */
-  initWith?: Record<string, unknown>
-  /**
-   * the label to use in the tracer messages
-   */
-  label?: string
-  /**
-   * The values to update in the engine on each render
-   */
-  updateWith?: Record<string, unknown>
-}
-
-/**
- * @category React Components
- * @function
- */
-export const EngineProvider: React.FC<EngineProviderProps> = ({
-  children,
-  console: theEngineConsole,
-  initWith,
-  label,
-  updateWith = {},
-}) => {
-  const [engine, setEngine] = React.useState<Engine | null>(null)
-
-  useIsomorphicLayoutEffect(() => {
-    const engine = new Engine(initWith)
-    setEngine(engine)
-    return () => {
-      engine.dispose()
-    }
-  }, [])
-
-  useIsomorphicLayoutEffect(() => {
-    engine?.setTracerConsole(theEngineConsole)
-  }, [theEngineConsole, engine])
-
-  useIsomorphicLayoutEffect(() => {
-    engine?.setLabel(label ?? '')
-  }, [label, engine])
-
-  useIsomorphicLayoutEffect(() => {
-    engine?.pubIn(updateWith)
-  }, [updateWith, engine])
-
-  return engine && <EngineContext.Provider value={engine}>{children}</EngineContext.Provider>
-}
-
 const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? React.useLayoutEffect : React.useEffect
-
-/**
- * Returns a direct reference to the current engine. Use with caution.
- *
- * If possible, design your logic in a reactive manner, and use {@link useCellValue} and {@link usePublisher} to access the output of the engine.
- * @category Hooks
- */
-export function useEngine() {
-  const engine = React.useContext(EngineContext)
-  if (engine === null) {
-    throw new Error('useEngine must be used within an EngineProvider')
-  }
-  return engine
-}
 
 function useCellValueWithStore<T>(cell: Out<T>): T {
   const engine = useEngine()
@@ -121,7 +37,7 @@ function useCellValueWithState<T>(cell: Out<T>): T {
 /**
  * Gets the current value of the cell. The component is re-rendered when the cell value changes.
  *
- * @remarks If you need the values of multiple nodes from the engine and those nodes might change in the same computiation, you can `useCellValues` to reduce re-renders.
+ * @remarks If you need the values of multiple nodes from the engine and those nodes might change in the same computiation, you can {@link useCellValues} to reduce re-renders.
  *
  * @returns The current value of the cell.
  * @typeParam T - the type of the value that the cell caries.
@@ -136,23 +52,26 @@ function useCellValueWithState<T>(cell: Out<T>): T {
  *   return <div>{cell}</div>
  * }
  * ```
- * @category Hooks
+ * @category React Hooks and Components
  * @function
  */
 export const useCellValue = 'useSyncExternalStore' in React ? useCellValueWithStore : useCellValueWithState
 
 /**
- * Retreives the values of the passed cells.
- * The component is re-rendered each time any of the referred cells changes its value.
- * @category Hooks
+ * Returns the up-to-date values of the passed cells.
+ * The component is re-rendered each time any of the cells emits a new value.
+ * @category React Hooks and Components
  * @returns Correclty typed array with the current values of the passed cells.
- * @typeParam T1 - The type of values that the first cell emits.
+ *
+ * @remarks This hook works only with cells, don't pass streams or triggers.
  *
  * @example
  * ```tsx
+ * import { Cell, useCellValues }
  * const foo$ = Cell('foo')
  * const bar$ = Cell('bar')
- * //...
+ * // ...
+ * // The component should be wrapped in an EngineProvider.
  * function MyComponent() {
  *   const [foo, bar] = useCellValues(foo$, bar$)
  *   return <div>{foo} - {bar}</div>
@@ -199,43 +118,153 @@ export function useCellValues(...cells: Out[]): unknown[] {
 
 /**
  * Returns a function that publishes its passed argument into the specified node.
- * @typeParam T - The type of values that the node will accept.
+ * @param node$ - the node to publish in.
+ * @typeParam T - The type of values that the node accepts.
+ * @returns The publisher function for the passed `node$`.
+ *
  * @example
  * ```tsx
- * const stream = Stream<number>(true, (r) => {
- *  r.sub(stream, (value) => console.log(`${value} was published in the stream`))
- * })
+ * import {Stream, e, usePublisher} from '@virtuoso.dev/reactive-engine'
+ *
+ * const stream$ = Stream<number>()
+ * e.sub(stream, (value) => console.log(`${value} was published in the stream`))
+ *
  * //...
  * function MyComponent() {
  *  const pub = usePublisher(stream);
  *  return <button onClick={() => pub(2)}>Push a value into the stream</button>
  * }
  * ```
- * @category Hooks
+ *
+ * @category React Hooks and Components
  */
-export function usePublisher<T>(node: Inp<T>) {
+export function usePublisher<T>(node$: Inp<T>) {
   const engine = useEngine()
-  engine.register(node)
+  engine.register(node$)
   return React.useCallback(
     (value: T) => {
-      engine.pub(node, value)
+      engine.pub(node$, value)
     },
-    [engine, node]
+    [engine, node$]
   )
 }
 
 /**
- * Returns a tuple of the current value of the cell and a publisher function (similar to useState).
- * The component will be re-rendered when the cell value changes.
+ * Returns a tuple of the current value of a cell and a publisher function (similar to `useState`).
+ * The component re-renderes when the cell value changes.
  *
- * @remarks If you need just a publisher, use {@link usePublisher}.
+ * @remarks The reactive engine state management allows you to keep your state logic outside of your React components.
+ * Be careful not to use this hook too often alongside `useEffect` for example, as this means that you're losing the benefits of the reactive engine design.
  *
  * @param cell - The cell to use.
  * @returns A tuple of the current value of the cell and a publisher function.
- * @typeParam T - The type of values that the cell will emit/accept.
- * @category Hooks
+ * @typeParam T - The type of values that the cell emits/accepts.
+ * @category React Hooks and Components
  */
 export function useCell<T>(cell: NodeRef<T>): [T, (value: T) => void] {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
   return [useCellValue<T>(cell), usePublisher<T>(cell as any)]
+}
+
+/**
+ * Returns a reference to the current engine instance created in the {@link EngineProvider}.
+ *
+ * @remarks Accessing the engine instance directly in React is rarely needed.
+ * Use {@link useCellValue} and {@link usePublisher} to interact with the nodes.
+ * @category React Hooks and Components
+ */
+export function useEngine() {
+  const engine = React.useContext(EngineContext)
+  if (engine === null) {
+    throw new Error('useEngine must be used within an EngineProvider')
+  }
+  return engine
+}
+
+/**
+ * The context that provides an engine instance used by the built-in hooks. Instantiated by {@link EngineProvider}.
+ *
+ * @category React Hooks and Components
+ * @function
+ */
+export const EngineContext = React.createContext<Engine | null>(null)
+
+/**
+ * @inline
+ * @category React Hooks and Components
+ */
+export interface EngineProviderProps {
+  /**
+   * The children to render.
+   */
+  children: React.ReactNode
+  /**
+   * A console instance (usually, the browser console, but you can pass your own logger) that enables diagnostic messages about the engine state cycles.
+   */
+  console?: TracerConsole
+  /**
+   * The initial values to set in the engine.
+   */
+  initWith?: Record<symbol, unknown>
+  /**
+   * The label to use in the tracer messages.
+   */
+  label?: string
+  /**
+   * The values to update in the engine on each render.
+   */
+  updateWith?: Record<symbol, unknown>
+}
+
+/**
+ * A provider that instantiates and provides an {@link Engine} instance that's used by the built-in hooks.
+ *
+ * @example
+ * ```tsx
+ * import { Cell, useCellValue, e, EngineProvider } from '@virtuoso.dev/reactive-engine'
+ * const cell$ = Cell(0)
+
+ * function MyComponent() {
+ *   const cell = useCellValue(cell$)
+ *   return <div>{cell}</div>
+ * }
+ *
+ * export default function App() {
+ *   return <EngineProvider><MyComponent /></EngineProvider>
+ * }
+ * ```
+ *
+ * @category React Hooks and Components
+ * @function
+ */
+export const EngineProvider: React.FC<EngineProviderProps> = ({
+  children,
+  console: theEngineConsole,
+  initWith,
+  label,
+  updateWith = {},
+}) => {
+  const [engine, setEngine] = React.useState<Engine | null>(null)
+
+  useIsomorphicLayoutEffect(() => {
+    const engine = new Engine(initWith)
+    setEngine(engine)
+    return () => {
+      engine.dispose()
+    }
+  }, [])
+
+  useIsomorphicLayoutEffect(() => {
+    engine?.setTracerConsole(theEngineConsole)
+  }, [theEngineConsole, engine])
+
+  useIsomorphicLayoutEffect(() => {
+    engine?.setLabel(label ?? '')
+  }, [label, engine])
+
+  useIsomorphicLayoutEffect(() => {
+    engine?.pubIn(updateWith)
+  }, [updateWith, engine])
+
+  return engine && <EngineContext.Provider value={engine}>{children}</EngineContext.Provider>
 }

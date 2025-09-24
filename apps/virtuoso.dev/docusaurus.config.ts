@@ -181,7 +181,17 @@ const config: Config = {
         excludeInternal: true,
         useHTMLEncodedBrackets: false,
 
-        categoryOrder: ['Guides', 'API Reference', 'Nodes', 'Hooks', 'Operators', 'Combinators', '*', 'Logging', 'Misc'],
+        categoryOrder: [
+          'Guides',
+          'API Reference',
+          'Nodes',
+          'React Hooks and Components',
+          'Operators',
+          'Combinators',
+          '*',
+          'Logging',
+          'Misc',
+        ],
         groupOrder: ['Functions', 'Variables', 'Interfaces', 'Type Aliases', '*'],
         sort: 'kind',
         kindSortOrder: [

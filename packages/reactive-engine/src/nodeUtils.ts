@@ -17,11 +17,10 @@ export function setNodeLabel(node: NodeRef, label: string) {
 }
 
 /**
- * @typeParam T - The type of values that the node emits/accepts.
- * @category Nodes
+ * @category Node Utilities
  */
-export function addNodeInit<T>(node: NodeRef<T>, init: NodeInit<T>) {
-  nodeInits$$.getOrCreate(node).add(init as NodeInit<unknown>)
+export function addNodeInit(node: NodeRef, init: NodeInit<unknown>) {
+  nodeInits$$.getOrCreate(node).add(init)
 }
 
 /**
@@ -30,7 +29,7 @@ export function addNodeInit<T>(node: NodeRef<T>, init: NodeInit<T>) {
  * @param node - the node reference.
  * @typeParam T - The type of values that the node emits.
  *
- * @category Nodes
+ * @category Node Utilities
  * @remarks if possible, use {@link withLatestFrom} or {@link combine}, as getValue will not create a dependency to the passed node,
  * so if you call it within a computational cycle, you may not get the correct value.
  */

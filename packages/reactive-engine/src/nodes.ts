@@ -11,44 +11,16 @@ import { addNodeInit } from './nodeUtils'
 import { tap } from './utils'
 
 /**
- * Defines a new **stateless, valueless node** and returns a reference to it.
- *
- * @returns A node reference that can be published to without a value to trigger subscriptions.
- *
- * @example
- * ```ts
- * import { Engine, Trigger } from '@virtuoso.dev/reactive-engine'
- *
- * const trigger$ = Trigger()
- * const engine = new Engine()
- *
- * engine.sub(trigger$, () => console.log('triggered!'))
- * engine.pub(trigger$) // logs 'triggered!'
- * ```
- *
- * @remarks A trigger is a signal with `void` value that activates subscriptions when published.
- * It's useful for triggering side effects or coordinating actions without passing data.
- * Triggers are not distinct by design - they will always emit when published.
- *
- * @category Nodes
- */
-export function Trigger(): NodeRef<void> {
-  return tap(Symbol(), (id) => {
-    nodeDefs$$.set(id, { distinct: false, type: 'stream' })
-  }) as NodeRef<void>
-}
-
-/**
  * Defines a new **stateless node** and returns a reference to it.
  *
  * @param distinct - Controls duplicate value emission. Default is `true` (distinct).
- *   - `true`: Only emits when the new value is different from the previous value
- *   - `false`: Always emits when published, even with duplicate values
- *   - Custom function: `(prev: T | undefined, next: T) => boolean` - return `true` if values are considered equal
+ * Setting it to `true` will cause the node to emit only when the new value is different from the current value.
+ * Pass `false` to make the cell  emit every time when published, even when the new value equals the current one.
+ * Pass custom function `(prev: T \| undefined, next: T) => boolean` to define your own equality check for non-primitive types.
  *
  * @typeParam T - The type of values that the node emits and accepts.
  *
- * @returns A node reference that can be published to with values of type T.
+ * @returns A node reference that can be published to with values of type `T`.
  *
  * @example
  * ```ts
@@ -75,7 +47,6 @@ export function Trigger(): NodeRef<void> {
  *
  * @category Nodes
  */
-
 export function Stream<T>(distinct: Distinct<T> = true): NodeRef<T> {
   return tap(Symbol(), (id) => {
     nodeDefs$$.set(id, { distinct, type: 'stream' })
@@ -87,13 +58,13 @@ export function Stream<T>(distinct: Distinct<T> = true): NodeRef<T> {
  *
  * @param value - The initial value of the node. Stateful nodes always have a current value.
  * @param distinct - Controls duplicate value emission. Default is `true` (distinct).
- *   - `true`: Only emits when the new value is different from the current value
- *   - `false`: Always emits when published, even with duplicate values
- *   - Custom function: `(prev: T | undefined, next: T) => boolean` - return `true` if values are considered equal
+ * Setting it to `true` will cause the node to emit only when the new value is different from the current value.
+ * Pass `false` to make the cell  emit every time when published, even when the new value equals the current one.
+ * Pass custom function `(prev: T \| undefined, next: T) => boolean` to define your own equality check for non-primitive types.
  *
  * @typeParam T - The type of values that the node stores, emits, and accepts.
  *
- * @returns A node reference that maintains state and can be published to with values of type T.
+ * @returns A node reference that maintains state and can be published to with values of type `T`.
  *
  * @example
  * ```ts
@@ -119,13 +90,12 @@ export function Stream<T>(distinct: Distinct<T> = true): NodeRef<T> {
  * engine.pub(alwaysEmit$, 0) // emits even though it's the same value
  * ```
  *
- * @remarks Unlike RxJS `BehaviorSubject`, a Cell does not immediately invoke its subscriptions
+ * @remarks Unlike RxJS `BehaviorSubject`, a cell does not immediately invoke its subscriptions
  * when subscribed to. It only emits values when published to, either directly or through
- * its relationships. Use {@link Engine.getValue} to access the current value at any time.
+ * its relationships.
  *
  * @category Nodes
  */
-
 export function Cell<T>(value: T, distinct: Distinct<T> = true): NodeRef<T> {
   return tap(Symbol(), (id) => {
     nodeDefs$$.set(id, { distinct, initial: value, type: CELL_TYPE })
@@ -133,19 +103,48 @@ export function Cell<T>(value: T, distinct: Distinct<T> = true): NodeRef<T> {
 }
 
 /**
+ * Defines a new **stateless, valueless node** and returns a reference to it.
+ *
+ * @returns A node reference that can be published to without passing value to trigger its subscriptions.
+ *
+ * @example
+ * ```ts
+ * import { Engine, Trigger } from '@virtuoso.dev/reactive-engine'
+ *
+ * const trigger$ = Trigger()
+ * const engine = new Engine()
+ *
+ * engine.sub(trigger$, () => console.log('triggered!'))
+ * engine.pub(trigger$) // logs 'triggered!'
+ * ```
+ *
+ * @remarks A trigger is useful for triggering side effects or coordinating actions without passing data.
+ *
+ * @category Nodes
+ */
+export function Trigger(): NodeRef<void> {
+  return tap(Symbol(), (id) => {
+    nodeDefs$$.set(id, { distinct: false, type: 'stream' })
+  }) as NodeRef<void>
+}
+
+/**
  * Defines a new **stateful node**, links it to an existing node transform and returns a reference to it.
- * Once an engine instance publishes or subscribes to the node, an instance of that node it will be registered in the engine.
- * @param value - the initial value of the node. Stateful nodes always have a value.
+
+ * @param value - the initial value of the node. 
  * @param source$ - a node reference to link to.
  * @param distinct - if true, the node will only emit values that are different from the previous value. Optionally, a custom distinct function can be provided if the node values are non-primitive.
  * @typeParam T - The type of values that the node emits/accepts.
  * @example
  * ```ts
+ * import { e, Engine, Cell, DerivedCell } from '@virtuoso.dev/reactive-engine'
+ *
  * const bar$ = Cell('bar')
  * const foo$ = DerivedCell('foo', e.pipe(bar$, (bar) => `foo${bar}`), true)
+ * e.sub(foo$, (val) => console.log(val))
  *
- * const r = new Engine()
- * r.pub(bar$, '-bar') // the subscription will log 'bar'
+ * const eng = new Engine()
+ * eng.pub(bar$, '-bar') // the foo$ subscription will log 'foo-bar'
  * ```
  * @category Nodes
  */
@@ -164,8 +163,23 @@ export function DerivedCell<T>(value: T, source$: NodeRef<T>, distinct: Distinct
 }
 
 /**
- * TODO: document
+ * Creates a tuple of nodes &ndash; an input, and an output.
+ * The output node transforms and emits the value of the input through the provided operator chain.
  * @typeParam T - The type of values that the input node will accept.
+ * @returns A tuple of nodes, the first one is the input, and the second one is the output.
+ * @param operators one or more operators that are chained to transform the input value.
+ *
+ *
+ * @example
+ * ```ts
+ * import { e, Pipe } from '@virtuoso.dev/reactive-engine'
+ *
+ * const [input$, output$] = Pipe(e.map(value => value * 2))
+ * e.sub(output$, (value) => console.log(value))
+ *
+ * const eng = new Engine()
+ * eng.pub(input$, 2) // the subscription will log "4"
+ * ```
  * @category Nodes
  */
 export function Pipe<T>(...operators: O<unknown, unknown>[]): [Inp<T>, Out]
