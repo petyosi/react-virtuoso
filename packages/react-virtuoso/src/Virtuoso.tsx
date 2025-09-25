@@ -1,6 +1,5 @@
 import React from 'react'
 
-import { ScrollerProps } from '.'
 import { GroupedVirtuosoHandle, GroupedVirtuosoProps, VirtuosoHandle, VirtuosoProps } from './component-interfaces/Virtuoso'
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
@@ -299,12 +298,11 @@ interface Hooks {
 }
 
 export function buildScroller({ useEmitter, useEmitterValue, usePublisher }: Hooks) {
-  const Scroller: React.ComponentType<ScrollerProps> = React.memo(function VirtuosoScroller({ children, style, ...props }) {
+  const Scroller: Components['Scroller'] = React.memo(function VirtuosoScroller({ children, style, context, ...props }) {
     const scrollContainerStateCallback = usePublisher('scrollContainerState')
     const ScrollerComponent = useEmitterValue('ScrollerComponent')!
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
     const scrollerRefCallback = useEmitterValue('scrollerRef')
-    const context = useEmitterValue('context')
     const horizontalDirection = useEmitterValue('horizontalDirection') || false
 
     const { scrollByCallback, scrollerRef, scrollToCallback } = useScrollTop(
@@ -337,14 +335,13 @@ export function buildScroller({ useEmitter, useEmitterValue, usePublisher }: Hoo
 }
 
 export function buildWindowScroller({ useEmitter, useEmitterValue, usePublisher }: Hooks) {
-  const Scroller: Components['Scroller'] = React.memo(function VirtuosoWindowScroller({ children, style, ...props }) {
+  const Scroller: Components['Scroller'] = React.memo(function VirtuosoWindowScroller({ children, style, context, ...props }) {
     const scrollContainerStateCallback = usePublisher('windowScrollContainerState')
     const ScrollerComponent = useEmitterValue('ScrollerComponent')!
     const smoothScrollTargetReached = usePublisher('smoothScrollTargetReached')
     const totalListHeight = useEmitterValue('totalListHeight')
     const deviation = useEmitterValue('deviation')
     const customScrollParent = useEmitterValue('customScrollParent')
-    const context = useEmitterValue('context')
     const scrollerElRef = React.useRef<HTMLDivElement | null>(null)
     const scrollerRefCallback = useEmitterValue('scrollerRef')
     const { scrollByCallback, scrollerRef, scrollToCallback } = useScrollTop(
@@ -452,7 +449,7 @@ const ListRoot: React.FC<ListRootProps> = /*#__PURE__*/ React.memo(function Virt
   const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
   const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
   return (
-    <TheScroller {...props} {...contextPropIfNotDomElement(TheScroller, context)}>
+    <TheScroller {...props} context={context}>
       {showTopList && (
         <TopItemListContainer>
           <Items showTopList={true} />
