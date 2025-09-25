@@ -7,7 +7,7 @@ test.describe('list with hundred items', () => {
   test.beforeEach(async ({ baseURL, page }) => {
     await navigateToExample(page, baseURL, 'data')
     await page.waitForSelector('[data-testid=virtuoso-scroller]')
-    await page.waitForTimeout(100)
+    await page.waitForTimeout(400)
   })
 
   test('renders 10 items', async ({ page }) => {
