@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.14.1
+
+### Patch Changes
+
+- f4f307f: Fix bogus context attribute
+
 ## 4.14.0
 
 ### Minor Changes
