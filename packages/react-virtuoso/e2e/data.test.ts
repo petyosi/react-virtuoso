@@ -12,6 +12,7 @@ test.describe('list with hundred items', () => {
   })
 
   test('renders 10 items', async ({ page }) => {
+    await page.waitForTimeout(400)
     const itemCount = await page.evaluate(() => {
       const listContainer = document.querySelector('[data-testid=virtuoso-item-list]')!
       return listContainer.childElementCount
