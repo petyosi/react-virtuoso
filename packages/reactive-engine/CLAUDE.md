@@ -94,6 +94,7 @@ e.sub(count$, () => console.log('count changed'))
 - Browser/React tests in `src/test/browser/` using Vitest browser mode
 - Stories in `src/stories/` using Ladle
 - Focus on testing node behavior independent of React when possible
+- Always run eslint after the tests and the typecheck passes.
 
 ## Key Implementation Files
 
@@ -111,4 +112,5 @@ e.sub(count$, () => console.log('count changed'))
 - TypeScript with strict typing, exports full API surface
 - No external runtime dependencies (React is peer dependency)
 - Optimized for push-based reactive patterns vs pull-based state management
+- Always run eslint after tests and typecheck passes, and fix the errors.
 

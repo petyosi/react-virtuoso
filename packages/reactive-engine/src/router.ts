@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
+import * as React from 'react'
+
 import type { NodeRef } from './types'
 
 import { e } from './e'
@@ -70,7 +72,7 @@ export type RouteParams<Route extends string> = Route extends `${infer Path}?${i
     ? ExtractQueryParams<Query> extends infer QueryParams
       ? keyof PathParams extends never
         ? keyof QueryParams extends never
-          ? never
+          ? Record<string, never>
           : [Record<string, never>, QueryParams & Record<string, unknown>]
         : keyof QueryParams extends never
           ? [PathParams, Record<string, unknown>] | PathParams
@@ -79,24 +81,48 @@ export type RouteParams<Route extends string> = Route extends `${infer Path}?${i
     : never
   : ExtractPathParams<Route> extends infer PathParams
     ? keyof PathParams extends never
-      ? never
+      ? Record<string, never>
       : [PathParams, Record<string, string>] | PathParams
     : never
 
 const routeDefinitions$$ = new Map<symbol, string>()
+const routeComponents$$ = new Map<symbol, React.ComponentType<unknown>>()
 
-export function Route<T extends string>(routeDefinition: T): NodeRef<null | RouteParams<T>> {
+const layoutDefinitions$$ = new Map<symbol, string>()
+const layoutComponents$$ = new Map<symbol, React.ComponentType<{ children: React.ReactNode }>>()
+
+export type RouteComponent<T> = React.ComponentType<{
+  pathParams: T extends [infer Path, infer _Query] ? (keyof Path extends never ? {} : Path) : T extends Record<string, never> ? {} : T
+  queryParams: T extends [infer _Path, infer Query] ? (keyof Query extends never ? {} : Query) : {}
+}>
+
+export type LayoutComponent = React.ComponentType<{ children: React.ReactNode }>
+
+export function Route<T extends string>(routeDefinition: T, component?: RouteComponent<RouteParams<T>>): NodeRef<null | RouteParams<T>> {
   return tap(Cell<null | RouteParams<T>>(null), (route$) => {
     routeDefinitions$$.set(route$, routeDefinition)
+    if (component) {
+      routeComponents$$.set(route$, component as React.ComponentType<unknown>)
+    }
   })
+}
+
+export function Layout(path: string, component: LayoutComponent): symbol {
+  const layoutSymbol = Symbol('layout')
+  layoutDefinitions$$.set(layoutSymbol, path)
+  layoutComponents$$.set(layoutSymbol, component)
+  return layoutSymbol
 }
 
 type PathAndQueryParams = [Record<string, unknown>, Record<string, unknown>]
 type PathParams = Record<string, unknown>
 
-export function Router(...routes: NodeRef<null | PathAndQueryParams | PathParams>[]) {
+export type ActiveComponent = null | React.ComponentType
+
+export function Router(routes: NodeRef<null | PathAndQueryParams | PathParams>[], layouts?: symbol[]) {
   const currentRoute$ = Cell<null | string>(null)
   const goToUrl$ = Stream<string>()
+  const component$ = Cell<ActiveComponent>(null)
 
   for (const route$ of routes) {
     e.sub(route$, (params, eng) => {
@@ -106,7 +132,44 @@ export function Router(...routes: NodeRef<null | PathAndQueryParams | PathParams
         const routeDef = routeDefinitions$$.get(route$ as symbol)
         if (routeDef) {
           const interpolated = interpolateRoute(routeDef, params)
-          eng.pubIn({ [currentRoute$]: interpolated, ...nullPayload })
+          const component = routeComponents$$.get(route$ as symbol)
+
+          // Find matching layouts
+          const matchingLayoutComponents = findMatchingLayouts(interpolated, layouts)
+
+          // Split params into pathParams and queryParams
+          let pathParams: unknown
+          let queryParams: unknown
+          if (Array.isArray(params)) {
+            pathParams = params[0]
+            queryParams = params[1]
+          } else {
+            pathParams = params
+            queryParams = {}
+          }
+
+          // Create an assembled component that wraps the route component with layouts and passes props
+          const activeComponent: ActiveComponent = component
+            ? () => {
+                const ComponentCasted = component as React.ComponentType<{ pathParams: typeof pathParams; queryParams: typeof queryParams }>
+                let rendered: React.ReactNode = React.createElement(ComponentCasted, { pathParams, queryParams })
+
+                // Wrap with layouts from innermost to outermost
+                for (let i = matchingLayoutComponents.length - 1; i >= 0; i--) {
+                  const LayoutComponent = matchingLayoutComponents[i]
+                  rendered = React.createElement(LayoutComponent, null, rendered)
+                }
+
+                return rendered
+              }
+            : null
+          eng.pubIn({ [component$]: activeComponent, [currentRoute$]: interpolated, ...nullPayload })
+        }
+      } else {
+        // When this route becomes null, check if any other route is active
+        const anyActiveRoute = routes.find((r) => r !== route$ && eng.getValue(r) !== null)
+        if (!anyActiveRoute) {
+          eng.pub(component$, null)
         }
       }
     })
@@ -128,7 +191,39 @@ export function Router(...routes: NodeRef<null | PathAndQueryParams | PathParams
     }
   })
 
-  return { currentRoute$, goToUrl$ }
+  return { component$, currentRoute$, goToUrl$ }
+}
+
+function findMatchingLayouts(currentPath: string, layouts?: symbol[]): React.ComponentType<{ children: React.ReactNode }>[] {
+  if (!layouts || layouts.length === 0) {
+    return []
+  }
+
+  // Extract path without query string
+  const pathOnly = currentPath.split('?')[0]
+
+  // Find layouts that match as prefix
+  const matching = layouts
+    .map((layoutSymbol) => {
+      const layoutPath = layoutDefinitions$$.get(layoutSymbol)
+      const layoutComponent = layoutComponents$$.get(layoutSymbol)
+      return { layoutComponent, layoutPath, layoutSymbol }
+    })
+    .filter(({ layoutComponent, layoutPath }) => {
+      if (!layoutPath || !layoutComponent) return false
+      // Root path matches everything
+      if (layoutPath === '/') return true
+      // Check if layout path is a prefix of current path
+      return pathOnly === layoutPath || pathOnly.startsWith(layoutPath + '/')
+    })
+    .sort((a, b) => {
+      // Sort by path length: shortest first (outermost)
+      return (a.layoutPath?.length ?? 0) - (b.layoutPath?.length ?? 0)
+    })
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    .map(({ layoutComponent }) => layoutComponent!)
+
+  return matching
 }
 
 function interpolateRoute(route: string, params: PathAndQueryParams | PathParams): string {

@@ -4,7 +4,7 @@ import type { RouteParams } from '../../router'
 
 describe('RouteParams', () => {
   it('has no params by default', () => {
-    expectTypeOf<RouteParams<'/'>>().toEqualTypeOf<never>()
+    expectTypeOf<RouteParams<'/'>>().toEqualTypeOf<Record<string, never>>()
   })
 
   it('parses a parameter to string', () => {

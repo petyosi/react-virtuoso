@@ -4,7 +4,9 @@
       "Bash(npm run lint)",
       "Bash(npx tsc:*)",
       "Bash(npm run typecheck:*)",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run test:*)"
     ],
     "deny": [],
     "ask": []
