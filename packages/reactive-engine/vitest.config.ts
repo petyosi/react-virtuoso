@@ -6,8 +6,12 @@ export default defineConfig({
       {
         test: {
           environment: 'node',
-          include: ['src/test/node/**/*.test.ts'],
+          include: ['src/test/node/**/*.test.ts', 'src/test/node/**/*.test-d.ts'],
           name: 'node',
+          typecheck: {
+            checker: 'tsc',
+            enabled: true,
+          },
         },
       },
       {

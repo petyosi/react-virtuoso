@@ -31,8 +31,8 @@
   },
   "scripts": {
     "build": "tsc && vite build",
-    "test": "vitest --run --browser.headless",
-    "test:watch": "vitest --browser.headless",
+    "test": "vitest --run --browser.headless --typecheck",
+    "test:watch": "vitest --browser.headless --typecheck",
     "ci-lint": "eslint",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
