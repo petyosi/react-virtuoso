@@ -33,8 +33,8 @@
     "build": "tsc && vite build",
     "test": "vitest --run --browser.headless --typecheck",
     "test:watch": "vitest --browser.headless --typecheck",
-    "ci-lint": "eslint",
-    "lint": "eslint",
+    "ci-lint": "eslint --cache",
+    "lint": "eslint --cache",
     "typecheck": "tsc --noEmit",
     "ladle": "ladle serve",
     "are-the-types-wrong": "attw --profile esm-only --pack ."
@@ -53,6 +53,7 @@
     "react-dom": ">= 16 || >= 17 || >= 18 || >= 19"
   },
   "devDependencies": {
+    "@typescript/native-preview": "^7.0.0-dev.20251001.1",
     "@virtuoso.dev/tooling": "*"
   },
   "files": [
