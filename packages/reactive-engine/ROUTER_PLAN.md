@@ -55,7 +55,6 @@ Since the slots are using the Engine internally to pub/sub for the LayoutSlotPor
 
 ```ts
 // internally creates a cell that will contain the children rendered from the Route component.
-// it will also need a global layoutSlots$$ registry, so that when the route changes, the slot contents are cleared.
 const sideNav$ = LayoutSlotPortal() // returns a NodeRef<ReactNode>. There's no type constraint on the Portal for now.
 ```
 
@@ -83,3 +82,11 @@ Routes or Layouts further nested down in the parent layout can provide content f
   <nav>Side nav</nav>
 </LayoutSlotFill>
 ```
+
+### Internal implementation
+
+The `LayoutSlotFill` captures its children and pushes them into the provided slotPortal cell$. If multiple `LayoutSlotFill` components are rendered for the same slotPortal, the last one wins.
+
+When unmounting, the `LayoutSlotFill` clears the slotPortal cell$. This prevents stale content if the route changes.
+
+The `LayoutSlot` component subscribes to the slotPortal cell$ with `useCellValue` and renders its content, if null, renders its children instead.

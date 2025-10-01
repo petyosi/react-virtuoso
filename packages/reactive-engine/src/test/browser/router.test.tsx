@@ -28,7 +28,7 @@ describe('Router', () => {
         goToHome({})
       }, [goToHome])
 
-      return <Router router={router} />
+      return <Router routerEngine={router} />
     }
 
     const screen = render(
@@ -62,7 +62,7 @@ describe('Router', () => {
           >
             Go to User
           </button>
-          <Router router={router} useBrowserHistory={false} />
+          <Router routerEngine={router} useBrowserHistory={false} />
         </div>
       )
     }
@@ -117,7 +117,7 @@ describe('Router', () => {
           >
             Go to User 123
           </button>
-          <Router router={router} />
+          <Router routerEngine={router} />
         </div>
       )
     }
@@ -173,7 +173,7 @@ describe('Router', () => {
           >
             Go to Contact
           </button>
-          <Router router={router} />
+          <Router routerEngine={router} />
         </div>
       )
     }
@@ -234,7 +234,7 @@ describe('Router', () => {
           >
             Go to About
           </button>
-          <Router router={router} />
+          <Router routerEngine={router} />
         </div>
       )
     }
@@ -281,7 +281,7 @@ describe('Router', () => {
           >
             Go to About
           </button>
-          <Router basePath="/app" router={router} />
+          <Router basePath="/app" routerEngine={router} />
         </div>
       )
     }
@@ -319,7 +319,7 @@ describe('Router', () => {
         goToHome({})
       }, [goToHome])
 
-      return <Router router={router} />
+      return <Router routerEngine={router} />
     }
 
     const screen = render(
@@ -349,7 +349,7 @@ describe('Router', () => {
         goToSearch([{ query: 'test' }, { filter: 'active', sort: 'date' }])
       }, [goToSearch])
 
-      return <Router router={router} />
+      return <Router routerEngine={router} />
     }
 
     const screen = render(
@@ -400,7 +400,7 @@ describe('Router', () => {
           >
             User 3
           </button>
-          <Router router={router} />
+          <Router routerEngine={router} />
         </div>
       )
     }

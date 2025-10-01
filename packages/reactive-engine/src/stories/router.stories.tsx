@@ -2,6 +2,9 @@ import * as React from 'react'
 
 import { EngineProvider, usePublisher } from '../react'
 import { Layout } from '../router/Layout'
+import { LayoutSlot } from '../router/LayoutSlot'
+import { LayoutSlotFill } from '../router/LayoutSlotFill'
+import { LayoutSlotPortal } from '../router/LayoutSlotPortal'
 import { Route } from '../router/Route'
 import { Router } from '../router/Router'
 import { RouterEngine } from '../router/RouterEngine'
@@ -137,7 +140,7 @@ export function BasicRouter() {
   return (
     <EngineProvider>
       <Navigation />
-      <Router router={router} />
+      <Router routerEngine={router} />
     </EngineProvider>
   )
 }
@@ -156,7 +159,7 @@ function RouterWithoutHistoryInner() {
         integration.
       </div>
       <Navigation />
-      <Router router={router} useBrowserHistory={false} />
+      <Router routerEngine={router} useBrowserHistory={false} />
     </div>
   )
 }
@@ -204,7 +207,7 @@ function RouterWithNestedLayoutsInner() {
       <div style={{ background: '#e8f5e9', border: '1px solid #4caf50', margin: '10px', padding: '10px' }}>
         <strong>Nested Layouts Demo:</strong> This page demonstrates multiple nested layouts wrapping a route component.
       </div>
-      <Router router={deepRouter} useBrowserHistory={false} />
+      <Router routerEngine={deepRouter} useBrowserHistory={false} />
     </div>
   )
 }
@@ -213,6 +216,111 @@ export function RouterWithNestedLayouts() {
   return (
     <EngineProvider>
       <RouterWithNestedLayoutsInner />
+    </EngineProvider>
+  )
+}
+
+// Layout Slots Demo
+const sidebarSlot$ = LayoutSlotPortal()
+
+const slotLayout = Layout('/', ({ children }) => (
+  <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <aside style={{ background: '#f0f0f0', borderRight: '2px solid #ddd', padding: '20px', width: '250px' }}>
+      <h3 style={{ marginTop: 0 }}>Sidebar</h3>
+      <LayoutSlot slotPortal={sidebarSlot$}>
+        <div style={{ color: '#999', fontStyle: 'italic' }}>No sidebar content</div>
+      </LayoutSlot>
+    </aside>
+    <main style={{ flex: 1, padding: '20px' }}>{children}</main>
+  </div>
+))
+
+const dashboard$ = Route('/dashboard', () => (
+  <>
+    <LayoutSlotFill slotPortal={sidebarSlot$}>
+      <div>
+        <h4 style={{ marginTop: 0 }}>Dashboard Menu</h4>
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          <li style={{ marginBottom: '10px' }}>📊 Analytics</li>
+          <li style={{ marginBottom: '10px' }}>📈 Reports</li>
+          <li style={{ marginBottom: '10px' }}>⚙️ Settings</li>
+        </ul>
+      </div>
+    </LayoutSlotFill>
+    <div>
+      <h2>Dashboard</h2>
+      <p>Welcome to your dashboard! Check the sidebar for quick navigation.</p>
+      <div style={{ background: '#e3f2fd', borderRadius: '4px', marginTop: '20px', padding: '15px' }}>
+        <strong>💡 Tip:</strong> The sidebar content is provided by this route using LayoutSlotFill
+      </div>
+    </div>
+  </>
+))
+
+const profile$ = Route('/profile', () => (
+  <>
+    <LayoutSlotFill slotPortal={sidebarSlot$}>
+      <div>
+        <h4 style={{ marginTop: 0 }}>Profile Actions</h4>
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          <li style={{ marginBottom: '10px' }}>👤 Edit Profile</li>
+          <li style={{ marginBottom: '10px' }}>🔒 Privacy</li>
+          <li style={{ marginBottom: '10px' }}>🔔 Notifications</li>
+        </ul>
+      </div>
+    </LayoutSlotFill>
+    <div>
+      <h2>User Profile</h2>
+      <p>Manage your profile settings and preferences here.</p>
+      <div style={{ background: '#fff3e0', borderRadius: '4px', marginTop: '20px', padding: '15px' }}>
+        <strong>💡 Notice:</strong> Each route provides different sidebar content using the same slot!
+      </div>
+    </div>
+  </>
+))
+
+const slotRouter = RouterEngine([dashboard$, profile$], [slotLayout])
+
+function LayoutSlotsDemo() {
+  const goToDashboard = usePublisher(dashboard$)
+  const goToProfile = usePublisher(profile$)
+
+  React.useEffect(() => {
+    goToDashboard({})
+  }, [goToDashboard])
+
+  return (
+    <div>
+      <div style={{ background: '#e8f5e9', border: '1px solid #4caf50', margin: '10px', padding: '15px' }}>
+        <strong>Layout Slots Demo:</strong> This demonstrates how different routes can provide content for the same slot in a shared layout.
+      </div>
+      <div style={{ margin: '10px', padding: '10px' }}>
+        <button
+          onClick={() => {
+            goToDashboard({})
+          }}
+          style={{ marginRight: '10px', padding: '10px 20px' }}
+        >
+          Go to Dashboard
+        </button>
+        <button
+          onClick={() => {
+            goToProfile({})
+          }}
+          style={{ padding: '10px 20px' }}
+        >
+          Go to Profile
+        </button>
+      </div>
+      <Router routerEngine={slotRouter} useBrowserHistory={false} />
+    </div>
+  )
+}
+
+export function RouterWithLayoutSlots() {
+  return (
+    <EngineProvider>
+      <LayoutSlotsDemo />
     </EngineProvider>
   )
 }
