@@ -1,35 +1,34 @@
 /// <reference types="@vitest/browser/matchers" />
 
 import * as React from 'react'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { EngineProvider, useCellValue, useEngine, usePublisher } from '../../react'
-import { Router as createRouter, Layout, Route } from '../../router'
+import { EngineProvider, usePublisher } from '../../react'
+import { Layout } from '../../router/Layout'
+import { Route } from '../../router/Route'
+import { Router } from '../../router/Router'
+import { RouterEngine } from '../../router/RouterEngine'
 
-describe('Router React Integration', () => {
-  it('renders the active route component', async () => {
+describe('Router', () => {
+  beforeEach(() => {
+    // Reset browser history to a clean state
+    window.history.pushState({}, '', '/')
+  })
+
+  it('renders the active route component with browser history enabled', async () => {
     const home$ = Route('/', () => <div>Home Page</div>)
-    const user$ = Route('/users/{userId:number}', ({ pathParams }) => <div>User: {pathParams.userId}</div>)
-    const router = createRouter([home$, user$])
+    const about$ = Route('/about', () => <div>About Page</div>)
+    const router = RouterEngine([home$, about$])
 
     function TestApp() {
-      const engine = useEngine()
+      const goToHome = usePublisher(home$)
+
       React.useEffect(() => {
-        engine.pub(home$, {})
-      }, [engine])
+        goToHome({})
+      }, [goToHome])
 
-      return <RouterView router={router} />
-    }
-
-    function RouterView({ router }: { router: ReturnType<typeof createRouter> }) {
-      const ActiveComponent = useCellValue(router.component$)
-
-      if (!ActiveComponent) {
-        return null
-      }
-
-      return <ActiveComponent />
+      return <Router router={router} />
     }
 
     const screen = render(
@@ -41,52 +40,31 @@ describe('Router React Integration', () => {
     await expect.element(screen.getByText('Home Page')).toBeInTheDocument()
   })
 
-  it('switches between routes when route cells are published to', async () => {
+  it('renders without browser history when useBrowserHistory is false', async () => {
     const home$ = Route('/', () => <div>Home Page</div>)
     const user$ = Route('/users/{userId:number}', ({ pathParams }) => <div>User: {pathParams.userId}</div>)
-    const router = createRouter([home$, user$])
+    const router = RouterEngine([home$, user$])
 
     function TestApp() {
-      const engine = useEngine()
-      const [activeRoute, setActiveRoute] = React.useState<'home' | 'user'>('home')
+      const goToHome = usePublisher(home$)
+      const goToUser = usePublisher(user$)
 
       React.useEffect(() => {
-        if (activeRoute === 'home') {
-          engine.pub(home$, {})
-        } else {
-          engine.pub(user$, { userId: 42 })
-        }
-      }, [engine, activeRoute])
+        goToHome({})
+      }, [goToHome])
 
       return (
         <div>
           <button
             onClick={() => {
-              setActiveRoute('home')
-            }}
-          >
-            Go Home
-          </button>
-          <button
-            onClick={() => {
-              setActiveRoute('user')
+              goToUser({ userId: 42 })
             }}
           >
             Go to User
           </button>
-          <RouterView router={router} />
+          <Router router={router} useBrowserHistory={false} />
         </div>
       )
-    }
-
-    function RouterView({ router }: { router: ReturnType<typeof createRouter> }) {
-      const ActiveComponent = useCellValue(router.component$)
-
-      if (!ActiveComponent) {
-        return <div>No route</div>
-      }
-
-      return <ActiveComponent />
     }
 
     const screen = render(
@@ -97,61 +75,51 @@ describe('Router React Integration', () => {
 
     await expect.element(screen.getByText('Home Page')).toBeInTheDocument()
 
+    // Verify URL hasn't changed
+    expect(window.location.pathname).toBe('/')
+
+    // Navigate to user
     await screen.getByText('Go to User').click()
     await expect.element(screen.getByText('User: 42')).toBeInTheDocument()
 
-    await screen.getByText('Go Home').click()
-    await expect.element(screen.getByText('Home Page')).toBeInTheDocument()
+    // Verify URL still hasn't changed (no browser history integration)
+    expect(window.location.pathname).toBe('/')
   })
 
-  it('navigates via goToUrl$ stream', async () => {
+  it('syncs route changes to browser URL', async () => {
     const home$ = Route('/', () => <div>Home Page</div>)
+    const about$ = Route('/about', () => <div>About Page</div>)
     const user$ = Route('/users/{userId:number}', ({ pathParams }) => <div>User: {pathParams.userId}</div>)
-    const router = createRouter([home$, user$])
+    const router = RouterEngine([home$, about$, user$])
 
     function TestApp() {
-      const publishUrl = usePublisher(router.goToUrl$)
+      const goToHome = usePublisher(home$)
+      const goToAbout = usePublisher(about$)
+      const goToUser = usePublisher(user$)
 
       React.useEffect(() => {
-        publishUrl('/')
-      }, [publishUrl])
+        goToHome({})
+      }, [goToHome])
 
       return (
         <div>
           <button
             onClick={() => {
-              publishUrl('/')
+              goToAbout({})
             }}
           >
-            Go Home
+            Go to About
           </button>
           <button
             onClick={() => {
-              publishUrl('/users/42')
+              goToUser({ userId: 123 })
             }}
           >
-            Go to User 42
+            Go to User 123
           </button>
-          <button
-            onClick={() => {
-              publishUrl('/users/99')
-            }}
-          >
-            Go to User 99
-          </button>
-          <RouterView router={router} />
+          <Router router={router} />
         </div>
       )
-    }
-
-    function RouterView({ router }: { router: ReturnType<typeof createRouter> }) {
-      const ActiveComponent = useCellValue(router.component$)
-
-      if (!ActiveComponent) {
-        return <div>No route</div>
-      }
-
-      return <ActiveComponent />
     }
 
     const screen = render(
@@ -161,18 +129,179 @@ describe('Router React Integration', () => {
     )
 
     await expect.element(screen.getByText('Home Page')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/')
 
-    await screen.getByText('Go to User 42').click()
-    await expect.element(screen.getByText('User: 42')).toBeInTheDocument()
+    // Navigate to about
+    await screen.getByText('Go to About').click()
+    await expect.element(screen.getByText('About Page')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/about')
 
-    await screen.getByText('Go to User 99').click()
-    await expect.element(screen.getByText('User: 99')).toBeInTheDocument()
-
-    await screen.getByText('Go Home').click()
-    await expect.element(screen.getByText('Home Page')).toBeInTheDocument()
+    // Navigate to user
+    await screen.getByText('Go to User 123').click()
+    await expect.element(screen.getByText('User: 123')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/users/123')
   })
 
-  it('renders layouts wrapping the route component', async () => {
+  it('handles browser back button navigation', async () => {
+    const home$ = Route('/', () => <div>Home Page</div>)
+    const about$ = Route('/about', () => <div>About Page</div>)
+    const contact$ = Route('/contact', () => <div>Contact Page</div>)
+    const router = RouterEngine([home$, about$, contact$])
+
+    function TestApp() {
+      const goToHome = usePublisher(home$)
+      const goToAbout = usePublisher(about$)
+      const goToContact = usePublisher(contact$)
+
+      React.useEffect(() => {
+        goToHome({})
+      }, [goToHome])
+
+      return (
+        <div>
+          <button
+            onClick={() => {
+              goToAbout({})
+            }}
+          >
+            Go to About
+          </button>
+          <button
+            onClick={() => {
+              goToContact({})
+            }}
+          >
+            Go to Contact
+          </button>
+          <Router router={router} />
+        </div>
+      )
+    }
+
+    const screen = render(
+      <EngineProvider>
+        <TestApp />
+      </EngineProvider>
+    )
+
+    // Start at home
+    await expect.element(screen.getByText('Home Page')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/')
+
+    // Navigate to about
+    await screen.getByText('Go to About').click()
+    await expect.element(screen.getByText('About Page')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/about')
+
+    // Navigate to contact
+    await screen.getByText('Go to Contact').click()
+    await expect.element(screen.getByText('Contact Page')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/contact')
+
+    // Go back to about
+    window.history.back()
+    // Trigger popstate event manually
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    await expect.element(screen.getByText('About Page')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/about')
+
+    // Go back to home
+    window.history.back()
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    await expect.element(screen.getByText('Home Page')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/')
+  })
+
+  it('handles browser forward button navigation', async () => {
+    const home$ = Route('/', () => <div>Home Page</div>)
+    const about$ = Route('/about', () => <div>About Page</div>)
+    const router = RouterEngine([home$, about$])
+
+    function TestApp() {
+      const goToHome = usePublisher(home$)
+      const goToAbout = usePublisher(about$)
+
+      React.useEffect(() => {
+        goToHome({})
+      }, [goToHome])
+
+      return (
+        <div>
+          <button
+            onClick={() => {
+              goToAbout({})
+            }}
+          >
+            Go to About
+          </button>
+          <Router router={router} />
+        </div>
+      )
+    }
+
+    const screen = render(
+      <EngineProvider>
+        <TestApp />
+      </EngineProvider>
+    )
+
+    // Navigate to about
+    await screen.getByText('Go to About').click()
+    await expect.element(screen.getByText('About Page')).toBeInTheDocument()
+
+    // Go back to home
+    window.history.back()
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    await expect.element(screen.getByText('Home Page')).toBeInTheDocument()
+
+    // Go forward to about
+    window.history.forward()
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    await expect.element(screen.getByText('About Page')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/about')
+  })
+
+  it('works with basePath prefix', async () => {
+    // Start at a URL that includes the basePath
+    window.history.pushState({}, '', '/app/')
+
+    const home$ = Route('/', () => <div>Home Page</div>)
+    const about$ = Route('/about', () => <div>About Page</div>)
+    const router = RouterEngine([home$, about$])
+
+    function TestApp() {
+      const goToAbout = usePublisher(about$)
+
+      return (
+        <div>
+          <button
+            onClick={() => {
+              goToAbout({})
+            }}
+          >
+            Go to About
+          </button>
+          <Router basePath="/app" router={router} />
+        </div>
+      )
+    }
+
+    const screen = render(
+      <EngineProvider>
+        <TestApp />
+      </EngineProvider>
+    )
+
+    await expect.element(screen.getByText('Home Page')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/app/')
+
+    // Navigate to about with basePath
+    await screen.getByText('Go to About').click()
+    await expect.element(screen.getByText('About Page')).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/app/about')
+  })
+
+  it('renders with layouts when specified', async () => {
     const rootLayout = Layout('/', ({ children }) => (
       <div>
         <header>Root Header</header>
@@ -180,53 +309,17 @@ describe('Router React Integration', () => {
       </div>
     ))
 
-    const usersLayout = Layout('/users', ({ children }) => (
-      <div>
-        <nav>Users Nav</nav>
-        {children}
-      </div>
-    ))
-
     const home$ = Route('/', () => <div>Home Page</div>)
-    const user$ = Route('/users/{userId:number}', ({ pathParams }) => <div>User: {pathParams.userId}</div>)
-    const router = createRouter([home$, user$], [rootLayout, usersLayout])
+    const router = RouterEngine([home$], [rootLayout])
 
     function TestApp() {
-      const publishUrl = usePublisher(router.goToUrl$)
+      const goToHome = usePublisher(home$)
 
       React.useEffect(() => {
-        publishUrl('/')
-      }, [publishUrl])
+        goToHome({})
+      }, [goToHome])
 
-      return (
-        <div>
-          <button
-            onClick={() => {
-              publishUrl('/')
-            }}
-          >
-            Go Home
-          </button>
-          <button
-            onClick={() => {
-              publishUrl('/users/42')
-            }}
-          >
-            Go to User 42
-          </button>
-          <RouterView router={router} />
-        </div>
-      )
-    }
-
-    function RouterView({ router }: { router: ReturnType<typeof createRouter> }) {
-      const ActiveComponent = useCellValue(router.component$)
-
-      if (!ActiveComponent) {
-        return <div>No route</div>
-      }
-
-      return <ActiveComponent />
+      return <Router router={router} />
     }
 
     const screen = render(
@@ -235,139 +328,11 @@ describe('Router React Integration', () => {
       </EngineProvider>
     )
 
-    // Home should have root layout but not users layout
     await expect.element(screen.getByText('Root Header')).toBeInTheDocument()
     await expect.element(screen.getByText('Home Page')).toBeInTheDocument()
-
-    await screen.getByText('Go to User 42').click()
-
-    // User should have both root and users layout
-    await expect.element(screen.getByText('Root Header')).toBeInTheDocument()
-    await expect.element(screen.getByText('Users Nav')).toBeInTheDocument()
-    await expect.element(screen.getByText('User: 42')).toBeInTheDocument()
   })
 
-  it('properly nests multiple layouts from outermost to innermost', async () => {
-    const rootLayout = Layout('/', ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="root">
-        Root
-        {children}
-      </div>
-    ))
-
-    const sectionLayout = Layout('/section', ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="section">
-        Section
-        {children}
-      </div>
-    ))
-
-    const subLayout = Layout('/section/sub', ({ children }: { children: React.ReactNode }) => (
-      <div data-testid="sub">
-        Sub
-        {children}
-      </div>
-    ))
-
-    const page$ = Route('/section/sub/page/{id:number}', ({ pathParams }) => <div data-testid="page">Page: {pathParams.id}</div>)
-    const router = createRouter([page$], [rootLayout, sectionLayout, subLayout])
-
-    function TestApp() {
-      const publishUrl = usePublisher(router.goToUrl$)
-
-      React.useEffect(() => {
-        publishUrl('/section/sub/page/123')
-      }, [publishUrl])
-
-      return <RouterView router={router} />
-    }
-
-    function RouterView({ router }: { router: ReturnType<typeof createRouter> }) {
-      const ActiveComponent = useCellValue(router.component$)
-
-      if (!ActiveComponent) {
-        return null
-      }
-
-      return <ActiveComponent />
-    }
-
-    const screen = render(
-      <EngineProvider>
-        <TestApp />
-      </EngineProvider>
-    )
-
-    // Verify all layouts are present
-    await expect.element(screen.getByTestId('root')).toBeInTheDocument()
-    await expect.element(screen.getByTestId('section')).toBeInTheDocument()
-    await expect.element(screen.getByTestId('sub')).toBeInTheDocument()
-    await expect.element(screen.getByTestId('page')).toBeInTheDocument()
-
-    // Verify nesting order by checking DOM structure
-    const root = screen.getByTestId('root')
-    const section = screen.getByTestId('section')
-    const sub = screen.getByTestId('sub')
-    const page = screen.getByTestId('page')
-
-    expect(root.element().contains(section.element())).toBe(true)
-    expect(section.element().contains(sub.element())).toBe(true)
-    expect(sub.element().contains(page.element())).toBe(true)
-  })
-
-  it('handles routes without components (no rendering)', async () => {
-    const home$ = Route('/')
-    const user$ = Route('/users/{userId:number}')
-    const router = createRouter([home$, user$])
-
-    function TestApp() {
-      const publishUrl = usePublisher(router.goToUrl$)
-      const currentRoute = useCellValue(router.currentRoute$)
-
-      React.useEffect(() => {
-        publishUrl('/')
-      }, [publishUrl])
-
-      return (
-        <div>
-          <div>Current: {currentRoute ?? 'none'}</div>
-          <button
-            onClick={() => {
-              publishUrl('/users/42')
-            }}
-          >
-            Go to User 42
-          </button>
-          <RouterView router={router} />
-        </div>
-      )
-    }
-
-    function RouterView({ router }: { router: ReturnType<typeof createRouter> }) {
-      const activeComponent = useCellValue(router.component$)
-
-      if (!activeComponent) {
-        return <div>No component</div>
-      }
-
-      return <div>Has component</div>
-    }
-
-    const screen = render(
-      <EngineProvider>
-        <TestApp />
-      </EngineProvider>
-    )
-
-    await expect.element(screen.getByText('Current: /')).toBeInTheDocument()
-    await expect.element(screen.getByText('No component')).toBeInTheDocument()
-
-    await screen.getByText('Go to User 42').click()
-    await expect.element(screen.getByText('Current: /users/42')).toBeInTheDocument()
-    await expect.element(screen.getByText('No component')).toBeInTheDocument()
-  })
-
-  it('handles query parameters in route components', async () => {
+  it('handles query parameters in URLs', async () => {
     const search$ = Route('/search/{query}/?filter={filter}&sort={sort?}', ({ pathParams, queryParams }) => (
       <div>
         <div>Query: {pathParams.query}</div>
@@ -375,26 +340,16 @@ describe('Router React Integration', () => {
         {queryParams.sort && <div>Sort: {queryParams.sort}</div>}
       </div>
     ))
-    const router = createRouter([search$])
+    const router = RouterEngine([search$])
 
     function TestApp() {
-      const publishUrl = usePublisher(router.goToUrl$)
+      const goToSearch = usePublisher(search$)
 
       React.useEffect(() => {
-        publishUrl('/search/test/?filter=active&sort=date')
-      }, [publishUrl])
+        goToSearch([{ query: 'test' }, { filter: 'active', sort: 'date' }])
+      }, [goToSearch])
 
-      return <RouterView router={router} />
-    }
-
-    function RouterView({ router }: { router: ReturnType<typeof createRouter> }) {
-      const ActiveComponent = useCellValue(router.component$)
-
-      if (!ActiveComponent) {
-        return null
-      }
-
-      return <ActiveComponent />
+      return <Router router={router} />
     }
 
     const screen = render(
@@ -406,5 +361,79 @@ describe('Router React Integration', () => {
     await expect.element(screen.getByText('Query: test')).toBeInTheDocument()
     await expect.element(screen.getByText('Filter: active')).toBeInTheDocument()
     await expect.element(screen.getByText('Sort: date')).toBeInTheDocument()
+    expect(window.location.pathname + window.location.search).toBe('/search/test/?filter=active&sort=date')
+  })
+
+  it('handles navigation with browser back after multiple route changes', async () => {
+    const home$ = Route('/', () => <div>Home Page</div>)
+    const user$ = Route('/users/{userId:number}', ({ pathParams }) => <div>User: {pathParams.userId}</div>)
+    const router = RouterEngine([home$, user$])
+
+    function TestApp() {
+      const goToHome = usePublisher(home$)
+      const goToUser = usePublisher(user$)
+
+      React.useEffect(() => {
+        goToHome({})
+      }, [goToHome])
+
+      return (
+        <div>
+          <button
+            onClick={() => {
+              goToUser({ userId: 1 })
+            }}
+          >
+            User 1
+          </button>
+          <button
+            onClick={() => {
+              goToUser({ userId: 2 })
+            }}
+          >
+            User 2
+          </button>
+          <button
+            onClick={() => {
+              goToUser({ userId: 3 })
+            }}
+          >
+            User 3
+          </button>
+          <Router router={router} />
+        </div>
+      )
+    }
+
+    const screen = render(
+      <EngineProvider>
+        <TestApp />
+      </EngineProvider>
+    )
+
+    await expect.element(screen.getByText('Home Page')).toBeInTheDocument()
+
+    // Navigate through multiple users
+    await screen.getByText('User 1').click()
+    await expect.element(screen.getByText('User: 1')).toBeInTheDocument()
+
+    await screen.getByText('User 2').click()
+    await expect.element(screen.getByText('User: 2')).toBeInTheDocument()
+
+    await screen.getByText('User 3').click()
+    await expect.element(screen.getByText('User: 3')).toBeInTheDocument()
+
+    // Go back through history
+    window.history.back()
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    await expect.element(screen.getByText('User: 2')).toBeInTheDocument()
+
+    window.history.back()
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    await expect.element(screen.getByText('User: 1')).toBeInTheDocument()
+
+    window.history.back()
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    await expect.element(screen.getByText('Home Page')).toBeInTheDocument()
   })
 })

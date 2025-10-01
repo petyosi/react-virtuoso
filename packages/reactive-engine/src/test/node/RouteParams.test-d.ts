@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest'
 
-import type { RouteParams } from '../../router'
+import type { RouteParams } from '../../router/types'
 
 describe('RouteParams', () => {
   it('has no params by default', () => {

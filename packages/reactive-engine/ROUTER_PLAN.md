@@ -48,3 +48,38 @@ A layout looks like a route - it also accepts a path. When the router does the m
 ## Layout Slot Components
 
 A layout slot is just a cell. There are two React components - Slot and Fill. The layout can define a Slot that refers to a layout slot. A route can then use a Fill that points to the same slot.
+
+Since the slots are using the Engine internally to pub/sub for the LayoutSlotPortal content, they will work only inside of an Engine.
+
+### Defining a slot
+
+```ts
+// internally creates a cell that will contain the children rendered from the Route component.
+// it will also need a global layoutSlots$$ registry, so that when the route changes, the slot contents are cleared.
+const sideNav$ = LayoutSlotPortal() // returns a NodeRef<ReactNode>. There's no type constraint on the Portal for now.
+```
+
+### Adding a slot to the layout
+
+```tsx
+//...
+<LayoutSlot slotPortal={sideNav$} />
+```
+
+### Layout Slot default content.
+
+If the current route does not use the SlotFill, then the LayoutSlot children (optionally) are used. If not, the slot returns null.
+
+```tsx
+<LayoutSlot slotPortal={sideNav$}>Default slot content</LayoutSlot>
+```
+
+### Providing content for a slot in the route.
+
+Routes or Layouts further nested down in the parent layout can provide content for the Slot with the `LayoutSlotFill` component.
+
+```tsx
+<LayoutSlotFill slotPortal={sideNav$}>
+  <nav>Side nav</nav>
+</LayoutSlotFill>
+```
