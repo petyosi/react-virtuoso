@@ -11,76 +11,76 @@ describe('route interpolation', () => {
   })
 
   it('starts with a null value', () => {
-    const { currentRoute$ } = RouterEngine([])
+    const { currentRoute$ } = RouterEngine(eng, [])
     expect(eng.getValue(currentRoute$)).toBe(null)
   })
 
   it('interpolates route params when publishing in a route', () => {
     const userProfile$ = Route('/users/{userId}')
-    const { currentRoute$ } = RouterEngine([userProfile$])
+    const { currentRoute$ } = RouterEngine(eng, [userProfile$])
     eng.pub(userProfile$, { userId: '123' })
     expect(eng.getValue(currentRoute$)).toBe('/users/123')
   })
 
   it('interpolates multiple parameters', () => {
     const orgSettings$ = Route('/users/{user}/{org}/settings')
-    const { currentRoute$ } = RouterEngine([orgSettings$])
+    const { currentRoute$ } = RouterEngine(eng, [orgSettings$])
     eng.pub(orgSettings$, { org: 'acme', user: 'john' })
     expect(eng.getValue(currentRoute$)).toBe('/users/john/acme/settings')
   })
 
   it('interpolates typed parameters', () => {
     const orgSettings$ = Route('/users/{userId:number}/{orgId:number}/settings')
-    const { currentRoute$ } = RouterEngine([orgSettings$])
+    const { currentRoute$ } = RouterEngine(eng, [orgSettings$])
     eng.pub(orgSettings$, { orgId: 456, userId: 123 })
     expect(eng.getValue(currentRoute$)).toBe('/users/123/456/settings')
   })
 
   it('interpolates rest segments', () => {
     const files$ = Route('/users/{userId:number}/{*rest}')
-    const { currentRoute$ } = RouterEngine([files$])
+    const { currentRoute$ } = RouterEngine(eng, [files$])
     eng.pub(files$, { rest: ['documents', 'project', 'file.txt'], userId: 123 })
     expect(eng.getValue(currentRoute$)).toBe('/users/123/documents/project/file.txt')
   })
 
   it('interpolates with query params', () => {
     const users$ = Route('/users/{userId:number}/?orgId={orgId}')
-    const { currentRoute$ } = RouterEngine([users$])
+    const { currentRoute$ } = RouterEngine(eng, [users$])
     eng.pub(users$, [{ userId: 123 }, { orgId: '456' }])
     expect(eng.getValue(currentRoute$)).toBe('/users/123/?orgId=456')
   })
 
   it('interpolates with optional query params', () => {
     const users$ = Route('/users/{userId:number}/?orgId={orgId?}')
-    const { currentRoute$ } = RouterEngine([users$])
+    const { currentRoute$ } = RouterEngine(eng, [users$])
     eng.pub(users$, [{ userId: 123 }, { orgId: '456' }])
     expect(eng.getValue(currentRoute$)).toBe('/users/123/?orgId=456')
   })
 
   it('interpolates with typed query params', () => {
     const users$ = Route('/users/{userId:number}/?orgId={orgId?:number}')
-    const { currentRoute$ } = RouterEngine([users$])
+    const { currentRoute$ } = RouterEngine(eng, [users$])
     eng.pub(users$, [{ userId: 123 }, { orgId: 789 }])
     expect(eng.getValue(currentRoute$)).toBe('/users/123/?orgId=789')
   })
 
   it('interpolates with array query params', () => {
     const users$ = Route('/users/{userId:number}/?orgIds={orgIds:number[]}')
-    const { currentRoute$ } = RouterEngine([users$])
+    const { currentRoute$ } = RouterEngine(eng, [users$])
     eng.pub(users$, [{ userId: 123 }, { orgIds: [1, 2, 3] }])
     expect(eng.getValue(currentRoute$)).toBe('/users/123/?orgIds=1&orgIds=2&orgIds=3')
   })
 
   it('handles differently named query params', () => {
     const users$ = Route('/users/{userId:number}/?org={orgId}')
-    const { currentRoute$ } = RouterEngine([users$])
+    const { currentRoute$ } = RouterEngine(eng, [users$])
     eng.pub(users$, [{ userId: 123 }, { orgId: '456' }])
     expect(eng.getValue(currentRoute$)).toBe('/users/123/?org=456')
   })
 
   it('supports passing arbitrary search param', () => {
     const users$ = Route('/users/{userId:number}/?org={orgId}')
-    const { currentRoute$ } = RouterEngine([users$])
+    const { currentRoute$ } = RouterEngine(eng, [users$])
     eng.pub(users$, [{ userId: 123 }, { filter: true, orgId: '456' }])
     expect(eng.getValue(currentRoute$)).toBe('/users/123/?org=456&filter=true')
   })
@@ -95,7 +95,7 @@ describe('route exclusiveness', () => {
   it('publishes to one route and nullifies other routes', () => {
     const users$ = Route('/users/{userId:number}/?org={orgId}')
     const project$ = Route('/projects/{projectId:number}/?org={orgId}')
-    const { currentRoute$ } = RouterEngine([users$, project$])
+    const { currentRoute$ } = RouterEngine(eng, [users$, project$])
     expect(eng.getValue(currentRoute$)).toBe(null)
 
     eng.pub(users$, [{ userId: 123 }, { orgId: '456' }])
@@ -116,7 +116,7 @@ describe('goToUrl', () => {
 
   it('parses URL and activates matching route with simple params', () => {
     const users$ = Route('/users/{userId}')
-    const { currentRoute$, goToUrl$ } = RouterEngine([users$])
+    const { currentRoute$, goToUrl$ } = RouterEngine(eng, [users$])
 
     eng.pub(goToUrl$, '/users/123')
     expect(eng.getValue(currentRoute$)).toBe('/users/123')
@@ -125,7 +125,7 @@ describe('goToUrl', () => {
 
   it('parses URL with typed params', () => {
     const users$ = Route('/users/{userId:number}')
-    const { currentRoute$, goToUrl$ } = RouterEngine([users$])
+    const { currentRoute$, goToUrl$ } = RouterEngine(eng, [users$])
 
     eng.pub(goToUrl$, '/users/456')
     expect(eng.getValue(currentRoute$)).toBe('/users/456')
@@ -134,7 +134,7 @@ describe('goToUrl', () => {
 
   it('parses URL with multiple params', () => {
     const settings$ = Route('/users/{userId:number}/orgs/{orgId:number}')
-    const { currentRoute$, goToUrl$ } = RouterEngine([settings$])
+    const { currentRoute$, goToUrl$ } = RouterEngine(eng, [settings$])
 
     eng.pub(goToUrl$, '/users/123/orgs/456')
     expect(eng.getValue(currentRoute$)).toBe('/users/123/orgs/456')
@@ -143,7 +143,7 @@ describe('goToUrl', () => {
 
   it('parses URL with query params', () => {
     const users$ = Route('/users/{userId:number}/?org={orgId}')
-    const { currentRoute$, goToUrl$ } = RouterEngine([users$])
+    const { currentRoute$, goToUrl$ } = RouterEngine(eng, [users$])
 
     eng.pub(goToUrl$, '/users/123/?org=456')
     expect(eng.getValue(currentRoute$)).toBe('/users/123/?org=456')
@@ -152,7 +152,7 @@ describe('goToUrl', () => {
 
   it('parses URL with typed query params', () => {
     const users$ = Route('/users/{userId:number}/?orgId={orgId:number}')
-    const { currentRoute$, goToUrl$ } = RouterEngine([users$])
+    const { currentRoute$, goToUrl$ } = RouterEngine(eng, [users$])
 
     eng.pub(goToUrl$, '/users/123/?orgId=789')
     expect(eng.getValue(currentRoute$)).toBe('/users/123/?orgId=789')
@@ -161,7 +161,7 @@ describe('goToUrl', () => {
 
   it('parses URL with array query params', () => {
     const users$ = Route('/users/{userId:number}/?ids={ids:number[]}')
-    const { currentRoute$, goToUrl$ } = RouterEngine([users$])
+    const { currentRoute$, goToUrl$ } = RouterEngine(eng, [users$])
 
     eng.pub(goToUrl$, '/users/123/?ids=1&ids=2&ids=3')
     expect(eng.getValue(currentRoute$)).toBe('/users/123/?ids=1&ids=2&ids=3')
@@ -170,7 +170,7 @@ describe('goToUrl', () => {
 
   it('parses URL with rest segments', () => {
     const files$ = Route('/files/{*path}')
-    const { currentRoute$, goToUrl$ } = RouterEngine([files$])
+    const { currentRoute$, goToUrl$ } = RouterEngine(eng, [files$])
 
     eng.pub(goToUrl$, '/files/documents/project/file.txt')
     expect(eng.getValue(currentRoute$)).toBe('/files/documents/project/file.txt')
@@ -180,7 +180,7 @@ describe('goToUrl', () => {
   it('handles multiple routes and activates the matching one', () => {
     const users$ = Route('/users/{userId:number}')
     const projects$ = Route('/projects/{projectId:number}')
-    const { currentRoute$, goToUrl$ } = RouterEngine([users$, projects$])
+    const { currentRoute$, goToUrl$ } = RouterEngine(eng, [users$, projects$])
 
     eng.pub(goToUrl$, '/users/123')
     expect(eng.getValue(currentRoute$)).toBe('/users/123')
@@ -195,7 +195,7 @@ describe('goToUrl', () => {
 
   it('does nothing when URL does not match any route', () => {
     const users$ = Route('/users/{userId:number}')
-    const { currentRoute$, goToUrl$ } = RouterEngine([users$])
+    const { currentRoute$, goToUrl$ } = RouterEngine(eng, [users$])
 
     eng.pub(goToUrl$, '/products/123')
     expect(eng.getValue(currentRoute$)).toBe(null)
@@ -204,7 +204,7 @@ describe('goToUrl', () => {
 
   it('parses arbitrary query params not in template', () => {
     const users$ = Route('/users/{userId:number}/?org={orgId}')
-    const { currentRoute$, goToUrl$ } = RouterEngine([users$])
+    const { currentRoute$, goToUrl$ } = RouterEngine(eng, [users$])
 
     eng.pub(goToUrl$, '/users/123/?org=456&filter=active')
     expect(eng.getValue(currentRoute$)).toBe('/users/123/?org=456&filter=active')

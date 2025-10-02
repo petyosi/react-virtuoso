@@ -1,6 +1,6 @@
 import type { NodeInit, NodeRef } from './types'
 
-import { getCurrentEngine, nodeInits$$, nodeLabels$$ } from './globals'
+import { getCurrentEngine, nodeInits$$, nodeInitSubscriptions$$, nodeLabels$$ } from './globals'
 
 /**
  * @category Logging
@@ -19,8 +19,11 @@ export function setNodeLabel(node: NodeRef, label: string) {
 /**
  * @category Node Utilities
  */
-export function addNodeInit(node: NodeRef, init: NodeInit<unknown>) {
-  nodeInits$$.getOrCreate(node).add(init)
+export function addNodeInit(node$: NodeRef, init: NodeInit<unknown>) {
+  nodeInits$$.getOrCreate(node$).add(init)
+  for (const subscription of nodeInitSubscriptions$$) {
+    subscription(node$, init)
+  }
 }
 
 /**

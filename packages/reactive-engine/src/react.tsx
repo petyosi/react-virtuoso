@@ -244,27 +244,25 @@ export const EngineProvider: React.FC<EngineProviderProps> = ({
   label,
   updateWith = {},
 }) => {
-  const [engine, setEngine] = React.useState<Engine | null>(null)
-
-  useIsomorphicLayoutEffect(() => {
+  const engine = React.useMemo(() => {
     const engine = new Engine(initWith)
-    setEngine(engine)
-    return () => {
-      engine.dispose()
-    }
+    engine.setLabel(label ?? 'EngineProvider')
+    engine.setTracerConsole(theEngineConsole)
+    return engine
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useIsomorphicLayoutEffect(() => {
-    engine?.setTracerConsole(theEngineConsole)
-  }, [theEngineConsole, engine])
+    engine.setTracerConsole(theEngineConsole)
+  }, [theEngineConsole])
 
   useIsomorphicLayoutEffect(() => {
-    engine?.setLabel(label ?? '')
-  }, [label, engine])
+    engine.setLabel(label ?? '')
+  }, [label])
 
   useIsomorphicLayoutEffect(() => {
-    engine?.pubIn(updateWith)
-  }, [updateWith, engine])
+    engine.pubIn(updateWith)
+  }, [updateWith])
 
-  return engine && <EngineContext.Provider value={engine}>{children}</EngineContext.Provider>
+  return <EngineContext.Provider value={engine}>{children}</EngineContext.Provider>
 }

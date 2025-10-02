@@ -5,6 +5,7 @@ import type {
   Distinct,
   ExecutionMap,
   Inp,
+  NodeInit,
   NodeProjection,
   NodeRef,
   Out,
@@ -15,7 +16,7 @@ import type {
 } from './types'
 
 import { CC } from './CC'
-import { CELL_TYPE, inEngineContext, nodeDefs$$, nodeInits$$ } from './globals'
+import { CELL_TYPE, inEngineContext, nodeDefs$$, nodeInits$$, nodeInitSubscriptions$$ } from './globals'
 import { getNodeLabel } from './nodeUtils'
 import { RefCount } from './RefCount'
 import { SetMap } from './SetMap'
@@ -40,7 +41,6 @@ export class Engine {
   private readonly state = new Map<symbol, unknown>()
   private readonly streamState = new Map<symbol, unknown>()
   private readonly subscriptions = new SetMap<Subscription<unknown>>()
-
   /**
    * Creates a new engine.
    * @param initialValues - the initial cell values that will populate the engine.
@@ -50,6 +50,7 @@ export class Engine {
     for (const id of Object.getOwnPropertySymbols(initialValues)) {
       this.state.set(id, initialValues[id])
     }
+    nodeInitSubscriptions$$.add(this.nodeInitSubscription)
   }
 
   /**
@@ -185,6 +186,7 @@ export class Engine {
     this.singletonSubscriptions.clear()
     this.state.clear()
     this.subscriptions.clear()
+    nodeInitSubscriptions$$.delete(this.nodeInitSubscription)
   }
 
   /**
@@ -215,6 +217,7 @@ export class Engine {
   pipe<T>(source: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef {
     return this.combineOperators(...operators)(source)
   }
+
   /**
    * Runs the subscriptions of this node.
    * @example
@@ -242,7 +245,6 @@ export class Engine {
   pub<T>(node: Inp<T>, value?: T) {
     this.pubIn({ [node]: value })
   }
-
   /**
    * Publishes into multiple nodes simultaneously, triggering a single re-computation cycle.
    * @param values - a record of node references and their values.
@@ -358,6 +360,7 @@ export class Engine {
     const definition = nodeDefs$$.get(node$)
     // node that's within the instance
     if (definition === undefined) {
+      // console.log('skipping registration of unknown node', getNodeLabel(node$))
       return node$
     }
 
@@ -497,6 +500,7 @@ export class Engine {
 
     return { participatingNodes, pendingPulls, projections, refCount }
   }
+
   private combineOperators<T>(...o: []): (s: Out<T>) => NodeRef<T> // prettier-ignore
   private combineOperators<T, O1>(...o: [O<T, O1>]): (s: Out<T>) => NodeRef<O1> // prettier-ignore
   private combineOperators<T, O1, O2>(...o: [O<T, O1>, O<O1, O2>]): (s: Out<T>) => NodeRef<O2> // prettier-ignore
@@ -514,7 +518,6 @@ export class Engine {
       return source as NodeRef
     }
   }
-
   private getExecutionMap(nodes: symbol[]) {
     let key: symbol | symbol[] = nodes
     if (nodes.length === 1) {
@@ -534,5 +537,11 @@ export class Engine {
     const map = this.calculateExecutionMap(nodes)
     this.executionMaps.set(key, map)
     return map
+  }
+
+  private readonly nodeInitSubscription = <T>(node$: NodeRef<T>, init: NodeInit<T>) => {
+    if (this.definitionRegistry.has(node$)) {
+      init(this, node$)
+    }
   }
 }

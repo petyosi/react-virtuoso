@@ -8,7 +8,6 @@ import { EngineProvider, usePublisher } from '../../react'
 import { Layout } from '../../router/Layout'
 import { Route } from '../../router/Route'
 import { Router } from '../../router/Router'
-import { RouterEngine } from '../../router/RouterEngine'
 
 describe('Router', () => {
   beforeEach(() => {
@@ -19,7 +18,6 @@ describe('Router', () => {
   it('renders the active route component with browser history enabled', async () => {
     const home$ = Route('/', () => <div>Home Page</div>)
     const about$ = Route('/about', () => <div>About Page</div>)
-    const router = RouterEngine([home$, about$])
 
     function TestApp() {
       const goToHome = usePublisher(home$)
@@ -28,7 +26,7 @@ describe('Router', () => {
         goToHome({})
       }, [goToHome])
 
-      return <Router routerEngine={router} />
+      return <Router routes={[home$, about$]} />
     }
 
     const screen = render(
@@ -43,7 +41,6 @@ describe('Router', () => {
   it('renders without browser history when useBrowserHistory is false', async () => {
     const home$ = Route('/', () => <div>Home Page</div>)
     const user$ = Route('/users/{userId:number}', ({ pathParams }) => <div>User: {pathParams.userId}</div>)
-    const router = RouterEngine([home$, user$])
 
     function TestApp() {
       const goToHome = usePublisher(home$)
@@ -62,7 +59,7 @@ describe('Router', () => {
           >
             Go to User
           </button>
-          <Router routerEngine={router} useBrowserHistory={false} />
+          <Router routes={[home$, user$]} useBrowserHistory={false} />
         </div>
       )
     }
@@ -90,7 +87,6 @@ describe('Router', () => {
     const home$ = Route('/', () => <div>Home Page</div>)
     const about$ = Route('/about', () => <div>About Page</div>)
     const user$ = Route('/users/{userId:number}', ({ pathParams }) => <div>User: {pathParams.userId}</div>)
-    const router = RouterEngine([home$, about$, user$])
 
     function TestApp() {
       const goToHome = usePublisher(home$)
@@ -117,7 +113,7 @@ describe('Router', () => {
           >
             Go to User 123
           </button>
-          <Router routerEngine={router} />
+          <Router routes={[home$, about$, user$]} />
         </div>
       )
     }
@@ -146,7 +142,6 @@ describe('Router', () => {
     const home$ = Route('/', () => <div>Home Page</div>)
     const about$ = Route('/about', () => <div>About Page</div>)
     const contact$ = Route('/contact', () => <div>Contact Page</div>)
-    const router = RouterEngine([home$, about$, contact$])
 
     function TestApp() {
       const goToHome = usePublisher(home$)
@@ -173,7 +168,7 @@ describe('Router', () => {
           >
             Go to Contact
           </button>
-          <Router routerEngine={router} />
+          <Router routes={[home$, about$, contact$]} />
         </div>
       )
     }
@@ -215,7 +210,6 @@ describe('Router', () => {
   it('handles browser forward button navigation', async () => {
     const home$ = Route('/', () => <div>Home Page</div>)
     const about$ = Route('/about', () => <div>About Page</div>)
-    const router = RouterEngine([home$, about$])
 
     function TestApp() {
       const goToHome = usePublisher(home$)
@@ -234,7 +228,7 @@ describe('Router', () => {
           >
             Go to About
           </button>
-          <Router routerEngine={router} />
+          <Router routes={[home$, about$]} />
         </div>
       )
     }
@@ -267,7 +261,6 @@ describe('Router', () => {
 
     const home$ = Route('/', () => <div>Home Page</div>)
     const about$ = Route('/about', () => <div>About Page</div>)
-    const router = RouterEngine([home$, about$])
 
     function TestApp() {
       const goToAbout = usePublisher(about$)
@@ -281,7 +274,7 @@ describe('Router', () => {
           >
             Go to About
           </button>
-          <Router basePath="/app" routerEngine={router} />
+          <Router basePath="/app" routes={[home$, about$]} />
         </div>
       )
     }
@@ -310,7 +303,6 @@ describe('Router', () => {
     ))
 
     const home$ = Route('/', () => <div>Home Page</div>)
-    const router = RouterEngine([home$], [rootLayout])
 
     function TestApp() {
       const goToHome = usePublisher(home$)
@@ -319,7 +311,7 @@ describe('Router', () => {
         goToHome({})
       }, [goToHome])
 
-      return <Router routerEngine={router} />
+      return <Router layouts={[rootLayout]} routes={[home$]} />
     }
 
     const screen = render(
@@ -340,7 +332,6 @@ describe('Router', () => {
         {queryParams.sort && <div>Sort: {queryParams.sort}</div>}
       </div>
     ))
-    const router = RouterEngine([search$])
 
     function TestApp() {
       const goToSearch = usePublisher(search$)
@@ -349,7 +340,7 @@ describe('Router', () => {
         goToSearch([{ query: 'test' }, { filter: 'active', sort: 'date' }])
       }, [goToSearch])
 
-      return <Router routerEngine={router} />
+      return <Router routes={[search$]} />
     }
 
     const screen = render(
@@ -367,7 +358,6 @@ describe('Router', () => {
   it('handles navigation with browser back after multiple route changes', async () => {
     const home$ = Route('/', () => <div>Home Page</div>)
     const user$ = Route('/users/{userId:number}', ({ pathParams }) => <div>User: {pathParams.userId}</div>)
-    const router = RouterEngine([home$, user$])
 
     function TestApp() {
       const goToHome = usePublisher(home$)
@@ -400,7 +390,7 @@ describe('Router', () => {
           >
             User 3
           </button>
-          <Router routerEngine={router} />
+          <Router routes={[home$, user$]} />
         </div>
       )
     }

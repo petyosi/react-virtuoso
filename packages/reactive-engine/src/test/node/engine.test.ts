@@ -593,6 +593,16 @@ describe('global connectors', () => {
     expect(spy).toHaveBeenCalledWith('baz', eng)
   })
 
+  it('supports global sub after node registration', () => {
+    const foo$ = Cell('foo')
+    const spy = vi.fn()
+    eng.register(foo$)
+    e.sub(foo$, spy)
+
+    eng.pub(foo$, 'baz')
+    expect(spy).toHaveBeenCalledWith('baz', eng)
+  })
+
   it('supports global singletonSub', () => {
     const foo$ = Cell('foo')
     const spy = vi.fn()

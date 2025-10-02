@@ -7,7 +7,6 @@ import { LayoutSlotFill } from '../router/LayoutSlotFill'
 import { LayoutSlotPortal } from '../router/LayoutSlotPortal'
 import { Route } from '../router/Route'
 import { Router } from '../router/Router'
-import { RouterEngine } from '../router/RouterEngine'
 
 // Define routes
 const home$ = Route('/', () => (
@@ -68,9 +67,6 @@ const blogLayout = Layout('/blog', ({ children }) => (
     {children}
   </div>
 ))
-
-// Create router
-const router = RouterEngine([home$, about$, user$, blog$, notFound$], [rootLayout, blogLayout])
 
 function Navigation() {
   const goToHome = usePublisher(home$)
@@ -140,7 +136,7 @@ export function BasicRouter() {
   return (
     <EngineProvider>
       <Navigation />
-      <Router routerEngine={router} />
+      <Router layouts={[rootLayout, blogLayout]} routes={[home$, about$, user$, blog$, notFound$]} />
     </EngineProvider>
   )
 }
@@ -159,7 +155,7 @@ function RouterWithoutHistoryInner() {
         integration.
       </div>
       <Navigation />
-      <Router routerEngine={router} useBrowserHistory={false} />
+      <Router layouts={[rootLayout, blogLayout]} routes={[home$, about$, user$, blog$, notFound$]} useBrowserHistory={false} />
     </div>
   )
 }
@@ -193,8 +189,6 @@ const deep$ = Route('/deep/nested/page', () => (
   </div>
 ))
 
-const deepRouter = RouterEngine([deep$, home$], [rootLayout, deepLayout1, deepLayout2])
-
 function RouterWithNestedLayoutsInner() {
   const goToDeep = usePublisher(deep$)
 
@@ -207,7 +201,7 @@ function RouterWithNestedLayoutsInner() {
       <div style={{ background: '#e8f5e9', border: '1px solid #4caf50', margin: '10px', padding: '10px' }}>
         <strong>Nested Layouts Demo:</strong> This page demonstrates multiple nested layouts wrapping a route component.
       </div>
-      <Router routerEngine={deepRouter} useBrowserHistory={false} />
+      <Router layouts={[rootLayout, deepLayout1, deepLayout2]} routes={[deep$, home$]} useBrowserHistory={false} />
     </div>
   )
 }
@@ -279,8 +273,6 @@ const profile$ = Route('/profile', () => (
   </>
 ))
 
-const slotRouter = RouterEngine([dashboard$, profile$], [slotLayout])
-
 function LayoutSlotsDemo() {
   const goToDashboard = usePublisher(dashboard$)
   const goToProfile = usePublisher(profile$)
@@ -312,7 +304,7 @@ function LayoutSlotsDemo() {
           Go to Profile
         </button>
       </div>
-      <Router routerEngine={slotRouter} useBrowserHistory={false} />
+      <Router layouts={[slotLayout]} routes={[dashboard$, profile$]} useBrowserHistory={false} />
     </div>
   )
 }

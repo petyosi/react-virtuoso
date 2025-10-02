@@ -1,8 +1,10 @@
 import * as React from 'react'
 
-import type { RouterEngine } from './RouterEngine'
+import type { NodeRef } from '../types'
+import type { PathAndQueryParams, PathParams } from './types'
 
 import { useCellValue, useEngine, useIsomorphicLayoutEffect, usePublisher } from '../react'
+import { RouterEngine } from './RouterEngine'
 
 /**
  * Props for the Router component
@@ -13,15 +15,15 @@ export interface RouterProps {
    * Optional base path for sub-mounting (e.g., "/app")
    */
   basePath?: string
-  /**
-   * Router engine instance
-   */
-  routerEngine: ReturnType<typeof RouterEngine>
+  layouts?: symbol[]
+  routes: NodeRef<null | PathAndQueryParams | PathParams>[]
   /**
    * Whether to integrate with browser history (default: true)
    */
   useBrowserHistory?: boolean
-} /**
+}
+
+/**
  * Router component that renders the active route component and optionally integrates with browser history.
  *
  * @example
@@ -33,12 +35,11 @@ export interface RouterProps {
  *
  * const home$ = Route('/', Home)
  * const user$ = Route('/users/{userId:number}', User)
- * const router = RouterEngine([home$, user$])
  *
  * function App() {
  *   return (
  *     <EngineProvider>
- *       <Router router={router} />
+ *       <Router routes={[home$, user$]} />
  *     </EngineProvider>
  *   )
  * }
@@ -46,8 +47,11 @@ export interface RouterProps {
  *
  * @category React Hooks and Components
  */
-
-export const Router: React.FC<RouterProps> = ({ basePath = '', routerEngine, useBrowserHistory: shouldUseBrowserHistory = true }) => {
+export const Router: React.FC<RouterProps> = ({ basePath = '', layouts, routes, useBrowserHistory: shouldUseBrowserHistory = true }) => {
+  const engine = useEngine()
+  const routerEngine = React.useMemo(() => {
+    return RouterEngine(engine, routes, layouts)
+  }, [routes, layouts, engine])
   const ActiveComponent = useCellValue(routerEngine.component$)
 
   if (shouldUseBrowserHistory) {
