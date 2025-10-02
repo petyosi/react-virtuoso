@@ -6,7 +6,7 @@
 
 ## Router
 
-- Implement the slots
+- Check if HMR works as expected, there's an error for missing engine
 - Check if the router components receive the correct typings for props
 - Add the export to the index file
 
@@ -18,6 +18,6 @@
 
 ## Misc
 
-- Nested routers
+- Nested engines
 
 ## Sample app
