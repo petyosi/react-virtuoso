@@ -29,6 +29,8 @@ export interface GroupedVirtuosoHandle {
   scrollBy(location: ScrollToOptions): void
   scrollIntoView(location: number | ScrollIntoViewLocation): void
   scrollTo(location: ScrollToOptions): void
+  prependItems?: (config: { groupIndex: number; count: number }) => void
+  shiftItems?: (config: { groupIndex: number; count: number }) => void
 
   scrollToIndex(location: IndexLocationWithAlign | number): void
 }

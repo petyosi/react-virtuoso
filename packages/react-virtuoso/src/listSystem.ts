@@ -99,6 +99,45 @@ export const listSystem = u.system(
       ),
       domIO.viewportHeight
     )
+    const prependItems = u.stream<{ groupIndex: number; count: number }>()
+
+    u.subscribe(
+      u.pipe(prependItems, u.withLatestFrom(firstItemIndex, u.statefulStreamFromEmitter(groupCounts, []), domIO.scrollTop, sizes, gap)),
+      ([{ groupIndex, count }, currentFirstIndex, currentGroupCounts, _currentScrollTop, sizes, _gap]) => {
+        const avgItemHeight = sizes.lastSize || 30
+        const estimatedHeight = count * avgItemHeight
+
+        u.publish(firstItemIndex, currentFirstIndex - count)
+
+        const newGroupCounts = [...currentGroupCounts]
+        newGroupCounts[groupIndex] = (newGroupCounts[groupIndex] || 0) + count
+        u.publish(groupCounts, newGroupCounts)
+
+        requestAnimationFrame(() => {
+          u.publish(domIO.scrollBy, { top: estimatedHeight })
+        })
+      }
+    )
+
+    const shiftItems = u.stream<{ groupIndex: number; count: number }>()
+
+    u.subscribe(
+      u.pipe(shiftItems, u.withLatestFrom(firstItemIndex, u.statefulStreamFromEmitter(groupCounts, []), domIO.scrollTop, sizes, gap)),
+      ([{ groupIndex, count }, currentFirstIndex, currentGroupCounts, _currentScrollTop, sizes, _gap]) => {
+        const avgItemHeight = sizes.lastSize || 30
+        const estimatedHeight = count * avgItemHeight
+
+        u.publish(firstItemIndex, currentFirstIndex + count)
+
+        const newGroupCounts = [...currentGroupCounts]
+        newGroupCounts[groupIndex] = Math.max(0, (newGroupCounts[groupIndex] || 0) - count)
+        u.publish(groupCounts, newGroupCounts)
+
+        requestAnimationFrame(() => {
+          u.publish(domIO.scrollBy, { top: -estimatedHeight })
+        })
+      }
+    )
 
     return {
       data,
@@ -132,6 +171,8 @@ export const listSystem = u.system(
       ...domIO,
       sizes,
       ...stateLoad,
+      prependItems,
+      shiftItems,
     }
   },
   u.tup(

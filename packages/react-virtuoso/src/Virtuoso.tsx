@@ -514,6 +514,8 @@ export const {
       scrollBy: 'scrollBy',
       autoscrollToBottom: 'autoscrollToBottom',
       getState: 'getState',
+      prependItems: 'prependItems',
+      shiftItems: 'shiftItems',
     },
     events: {
       isScrolling: 'isScrolling',
