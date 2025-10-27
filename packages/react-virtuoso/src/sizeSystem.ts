@@ -300,6 +300,7 @@ export const sizeSystem = u.system(
 
     const fixedItemSize = u.statefulStream<OptionalNumber>(undefined)
     const defaultItemSize = u.statefulStream<OptionalNumber>(undefined)
+    const fixedGroupSize = u.statefulStream<OptionalNumber>(undefined)
     const itemSize = u.statefulStream<SizeFunction>((el, field) => correctItemSize(el, SIZE_MAP[field]))
     const data = u.statefulStream<Data>(undefined)
     const gap = u.statefulStream(0)
@@ -380,10 +381,21 @@ export const sizeSystem = u.system(
     u.connect(
       u.pipe(
         defaultItemSize,
-        u.filter((value) => {
-          return value !== undefined && empty(u.getValue(sizes).sizeTree)
+        u.filter((itemSize) => {
+          return itemSize !== undefined && empty(u.getValue(sizes).sizeTree)
         }),
-        u.map((size) => [{ endIndex: 0, size, startIndex: 0 }] as SizeRange[])
+        u.map((itemSize) => {
+          const groupSize = u.getValue(fixedGroupSize)
+
+          if (groupSize) {
+            return [
+              { endIndex: 0, size: groupSize, startIndex: 0 },
+              { endIndex: 1, size: itemSize, startIndex: 1 },
+            ] as SizeRange[]
+          } else {
+            return [{ endIndex: 0, size: itemSize, startIndex: 0 }] as SizeRange[]
+          }
+        })
       ),
       sizeRanges
     )
@@ -614,6 +626,7 @@ export const sizeSystem = u.system(
       defaultItemSize,
       firstItemIndex,
       fixedItemSize,
+      fixedGroupSize,
       gap,
       groupIndices,
       itemSize,

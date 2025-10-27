@@ -183,6 +183,13 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   fixedItemHeight?: number
 
   /**
+   * Can be used to improve performance if the rendered group header items are of known size.
+   * Setting it causes the component to skip measuring group headers.
+   * The value is in pixels.
+   */
+  fixedGroupHeight?: number
+
+  /**
    * If set to `true`, the list automatically scrolls to bottom if the total count is changed.
    * Set to `"smooth"` for an animated scrolling.
    *
