@@ -386,12 +386,19 @@ export const sizeSystem = u.system(
         }),
         u.map((itemSize) => {
           const groupSize = u.getValue(fixedGroupSize)
+          const hasGroups = u.getValue(groupIndices).length > 0
 
+          // send the fake probe sizes only if we have group counts - otherwise, leave the tree empty.
+          // this is necessary for the tree to be built correctly
           if (groupSize) {
-            return [
-              { endIndex: 0, size: groupSize, startIndex: 0 },
-              { endIndex: 1, size: itemSize, startIndex: 1 },
-            ] as SizeRange[]
+            if (hasGroups) {
+              return [
+                { endIndex: 0, size: groupSize, startIndex: 0 },
+                { endIndex: 1, size: itemSize, startIndex: 1 },
+              ] as SizeRange[]
+            } else {
+              return []
+            }
           } else {
             return [{ endIndex: 0, size: itemSize, startIndex: 0 }] as SizeRange[]
           }
