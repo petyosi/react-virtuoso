@@ -1,0 +1,119 @@
+---
+import LanguageSelect from '@astrojs/starlight/components/LanguageSelect.astro'
+import Search from '@astrojs/starlight/components/Search.astro'
+import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro'
+import { GitHubLogoIcon } from '@radix-ui/react-icons'
+import config from 'virtual:starlight/user-config'
+
+import SiteTitle from './SiteTitle.astro'
+
+/**
+ * Render the `Search` component if Pagefind is enabled or the default search component has been overridden.
+ */
+const shouldRenderSearch = config.pagefind || config.components.Search !== '@astrojs/starlight/components/Search.astro'
+---
+
+<div class="header">
+  <div class="title-wrapper sl-flex">
+    <SiteTitle />
+  </div>
+  <nav class="main-nav sl-hidden md:sl-flex">
+    <a href="/react-virtuoso/">React Virtuoso</a>
+    <a href="/message-list/">Message List</a>
+    <a href="/masonry/">Virtuoso Masonry</a>
+    <a href="/pricing/">Pricing</a>
+  </nav>
+  <div class="sl-flex print:hidden">
+    {shouldRenderSearch && <Search />}
+  </div>
+  <div class="sl-hidden md:sl-flex right-group print:hidden">
+    <div class="sl-flex social-icons">
+      <a class="sl-flex text-text-primary active:text-text-link" href="https://github.com/petyosi/react-virtuoso" rel="me">
+        <span class="sr-only">React Virtuoso in Github</span>
+        <GitHubLogoIcon className="size-radix-icon" />
+      </a>
+    </div>
+    <ThemeSelect />
+    <LanguageSelect />
+  </div>
+</div>
+
+<style>
+  @layer starlight.core {
+    .header {
+      display: flex;
+      gap: var(--sl-nav-gap);
+      justify-content: space-between;
+      align-items: center;
+      height: 100%;
+    }
+
+    .title-wrapper {
+      /* Prevent long titles overflowing and covering the search and menu buttons on narrow viewports. */
+      overflow: clip;
+      /* Avoid clipping focus ring around link inside title wrapper. */
+      padding: 0.25rem;
+      margin: -0.25rem;
+      min-width: 0;
+    }
+
+    .main-nav {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .main-nav a {
+      color: var(--sl-color-white);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: var(--sl-text-sm);
+      transition: color 0.2s;
+    }
+
+    .main-nav a:hover {
+      color: var(--sl-color-text-accent);
+    }
+
+    .right-group,
+    .social-icons {
+      gap: 1rem;
+      align-items: center;
+    }
+    .social-icons::after {
+      content: '';
+      height: 2rem;
+      border-inline-end: 1px solid var(--sl-color-gray-5);
+    }
+
+    @media (min-width: 50rem) {
+      :global(:root[data-has-sidebar]) {
+        --__sidebar-pad: calc(2 * var(--sl-nav-pad-x));
+      }
+      :global(:root:not([data-has-toc])) {
+        --__toc-width: 0rem;
+      }
+      .header {
+        --__sidebar-width: max(0rem, var(--sl-content-inline-start, 0rem) - var(--sl-nav-pad-x));
+        --__main-column-fr: calc(
+          (
+              100% + var(--__sidebar-pad, 0rem) - var(--__toc-width, var(--sl-sidebar-width)) -
+                (2 * var(--__toc-width, var(--sl-nav-pad-x))) - var(--sl-content-inline-start, 0rem) - var(--sl-content-width)
+            ) /
+            2
+        );
+        display: grid;
+        grid-template-columns:
+        /* 1 (site title): runs up until the main content column's left edge or the width of the title, whichever is the largest  */
+          minmax(calc(var(--__sidebar-width) + max(0rem, var(--__main-column-fr) - var(--sl-nav-gap))), auto)
+          /* 2 (nav links): auto width */
+          auto
+          /* 3 (search box): all free space that is available. */
+          1fr
+          /* 4 (right items): use the space that these need. */
+          auto;
+        align-content: center;
+      }
+    }
+  }
+</style>

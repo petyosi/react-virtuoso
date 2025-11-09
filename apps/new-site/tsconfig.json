@@ -1,0 +1,19 @@
+{
+  "extends": [
+    "@virtuoso.dev/tooling/tsconfig.base.json",
+    "astro/tsconfigs/strict"
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    ".astro/types.d.ts",
+    "**/*",
+    "eslint.config.mjs",
+    "prettier.config.mjs"
+  ],
+  "exclude": ["dist"]
+}

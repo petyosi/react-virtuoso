@@ -1,0 +1,268 @@
+@layer base, starlight, theme, components, utilities, starlight-overrides;
+
+@plugin "tailwindcss-animate";
+
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@astrojs/starlight-tailwind';
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@custom-variant dark (&:is([data-theme="dark"] *));
+
+@theme {
+  --font-mono: 'IBM Plex Mono';
+  --size-radix-icon: 15px;
+
+  --color-accent-50: var(--color-blue-50);
+  --color-accent-100: var(--color-blue-100);
+  --color-accent-200: var(--color-blue-200);
+  --color-accent-300: var(--color-blue-300);
+  --color-accent-400: var(--color-blue-400);
+  --color-accent-500: var(--color-blue-500);
+  --color-accent-600: var(--color-blue-600);
+  --color-accent-700: var(--color-blue-700);
+  --color-accent-800: var(--color-blue-800);
+  --color-accent-900: var(--color-blue-900);
+  --color-accent-950: var(--color-blue-950);
+
+  --sl-content-width: 60rem;
+
+  /* Text Hierarchy Tokens */
+  --color-text-primary: var(--sl-color-white);
+  --color-text-secondary: var(--sl-color-gray-2);
+  --color-text-tertiary: var(--sl-color-gray-3);
+  --color-text-link: var(--sl-color-text-accent);
+  --color-text-muted: var(--sl-color-gray-4);
+
+  /* Surface/Background Tokens */
+  --color-surface-base: var(--sl-color-bg);
+  --color-surface-raised: var(--sl-color-gray-6);
+  --color-surface-overlay: var(--sl-color-gray-5);
+  --color-surface-sidebar: var(--sl-color-bg-sidebar);
+  --color-surface-code: var(--sl-color-bg-inline-code);
+  --color-surface-codeblock: var(--sl-color-gray-7);
+
+  /* State Colors - Success */
+  --color-success-bg: var(--sl-color-green-low);
+  --color-success-border: var(--sl-color-green);
+  --color-success-text: var(--sl-color-green-high);
+
+  /* State Colors - Warning */
+  --color-warning-bg: var(--sl-color-orange-low);
+  --color-warning-border: var(--sl-color-orange);
+  --color-warning-text: var(--sl-color-orange-high);
+
+  /* State Colors - Error */
+  --color-error-bg: var(--sl-color-red-low);
+  --color-error-border: var(--sl-color-red);
+  --color-error-text: var(--sl-color-red-high);
+
+  /* State Colors - Info */
+  --color-info-bg: var(--sl-color-blue-low);
+  --color-info-border: var(--sl-color-blue);
+  --color-info-text: var(--sl-color-blue-high);
+
+  /* Interactive Elements */
+  --color-interactive-primary: var(--sl-color-accent);
+  --color-interactive-primary-hover: var(--sl-color-accent-high);
+  --color-interactive-secondary: var(--sl-color-gray-5);
+  --color-interactive-focus: var(--sl-color-accent-high);
+
+  /* Borders */
+  --color-border-primary: var(--sl-color-hairline-light);
+  --color-border-secondary: var(--sl-color-gray-5);
+
+  /* Code Typography Tokens */
+  --font-code-family: var(--sl-font-system-mono);
+  --font-code-size: var(--sl-text-2xs);
+  --font-code-line-height: var(--sl-line-height);
+}
+
+@layer components {
+  /* Override Starlight's content margin for LiveCodeBlock astro-islands */
+  .sl-markdown-content > astro-island:has(.live-code-block-wrapper) {
+    margin-top: 0;
+  }
+
+  /* Hide the redundant top-level sidebar group label and remove its indentation */
+  .sidebar-content ul.top-level > li:first-child > details > summary {
+    display: none;
+  }
+
+  /* Remove the padding/indentation from nested items under the hidden top-level group */
+  .sidebar-content ul.top-level > li:first-child > details > ul {
+    padding-inline-start: 0;
+  }
+
+  /* Make first-level items look like top-level items (remove border and spacing) */
+  .sidebar-content ul.top-level > li:first-child > details > ul > li {
+    border-inline-start: none;
+    padding-inline-start: 0;
+    margin-inline-start: 0;
+  }
+
+  /* StaticCodeBlock typography control */
+  .static-code-block {
+    font-family: var(--font-code-family);
+    font-size: var(--font-code-size);
+    line-height: var(--font-code-line-height);
+    padding: 1rem;
+    overflow-x: auto;
+    border-radius: 0.375rem;
+    & pre {
+      background-color: transparent !important;
+    }
+    & .languageLabel {
+      right: auto !important;
+      top: 0.1rem !important;
+      left: 0.35rem !important;
+      font-size: 0.65rem !important;
+    }
+  }
+
+  /* Monaco editor transparent background override */
+  .live-code-block {
+    & .monaco-editor,
+    & .monaco-editor .overflow-guard,
+    & .monaco-editor-background,
+    & .monaco-editor .margin {
+      background-color: transparent !important;
+    }
+  }
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--sl-color-accent);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+[data-theme='dark'] {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer starlight-overrides {
+  /** first level sidebar links to red **/
+  .large {
+    font-size: var(--sl-text-sm);
+  }
+
+  .top-level > li > a.large {
+    font-weight: var(--font-weight-normal);
+  }
+
+  html:not([data-has-sidebar]) main .content-panel:first-child {
+    display: none;
+  }
+
+  .hero-section {
+    min-height: auto;
+  }
+}

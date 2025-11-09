@@ -2,26 +2,38 @@
   "name": "@virtuoso.dev/monorepo",
   "private": true,
   "scripts": {
-    "ci": "npm run ci-setup && npm run build && npm run typecheck && npm run lint && npm run test && npm run e2e",
-    "ci-setup": "npm run ci-setup --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
-    "e2e": "npm run e2e --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present",
-    "build-virtuoso.dev": "npm run build --workspace @virtuoso.dev/virtuoso.dev",
-    "release": "npm run build --workspaces --if-present && changeset publish --provenance",
-    "changeset-add": "changeset add",
-    "dev:docs": "npm run dev --workspace  @virtuoso.dev/virtuoso.dev#dev"
+    "ci": "pnpm ci-setup && pnpm build && pnpm typecheck && pnpm lint && pnpm lint:md && pnpm test && pnpm e2e",
+    "ci-setup": "pnpm --filter \"*\" run ci-setup",
+    "typecheck": "pnpm --filter \"*\" run typecheck",
+    "lint": "pnpm --filter \"*\" run lint",
+    "lint:md": "markdownlint '**/*.md' --ignore-path .markdownlintignore",
+    "lint:md:fix": "markdownlint '**/*.md' --ignore-path .markdownlintignore --fix",
+    "test": "pnpm --filter \"*\" run test",
+    "e2e": "pnpm --filter \"*\" run e2e",
+    "build": "pnpm --filter \"*\" run build",
+    "build-virtuoso.dev": "pnpm --filter @virtuoso.dev/virtuoso.dev run build",
+    "release": "pnpm build && pnpm publish -r",
+    "changeset-add": "pnpm changeset add",
+    "dev:docs": "pnpm --filter @virtuoso.dev/virtuoso.dev run dev",
+    "prepare": "lefthook install"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.8"
+    "@changesets/cli": "^2.29.8",
+    "lefthook": "^2.0.8",
+    "markdownlint-cli": "^0.46.0"
   },
-  "packageManager": "npm@10.9.0",
+  "packageManager": "pnpm@10.24.0",
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "react-inspector>react": "19"
+      }
+    }
+  },
   "devEngines": {
     "packageManager": {
-      "name": "npm",
-      "version": ">=10.9.0",
+      "name": "pnpm",
+      "version": ">=10.24",
       "onFail": "error"
     },
     "runtime": {
@@ -29,10 +41,5 @@
       "version": ">=22.0.0",
       "onFail": "error"
     }
-  },
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
-  "version": ""
+  }
 }

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/DavidAnson/markdownlint/main/schema/markdownlint-config-schema.json",
+  "default": true,
+  "MD003": {
+      "style": "atx"
+  },
+  "MD010": {
+    "code_blocks": true
+  },
+  "MD012": false,
+  "MD013": false,
+  "MD024": {
+    "siblings_only": true
+  },
+  "MD026": {
+    "punctuation": ".,;:!。،؛"
+  },
+  "MD033": false,
+  "MD046": {
+    "style": "fenced"
+  },
+  "MD049": {
+    "style": "underscore"
+  },
+  "MD050": {
+    "style": "asterisk"
+  },
+  "MD060": false
+}

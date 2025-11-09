@@ -1,6 +1,8 @@
+# React Virtuoso
+
 [![npm version](https://img.shields.io/npm/v/react-virtuoso.svg?style=flat)](//badge.fury.io/js/react-virtuoso)
 
-**React Virtuoso** - the most complete React virtualization rendering list/table/grid/masonry family of components.
+The most complete React virtualization rendering list/table/grid/masonry family of components.
 
 - Variable sized items out of the box; no manual measurements or hard-coding item heights is necessary;
 - [Chat message list UI](https://virtuoso.dev/virtuoso-message-list/) **NEW**;
@@ -39,7 +41,7 @@ ReactDOM.render(<App />, document.getElementById('root'))
 
 ## [Message List](https://virtuoso.dev/virtuoso-message-list/)
 
-The Virtuoso message list component is built specifically for human/chatbot conversations. In addition to the virtualized rendering, the component exposes an imperative data management 
+The Virtuoso message list component is built specifically for human/chatbot conversations. In addition to the virtualized rendering, the component exposes an imperative data management
 API that gives you the necessary control over the scroll position when older messages are loaded, new messages arrive, and when the user submits a message. The scroll position can update instantly or with a smooth scroll animation.
 
 ## [Grouped Mode](https://virtuoso.dev/grouped-by-first-letter/)
@@ -58,7 +60,7 @@ The layout and item sizing is controlled through CSS class properties, which all
 
 ## [Masonry](https://virtuoso.dev/hello-masonry/)
 
-The `Masonry` component renders columns from varying-height items, suitable for product listings, image galleries, etc. 
+The `Masonry` component renders columns from varying-height items, suitable for product listings, image galleries, etc.
 
 ## [Table](https://virtuoso.dev/hello-table/)
 
@@ -78,7 +80,7 @@ For in-depth documentation and live examples of the supported features and live 
 
 To support [legacy browsers](https://caniuse.com/resizeobserver), you might have to load a [ResizeObserver Polyfill](https://www.npmjs.com/package/resize-observer-polyfill) before using `react-virtuoso`:
 
-```
+```javascript
 import ResizeObserver from 'resize-observer-polyfill'
 if (!window.ResizeObserver)
   window.ResizeObserver = ResizeObserver

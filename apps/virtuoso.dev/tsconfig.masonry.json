@@ -18,5 +18,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["../../node_modules/@virtuoso.dev/masonry/dist/index.d.ts"]
+  "include": ["./node_modules/@virtuoso.dev/masonry/dist/index.d.ts"]
 }

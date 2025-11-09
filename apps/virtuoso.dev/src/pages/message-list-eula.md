@@ -10,15 +10,15 @@ If you do not agree to any of the terms and conditions of this agreement or if y
 
 ## 1. Definitions
 
-* "Martiti" means Martiti 2 Ltd, a legal entity located at 1618 Dechko Yordanov 36, Sofia, Bulgaria.
-* "Site" means all websites operated by Martiti 2 Ltd, including but not limited to https://virtuoso.dev/.
-* "Licensee" means the business and/or entity that you represent.
-* "Licensor" means the creator and owner of the SOFTWARE: Martiti 2 Ltd.
-* "Effective Date" means the date on which the agreement is made effective. This is the date of the purchase.
-* "Software" means the copyrighted materials owned by the Licensor, subject to the terms of this agreement.
-* "Licensed Developers" means the Licensee's (and any of its affiliates') employees, workers, and contractors who are authorized by the Licensee to develop software products that include the Software.
-* "License Term" means the duration for which the license is valid, starting from the Effective Date, and ending after a minimum 12 months.
-* A "production" environment is where the end-user can see, experience, and interact with the product.
+- "Martiti" means Martiti 2 Ltd, a legal entity located at 1618 Dechko Yordanov 36, Sofia, Bulgaria.
+- "Site" means all websites operated by Martiti 2 Ltd, including but not limited to <https://virtuoso.dev/>.
+- "Licensee" means the business and/or entity that you represent.
+- "Licensor" means the creator and owner of the SOFTWARE: Martiti 2 Ltd.
+- "Effective Date" means the date on which the agreement is made effective. This is the date of the purchase.
+- "Software" means the copyrighted materials owned by the Licensor, subject to the terms of this agreement.
+- "Licensed Developers" means the Licensee's (and any of its affiliates') employees, workers, and contractors who are authorized by the Licensee to develop software products that include the Software.
+- "License Term" means the duration for which the license is valid, starting from the Effective Date, and ending after a minimum 12 months.
+- A "production" environment is where the end-user can see, experience, and interact with the product.
 
 ## 2. License
 
@@ -47,10 +47,11 @@ For the avoidance of doubt, Licensee may not use the Software, or any portions t
 The Licensee shall not sell, rent, lease, distribute, assign, transfer, or encumber rights to the Software.
 
 ### 2.4. License key
+
 To help the Licensee to stay compliant with the terms of this agreement, the Software may require the installation of a license key. If a license key is required:
 
-* (a) The Licensor will make available to the Licensee a valid license key.
-* (b) The Software may raise warnings, based on the license key, when it detects that the current use of the Software by Licensee is not consistent with this agreement, for example, when using a version of the Software released after the license of Licensee has expired.
+- (a) The Licensor will make available to the Licensee a valid license key.
+- (b) The Software may raise warnings, based on the license key, when it detects that the current use of the Software by Licensee is not consistent with this agreement, for example, when using a version of the Software released after the license of Licensee has expired.
 
 Please note that the license key does not cover every scenario, so possession of a valid license key does not by itself confer the right to use the Software.
 
@@ -78,7 +79,7 @@ The Licensee may allow its agents, contractors, and outsourcing service provider
 
 3.2.2. **Perpetual in production.** The Licensee is allowed to perpetually use in a production environment any versions of the Software released before the end of the License Term.
 
-## 4. Restriction on Modification and Extraction of Source Code:
+## 4. Restriction on Modification and Extraction of Source Code
 
 The Licensee acknowledges and agrees that the software product provided under this End User License Agreement (EULA) contains valuable trade secrets and proprietary information of the Licensor. The Licensee shall not, under any circumstances, attempt to modify, decompile, disassemble, reverse engineer, or otherwise alter the source code of the software product, in whole or in part, without prior written consent from the Licensor.
 
@@ -154,9 +155,9 @@ The Licensor warrants to Licensee that, for twelve (12) months after the Effecti
 
 We provide no warranty, however, for unstable features of the Software. A feature is considered unstable if exposed to Licensee:
 
-* (a) through an API that includes "unstable" in its name
-* (b) or in a package for which the version is not considered stable according to SemVer versioning models, e.g. alpha, beta, or other pre-releases
-* (c) or documented as "experimental".
+- (a) through an API that includes "unstable" in its name
+- (b) or in a package for which the version is not considered stable according to SemVer versioning models, e.g. alpha, beta, or other pre-releases
+- (c) or documented as "experimental".
 
 ### 9.5. Warranties disclaimers
 
@@ -186,10 +187,10 @@ Except for the warranties expressly stated in the warranties section above, the 
 
 Either party may terminate this agreement by giving the other written notice if:
 
-* (a) the other party materially breaches any term of this agreement and it is not possible to remedy that breach;
-* (b) the other party materially breaches any term of this agreement and it is possible to remedy that breach, but the other party fails to do so within 30 days of this being requested in writing;
-* (c) the other party suffers or undergoes an insolvency event or a bankruptcy event or debtor's relief proceeding or ceases to do business.
-* (d) the other party is delayed in performing its obligations under this agreement for a period of 30 days or more.
+- (a) the other party materially breaches any term of this agreement and it is not possible to remedy that breach;
+- (b) the other party materially breaches any term of this agreement and it is possible to remedy that breach, but the other party fails to do so within 30 days of this being requested in writing;
+- (c) the other party suffers or undergoes an insolvency event or a bankruptcy event or debtor's relief proceeding or ceases to do business.
+- (d) the other party is delayed in performing its obligations under this agreement for a period of 30 days or more.
 
 For the purposes of this clause, in order for it to be possible to remedy a breach, it must be possible to take steps so as to put the other party into the same position which (save as to the date) it would have been in if the breach had never occurred.
 
@@ -227,16 +228,16 @@ The license fee isn't refundable even if Licensee or the Licensed Developers sto
 
 17.1. Each party shall:
 
-* (a) keep confidential all confidential information of the other party which it receives in connection with this agreement;
-* (b) to use confidential information for the sole purpose of fulfilling this agreement unless otherwise agreed to in express writing by the parties;
+- (a) keep confidential all confidential information of the other party which it receives in connection with this agreement;
+- (b) to use confidential information for the sole purpose of fulfilling this agreement unless otherwise agreed to in express writing by the parties;
 
 However, confidential information shall not include information that:
 
-* (a) is generally known to the public at the time of disclosure;
-* (b) is legally received by receiving party from a third party, which third party is in rightful possession of confidential information,
-* (c) becomes generally known to the public subsequent to the time of such disclosure, but not as a result of disclosure by receiving party,
-* (d) prior to signing of this agreement, is already in the possession of receiving party; or
-* (e) is independently developed by the receiving party without use of or reference to the confidential information of the Disclosing Party, as demonstrated by the receiving party's written records.
+- (a) is generally known to the public at the time of disclosure;
+- (b) is legally received by receiving party from a third party, which third party is in rightful possession of confidential information,
+- (c) becomes generally known to the public subsequent to the time of such disclosure, but not as a result of disclosure by receiving party,
+- (d) prior to signing of this agreement, is already in the possession of receiving party; or
+- (e) is independently developed by the receiving party without use of or reference to the confidential information of the Disclosing Party, as demonstrated by the receiving party's written records.
 
 17.2. Either party may disclose confidential information of the other party as required by governmental or judicial order, provided such party gives the other party prompt written notice prior to such disclosure (unless such prior notice is not permitted by applicable law) and complies with any protective order (or equivalent) imposed on such disclosure.
 
@@ -244,7 +245,6 @@ However, confidential information shall not include information that:
 
 ## 18.1. Notices
 
-Notices must be clearly identified as Legal Notices and sent to legal@virtuoso.dev.
+Notices must be clearly identified as Legal Notices and sent to <legal@virtuoso.dev>.
 
 Last update: March 30th, 2024.
-

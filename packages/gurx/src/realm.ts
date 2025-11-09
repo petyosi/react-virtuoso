@@ -609,7 +609,7 @@ export class Realm {
   }
   /**
    * Gets the current value of a node. The node must be stateful.
-   * @remark if possible, use {@link withLatestFrom} or {@link combine}, as getValue will not create a dependency to the passed node,
+   * @remarks If possible, use {@link withLatestFrom} or {@link combine}, as getValue will not create a dependency to the passed node,
    * which means that if you call it within a computational cycle, you may not get the correct value.
    * @param node - the node instance.
    * @example
@@ -1218,7 +1218,7 @@ export function Signal<T>(init: NodeInit<T> = noop, distinct: Distinct<T> = fals
  * r.pub(foo$)
  * ```
  * @category Nodes
- * @remark An action is just a signal with `void` value. It can be used to trigger side effects.
+ * @remarks An action is just a signal with `void` value. It can be used to trigger side effects.
  */
 export function Action(init: NodeInit<void> = noop): NodeRef<void> {
   return tap(Symbol(), (id) => {

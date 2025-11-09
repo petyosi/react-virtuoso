@@ -2,7 +2,7 @@
 
 This package contains shared tooling configuration for Virtuoso projects:
 
-- ESLint configuration 
+- ESLint configuration
 - TypeScript configuration
 
 ## Usage

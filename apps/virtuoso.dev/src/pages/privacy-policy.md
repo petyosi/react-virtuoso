@@ -4,29 +4,29 @@ Effective date: March 30th, 2024.
 
 ## Introduction
 
-This Privacy Policy sets forth the privacy practices of Martiti 2 Ltd. and its affiliates and subsidiaries (collectively, "Martiti 2") with respect to all Martiti 2 information, data, graphics, content, software applications (including, without limitation, mobile software and applications) (collectively, the “Software”); the Virtuoso website, located at virtuoso.dev, (the “Website”); and other products or services provided or otherwise made accessible on or through the Software or the Website. Collectively, the Software, the Website, and any other Martiti 2 services are hereinafter referred to as the “Service”. In this Privacy Policy, “we”, “us”, “our” and other similar references mean Martiti 2 and “you” and “your” and other similar references mean any particular user of the Service. This Privacy Policy describes how Martiti 2 uses personal information of users collected through our Service (“Personal Information”). This policy applies (i) immediately to users who utilize the Service on or after the Effective Date and (ii) on the Effective Date to users who utilize the Service before the Effective Date. Any person who does not agree to be bound by this Privacy Policy should not utilize the Service. Each capitalized term not otherwise defined herein shall have the meaning set forth in Section 2. Please contact us if you have any questions or comments about our privacy practices or this Privacy Policy. You can reach us online at legal@virtuoso.dev.
+This Privacy Policy sets forth the privacy practices of Martiti 2 Ltd. and its affiliates and subsidiaries (collectively, "Martiti 2") with respect to all Martiti 2 information, data, graphics, content, software applications (including, without limitation, mobile software and applications) (collectively, the “Software”); the Virtuoso website, located at virtuoso.dev, (the “Website”); and other products or services provided or otherwise made accessible on or through the Software or the Website. Collectively, the Software, the Website, and any other Martiti 2 services are hereinafter referred to as the “Service”. In this Privacy Policy, “we”, “us”, “our” and other similar references mean Martiti 2 and “you” and “your” and other similar references mean any particular user of the Service. This Privacy Policy describes how Martiti 2 uses personal information of users collected through our Service (“Personal Information”). This policy applies (i) immediately to users who utilize the Service on or after the Effective Date and (ii) on the Effective Date to users who utilize the Service before the Effective Date. Any person who does not agree to be bound by this Privacy Policy should not utilize the Service. Each capitalized term not otherwise defined herein shall have the meaning set forth in Section 2. Please contact us if you have any questions or comments about our privacy practices or this Privacy Policy. You can reach us online at <legal@virtuoso.dev>.
 
 PLEASE READ THIS PRIVACY POLICY CAREFULLY. BY ACCESSING OR USING THE SERVICE, YOU ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTOOD, AND AGREE TO BE BOUND TO ALL THE TERMS AND CONDITIONS OF THIS PRIVACY POLICY AND OUR TERMS OF USE. IF YOU DO NOT AGREE TO THESE TERMS AND CONDITIONS, PLEASE EXIT, AND DO NOT ACCESS OR USE, THE SERVICE.
 
 Definitions
 
-* "Contact Information" means (i) your name, (ii) your physical address, (iii) your email address and (iv) your telephone number.
-* "Effective Date" means the date set forth at the beginning of this document.
-* "Martiti 2 Affiliates" means any parent, subsidiary, member, officer, director, employee, or agent of Martiti 2 or any company under common control with Martiti 2.
-* "Privacy Policy" means the set of policies set forth in this document.
-* "Financial Account Information" means your credit card number, credit card expiration date and credit card verification code, all with respect to one or more credit cards that you have the lawful right to use, and your bank account number, bank account title, bank name, branch location and routing number, all with respect to one or more accounts that you have the lawful right to access; provided “Financial Account Information” does not include the last four digits of your credit card number, which we retain for purposes of verifying User Account and User Account Information.
-* "Transaction Information" means all information related to transactions that you conduct on the Service and your interactions with the Service.
-* "User Account" means an account permitting access to the Service, with which is associated a user name and password.
-* "User Account Information" means information that identifies you to the Service, including your user name, password, internet protocol address, and MAC address.
-* "User Content" means images, comments, and other materials that you post to the Service.
+- "Contact Information" means (i) your name, (ii) your physical address, (iii) your email address and (iv) your telephone number.
+- "Effective Date" means the date set forth at the beginning of this document.
+- "Martiti 2 Affiliates" means any parent, subsidiary, member, officer, director, employee, or agent of Martiti 2 or any company under common control with Martiti 2.
+- "Privacy Policy" means the set of policies set forth in this document.
+- "Financial Account Information" means your credit card number, credit card expiration date and credit card verification code, all with respect to one or more credit cards that you have the lawful right to use, and your bank account number, bank account title, bank name, branch location and routing number, all with respect to one or more accounts that you have the lawful right to access; provided “Financial Account Information” does not include the last four digits of your credit card number, which we retain for purposes of verifying User Account and User Account Information.
+- "Transaction Information" means all information related to transactions that you conduct on the Service and your interactions with the Service.
+- "User Account" means an account permitting access to the Service, with which is associated a user name and password.
+- "User Account Information" means information that identifies you to the Service, including your user name, password, internet protocol address, and MAC address.
+- "User Content" means images, comments, and other materials that you post to the Service.
 
 Types of Personal Information We Collect:
 
-* Contact Information;
-* Financial Account Information;
-* Transaction Information;
-* User Account Information; and
-* User Content.
+- Contact Information;
+- Financial Account Information;
+- Transaction Information;
+- User Account Information; and
+- User Content.
 
 ## Mechanisms for Collection of Personal Information
 
@@ -36,27 +36,27 @@ Martiti 2 collects Personal Information (i) upon a user’s creation of a User A
 
 Martiti 2 uses Personal Information to:
 
-* operate and improve the Service;
-* target offers to users;
-* administer the Service’s facilities for communications among and between users and the public in general;
-* evaluate eligibility of customers for certain offers, products or services;
-* evaluate the types of offers, products or services that may be of interest to users;
-* provide user support;
-* communicate with users regarding support, security, technical issues, commerce, marketing, and transactions;
-* facilitate marketing, advertising, surveys, contests, sweepstakes and promotions
-* administer the Service, User Accounts and transactions with respect to User Accounts; and
-* administer and carry out our obligations under contracts and to comply with the law.
-* Disclosure of Personal Information
+- operate and improve the Service;
+- target offers to users;
+- administer the Service’s facilities for communications among and between users and the public in general;
+- evaluate eligibility of customers for certain offers, products or services;
+- evaluate the types of offers, products or services that may be of interest to users;
+- provide user support;
+- communicate with users regarding support, security, technical issues, commerce, marketing, and transactions;
+- facilitate marketing, advertising, surveys, contests, sweepstakes and promotions
+- administer the Service, User Accounts and transactions with respect to User Accounts; and
+- administer and carry out our obligations under contracts and to comply with the law.
+- Disclosure of Personal Information
 
 We may disclose your Personal Information to:
 
-* Martiti 2 Affiliates, which may use the Personal Information for the purposes described in Section 5;
-* service providers which act for us or provide services for us, such as for marketing or for the processing of payments, and as to such service providers their use of Personal Information is subject to our agreements with them and any applicable laws;
-* vendors in connection with the investigation of possible fraud, or as part of legal proceedings affecting Martiti 2 or the vendor;
-* any person or government agency in response to a subpoena;
-* to a government agency in response to an investigation, regardless of whether or not a subpoena has been issued;
-* any person to enforce our rights or protect our property; to protect the rights, property or safety of others, investigate fraud; and
-* Martiti 2’s employees and outside professionals (such as lawyers and accountants) for the purpose of auditing, compliance, and corporate governance.
+- Martiti 2 Affiliates, which may use the Personal Information for the purposes described in Section 5;
+- service providers which act for us or provide services for us, such as for marketing or for the processing of payments, and as to such service providers their use of Personal Information is subject to our agreements with them and any applicable laws;
+- vendors in connection with the investigation of possible fraud, or as part of legal proceedings affecting Martiti 2 or the vendor;
+- any person or government agency in response to a subpoena;
+- to a government agency in response to an investigation, regardless of whether or not a subpoena has been issued;
+- any person to enforce our rights or protect our property; to protect the rights, property or safety of others, investigate fraud; and
+- Martiti 2’s employees and outside professionals (such as lawyers and accountants) for the purpose of auditing, compliance, and corporate governance.
 
 ## Storage and Security
 

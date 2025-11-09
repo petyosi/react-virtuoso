@@ -39,7 +39,7 @@ export function Example() {
 
   const itemContent = (rowIndex: number) => (
     <Row
-      expanded={!!expanded[rowIndex]}
+      expanded={expanded[rowIndex]}
       rowIndex={rowIndex}
       setExpanded={(expanded: boolean) => {
         setExpanded((old) => Object.assign(old, { [rowIndex]: expanded }))

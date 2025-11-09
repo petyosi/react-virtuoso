@@ -53,7 +53,7 @@ function useCellValueWithState<T>(cell: Out<T>): T {
 /**
  * Gets the current value of the cell. The component is re-rendered when the cell value changes.
  *
- * @remark If you need the values of multiple nodes from the realm and those nodes might change in the same computiation, you can `useCellValues` to reduce re-renders.
+ * @remarks If you need the values of multiple nodes from the realm and those nodes might change in the same computation, you can `useCellValues` to reduce re-renders.
  *
  * @returns The current value of the cell.
  * @typeParam T - the type of the value that the cell caries.

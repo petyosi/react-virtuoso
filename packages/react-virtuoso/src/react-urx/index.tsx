@@ -156,7 +156,7 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
   map: M,
   Root?: R
 ) {
-  type ContextValue = ReturnType<SS['constructor']> & { suppressFlushSync: boolean }
+  type ContextValue = ReturnType<SS['constructor']>
   const requiredPropNames = Object.keys(map.required || {})
   const optionalPropNames = Object.keys(map.optional || {})
   const methodNames = Object.keys(map.methods || {})

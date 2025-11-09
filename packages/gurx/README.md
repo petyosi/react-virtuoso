@@ -1,6 +1,8 @@
-# Push-based state management
+---
+title: Overview
+---
 
-Welcome to the README of Gurx, an typescript-native reactive state management library for complex web applications and components that do not have the symmetry of the store object and the component tree.
+Gurx is a typescript-native reactive state management library for complex web applications and components that do not have the symmetry of the store object and the component tree.
 
 ## Why should you consider Gurx?
 

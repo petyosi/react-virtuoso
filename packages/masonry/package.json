@@ -46,18 +46,18 @@
     "knip": "knip"
   },
   "dependencies": {
-    "@virtuoso.dev/gurx": "*"
+    "@virtuoso.dev/gurx": "workspace:*"
   },
   "peerDependencies": {
     "react": ">= 18 || >= 19",
     "react-dom": ">= 18 || >= 19"
   },
   "devDependencies": {
-    "@virtuoso.dev/tooling": "*",
+    "@virtuoso.dev/tooling": "workspace:*",
     "@ladle/react": "^5.0.1",
     "@types/node": "^22.10.1",
-    "@types/react": "^18.2.64",
-    "@types/react-dom": "^18.2.21",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react-swc": "^3.7.2",
     "@vitest/browser": "^3.0.4",
     "eslint": "^9.19.0",
@@ -67,13 +67,13 @@
     "node-html-parser": "^6.1.13",
     "playwright": "^1.33.0",
     "prettier": "^3.4.2",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
     "resize-observer-polyfill": "^1.5.1",
     "semantic-release": "^24.2.0",
-    "typedoc": "^0.27.2",
+    "typedoc": "^0.28.14",
     "typedoc-plugin-no-inherit": "^1.4.0",
-    "typescript": "^5.7.3",
+    "typescript": "~5.9.3",
     "vite": "^6.0.11",
     "vite-plugin-dts": "^4.5.0",
     "vitest": "^3.0.4"

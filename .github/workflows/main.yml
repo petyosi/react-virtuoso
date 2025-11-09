@@ -1,36 +1,39 @@
 name: CI
 on: [push]
-
-
 jobs:
   build:
     runs-on: ubuntu-latest
 
     env:
       CI: true
-    permissions:
-      contents: write
-      pull-requests: write
-      id-token: write
+      SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+      USE_SSH: true
+      GIT_USER: petyosi
+      NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
     steps:
       - name: Begin CI...
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.24.0
+
       - name: Use Node 22
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
-          registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
 
       - name: Install dependencies
-        run: |
-          npm install 
-          npm install --workspaces
+        run: pnpm install --frozen-lockfile
 
-      # - name: run CI checks
-      #   run: |
-      #     npm run ci
+      - name: Lint markdown
+        run: pnpm lint:md
+
+      - name: run CI checks
+        run: pnpm run ci
 
       - name: Release
         id: changesets
@@ -38,11 +41,11 @@ jobs:
         uses: changesets/action@v1
         with:
           # This expects you to have a script called release which does a build for your packages and calls changeset publish
-          publish: npm run release
+          publish: pnpm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:

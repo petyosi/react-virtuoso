@@ -20,6 +20,9 @@ import type {
 } from '../interfaces'
 import type { VirtuosoProps } from './Virtuoso'
 
+/**
+ * @internal
+ */
 interface BaseTableVirtuosoHandle {
   /**
    * Obtains the internal size state of the component, so that it can be restored later. This does not include the data items.
@@ -29,16 +32,28 @@ interface BaseTableVirtuosoHandle {
   scrollTo(location: ScrollToOptions): void
 }
 
+/**
+ * Exposes the TableVirtuoso component methods.
+ * @group TableVirtuoso
+ */
 export interface TableVirtuosoHandle extends BaseTableVirtuosoHandle {
   scrollIntoView(location: FlatScrollIntoViewLocation | number): void
   scrollToIndex(location: FlatIndexLocationWithAlign | number): void
 }
 
+/**
+ * Exposes the GroupedTableVirtuoso component methods.
+ * @group GroupedTableVirtuoso
+ */
 export interface GroupedTableVirtuosoHandle extends BaseTableVirtuosoHandle {
   scrollIntoView(location: ScrollIntoViewLocationOptions): void
   scrollToIndex(location: IndexLocationWithAlign | number): void
 }
 
+/**
+ * The props for the TableVirtuoso component.
+ * @group TableVirtuoso
+ */
 export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'components' | 'headerFooterTag'> {
   /**
    * Setting `alignToBottom` to `true` aligns the items to the bottom of the list if the list is shorter than the viewport.
@@ -261,6 +276,10 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
   useWindowScroll?: boolean
 }
 
+/**
+ * The props for the GroupedTableVirtuoso component.
+ * @group GroupedTableVirtuoso
+ */
 export interface GroupedTableVirtuosoProps<D, C> extends Omit<TableVirtuosoProps<D, C>, 'itemContent' | 'totalCount'> {
   /**
    * Use when implementing inverse infinite scrolling, decrease the value this property

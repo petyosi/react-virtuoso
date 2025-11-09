@@ -31,7 +31,6 @@ export type ComputeItemKey<Data = unknown, Context = unknown> = (params: { conte
 
 /**
  * The DOM attributes that you can pass to the `VirtuosoMasonry` component to customize the scroll element.
- * @noInheritDoc
  */
 export type ScrollerProps = Omit<React.HTMLProps<HTMLDivElement>, 'data' | 'onScroll' | 'ref'>
 

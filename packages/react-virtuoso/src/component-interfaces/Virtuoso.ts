@@ -20,6 +20,10 @@ import type {
 
 import { LogLevel } from '../loggerSystem'
 
+/**
+ * Exposes the GroupedVirtuoso component methods.
+ * @group GroupedVirtuoso
+ */
 export interface GroupedVirtuosoHandle {
   autoscrollToBottom(): void
   /**
@@ -33,6 +37,10 @@ export interface GroupedVirtuosoHandle {
   scrollToIndex(location: IndexLocationWithAlign | number): void
 }
 
+/**
+ * The props for the GroupedVirtuoso component.
+ * @group GroupedVirtuoso
+ */
 export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'itemContent' | 'totalCount'> {
   /**
    * Use when implementing inverse infinite scrolling, decrease the value this property
@@ -66,6 +74,10 @@ export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'i
   itemContent?: GroupItemContent<D, C>
 }
 
+/**
+ * Exposes the Virtuoso component methods.
+ * @group Virtuoso
+ */
 export interface VirtuosoHandle {
   /**
    * Use this with combination with follow output if you have images loading in the list. Listen to the image loading and call the method.
@@ -94,6 +106,10 @@ export interface VirtuosoHandle {
   scrollToIndex(location: FlatIndexLocationWithAlign | number): void
 }
 
+/**
+ * The props for the Virtuoso component.
+ * @group Virtuoso
+ */
 export interface VirtuosoProps<D, C> extends ListRootProps {
   /**
    * Setting `alignToBottom` to `true` aligns the items to the bottom of the list if the list is shorter than the viewport.
@@ -238,8 +254,7 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
     context: C
     totalCount: number
     scrollingInProgress: boolean
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-  }) => ScrollIntoViewLocation | null | undefined | false | void
+  }) => ScrollIntoViewLocation | null | undefined | false
 
   /**
    * Set to customize the wrapper tag for the header and footer components (default is `div`).

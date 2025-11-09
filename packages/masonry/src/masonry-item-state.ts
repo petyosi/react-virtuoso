@@ -116,8 +116,7 @@ export const masonryItemsState$ = Cell<MasonryItemsState<unknown>>({ columns: []
 
               if (
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                currentColumnState &&
-                currentColumnState.offsetTree === offsetTree &&
+                currentColumnState?.offsetTree === offsetTree &&
                 current.totalCount === totalCount &&
                 current.data === data &&
                 current.indexesInColumns === indexesInColumns

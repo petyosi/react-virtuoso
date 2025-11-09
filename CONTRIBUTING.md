@@ -2,7 +2,7 @@
 
 ## Run the project locally
 
-The repository uses NPM, [turborepo](https://turbo.build/), and [changesets](https://github.com/changesets/changesets) for its infrastructure. The `react-virtuoso` package has a [ladle](https://ladle.dev/) setup for examples, test cases, and bug reproductions. Run `npm run dev` inside `packages/react-virtuoso`. 
+The repository uses NPM, [turborepo](https://turbo.build/), and [changesets](https://github.com/changesets/changesets) for its infrastructure. The `react-virtuoso` package has a [ladle](https://ladle.dev/) setup for examples, test cases, and bug reproductions. Run `npm run dev` inside `packages/react-virtuoso`.
 
 ## Add fixes and new features
 
