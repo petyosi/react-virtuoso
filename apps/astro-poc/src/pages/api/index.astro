@@ -1,0 +1,135 @@
+---
+import { getCollection } from 'astro:content';
+import DocLayout from '../../layouts/DocLayout.astro';
+
+// Get all API documentation entries
+const apiEntries = await getCollection('api');
+
+// Build navigation items from collection
+const navigationItems = apiEntries.map(entry => ({
+  title: entry.data.title,
+  url: `/api/${entry.id.replace(/\.md$/, '')}`
+}));
+
+// Group navigation items by type
+const groupedItems = navigationItems.reduce((acc, item) => {
+  // Extract type from URL (e.g., /api/classes/... -> classes)
+  const urlParts = item.url.split('/');
+  const type = urlParts[2] || 'other'; // Get the type from URL path
+
+  if (!acc[type]) {
+    acc[type] = [];
+  }
+  acc[type].push(item);
+  return acc;
+}, {} as Record<string, typeof navigationItems>);
+
+// Sort items within each group alphabetically
+Object.keys(groupedItems).forEach(type => {
+  groupedItems[type].sort((a, b) => a.title.localeCompare(b.title));
+});
+
+// Define display names and order for types
+const typeDisplayNames: Record<string, string> = {
+  'classes': 'Classes',
+  'interfaces': 'Interfaces',
+  'functions': 'Functions',
+  'types': 'Type Aliases',
+  'enums': 'Enumerations',
+  'variables': 'Variables',
+};
+
+const typeOrder = ['classes', 'interfaces', 'types', 'enums', 'functions', 'variables', 'other'];
+const sortedTypes = Object.keys(groupedItems).sort((a, b) => {
+  const indexA = typeOrder.indexOf(a);
+  const indexB = typeOrder.indexOf(b);
+  return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+});
+---
+
+<DocLayout frontmatter={{ title: 'API Documentation' }}>
+  <div class="api-index">
+    <p class="description">
+      Complete API reference for all exported types, classes, interfaces, and functions.
+    </p>
+
+    {sortedTypes.map(type => (
+      <section class="api-section">
+        <h2>{typeDisplayNames[type] || type.charAt(0).toUpperCase() + type.slice(1)}</h2>
+        <ul class="api-list">
+          {groupedItems[type].map(item => (
+            <li>
+              <a href={item.url}>
+                <code class="api-name">{item.title}</code>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+</DocLayout>
+
+<style>
+  .api-index {
+    margin-top: 1rem;
+  }
+
+  .description {
+    font-size: 1.125rem;
+    color: #6b7280;
+    margin-bottom: 2rem;
+  }
+
+  .api-section {
+    margin-bottom: 3rem;
+  }
+
+  .api-section h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .api-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .api-list li {
+    margin: 0;
+  }
+
+  .api-list a {
+    display: block;
+    padding: 0.75rem 1rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .api-list a:hover {
+    background: #f3f4f6;
+    border-color: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  }
+
+  .api-name {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.875rem;
+    color: #1f2937;
+    font-weight: 500;
+  }
+
+  .api-list a:hover .api-name {
+    color: #2563eb;
+  }
+</style>

@@ -1,0 +1,57 @@
+---
+import "../styles/global.css";
+import { getCollection } from 'astro:content';
+import { ApiSideNav } from "../components/ApiSideNav";
+import { TopNav } from "../components/TopNav";
+
+const { frontmatter } = Astro.props;
+const { title } = frontmatter;
+
+const apiDocs = await getCollection('api');
+const apiDocsData = apiDocs.map(doc => ({ id: doc.id, title: doc.data.title }));
+
+// Group API docs by type
+const groupedDocs = apiDocsData.reduce((acc, doc) => {
+  const parts = doc.id.split('/');
+  const category = parts.length > 1 ? parts[0] : 'other';
+  if (!acc[category]) {
+    acc[category] = [];
+  }
+  acc[category].push(doc);
+  return acc;
+}, {} as Record<string, typeof apiDocsData>);
+
+const currentPath = Astro.url.pathname;
+---
+
+<html lang="en" class:list={[]} suppressHydrationWarning>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{title} - API Documentation</title>
+    <script is:inline>
+      // Apply theme before page renders to prevent flash
+      (function() {
+        const theme = localStorage.getItem('theme') || 'system';
+        const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <TopNav client:load currentPath={currentPath} />
+    <ApiSideNav client:load groupedDocs={groupedDocs} currentPath={currentPath} />
+    <div class="md:ml-[220px]">
+      <main class="api-docs pt-14 p-8 max-w-4xl mx-auto">
+        <article class="prose prose-neutral dark:prose-invert prose-headings:scroll-mt-28 prose-headings:font-semibold prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg prose-a:font-medium prose-a:text-primary hover:prose-a:underline prose-code:font-mono prose-code:text-sm prose-pre:bg-muted prose-pre:border prose-pre:border-border">
+          <h1>{title}</h1>
+          <slot />
+        </article>
+      </main>
+    </div>
+  </body>
+</html>
+
+

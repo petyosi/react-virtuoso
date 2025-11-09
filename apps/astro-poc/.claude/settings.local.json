@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.astro.build)",
+      "WebSearch",
+      "WebFetch(domain:sabigara.com)",
+      "Read(//tmp/astro-typedoc/**)",
+      "Read(//private/tmp/astro-typedoc/**)",
+      "Bash(pnpm add:*)",
+      "Bash(mkdir:*)",
+      "Bash(pnpm build:*)",
+      "Bash(cat:*)",
+      "Bash(pnpm astro check:*)",
+      "Bash(pnpm dev)",
+      "Bash(curl:*)",
+      "Bash(node:*)",
+      "Bash(npm view:*)",
+      "WebFetch(domain:typedoc-plugin-markdown.org)",
+      "WebFetch(domain:www.typedoc-plugin-markdown.org)",
+      "Bash(pnpm biome:*)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm format:*)",
+      "Bash(lsof:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(pnpm list:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(claude mcp tool chrome-devtools screenshot:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

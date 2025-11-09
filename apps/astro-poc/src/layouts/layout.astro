@@ -1,0 +1,42 @@
+---
+import "../styles/global.css";
+import { getCollection } from 'astro:content';
+import { PostsSideNav } from "../components/PostsSideNav";
+import { TopNav } from "../components/TopNav";
+import { ClientRouter } from "astro:transitions";
+
+const { frontmatter } = Astro.props;
+const { title } = frontmatter || {};
+
+const posts = await getCollection('posts');
+const postsData = posts.map(post => ({ id: post.id, title: post.data.title }));
+const currentPath = Astro.url.pathname;
+---
+
+<html lang="en" class:list={[]} suppressHydrationWarning>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{title || "Blog"}</title>
+    <script is:inline>
+      // Apply theme before page renders to prevent flash
+      (function() {
+        const theme = localStorage.getItem('theme') || 'system';
+        const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+    <ClientRouter />
+  </head>
+  <body>
+    <TopNav client:load currentPath={currentPath} />
+    <PostsSideNav client:load posts={postsData} currentPath={currentPath} />
+    <div class="md:ml-[220px]">
+      <article class="pt-14 p-8 max-w-4xl mx-auto prose prose-neutral dark:prose-invert prose-headings:scroll-mt-28 prose-headings:font-semibold prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg prose-a:font-medium prose-a:text-primary hover:prose-a:underline prose-code:font-mono prose-code:text-sm prose-pre:bg-muted prose-pre:border prose-pre:border-border">
+        <slot /> <!-- your content is injected here -->
+      </article>
+    </div>
+  </body>
+</html>
