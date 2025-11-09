@@ -21,24 +21,24 @@ import * as _Masonry from '@virtuoso.dev/masonry'
 import SimpleBar from 'simplebar-react'
 
 // @ts-ignore
-import messageListDtsCode from '!!raw-loader!../../../../../../node_modules/@virtuoso.dev/message-list/dist/index.d.ts'
+import messageListDtsCode from '!!raw-loader!../../../../node_modules/@virtuoso.dev/message-list/dist/index.d.ts'
 // @ts-ignore
-import masonryDtsCode from '!!raw-loader!../../../../../../node_modules/@virtuoso.dev/masonry/dist/index.d.ts'
+import masonryDtsCode from '!!raw-loader!../../../../node_modules/@virtuoso.dev/masonry/dist/index.d.ts'
 
 // @ts-ignore
-import reactVirtuosoDtsCode from '!!raw-loader!../../../../../../node_modules/react-virtuoso/dist/index.d.ts'
+import reactVirtuosoDtsCode from '!!raw-loader!../../../../node_modules/react-virtuoso/dist/index.d.ts'
 
 // @ts-ignore
-import reactDtsCode from '!!raw-loader!../../../../../../node_modules/@types/react/index.d.ts'
+import reactDtsCode from '!!raw-loader!../../../../node_modules/@types/react/index.d.ts'
 
 // @ts-ignore
-import jsxRuntimeDtsCode from '!!raw-loader!../../../../../../node_modules/@types/react/jsx-runtime.d.ts'
+import jsxRuntimeDtsCode from '!!raw-loader!../../../../node_modules/@types/react/jsx-runtime.d.ts'
 
 // @ts-ignore
-import falsoDtsCode from '!!raw-loader!../../../../../../node_modules/@ngneat/falso/src/index.d.ts'
+import falsoDtsCode from '!!raw-loader!../../../../node_modules/@ngneat/falso/src/index.d.ts'
 
 // @ts-ignore
-import simplebarDtsCode from '!!raw-loader!../../../../../../node_modules/simplebar-react/dist/index.d.ts'
+import simplebarDtsCode from '!!raw-loader!../../../../node_modules/simplebar-react/dist/index.d.ts'
 
 export const importMap = {
   react: React,

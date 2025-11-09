@@ -10,7 +10,7 @@ export interface RenderHookResult<Result, Props> {
    * This is a stable reference to the latest value returned by your renderHook
    * callback
    */
-  result: RefObject<Result>
+  result: RefObject<null | Result>
 }
 
 export interface RenderHookOptions<Props> {
@@ -46,7 +46,6 @@ export function renderHook<Result, Props>(
   const TestComponent: FC<{ renderCallbackProps: Props }> = ({ renderCallbackProps }) => {
     const pendingResult = useHookFn(renderCallbackProps)
     useEffect(() => {
-      // @ts-expect-error no idea why TS complains
       result.current = pendingResult
     })
 

@@ -26,26 +26,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Detect package manager
-        id: detect-package-manager
-        run: |
-          echo "manager=npm" >> $GITHUB_OUTPUT
-          echo "command=ci" >> $GITHUB_OUTPUT
-          echo "runner=npx --no-install" >> $GITHUB_OUTPUT
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.24.0
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
-          check-latest: true
-          cache: npm
+          node-version: "22"
+          cache: pnpm
       - name: Setup Pages
         uses: actions/configure-pages@v4
         with:
           static_site_generator: docusaurus
       - name: Install dependencies
-        run: npm install
+        run: pnpm install --frozen-lockfile
       - name: Build the site with docusaurus
-        run: npm run build
+        run: pnpm --filter @virtuoso.dev/virtuoso.dev run build
         env:
           PADDLE_ENVIRONMENT: ${{ vars.PADDLE_ENVIRONMENT }}
           PADDLE_TOKEN: ${{ vars.PADDLE_TOKEN }}

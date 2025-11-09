@@ -10,16 +10,25 @@ import type {
 
 import { LogLevel } from '../loggerSystem'
 
+/**
+ * @group VirtuosoGrid
+ */
 export interface ElementDimensions {
   height: number
   width: number
 }
 
+/**
+ * @group VirtuosoGrid
+ */
 export interface Gap {
   column: number
   row: number
 }
 
+/**
+ * @group VirtuosoGrid
+ */
 export interface GridStateSnapshot {
   gap: Gap
   item: ElementDimensions
@@ -27,12 +36,20 @@ export interface GridStateSnapshot {
   viewport: ElementDimensions
 }
 
+/**
+ * Exposes the VirtuosoGrid component methods.
+ * @group VirtuosoGrid
+ */
 export interface VirtuosoGridHandle {
   scrollBy(location: ScrollToOptions): void
   scrollTo(location: ScrollToOptions): void
   scrollToIndex(location: GridIndexLocation): void
 }
 
+/**
+ * The props for the VirtuosoGrid component.
+ * @group VirtuosoGrid
+ */
 export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
   /**
    * Called with true / false when the list has reached the bottom / gets scrolled up.

@@ -6,7 +6,8 @@ import pluginReact from 'eslint-plugin-react'
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 import reactHooks from 'eslint-plugin-react-hooks'
 
-export default tseslint.config(
+/** @type {import('typescript-eslint').Config} */
+const config = tseslint.config(
   pluginJs.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
@@ -80,3 +81,5 @@ export default tseslint.config(
     ignores: ['node_modules/', 'dist/', 'src/**/__mocks__/', 'test-results'],
   }
 )
+
+export default config

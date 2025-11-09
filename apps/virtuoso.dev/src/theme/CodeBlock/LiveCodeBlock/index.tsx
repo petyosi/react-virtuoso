@@ -11,7 +11,7 @@ import { useColorMode } from '@docusaurus/theme-common'
 import { CheckIcon, ClipboardCopyIcon, CubeIcon, ReloadIcon, ResetIcon } from '@radix-ui/react-icons'
 import { transformToFunctionBody } from './esmTransform'
 import iFrameStyle from '!!raw-loader!./iframe-style.css'
-import simpleBarStyle from '!!raw-loader!../../../../../../node_modules/simplebar-react/dist/simplebar.min.css'
+import simpleBarStyle from '!!raw-loader!../../../../node_modules/simplebar-react/dist/simplebar.min.css'
 
 import { createSandbox } from './createCodesandbox'
 

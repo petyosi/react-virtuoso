@@ -1,0 +1,45 @@
+@layer base, starlight, theme, components, utilities;
+
+@import "@astrojs/starlight-tailwind";
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme {
+  --color-accent-50: var(--color-blue-50);
+  --color-accent-100: var(--color-blue-100);
+  --color-accent-200: var(--color-blue-200);
+  --color-accent-300: var(--color-blue-300);
+  --color-accent-400: var(--color-blue-400);
+  --color-accent-500: var(--color-blue-500);
+  --color-accent-600: var(--color-blue-600);
+  --color-accent-700: var(--color-blue-700);
+  --color-accent-800: var(--color-blue-800);
+  --color-accent-900: var(--color-blue-900);
+  --color-accent-950: var(--color-blue-950);
+
+  --sl-content-width: 60rem;
+}
+
+@layer components {
+  /* Override Starlight's content margin for LiveCodeBlock astro-islands */
+  .sl-markdown-content > astro-island:has(.live-code-block-wrapper) {
+    margin-top: 0;
+  }
+
+  /* Hide the redundant top-level sidebar group label and remove its indentation */
+  .sidebar-content ul.top-level > li:first-child > details > summary {
+    display: none;
+  }
+
+  /* Remove the padding/indentation from nested items under the hidden top-level group */
+  .sidebar-content ul.top-level > li:first-child > details > ul {
+    padding-inline-start: 0;
+  }
+
+  /* Make first-level items look like top-level items (remove border and spacing) */
+  .sidebar-content ul.top-level > li:first-child > details > ul > li {
+    border-inline-start: none;
+    padding-inline-start: 0;
+    margin-inline-start: 0;
+  }
+}

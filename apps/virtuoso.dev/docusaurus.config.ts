@@ -111,7 +111,7 @@ const config: Config = {
       {
         id: '@virtuoso.dev/message-list',
         // TypeDoc options
-        entryPoints: ['../../node_modules/@virtuoso.dev/message-list/dist/index.d.ts'],
+        entryPoints: ['./node_modules/@virtuoso.dev/message-list/dist/index.d.ts'],
         tsconfig: 'tsconfig.message-list.json',
 
         // Plugin options
@@ -137,7 +137,7 @@ const config: Config = {
       {
         id: '@virtuoso.dev/masonry',
         // TypeDoc options
-        entryPoints: ['../../node_modules/@virtuoso.dev/masonry/dist/index.d.ts'],
+        entryPoints: ['./node_modules/@virtuoso.dev/masonry/dist/index.d.ts'],
         tsconfig: 'tsconfig.masonry.json',
 
         // Plugin options
@@ -201,7 +201,7 @@ const config: Config = {
           anonymizeIP: true,
         },
         theme: {
-          customCss: ['./src/css/custom.css', '../../node_modules/@radix-ui/themes/styles.css'],
+          customCss: ['./src/css/custom.css', './node_modules/@radix-ui/themes/styles.css'],
         },
       } satisfies Preset.Options,
     ],
