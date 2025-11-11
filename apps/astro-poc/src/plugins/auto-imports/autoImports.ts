@@ -1,4 +1,4 @@
-import { createProgram } from "m2dx-utils";
+import { createProgram } from "@virtuoso.dev/m2dx-utils";
 import type { Root, RootContent } from "mdast";
 import { capitalize, shortHash, toCamelCase } from "../common";
 import type { RemarkPlugin, VFile } from "../types";

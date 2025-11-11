@@ -1,3 +1,11 @@
+import {
+  isExportDefaultDeclaration,
+  isIdentifier,
+  isObjectExpression,
+  isProperty,
+  isVariableDeclarator,
+  parseEsm,
+} from "@virtuoso.dev/m2dx-utils";
 import type {
   Expression,
   Identifier,
@@ -6,14 +14,6 @@ import type {
   VariableDeclaration,
 } from "estree";
 import { EXIT, visit } from "estree-util-visit";
-import {
-  isExportDefaultDeclaration,
-  isIdentifier,
-  isObjectExpression,
-  isProperty,
-  isVariableDeclarator,
-  parseEsm,
-} from "m2dx-utils";
 
 import type { Export, NameFilter } from "./types";
 

@@ -31,7 +31,6 @@ export function Logo() {
         <circle cx="11" cy="47" r="3.5" stroke="currentColor" />
       </g>
       <defs>
-        {/** biome-ignore lint/correctness/useUniqueElementIds: No need here */}
         <clipPath id="clip0_3_31">
           <rect width="84" height="58" fill="white" />
         </clipPath>

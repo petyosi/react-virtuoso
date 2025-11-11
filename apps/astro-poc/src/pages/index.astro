@@ -1,8 +1,16 @@
 ---
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { marked } from "marked";
 import Layout from "../layouts/layout.astro";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const readmePath = resolve(__dirname, "../../../README.md");
+const readmeContent = readFileSync(readmePath, "utf-8");
+const htmlContent = marked.parse(readmeContent);
 ---
 
-<Layout frontmatter={{ title: "Home" }}>
-	<h1>Astro</h1>
-	<p>Hello world! go to about <a href="/about">About</a></p>
+<Layout frontmatter={{ title: "React Virtuoso" }}>
+	<div class="prose prose-lg max-w-none" set:html={htmlContent} />
 </Layout>

@@ -1,5 +1,8 @@
-import type { MdxJsxElement } from "m2dx-utils";
-import { findAllImportSpecifiers, findAllJsxElements } from "m2dx-utils";
+import type { MdxJsxElement } from "@virtuoso.dev/m2dx-utils";
+import {
+  findAllImportSpecifiers,
+  findAllJsxElements,
+} from "@virtuoso.dev/m2dx-utils";
 import type { Root } from "mdast";
 
 export function findUnresolved(root: Root): MdxJsxElement[] {

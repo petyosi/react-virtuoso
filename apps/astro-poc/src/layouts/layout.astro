@@ -1,9 +1,9 @@
 ---
 import "../styles/global.css";
 import { getCollection } from 'astro:content';
+import { ClientRouter } from "astro:transitions";
 import { PostsSideNav } from "../components/PostsSideNav";
 import { TopNav } from "../components/TopNav";
-import { ClientRouter } from "astro:transitions";
 
 const { frontmatter } = Astro.props;
 const { title } = frontmatter || {};

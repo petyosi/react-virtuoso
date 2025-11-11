@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run lint:fix:*)",
+      "WebSearch",
+      "WebFetch(domain:typedoc-plugin-markdown.org)",
+      "WebFetch(domain:typedoc.org)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.typedoc-plugin-markdown.org)",
+      "WebFetch(domain:www.thecandidstartup.org)",
+      "Bash(cat:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

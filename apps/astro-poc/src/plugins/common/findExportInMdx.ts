@@ -37,10 +37,10 @@ export function findExportInProgram(
   return found;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
-export function findExportInMdx(root: any): VariableDeclarator | undefined {
+export function findExportInMdx(root: unknown): VariableDeclarator | undefined {
   let found: VariableDeclarator | undefined;
-  visit(root, isMdxjsEsm, (node) => {
+  // biome-ignore lint/suspicious/noExplicitAny: that's ok
+  visit(root as any, isMdxjsEsm, (node) => {
     if (node.data?.estree) {
       found = findExportInProgram(node.data?.estree);
       if (found) {

@@ -166,7 +166,15 @@ export const initAstroTypedoc = async ({
     currentPageEndHandler = onRendererPageEnd(frontmatter);
     app.renderer.on(PageEvent.END, currentPageEndHandler);
 
-    await app.generateDocs(project, outputFolder);
+    // Configure outputs dynamically to ensure markdown generation
+    app.options.setValue("outputs", [
+      {
+        name: "markdown",
+        path: outputFolder,
+      },
+    ]);
+
+    await app.generateOutputs(project);
 
     // Remove redundant prefixes from generated files
     await removePrefixesFromFiles(outputFolder);
