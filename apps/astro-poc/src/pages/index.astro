@@ -1,16 +1,12 @@
 ---
-import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { marked } from "marked";
+import * as ReadmeContent from "../../../../README.md";
 import Layout from "../layouts/layout.astro";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const readmePath = resolve(__dirname, "../../../README.md");
-const readmeContent = readFileSync(readmePath, "utf-8");
-const htmlContent = marked.parse(readmeContent);
+const { Content } = ReadmeContent;
 ---
 
 <Layout frontmatter={{ title: "React Virtuoso" }}>
-	<div class="prose prose-lg max-w-none" set:html={htmlContent} />
+	<div class="prose prose-lg max-w-none">
+		<Content />
+	</div>
 </Layout>

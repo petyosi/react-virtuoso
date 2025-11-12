@@ -25,7 +25,11 @@
       "Bash(npx shadcn@latest add:*)",
       "Bash(pnpm list:*)",
       "WebFetch(domain:github.com)",
-      "Bash(claude mcp tool chrome-devtools screenshot:*)"
+      "Bash(claude mcp tool chrome-devtools screenshot:*)",
+      "mcp__context7__resolve-library-id",
+      "Bash(npm run lint:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run format:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,30 +1,36 @@
 ---
 import "../styles/global.css";
-import { getCollection } from 'astro:content';
+import { getCollection } from "astro:content";
 import { ApiSideNav } from "../components/ApiSideNav";
 import { TopNav } from "../components/TopNav";
 
 const { frontmatter } = Astro.props;
 const { title } = frontmatter;
 
-const apiDocs = await getCollection('api');
-const apiDocsData = apiDocs.map(doc => ({ id: doc.id, title: doc.data.title }));
+const apiDocs = await getCollection("api");
+const apiDocsData = apiDocs.map((doc) => ({
+	id: doc.id,
+	title: doc.data.title,
+}));
 
 // Group API docs by type
-const groupedDocs = apiDocsData.reduce((acc, doc) => {
-  const parts = doc.id.split('/');
-  const category = parts.length > 1 ? parts[0] : 'other';
-  if (!acc[category]) {
-    acc[category] = [];
-  }
-  acc[category].push(doc);
-  return acc;
-}, {} as Record<string, typeof apiDocsData>);
+const groupedDocs = apiDocsData.reduce(
+	(acc, doc) => {
+		const parts = doc.id.split("/");
+		const category = parts.length > 1 ? parts[0] : "other";
+		if (!acc[category]) {
+			acc[category] = [];
+		}
+		acc[category].push(doc);
+		return acc;
+	},
+	{} as Record<string, typeof apiDocsData>,
+);
 
 const currentPath = Astro.url.pathname;
 ---
 
-<html lang="en" class:list={[]} suppressHydrationWarning>
+<html lang="en" class:list={[]}>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">

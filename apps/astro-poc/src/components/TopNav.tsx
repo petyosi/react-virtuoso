@@ -40,6 +40,17 @@ export function TopNav({ currentPath }: TopNavProps) {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink
+                href="/guides/getting-started"
+                className={cn(
+                  navigationMenuTriggerStyle(),
+                  currentPath.startsWith("/guides") && "font-bold",
+                )}
+              >
+                Guides
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink
                 href="/api"
                 className={cn(
                   navigationMenuTriggerStyle(),

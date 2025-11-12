@@ -27,7 +27,19 @@ const api = defineCollection({
   }),
 });
 
+const guides = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "../virtuoso.dev/docs/guides" }),
+  schema: z.object({
+    id: z.string(),
+    title: z.string(),
+    sidebar_label: z.string().optional(),
+    sidebar_position: z.number().optional(),
+    slug: z.string().optional(),
+  }),
+});
+
 export const collections = {
   posts,
   api,
+  guides,
 };

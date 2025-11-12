@@ -10,7 +10,8 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:www.typedoc-plugin-markdown.org)",
       "WebFetch(domain:www.thecandidstartup.org)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "WebFetch(domain:docs.astro.build)"
     ],
     "deny": [],
     "ask": []

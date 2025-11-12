@@ -1,6 +1,6 @@
 ---
 import "../styles/global.css";
-import { getCollection } from 'astro:content';
+import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import { PostsSideNav } from "../components/PostsSideNav";
 import { TopNav } from "../components/TopNav";
@@ -8,12 +8,15 @@ import { TopNav } from "../components/TopNav";
 const { frontmatter } = Astro.props;
 const { title } = frontmatter || {};
 
-const posts = await getCollection('posts');
-const postsData = posts.map(post => ({ id: post.id, title: post.data.title }));
+const posts = await getCollection("posts");
+const postsData = posts.map((post) => ({
+	id: post.id,
+	title: post.data.title,
+}));
 const currentPath = Astro.url.pathname;
 ---
 
-<html lang="en" class:list={[]} suppressHydrationWarning>
+<html lang="en" class:list={[]}>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">

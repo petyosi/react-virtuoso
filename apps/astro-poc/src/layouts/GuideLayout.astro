@@ -1,0 +1,52 @@
+---
+import "../styles/global.css";
+import { getCollection } from "astro:content";
+import { GuideSideNav } from "../components/GuideSideNav";
+import { TopNav } from "../components/TopNav";
+
+const { frontmatter } = Astro.props;
+const { title } = frontmatter;
+
+const guides = await getCollection("guides");
+const guidesData = guides.map((guide) => ({
+	id: guide.id,
+	title: guide.data.title,
+}));
+
+const currentPath = Astro.url.pathname;
+---
+
+<html lang="en" class:list={[]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} - Guides</title>
+    <script is:inline>
+      // Apply theme before page renders to prevent flash
+      (function () {
+        const theme = localStorage.getItem('theme') || 'system'
+        const isDark =
+          theme === 'dark' ||
+          (theme === 'system' &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches)
+        if (isDark) {
+          document.documentElement.classList.add('dark')
+        }
+      })()
+    </script>
+  </head>
+  <body>
+    <TopNav client:load currentPath={currentPath} />
+    <GuideSideNav client:load guides={guidesData} currentPath={currentPath} />
+    <div class="md:ml-[220px]">
+      <main class="pt-14 p-8 max-w-4xl mx-auto">
+        <article
+          class="prose prose-neutral dark:prose-invert prose-headings:scroll-mt-28 prose-headings:font-semibold prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg prose-a:font-medium prose-a:text-primary hover:prose-a:underline prose-code:font-mono prose-code:text-sm prose-pre:bg-muted prose-pre:border prose-pre:border-border max-w-none"
+        >
+          <h1>{title}</h1>
+          <slot />
+        </article>
+      </main>
+    </div>
+  </body>
+</html>

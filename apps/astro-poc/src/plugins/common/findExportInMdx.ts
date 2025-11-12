@@ -39,7 +39,6 @@ export function findExportInProgram(
 
 export function findExportInMdx(root: unknown): VariableDeclarator | undefined {
   let found: VariableDeclarator | undefined;
-  // biome-ignore lint/suspicious/noExplicitAny: that's ok
   visit(root as any, isMdxjsEsm, (node) => {
     if (node.data?.estree) {
       found = findExportInProgram(node.data?.estree);
