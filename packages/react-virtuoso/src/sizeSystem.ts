@@ -407,6 +407,42 @@ export const sizeSystem = u.system(
       sizeRanges
     )
 
+    // Rebuild size ranges when group counts changes and we have a fixed group & item size
+    u.connect(
+      u.pipe(
+        groupIndices,
+        u.withLatestFrom(fixedGroupSize, defaultItemSize),
+        u.filter(
+          ([groupIndices, fixedGroupSize, defaultItemSize]) =>
+            groupIndices.length > 0 && fixedGroupSize !== undefined && defaultItemSize !== undefined
+        ),
+        u.map(([groupIndices, fixedGroupSize, defaultItemSize]) => {
+          // Build size ranges for all groups and items
+          const ranges: SizeRange[] = []
+          for (let i = 0; i < groupIndices.length; i++) {
+            const groupIndex = groupIndices[i]
+            const nextGroupIndex = groupIndices[i + 1] ?? Infinity
+            // Group header
+            ranges.push({
+              startIndex: groupIndex,
+              endIndex: groupIndex,
+              size: fixedGroupSize as number,
+            })
+            // Items in group
+            if (nextGroupIndex !== Infinity) {
+              ranges.push({
+                startIndex: groupIndex + 1,
+                endIndex: nextGroupIndex - 1,
+                size: defaultItemSize as number,
+              })
+            }
+          }
+          return ranges
+        })
+      ),
+      sizeRanges
+    )
+
     const listRefresh = u.streamFromEmitter(
       u.pipe(
         sizeRanges,
