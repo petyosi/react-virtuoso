@@ -1,13 +1,11 @@
 export function toLinux(file: string): string {
-  return file.replaceAll("\\", "/");
+  return file.replaceAll('\\', '/')
 }
 
-import type { Export } from "./types";
+import type { Export } from './types'
 
 export function toImport(exp: Export, alias: string): string {
-  const { file, name, isDefault } = exp;
+  const { file, name, isDefault } = exp
 
-  return isDefault
-    ? `import ${alias} from '${toLinux(file)}';`
-    : `import {${name} as ${alias}} from '${toLinux(file)}'`;
+  return isDefault ? `import ${alias} from '${toLinux(file)}';` : `import {${name} as ${alias}} from '${toLinux(file)}'`
 }

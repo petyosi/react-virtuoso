@@ -11,7 +11,8 @@
       "WebFetch(domain:www.typedoc-plugin-markdown.org)",
       "WebFetch(domain:www.thecandidstartup.org)",
       "Bash(cat:*)",
-      "WebFetch(domain:docs.astro.build)"
+      "WebFetch(domain:docs.astro.build)",
+      "Bash(npm run lint:*)"
     ],
     "deny": [],
     "ask": []

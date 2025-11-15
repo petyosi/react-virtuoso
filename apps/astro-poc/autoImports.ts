@@ -1,7 +1,7 @@
-import LiveCodeBlock from "./src/components/LiveCodeBlock.jsx";
+import LiveCodeBlock from './src/components/LiveCodeBlock.jsx'
 
 const autoimports = {
   LiveCodeBlock,
-};
+}
 
-export default autoimports;
+export default autoimports

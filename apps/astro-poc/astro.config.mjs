@@ -1,20 +1,20 @@
 // @ts-check
 
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import mdx from "@astrojs/mdx";
-import react from "@astrojs/react";
-import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "astro/config";
-import initAstroTypedoc from "./src/plugins/astro-typedoc";
-import { autoImports } from "./src/plugins/auto-imports";
-import { remarkLiveCode } from "./src/plugins/remark-live-code";
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import mdx from '@astrojs/mdx'
+import react from '@astrojs/react'
+import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from 'astro/config'
+import initAstroTypedoc from './src/plugins/astro-typedoc'
+import { autoImports } from './src/plugins/auto-imports'
+import { remarkLiveCode } from './src/plugins/remark-live-code'
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // https://github.com/andrezero/andretorgal-site/blob/main/src/integration/remark/autoImports.ts#L45
 //
-const autoImportFile = resolve("./autoImports.ts");
+const autoImportFile = resolve('./autoImports.ts')
 
 // https://astro.build/config
 export default defineConfig({
@@ -28,21 +28,21 @@ export default defineConfig({
       ],
     }),
     await initAstroTypedoc({
-      baseUrl: "/api/",
+      baseUrl: '/api/',
       entryPoints: [
         {
-          path: resolve(__dirname, "./example/index.ts"),
+          path: resolve(__dirname, './example/index.ts'),
         },
       ],
-      tsconfig: resolve(__dirname, "./example/tsconfig.json"),
+      tsconfig: resolve(__dirname, './example/tsconfig.json'),
       frontmatter: {
-        layout: resolve(__dirname, "./src/layouts/DocLayout.astro"),
+        layout: resolve(__dirname, './src/layouts/DocLayout.astro'),
       },
-      outputFolder: "src/content/api",
+      outputFolder: 'src/content/api',
     }),
   ],
 
   vite: {
     plugins: [tailwindcss()],
   },
-});
+})

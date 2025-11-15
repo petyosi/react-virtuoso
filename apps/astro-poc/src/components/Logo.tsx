@@ -1,14 +1,6 @@
-/** biome-ignore-all lint/a11y/noSvgWithoutTitle: this conflicts with TS */
 export function Logo() {
   return (
-    <svg
-      className="block"
-      width="84"
-      height="58"
-      viewBox="0 0 84 58"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg className="block" width="84" height="58" viewBox="0 0 84 58" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g clipPath="url(#clip0_3_31)">
         <rect x="2" y="2" width="80" height="54" stroke="currentColor" />
         <rect y="54" width="4" height="4" fill="currentColor" />
@@ -36,5 +28,5 @@ export function Logo() {
         </clipPath>
       </defs>
     </svg>
-  );
+  )
 }

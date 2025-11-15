@@ -1,8 +1,8 @@
 export interface Export {
-  file: string;
-  name: string;
-  isDefault: boolean;
-  identifiers: string[];
+  file: string
+  name: string
+  isDefault: boolean
+  identifiers: string[]
 }
 
-export type NameFilter = (name: string) => boolean;
+export type NameFilter = (name: string) => boolean

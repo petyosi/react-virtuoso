@@ -1,36 +1,35 @@
-import { readFile } from "node:fs/promises";
+import { readFile } from 'node:fs/promises'
 
-import { parseExports } from "./parseExports";
-import type { Export, NameFilter } from "./types";
+import { parseExports } from './parseExports'
+import type { Export, NameFilter } from './types'
 
-type Filename = string;
+type Filename = string
 
 export class Exports {
-  readonly exports: Record<Filename, Export[]> = {};
+  readonly exports: Record<Filename, Export[]> = {}
 
   constructor(
     private file: string,
-    private nameFilter: NameFilter,
+    private nameFilter: NameFilter
   ) {}
 
   async find(name: string | null): Promise<Export | null> {
-    if (!name) return null;
+    if (!name) return null
 
-    let exports = this.exports[this.file];
+    let exports = this.exports[this.file]
     if (!exports) {
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
-      const src = await readFile(this.file, "utf8");
+      const src = await readFile(this.file, 'utf8')
       exports = parseExports(src, this.nameFilter).map((p) => {
-        return { ...p, file: this.file };
-      });
-      this.exports[this.file] = exports;
+        return { ...p, file: this.file }
+      })
+      this.exports[this.file] = exports
     }
 
-    const found = exports.find((e) => e.identifiers.includes(name));
+    const found = exports.find((e) => e.identifiers.includes(name))
     if (found) {
-      return found;
+      return found
     }
 
-    return null;
+    return null
   }
 }

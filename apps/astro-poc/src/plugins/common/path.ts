@@ -1,3 +1,3 @@
 export function toLinux(file: string): string {
-  return file.replaceAll("\\", "/");
+  return file.replaceAll('\\', '/')
 }

@@ -1,92 +1,88 @@
-import { Menu } from "lucide-react";
-import { useState } from "react";
-import { Logo } from "@/components/Logo";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
+import { Menu } from 'lucide-react'
+import { useState } from 'react'
+import { Logo } from '@/components/Logo'
+import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { cn } from '@/lib/utils'
 
 interface Guide {
-  id: string;
-  title: string;
+  id: string
+  title: string
 }
 
 interface GuideSideNavProps {
-  guides: Guide[];
-  currentPath: string;
+  guides: Guide[]
+  currentPath: string
 }
 
 interface DirectoryNode {
-  name: string;
-  guides: Guide[];
-  subdirectories: Map<string, DirectoryNode>;
+  name: string
+  guides: Guide[]
+  subdirectories: Map<string, DirectoryNode>
 }
 
 function buildDirectoryTree(guides: Guide[]): DirectoryNode {
   const root: DirectoryNode = {
-    name: "",
+    name: '',
     guides: [],
     subdirectories: new Map(),
-  };
+  }
 
   for (const guide of guides) {
-    const parts = guide.id.split("/");
-    let current = root;
+    const parts = guide.id.split('/')
+    let current = root
 
     // Navigate through directory parts (all but the last part)
     for (let i = 0; i < parts.length - 1; i++) {
-      const part = parts[i];
+      const part = parts[i]
       if (!current.subdirectories.has(part)) {
         current.subdirectories.set(part, {
           name: part,
           guides: [],
           subdirectories: new Map(),
-        });
+        })
       }
-      const next = current.subdirectories.get(part);
+      const next = current.subdirectories.get(part)
       if (next) {
-        current = next;
+        current = next
       }
     }
 
     // Add guide to the final directory
-    current.guides.push(guide);
+    current.guides.push(guide)
   }
 
-  return root;
+  return root
 }
 
 function formatDirectoryName(name: string): string {
   return name
-    .split("-")
+    .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+    .join(' ')
 }
 
 interface DirectoryTreeProps {
-  node: DirectoryNode;
-  currentPath: string;
-  level?: number;
+  node: DirectoryNode
+  currentPath: string
+  level?: number
 }
 
 function DirectoryTree({ node, currentPath, level = 0 }: DirectoryTreeProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(true)
 
   return (
-    <div className={cn(level > 0 && "ml-4")}>
+    <div className={cn(level > 0 && 'ml-4')}>
       {node.name && (
         <button
           type="button"
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={() => {
+            setIsExpanded(!isExpanded)
+          }}
           className="font-semibold text-sm mb-2 hover:underline"
         >
-          {isExpanded ? "▼" : "▶"} {formatDirectoryName(node.name)}
+          {isExpanded ? '▼' : '▶'} {formatDirectoryName(node.name)}
         </button>
       )}
 
@@ -98,10 +94,7 @@ function DirectoryTree({ node, currentPath, level = 0 }: DirectoryTreeProps) {
                 <li key={guide.id}>
                   <a
                     href={`/guides/${guide.id}`}
-                    className={cn(
-                      "block hover:underline text-sm",
-                      currentPath === `/guides/${guide.id}` && "font-bold",
-                    )}
+                    className={cn('block hover:underline text-sm', currentPath === `/guides/${guide.id}` && 'font-bold')}
                   >
                     {guide.title}
                   </a>
@@ -111,21 +104,16 @@ function DirectoryTree({ node, currentPath, level = 0 }: DirectoryTreeProps) {
           )}
 
           {Array.from(node.subdirectories.values()).map((subdir) => (
-            <DirectoryTree
-              key={subdir.name}
-              node={subdir}
-              currentPath={currentPath}
-              level={level + 1}
-            />
+            <DirectoryTree key={subdir.name} node={subdir} currentPath={currentPath} level={level + 1} />
           ))}
         </>
       )}
     </div>
-  );
+  )
 }
 
 function SideNavContent({ guides, currentPath }: GuideSideNavProps) {
-  const tree = buildDirectoryTree(guides);
+  const tree = buildDirectoryTree(guides)
 
   return (
     <div>
@@ -135,10 +123,7 @@ function SideNavContent({ guides, currentPath }: GuideSideNavProps) {
             <li key={guide.id}>
               <a
                 href={`/guides/${guide.id}`}
-                className={cn(
-                  "block hover:underline text-sm",
-                  currentPath === `/guides/${guide.id}` && "font-bold",
-                )}
+                className={cn('block hover:underline text-sm', currentPath === `/guides/${guide.id}` && 'font-bold')}
               >
                 {guide.title}
               </a>
@@ -148,29 +133,21 @@ function SideNavContent({ guides, currentPath }: GuideSideNavProps) {
       )}
 
       {Array.from(tree.subdirectories.values()).map((subdir) => (
-        <DirectoryTree
-          key={subdir.name}
-          node={subdir}
-          currentPath={currentPath}
-        />
+        <DirectoryTree key={subdir.name} node={subdir} currentPath={currentPath} />
       ))}
     </div>
-  );
+  )
 }
 
 export function GuideSideNav({ guides, currentPath }: GuideSideNavProps) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
 
   return (
     <>
       {/* Mobile menu button */}
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden fixed left-4 top-2 z-50"
-          >
+          <Button variant="ghost" size="icon" className="md:hidden fixed left-4 top-2 z-50">
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
@@ -206,5 +183,5 @@ export function GuideSideNav({ guides, currentPath }: GuideSideNavProps) {
         </div>
       </nav>
     </>
-  );
+  )
 }

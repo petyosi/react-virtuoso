@@ -4,13 +4,13 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/navigation-menu'
+import { cn } from '@/lib/utils'
 
-import { ThemeToggle } from "./ThemeToggle";
+import { ThemeToggle } from './ThemeToggle'
 
 interface TopNavProps {
-  currentPath: string;
+  currentPath: string
 }
 
 export function TopNav({ currentPath }: TopNavProps) {
@@ -20,20 +20,14 @@ export function TopNav({ currentPath }: TopNavProps) {
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
-              <NavigationMenuLink
-                href="/"
-                className={navigationMenuTriggerStyle()}
-              >
+              <NavigationMenuLink href="/" className={navigationMenuTriggerStyle()}>
                 Home
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink
                 href="/posts/post-1"
-                className={cn(
-                  navigationMenuTriggerStyle(),
-                  currentPath.startsWith("/posts") && "font-bold",
-                )}
+                className={cn(navigationMenuTriggerStyle(), currentPath.startsWith('/posts') && 'font-bold')}
               >
                 Blog Posts
               </NavigationMenuLink>
@@ -41,22 +35,13 @@ export function TopNav({ currentPath }: TopNavProps) {
             <NavigationMenuItem>
               <NavigationMenuLink
                 href="/guides/getting-started"
-                className={cn(
-                  navigationMenuTriggerStyle(),
-                  currentPath.startsWith("/guides") && "font-bold",
-                )}
+                className={cn(navigationMenuTriggerStyle(), currentPath.startsWith('/guides') && 'font-bold')}
               >
                 Guides
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink
-                href="/api"
-                className={cn(
-                  navigationMenuTriggerStyle(),
-                  currentPath.startsWith("/api") && "font-bold",
-                )}
-              >
+              <NavigationMenuLink href="/api" className={cn(navigationMenuTriggerStyle(), currentPath.startsWith('/api') && 'font-bold')}>
                 API Reference
               </NavigationMenuLink>
             </NavigationMenuItem>
@@ -65,5 +50,5 @@ export function TopNav({ currentPath }: TopNavProps) {
         <ThemeToggle />
       </div>
     </div>
-  );
+  )
 }
