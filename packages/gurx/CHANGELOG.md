@@ -1,5 +1,11 @@
 # Change Log - @virtuoso.dev/gurx
 
+## 1.1.1
+
+### Patch Changes
+
+- 986d01d: Perf fix for useCellValues
+
 ## 1.1.0
 
 ### Minor Changes
