@@ -492,6 +492,7 @@ export const {
       atTopThreshold: 'atTopThreshold',
       computeItemKey: 'computeItemKey',
       defaultItemHeight: 'defaultItemHeight',
+      fixedGroupHeight: 'fixedGroupHeight', // Must be set above 'fixedItemHeight'
       fixedItemHeight: 'fixedItemHeight',
       itemSize: 'itemSize',
       scrollSeekConfiguration: 'scrollSeekConfiguration',
