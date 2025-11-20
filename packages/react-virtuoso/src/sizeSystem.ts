@@ -412,16 +412,13 @@ export const sizeSystem = u.system(
       u.pipe(
         groupIndices,
         u.withLatestFrom(fixedGroupSize, defaultItemSize),
-        u.filter(
-          ([groupIndices, fixedGroupSize, defaultItemSize]) =>
-            groupIndices.length > 0 && fixedGroupSize !== undefined && defaultItemSize !== undefined
-        ),
+        u.filter(([, fixedGroupSize, defaultItemSize]) => fixedGroupSize !== undefined && defaultItemSize !== undefined),
         u.map(([groupIndices, fixedGroupSize, defaultItemSize]) => {
           // Build size ranges for all groups and items
           const ranges: SizeRange[] = []
           for (let i = 0; i < groupIndices.length; i++) {
             const groupIndex = groupIndices[i]
-            const nextGroupIndex = groupIndices[i + 1] ?? Infinity
+            const nextGroupIndex = groupIndices[i + 1]
             // Group header
             ranges.push({
               startIndex: groupIndex,
@@ -429,7 +426,7 @@ export const sizeSystem = u.system(
               size: fixedGroupSize as number,
             })
             // Items in group
-            if (nextGroupIndex !== Infinity) {
+            if (nextGroupIndex !== undefined) {
               ranges.push({
                 startIndex: groupIndex + 1,
                 endIndex: nextGroupIndex - 1,
