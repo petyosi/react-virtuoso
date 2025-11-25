@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.15.0
+
+### Minor Changes
+
+- 34646ce: Support fixed size for groups in grouped virtuoso
+
 ## 4.14.1
 
 ### Patch Changes
