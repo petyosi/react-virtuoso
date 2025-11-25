@@ -13,6 +13,29 @@ export function Example() {
   )
 }
 
+export function FixedSize() {
+  const [groupCounts, setGroupCounts] = React.useState<number[]>([])
+  return (
+    <>
+      <button
+        onClick={() => {
+          setGroupCounts(Array.from({ length: 20 }).fill(3) as number[])
+        }}
+      >
+        Load Data
+      </button>
+      <GroupedVirtuoso
+        fixedItemHeight={20}
+        fixedGroupHeight={30}
+        groupContent={(index) => <div style={{ backgroundColor: 'gray', height: '30px' }}>Group {index}</div>}
+        groupCounts={groupCounts}
+        itemContent={(index) => <div style={{ height: '20px' }}>Item {index}</div>}
+        style={{ height: '300px' }}
+      />
+    </>
+  )
+}
+
 const ITEMS_PER_GROUP = 3
 export function Unshifting() {
   const [firstItemIndex, setFirstItemIndex] = React.useState(4000)

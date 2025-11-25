@@ -300,6 +300,7 @@ export const sizeSystem = u.system(
 
     const fixedItemSize = u.statefulStream<OptionalNumber>(undefined)
     const defaultItemSize = u.statefulStream<OptionalNumber>(undefined)
+    const fixedGroupSize = u.statefulStream<OptionalNumber>(undefined)
     const itemSize = u.statefulStream<SizeFunction>((el, field) => correctItemSize(el, SIZE_MAP[field]))
     const data = u.statefulStream<Data>(undefined)
     const gap = u.statefulStream(0)
@@ -380,10 +381,61 @@ export const sizeSystem = u.system(
     u.connect(
       u.pipe(
         defaultItemSize,
-        u.filter((value) => {
-          return value !== undefined && empty(u.getValue(sizes).sizeTree)
+        u.filter((itemSize) => {
+          return itemSize !== undefined && empty(u.getValue(sizes).sizeTree)
         }),
-        u.map((size) => [{ endIndex: 0, size, startIndex: 0 }] as SizeRange[])
+        u.map((itemSize) => {
+          const groupSize = u.getValue(fixedGroupSize)
+          const hasGroups = u.getValue(groupIndices).length > 0
+
+          // send the fake probe sizes only if we have group counts - otherwise, leave the tree empty.
+          // this is necessary for the tree to be built correctly
+          if (groupSize) {
+            if (hasGroups) {
+              return [
+                { endIndex: 0, size: groupSize, startIndex: 0 },
+                { endIndex: 1, size: itemSize, startIndex: 1 },
+              ] as SizeRange[]
+            } else {
+              return []
+            }
+          } else {
+            return [{ endIndex: 0, size: itemSize, startIndex: 0 }] as SizeRange[]
+          }
+        })
+      ),
+      sizeRanges
+    )
+
+    // Rebuild size ranges when group counts changes and we have a fixed group & item size
+    u.connect(
+      u.pipe(
+        groupIndices,
+        u.withLatestFrom(fixedGroupSize, defaultItemSize),
+        u.filter(([, fixedGroupSize, defaultItemSize]) => fixedGroupSize !== undefined && defaultItemSize !== undefined),
+        u.map(([groupIndices, fixedGroupSize, defaultItemSize]) => {
+          // Build size ranges for all groups and items
+          const ranges: SizeRange[] = []
+          for (let i = 0; i < groupIndices.length; i++) {
+            const groupIndex = groupIndices[i]
+            const nextGroupIndex = groupIndices[i + 1]
+            // Group header
+            ranges.push({
+              startIndex: groupIndex,
+              endIndex: groupIndex,
+              size: fixedGroupSize as number,
+            })
+            // Items in group
+            if (nextGroupIndex !== undefined) {
+              ranges.push({
+                startIndex: groupIndex + 1,
+                endIndex: nextGroupIndex - 1,
+                size: defaultItemSize as number,
+              })
+            }
+          }
+          return ranges
+        })
       ),
       sizeRanges
     )
@@ -614,6 +666,7 @@ export const sizeSystem = u.system(
       defaultItemSize,
       firstItemIndex,
       fixedItemSize,
+      fixedGroupSize,
       gap,
       groupIndices,
       itemSize,
