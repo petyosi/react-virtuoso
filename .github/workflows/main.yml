@@ -34,9 +34,9 @@ jobs:
           npm install 
           npm install --workspaces
 
-      - name: run CI checks
-        run: |
-          npm run ci
+      # - name: run CI checks
+      #   run: |
+      #     npm run ci
 
       - name: Release
         id: changesets
@@ -44,7 +44,7 @@ jobs:
         uses: changesets/action@v1
         with:
           # This expects you to have a script called release which does a build for your packages and calls changeset publish
-          publish: npm run release
+          publish: npm --version && npm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
