@@ -7,6 +7,7 @@ import { propsReadySystem } from './propsReadySystem'
 import { recalcSystem } from './recalcSystem'
 import { scrollToIndexSystem } from './scrollToIndexSystem'
 import { sizeRangeSystem } from './sizeRangeSystem'
+import { BOTTOM, TOP } from './sizeRangeSystem'
 import { Data, hasGroups, originalIndexFromItemIndex, rangesWithinOffsets, SizeState, sizeSystem } from './sizeSystem'
 import { stateFlagsSystem } from './stateFlagsSystem'
 import * as u from './urx'
@@ -28,6 +29,8 @@ export interface TopListState {
   items: ListItems
   listHeight: number
 }
+
+export type MinOverscanItemCount = number | { bottom: number; top: number }
 
 function probeItemSet(index: number, sizes: SizeState, data: Data) {
   if (hasGroups(sizes)) {
@@ -169,6 +172,11 @@ function transposeItems(items: Item<any>[], sizes: SizeState, firstItemIndex: nu
   return transposedItems
 }
 
+function getMinOverscanItemCount(value: MinOverscanItemCount | undefined, end: typeof TOP | typeof BOTTOM) {
+  if (value === undefined) return 0
+  return typeof value === 'number' ? value : (value[end] ?? 0)
+}
+
 export const listStateSystem = u.system(
   ([
     { data, firstItemIndex, gap, sizes, totalCount },
@@ -183,8 +191,18 @@ export const listStateSystem = u.system(
     const topItemsIndexes = u.statefulStream<number[]>([])
     const initialItemCount = u.statefulStream(0)
     const itemsRendered = u.stream<ListItems>()
+    const minOverscanItemCount = u.statefulStream<MinOverscanItemCount>(0)
 
     u.connect(groupedListSystem.topItemsIndexes, topItemsIndexes)
+
+    // Combine data with minOverscanItemCount to trigger recalc when either changes
+    const dataWithOverscan = u.statefulStreamFromEmitter(
+      u.pipe(
+        u.combineLatest(data, u.duc(minOverscanItemCount)),
+        u.map(([d]) => d)
+      ),
+      undefined as Data
+    )
 
     const listState = u.statefulStreamFromEmitter(
       u.pipe(
@@ -199,7 +217,7 @@ export const listStateSystem = u.system(
           u.duc(topItemsIndexes),
           u.duc(firstItemIndex),
           u.duc(gap),
-          data
+          dataWithOverscan
         ),
         u.filter(([mount, recalcInProgress, , totalCount, , , , , , , data]) => {
           // When data length changes, it is synced to totalCount, both of which trigger a recalc separately.
@@ -221,6 +239,7 @@ export const listStateSystem = u.system(
             gap,
             data,
           ]) => {
+            const minOverscanItemCountValue = u.getValue(minOverscanItemCount)
             const sizesValue = sizes
             const { offsetTree, sizeTree } = sizesValue
             const initialItemCountValue = u.getValue(initialItemCount)
@@ -319,6 +338,41 @@ export const listStateSystem = u.system(
               }
             })
 
+            // Extend items by minOverscanItemCount at the top and bottom
+            const topOverscanCount = getMinOverscanItemCount(minOverscanItemCountValue, TOP)
+            const bottomOverscanCount = getMinOverscanItemCount(minOverscanItemCountValue, BOTTOM)
+
+            if (items.length > 0 && (topOverscanCount > 0 || bottomOverscanCount > 0)) {
+              const firstItem = items[0]
+              const lastItem = items[items.length - 1]
+
+              // Prepend items before the first rendered item
+              if (topOverscanCount > 0 && firstItem.index > minStartIndex) {
+                const prependCount = Math.min(topOverscanCount, firstItem.index - minStartIndex)
+                const prependItems: Item<any>[] = []
+                let offset = firstItem.offset
+                for (let i = firstItem.index - 1; i >= firstItem.index - prependCount; i--) {
+                  const ranges = rangesWithin(sizeTree, i, i)
+                  const size = ranges[0]?.value ?? firstItem.size
+                  offset -= size + gap
+                  prependItems.unshift({ data: data?.[i], index: i, offset, size })
+                }
+                items.unshift(...prependItems)
+              }
+
+              // Append items after the last rendered item
+              if (bottomOverscanCount > 0 && lastItem.index < maxIndex) {
+                const appendCount = Math.min(bottomOverscanCount, maxIndex - lastItem.index)
+                let offset = lastItem.offset + lastItem.size + gap
+                for (let i = lastItem.index + 1; i <= lastItem.index + appendCount; i++) {
+                  const ranges = rangesWithin(sizeTree, i, i)
+                  const size = ranges[0]?.value ?? lastItem.size
+                  items.push({ data: data?.[i], index: i, offset, size })
+                  offset += size + gap
+                }
+              }
+            }
+
             return buildListState(items, topItems, totalCount, gap, sizesValue, firstItemIndex)
           }
         ),
@@ -412,7 +466,17 @@ export const listStateSystem = u.system(
       )
     )
 
-    return { endReached, initialItemCount, itemsRendered, listState, rangeChanged, startReached, topItemsIndexes, ...stateFlags }
+    return {
+      endReached,
+      initialItemCount,
+      itemsRendered,
+      listState,
+      minOverscanItemCount,
+      rangeChanged,
+      startReached,
+      topItemsIndexes,
+      ...stateFlags,
+    }
   },
   u.tup(
     sizeSystem,

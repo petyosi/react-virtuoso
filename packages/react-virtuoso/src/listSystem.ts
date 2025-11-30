@@ -85,14 +85,15 @@ export const listSystem = u.system(
     domIO,
     stateLoad,
     followOutput,
-    { listState, topItemsIndexes, ...flags },
+    listStateSystemOutput,
     { scrollToIndex },
     _,
     { topItemCount },
     { groupCounts },
     featureGroup1,
   ]) => {
-    u.connect(flags.rangeChanged, featureGroup1.scrollSeekRangeChanged)
+    const { listState, minOverscanItemCount, topItemsIndexes, rangeChanged, ...flags } = listStateSystemOutput
+    u.connect(rangeChanged, featureGroup1.scrollSeekRangeChanged)
     u.connect(
       u.pipe(
         featureGroup1.windowViewportRect,
@@ -122,12 +123,14 @@ export const listSystem = u.system(
       groupIndices,
       itemSize,
       listState,
+      minOverscanItemCount,
       scrollToIndex,
       // output
       statefulTotalCount,
       trackItemSizes,
 
       // exported from stateFlagsSystem
+      rangeChanged,
       ...flags,
       // the bag of IO from featureGroup1System
       ...featureGroup1,
