@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.16.1
+
+### Patch Changes
+
+- 497681b: provenance test
+
 ## 4.16.0
 
 ### Minor Changes
