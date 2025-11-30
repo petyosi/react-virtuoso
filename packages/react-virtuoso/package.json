@@ -29,7 +29,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/petyosi/react-virtuoso.git"
+    "url": "git+https://github.com/petyosi/react-virtuoso.git",
+    "directory": "packages/react-virtuoso"
   },
   "scripts": {
     "dev": "vite build",

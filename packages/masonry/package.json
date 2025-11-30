@@ -15,6 +15,11 @@
   "author": "The Virtuoso team <support@virtuoso.dev>",
   "license": "MIT",
   "homepage": "https://virtuoso.dev/virtuoso-masonry/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/petyosi/react-virtuoso.git",
+    "directory": "packages/masonry"
+  },
   "bugs": {
     "email": "support@virtuoso.dev"
   },

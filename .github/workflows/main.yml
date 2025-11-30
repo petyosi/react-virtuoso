@@ -1,5 +1,11 @@
 name: CI
 on: [push]
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -9,16 +15,15 @@ jobs:
       SSH_AUTH_SOCK: /tmp/ssh_agent.sock
       USE_SSH: true
       GIT_USER: petyosi
-      NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
     steps:
       - name: Begin CI...
         uses: actions/checkout@v4
 
-      - name: Use Node 22
+      - name: Use Node 24
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 24.x
 
       - name: Install dependencies
         run: | 
@@ -38,7 +43,7 @@ jobs:
           publish: npm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}

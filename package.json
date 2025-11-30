@@ -26,12 +26,13 @@
     },
     "runtime": {
       "name": "node",
-      "version": "^22.19.0",
+      "version": ">=24.0.0",
       "onFail": "error"
     }
   },
   "workspaces": [
     "packages/*",
     "apps/*"
-  ]
+  ],
+  "version": ""
 }
