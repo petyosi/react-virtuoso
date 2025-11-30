@@ -32,6 +32,9 @@
     "url": "git+https://github.com/petyosi/react-virtuoso.git",
     "directory": "packages/react-virtuoso"
   },
+  "publishConfig": {
+    "provenance": true
+  },
   "scripts": {
     "dev": "vite build",
     "build": "vite build",

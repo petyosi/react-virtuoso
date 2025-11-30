@@ -15,13 +15,13 @@
     "dev:docs": "npm run dev --workspace  @virtuoso.dev/virtuoso.dev#dev"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.12"
+    "@changesets/cli": "^2.29.8"
   },
-  "packageManager": "^npm@10.9.0",
+  "packageManager": "npm@11.0.0",
   "devEngines": {
     "packageManager": {
       "name": "npm",
-      "version": ">=10.9",
+      "version": ">=11.0.0",
       "onFail": "error"
     },
     "runtime": {
