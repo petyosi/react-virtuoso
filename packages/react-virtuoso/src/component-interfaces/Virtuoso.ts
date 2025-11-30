@@ -169,6 +169,26 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   endReached?: (index: number) => void
 
   /**
+   * Use when you have items with widely varying heights and can estimate each item's height upfront.
+   *
+   * Pass an array of estimated heights for each item (by index). This helps the component calculate
+   * a more accurate initial total height for the list, reducing layout shifts during initial scrolling.
+   *
+   * The estimates don't need to be exact - they're used to build the initial size tree before actual
+   * measurements are taken. Once items are rendered and measured, their real heights replace the estimates.
+   *
+   * @example
+   * ```tsx
+   * <Virtuoso
+   *   totalCount={100}
+   *   heightEstimates={[40, 200, 60, 2000, 40, /* ... for all items * /]}
+   *   itemContent={index => <Item index={index} />}
+   * />
+   * ```
+   */
+  heightEstimates?: number[]
+
+  /**
    * Use when implementing inverse infinite scrolling - decrease the value this property
    * in combination with  `data` or `totalCount` to prepend items to the top of the list.
    *

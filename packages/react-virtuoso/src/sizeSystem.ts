@@ -301,6 +301,7 @@ export const sizeSystem = u.system(
     const fixedItemSize = u.statefulStream<OptionalNumber>(undefined)
     const defaultItemSize = u.statefulStream<OptionalNumber>(undefined)
     const fixedGroupSize = u.statefulStream<OptionalNumber>(undefined)
+    const heightEstimates = u.statefulStream<number[] | undefined>(undefined)
     const itemSize = u.statefulStream<SizeFunction>((el, field) => correctItemSize(el, SIZE_MAP[field]))
     const data = u.statefulStream<Data>(undefined)
     const gap = u.statefulStream(0)
@@ -402,6 +403,45 @@ export const sizeSystem = u.system(
           } else {
             return [{ endIndex: 0, size: itemSize, startIndex: 0 }] as SizeRange[]
           }
+        })
+      ),
+      sizeRanges
+    )
+
+    // Handle heightEstimates - build individual size ranges for each item based on estimates
+    u.connect(
+      u.pipe(
+        heightEstimates,
+        u.filter((estimates) => {
+          return estimates !== undefined && estimates.length > 0 && empty(u.getValue(sizes).sizeTree)
+        }),
+        u.map((estimates) => {
+          const ranges: SizeRange[] = []
+          let currentSize = estimates![0]
+          let startIndex = 0
+
+          // Build contiguous ranges where items have the same estimated size
+          for (let i = 1; i < estimates!.length; i++) {
+            const size = estimates![i]
+            if (size !== currentSize) {
+              ranges.push({
+                endIndex: i - 1,
+                size: currentSize,
+                startIndex,
+              })
+              currentSize = size
+              startIndex = i
+            }
+          }
+
+          // Push the final range
+          ranges.push({
+            endIndex: estimates!.length - 1,
+            size: currentSize,
+            startIndex,
+          })
+
+          return ranges
         })
       ),
       sizeRanges
@@ -669,6 +709,7 @@ export const sizeSystem = u.system(
       fixedGroupSize,
       gap,
       groupIndices,
+      heightEstimates,
       itemSize,
       listRefresh,
       shiftWith,
