@@ -28,7 +28,11 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install && npm install --workspaces
+
+        run: |
+          npm install -g npm@latest
+          npm install 
+          npm install --workspaces
 
       - name: run CI checks
         run: |
