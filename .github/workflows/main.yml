@@ -1,10 +1,6 @@
 name: CI
 on: [push]
 
-permissions:
-  contents: write
-  pull-requests: write
-  id-token: write
 
 jobs:
   build:
@@ -12,9 +8,11 @@ jobs:
 
     env:
       CI: true
-      SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-      USE_SSH: true
-      GIT_USER: petyosi
+
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
 
     steps:
       - name: Begin CI...
