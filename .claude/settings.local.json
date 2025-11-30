@@ -1,9 +1,12 @@
 {
   "permissions": {
     "allow": [
+      "Bash(gh run list:*)",
       "Bash(gh run view:*)",
+      "Bash(cat:*)",
+      "WebSearch",
       "WebFetch(domain:docs.npmjs.com)",
-      "Bash(npx node@24 -e \"const {execSync} = require(''child_process''); console.log(execSync(''npm --version'').toString())\")"
+      "Bash(npm view:*)"
     ],
     "deny": [],
     "ask": []
