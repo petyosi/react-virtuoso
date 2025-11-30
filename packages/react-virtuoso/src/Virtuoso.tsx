@@ -494,6 +494,7 @@ export const {
       defaultItemHeight: 'defaultItemHeight',
       fixedGroupHeight: 'fixedGroupHeight', // Must be set above 'fixedItemHeight'
       fixedItemHeight: 'fixedItemHeight',
+      heightEstimates: 'heightEstimates',
       itemSize: 'itemSize',
       scrollSeekConfiguration: 'scrollSeekConfiguration',
       headerFooterTag: 'HeaderFooterTag',

@@ -604,6 +604,106 @@ describe('state save', () => {
   })
 })
 
+describe('heightEstimates', () => {
+  it('builds size ranges from height estimates array', () => {
+    const { heightEstimates, sizes } = init(sizeSystem)
+
+    // All different sizes
+    publish(heightEstimates, [40, 200, 60, 100])
+
+    const state = getValue(sizes)
+    // The size tree maintains ranges - after index 3, it reverts to the baseline size (40)
+    expect(toKV(state.sizeTree)).toEqual([
+      [0, 40],
+      [1, 200],
+      [2, 60],
+      [3, 100],
+      [4, 40], // Baseline size continues after the last estimate
+    ])
+
+    expect(state.offsetTree).toEqual([
+      { index: 0, offset: 0, size: 40 },
+      { index: 1, offset: 40, size: 200 },
+      { index: 2, offset: 240, size: 60 },
+      { index: 3, offset: 300, size: 100 },
+      { index: 4, offset: 400, size: 40 },
+    ])
+  })
+
+  it('merges consecutive items with same estimated height', () => {
+    const { heightEstimates, sizes } = init(sizeSystem)
+
+    // Some items have the same size, should be merged into ranges
+    publish(heightEstimates, [40, 40, 40, 200, 200, 60])
+
+    const state = getValue(sizes)
+    // The size tree maintains ranges - after index 5, it reverts to the baseline size (40)
+    expect(toKV(state.sizeTree)).toEqual([
+      [0, 40],
+      [3, 200],
+      [5, 60],
+      [6, 40], // Baseline size continues after the last estimate
+    ])
+
+    expect(state.offsetTree).toEqual([
+      { index: 0, offset: 0, size: 40 },
+      { index: 3, offset: 120, size: 200 },
+      { index: 5, offset: 520, size: 60 },
+      { index: 6, offset: 580, size: 40 },
+    ])
+  })
+
+  it('handles single item estimate', () => {
+    const { heightEstimates, sizes } = init(sizeSystem)
+
+    publish(heightEstimates, [100])
+
+    const state = getValue(sizes)
+    expect(toKV(state.sizeTree)).toEqual([[0, 100]])
+    expect(state.offsetTree).toEqual([{ index: 0, offset: 0, size: 100 }])
+  })
+
+  it('does not apply estimates if size tree is already populated', () => {
+    const { heightEstimates, sizeRanges, sizes } = init(sizeSystem)
+
+    // First, populate with actual measurements
+    publish(sizeRanges, [{ endIndex: 0, size: 50, startIndex: 0 }])
+
+    // Now try to apply estimates - should be ignored
+    publish(heightEstimates, [100, 200, 300])
+
+    const state = getValue(sizes)
+    // Should still have the original size, not the estimates
+    expect(toKV(state.sizeTree)).toEqual([[0, 50]])
+  })
+
+  it('calculates correct offsets for widely varying heights', () => {
+    const { heightEstimates, sizes } = init(sizeSystem)
+
+    // Mix of small and very large items
+    publish(heightEstimates, [40, 2000, 40, 1500, 40])
+
+    const state = getValue(sizes)
+    expect(state.offsetTree).toEqual([
+      { index: 0, offset: 0, size: 40 },
+      { index: 1, offset: 40, size: 2000 },
+      { index: 2, offset: 2040, size: 40 },
+      { index: 3, offset: 2080, size: 1500 },
+      { index: 4, offset: 3580, size: 40 },
+    ])
+  })
+
+  it('ignores empty estimates array', () => {
+    const { heightEstimates, sizes } = init(sizeSystem)
+
+    publish(heightEstimates, [])
+
+    const state = getValue(sizes)
+    expect(toKV(state.sizeTree)).toEqual([])
+    expect(state.offsetTree).toEqual([])
+  })
+})
+
 /*
 describe.only('benchmarks', () => {
   const COUNT = 20000
