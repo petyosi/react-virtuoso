@@ -17,11 +17,11 @@
   "devDependencies": {
     "@changesets/cli": "^2.29.8"
   },
-  "packageManager": "npm@11.0.0",
+  "packageManager": "npm@10.9.0",
   "devEngines": {
     "packageManager": {
       "name": "npm",
-      "version": ">=11.0.0",
+      "version": ">=10.9.0",
       "onFail": "error"
     },
     "runtime": {
