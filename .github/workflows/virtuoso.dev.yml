@@ -36,13 +36,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "24"
+          check-latest: true
           cache: npm
       - name: Setup Pages
         uses: actions/configure-pages@v4
         with:
           static_site_generator: docusaurus
-      - name: Upgrade npm to latest
-        run: npm install -g npm@latest
       - name: Install dependencies
         run: npm install
       - name: Build the site with docusaurus
