@@ -10,8 +10,8 @@
     "e2e": "npm run e2e --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "build-virtuoso.dev": "npm run build --workspace @virtuoso.dev/virtuoso.dev",
-    "release": "npm run build --workspaces --if-present && npx @changesets/cli publish",
-    "changeset-add": "npx @changesets/cli add",
+    "release": "npm run build --workspaces --if-present && changeset publish --provenance",
+    "changeset-add": "changeset add",
     "dev:docs": "npm run dev --workspace  @virtuoso.dev/virtuoso.dev#dev"
   },
   "devDependencies": {
