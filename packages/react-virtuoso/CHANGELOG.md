@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.16.0
+
+### Minor Changes
+
+- 7e327d8: Added heightEstimates prop to provide per-item height estimates for more accurate initial scrollbar sizing with variable height items
+
 ## 4.15.0
 
 ### Minor Changes
