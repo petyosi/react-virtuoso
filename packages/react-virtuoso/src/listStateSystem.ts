@@ -195,15 +195,6 @@ export const listStateSystem = u.system(
 
     u.connect(groupedListSystem.topItemsIndexes, topItemsIndexes)
 
-    // Combine data with minOverscanItemCount to trigger recalc when either changes
-    const dataWithOverscan = u.statefulStreamFromEmitter(
-      u.pipe(
-        u.combineLatest(data, u.duc(minOverscanItemCount)),
-        u.map(([d]) => d)
-      ),
-      undefined as Data
-    )
-
     const listState = u.statefulStreamFromEmitter(
       u.pipe(
         u.combineLatest(
@@ -217,9 +208,10 @@ export const listStateSystem = u.system(
           u.duc(topItemsIndexes),
           u.duc(firstItemIndex),
           u.duc(gap),
-          dataWithOverscan
+          u.duc(minOverscanItemCount),
+          data
         ),
-        u.filter(([mount, recalcInProgress, , totalCount, , , , , , , data]) => {
+        u.filter(([mount, recalcInProgress, , totalCount, , , , , , , , data]) => {
           // When data length changes, it is synced to totalCount, both of which trigger a recalc separately.
           // Recalc should be skipped then, as the calculation expects both data and totalCount to be in sync.
           const dataChangeInProgress = data && data.length !== totalCount
@@ -237,9 +229,9 @@ export const listStateSystem = u.system(
             topItemsIndexes,
             firstItemIndex,
             gap,
+            minOverscanItemCountValue,
             data,
           ]) => {
-            const minOverscanItemCountValue = u.getValue(minOverscanItemCount)
             const sizesValue = sizes
             const { offsetTree, sizeTree } = sizesValue
             const initialItemCountValue = u.getValue(initialItemCount)
