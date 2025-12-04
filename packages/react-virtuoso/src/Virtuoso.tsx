@@ -482,6 +482,7 @@ export const {
       groupContent: 'groupContent',
       overscan: 'overscan',
       increaseViewportBy: 'increaseViewportBy',
+      minOverscanItemCount: 'minOverscanItemCount',
       totalCount: 'totalCount',
       groupCounts: 'groupCounts',
       topItemCount: 'topItemCount',

@@ -374,6 +374,7 @@ const {
       fixedFooterContent: 'fixedFooterContent',
       overscan: 'overscan',
       increaseViewportBy: 'increaseViewportBy',
+      minOverscanItemCount: 'minOverscanItemCount',
       totalCount: 'totalCount',
       topItemCount: 'topItemCount',
       initialTopMostItemIndex: 'initialTopMostItemIndex',

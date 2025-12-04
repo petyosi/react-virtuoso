@@ -263,6 +263,14 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   increaseViewportBy?: number | { bottom: number; top: number }
 
   /**
+   * Set the minimum number of items to render before and after the visible viewport boundaries.
+   * This is useful when rendering items with dynamic or very tall content, where the pixel-based
+   * `increaseViewportBy` may not be sufficient to prevent empty areas during rapid resizing or scrolling.
+   * Using `{ top?: number, bottom?: number }` lets you set the count for each end separately.
+   */
+  minOverscanItemCount?: number | { bottom: number; top: number }
+
+  /**
    * Use for server-side rendering - if set, the list will render the specified amount of items
    * regardless of the container / item size.
    */
