@@ -32,7 +32,11 @@
       "mcp__chrome-devtools__click",
       "WebFetch(domain:starlight.astro.build)",
       "WebFetch(domain:simonswiss.com)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "WebFetch(domain:ui.shadcn.com)",
+      "Bash(pnpm list:*)",
+      "mcp__serena__think_about_collected_information",
+      "Bash(pnpm dlx:*)"
     ],
     "deny": [],
     "ask": []
