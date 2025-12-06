@@ -7,6 +7,7 @@ import Search from 'virtual:starlight/components/Search';
 import SiteTitle from 'virtual:starlight/components/SiteTitle';
 import SocialIcons from 'virtual:starlight/components/SocialIcons';
 import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
+import {GitHubLogoIcon} from '@radix-ui/react-icons'
 
 /**
  * Render the `Search` component if Pagefind is enabled or the default search component has been overridden.
@@ -34,7 +35,10 @@ const navLinks = [
 	</div>
 	<div class="sl-hidden md:sl-flex print:hidden right-group">
 		<div class="sl-flex social-icons">
-			<SocialIcons />
+      <a href="https://github.com/petyosi/react-virtuoso" rel="me" class="sl-flex text-text-primary active:text-text-link">
+					<span class="sr-only">react-virtuoso in Github</span>
+					<GitHubLogoIcon  />
+				</a>
 		</div>
 		<ThemeSelect />
 		<LanguageSelect />

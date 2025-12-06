@@ -2,7 +2,12 @@
 /**
  * Custom theme switcher that cycles through auto/dark/light with a single button
  */
-import { Icon } from '@astrojs/starlight/components';
+
+import {
+Half2Icon,
+SunIcon,
+MoonIcon,
+} from "@radix-ui/react-icons";
 ---
 
 <starlight-theme-select>
@@ -11,11 +16,9 @@ import { Icon } from '@astrojs/starlight/components';
     aria-label={Astro.locals.t('themeSelect.accessibleLabel')}
     class="sl-flex theme-toggle"
   >
-    <svg class="icon icon-auto" viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
-      <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM8 14V2a6 6 0 0 1 0 12z"/>
-    </svg>
-    <Icon name="moon" class="icon icon-dark" />
-    <Icon name="sun" class="icon icon-light" />
+    <Half2Icon className="icon icon-auto" />
+    <MoonIcon className="icon icon-dark" />
+    <SunIcon className="icon icon-light" />
   </button>
 </starlight-theme-select>
 

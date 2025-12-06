@@ -9,7 +9,7 @@ importers:
   .:
     devDependencies:
       '@changesets/cli':
-        specifier: ^2.27.12
+        specifier: ^2.29.8
         version: 2.29.8(@types/node@22.19.1)
 
   apps/new-site:

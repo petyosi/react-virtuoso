@@ -18,6 +18,50 @@
   --color-accent-950: var(--color-blue-950);
 
   --sl-content-width: 60rem;
+
+  /* Text Hierarchy Tokens */
+  --color-text-primary: var(--sl-color-white);
+  --color-text-secondary: var(--sl-color-gray-2);
+  --color-text-tertiary: var(--sl-color-gray-3);
+  --color-text-link: var(--sl-color-text-accent);
+  --color-text-muted: var(--sl-color-gray-4);
+
+  /* Surface/Background Tokens */
+  --color-surface-base: var(--sl-color-bg);
+  --color-surface-raised: var(--sl-color-gray-6);
+  --color-surface-overlay: var(--sl-color-gray-5);
+  --color-surface-sidebar: var(--sl-color-bg-sidebar);
+  --color-surface-code: var(--sl-color-bg-inline-code);
+
+  /* State Colors - Success */
+  --color-success-bg: var(--sl-color-green-low);
+  --color-success-border: var(--sl-color-green);
+  --color-success-text: var(--sl-color-green-high);
+
+  /* State Colors - Warning */
+  --color-warning-bg: var(--sl-color-orange-low);
+  --color-warning-border: var(--sl-color-orange);
+  --color-warning-text: var(--sl-color-orange-high);
+
+  /* State Colors - Error */
+  --color-error-bg: var(--sl-color-red-low);
+  --color-error-border: var(--sl-color-red);
+  --color-error-text: var(--sl-color-red-high);
+
+  /* State Colors - Info */
+  --color-info-bg: var(--sl-color-blue-low);
+  --color-info-border: var(--sl-color-blue);
+  --color-info-text: var(--sl-color-blue-high);
+
+  /* Interactive Elements */
+  --color-interactive-primary: var(--sl-color-accent);
+  --color-interactive-primary-hover: var(--sl-color-accent-high);
+  --color-interactive-secondary: var(--sl-color-gray-5);
+  --color-interactive-focus: var(--sl-color-accent-high);
+
+  /* Borders */
+  --color-border-primary: var(--sl-color-hairline-light);
+  --color-border-secondary: var(--sl-color-gray-5);
 }
 
 @layer components {

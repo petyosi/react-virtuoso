@@ -30,7 +30,9 @@
       "WebFetch(domain:starlight-multi-sidebar.pages.dev)",
       "Bash(pnpm add:*)",
       "mcp__chrome-devtools__click",
-      "WebFetch(domain:starlight.astro.build)"
+      "WebFetch(domain:starlight.astro.build)",
+      "WebFetch(domain:simonswiss.com)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
