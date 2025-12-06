@@ -18,7 +18,7 @@ const autoImportConfig = {
   imports: {
     LiveCodeBlock: {
       // Use absolute path from project root for MDX imports
-      from: "/src/components/LiveCodeBlock/index.tsx",
+      from: "/src/components/LiveCodeBlock/LiveCodeBLock.tsx",
       default: true,
     },
   },

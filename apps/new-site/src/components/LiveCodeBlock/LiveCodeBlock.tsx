@@ -20,6 +20,14 @@ import copy from "copy-text-to-clipboard";
 
 import { importMap, libDefinitions } from "./extraImports";
 
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 // Monaco will be dynamically imported on client side only
 let monaco: typeof import("monaco-editor") | null = null;
 
@@ -360,39 +368,68 @@ export default function LiveCodeBlock({
         </div>
       </div>
       <div className="absolute right-1/2 bottom-0 p-2 flex flex-row gap-1">
-        <button
-          className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-          onClick={() => {
-            setTsCode(code);
-            editorRef.current?.setValue(code);
-          }}
-        >
-          <ResetIcon width={14} height={14} />
-        </button>
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className="cursor-pointer"
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setTsCode(code);
+                  editorRef.current?.setValue(code);
+                }}
+              >
+                <ResetIcon width={14} height={14} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Reset code</p>
+            </TooltipContent>
+          </Tooltip>
 
-        <button
-          className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-          onClick={() => {
-            copy(tsCode);
-            setCopyButtonIcon(CheckIcon);
-            setTimeout(() => {
-              setCopyButtonIcon(ClipboardCopyIcon);
-            }, 1000);
-          }}
-        >
-          <CopyButtonIcon width={14} height={14} />
-        </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                className="cursor-pointer"
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  copy(tsCode);
+                  setCopyButtonIcon(CheckIcon);
+                  setTimeout(() => {
+                    setCopyButtonIcon(ClipboardCopyIcon);
+                  }, 1000);
+                }}
+              >
+                <CopyButtonIcon width={14} height={14} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Copy code</p>
+            </TooltipContent>
+          </Tooltip>
 
-        {!disableSandbox && (
-          <button
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-            onClick={() => {
-              void createSandbox(tsCode, usedPackages);
-            }}
-          >
-            <CubeIcon width={14} height={14} />
-          </button>
-        )}
+          {!disableSandbox && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  className="cursor-pointer"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    void createSandbox(tsCode, usedPackages);
+                  }}
+                >
+                  <CubeIcon width={14} height={14} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Open in CodeSandbox</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </TooltipProvider>
       </div>
     </div>
   );
