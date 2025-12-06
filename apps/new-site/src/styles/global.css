@@ -120,6 +120,16 @@
       font-size: 0.65rem !important;
     }
   }
+
+  /* Monaco editor transparent background override */
+  .live-code-block {
+    & .monaco-editor,
+    & .monaco-editor .overflow-guard,
+    & .monaco-editor-background,
+    & .monaco-editor .margin {
+      background-color: transparent !important;
+    }
+  }
 }
 
 @theme inline {

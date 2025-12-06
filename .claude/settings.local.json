@@ -40,7 +40,8 @@
       "Bash(grep:*)",
       "Bash(pnpm run dev)",
       "mcp__context7__get-library-docs",
-      "WebFetch(domain:shiki.style)"
+      "WebFetch(domain:shiki.style)",
+      "Bash(pnpm run typecheck:*)"
     ],
     "deny": [],
     "ask": []

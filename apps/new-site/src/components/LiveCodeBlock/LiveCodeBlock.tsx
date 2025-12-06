@@ -35,8 +35,12 @@ import {
 } from "@/components/ui/tooltip";
 import { useStarlightTheme, type Theme } from "@/components/theme-utils";
 
+import { shikiToMonaco } from "@shikijs/monaco";
+import { getShikiHighlighter } from "@/utils/shikiHighlighter";
+
 // Monaco will be dynamically imported on client side only
 let monaco: typeof import("monaco-editor") | null = null;
+let shikiInitialized = false;
 
 // Configure Monaco workers for Vite
 function configureMonacoWorkers() {
@@ -182,44 +186,43 @@ const ErrorMessage: React.FC<{ message: string; retry: () => void }> = ({
   );
 };
 
-// Define themes once Monaco is available
-let themesInitialized = false;
-function initializeMonacoThemes(m: typeof import("monaco-editor")) {
-  if (themesInitialized) return;
-  themesInitialized = true;
+async function initializeMonacoWithShiki(m: typeof import("monaco-editor")) {
+  if (shikiInitialized) return;
 
-  m.editor.defineTheme("custom-dark", {
-    base: "vs-dark",
-    inherit: true,
-    rules: [],
-    colors: {
-      "editor.background": "#00000000",
-    },
-  });
+  try {
+    const highlighter = await getShikiHighlighter();
 
-  m.editor.defineTheme("custom-light", {
-    base: "vs",
-    inherit: true,
-    rules: [],
-    colors: {
-      "editor.background": "#00000000",
-    },
-  });
+    // Register languages with Monaco
+    m.languages.register({ id: "typescript" });
+    m.languages.register({ id: "javascript" });
+    m.languages.register({ id: "tsx" });
+    m.languages.register({ id: "jsx" });
+    m.languages.register({ id: "json" });
+    m.languages.register({ id: "bash" });
 
-  // Configure TypeScript compiler options
-  m.typescript.typescriptDefaults.setCompilerOptions({
-    jsx: m.typescript.JsxEmit.ReactJSX,
-    jsxFactory: "React.createElement",
-    jsxFragmentFactory: "React.Fragment",
-    reactNamespace: "React",
-    allowNonTsExtensions: true,
-    allowSyntheticDefaultImports: true,
-    target: m.typescript.ScriptTarget.Latest,
-    moduleResolution: m.typescript.ModuleResolutionKind.NodeJs,
-    typeRoots: ["node_modules/@types"],
-  });
+    // Apply Shiki themes to Monaco
+    shikiToMonaco(highlighter, m);
 
-  m.typescript.typescriptDefaults.setExtraLibs(libDefinitions);
+    // Configure TypeScript compiler options
+    m.typescript.typescriptDefaults.setCompilerOptions({
+      jsx: m.typescript.JsxEmit.ReactJSX,
+      jsxFactory: "React.createElement",
+      jsxFragmentFactory: "React.Fragment",
+      reactNamespace: "React",
+      allowNonTsExtensions: true,
+      allowSyntheticDefaultImports: true,
+      target: m.typescript.ScriptTarget.Latest,
+      moduleResolution: m.typescript.ModuleResolutionKind.NodeJs,
+      typeRoots: ["node_modules/@types"],
+    });
+
+    m.typescript.typescriptDefaults.setExtraLibs(libDefinitions);
+
+    shikiInitialized = true;
+  } catch (error) {
+    console.error("Failed to initialize Monaco with Shiki:", error);
+    throw error;
+  }
 }
 
 export default function LiveCodeBlock({
@@ -252,12 +255,16 @@ export default function LiveCodeBlock({
   // Dynamically import and initialize Monaco
   useEffect(() => {
     const loadMonaco = async () => {
-      configureMonacoWorkers();
-      const m = await import("monaco-editor");
-      monaco = m;
-      monacoRef.current = m;
-      initializeMonacoThemes(m);
-      setMonacoReady(true);
+      try {
+        configureMonacoWorkers();
+        const m = await import("monaco-editor");
+        monaco = m;
+        monacoRef.current = m;
+        await initializeMonacoWithShiki(m);
+        setMonacoReady(true);
+      } catch (error) {
+        console.error("Monaco initialization failed:", error);
+      }
     };
     loadMonaco();
   }, []);
@@ -273,7 +280,7 @@ export default function LiveCodeBlock({
     const editor = m.editor.create(editorContainerRef.current, {
       value: code,
       language: "typescript",
-      theme: theme === "light" ? "custom-light" : "custom-dark",
+      theme: theme === "light" ? "github-light" : "github-dark",
       automaticLayout: true,
       minimap: { enabled: false },
       lineNumbers: "off",
@@ -329,7 +336,7 @@ export default function LiveCodeBlock({
   useEffect(() => {
     const m = monacoRef.current;
     if (editorRef.current && m) {
-      const editorTheme = theme === "light" ? "custom-light" : "custom-dark";
+      const editorTheme = theme === "light" ? "github-light" : "github-dark";
       m.editor.setTheme(editorTheme);
     }
   }, [theme]);
@@ -369,7 +376,7 @@ export default function LiveCodeBlock({
               style={{ width: "100%", height: "100%" }}
             />
           ) : (
-            <pre className="p-4 m-0 overflow-auto text-sm bg-(--sl-color-gray-6)">
+            <pre className="p-4 m-0 overflow-auto text-sm bg-(--sl-color-gray-6) sr-only">
               <code>{code}</code>
             </pre>
           )}
