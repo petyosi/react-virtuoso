@@ -1,5 +1,11 @@
 /* eslint-disable no-console */
-import React, { useEffect, useRef, useState, type ReactNode } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -27,6 +33,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useStarlightTheme, type Theme } from "@/components/theme-utils";
 
 // Monaco will be dynamically imported on client side only
 let monaco: typeof import("monaco-editor") | null = null;
@@ -62,34 +69,43 @@ const isFirefox =
   typeof navigator !== "undefined" &&
   navigator.userAgent.toLowerCase().includes("firefox");
 
-type Theme = "light" | "dark";
+function getCodeTypographyFromCSS(): {
+  fontFamily: string;
+  fontSize: number;
+  lineHeight: number;
+} {
+  if (typeof window === "undefined") {
+    return {
+      fontFamily: "monospace",
+      fontSize: 14,
+      lineHeight: 1.75,
+    };
+  }
 
-function getStarlightTheme(): Theme {
-  if (typeof document === "undefined") return "dark";
-  return document.documentElement.dataset.theme === "light" ? "light" : "dark";
-}
+  const computedStyle = getComputedStyle(document.documentElement);
 
-function useStarlightTheme(): Theme {
-  const [theme, setTheme] = useState<Theme>(getStarlightTheme);
+  const fontFamily =
+    computedStyle.getPropertyValue("--font-code-family").trim() || "monospace";
+  const fontSizeStr =
+    computedStyle.getPropertyValue("--font-code-size").trim() || "14px";
+  const lineHeightStr =
+    computedStyle.getPropertyValue("--font-code-line-height").trim() || "1.75";
 
-  useEffect(() => {
-    // Update theme when it changes
-    const observer = new MutationObserver(() => {
-      setTheme(getStarlightTheme());
-    });
+  let fontSize = 14;
+  if (fontSizeStr.includes("rem")) {
+    const rootFontSize = parseFloat(
+      getComputedStyle(document.documentElement).fontSize,
+    );
+    fontSize = parseFloat(fontSizeStr) * rootFontSize;
+  } else {
+    fontSize = parseFloat(fontSizeStr);
+  }
 
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-
-    // Set initial theme (in case SSR mismatched)
-    setTheme(getStarlightTheme());
-
-    return () => observer.disconnect();
-  }, []);
-
-  return theme;
+  return {
+    fontFamily,
+    fontSize,
+    lineHeight: parseFloat(lineHeightStr),
+  };
 }
 
 const iframeThemeStyles = {
@@ -219,7 +235,7 @@ export default function LiveCodeBlock({
   const [usedPackages, setUsedPackages] = useState<string[]>([]);
   const [codeWrapperHeight, setCodeWrapperHeight] = useState<number>(200);
   const [CopyButtonIcon, setCopyButtonIcon] =
-    useState<React.ComponentType<{ width: number; height: number }>>(
+    useState<React.ComponentType<ComponentProps<typeof ClipboardCopyIcon>>>(
       ClipboardCopyIcon,
     );
   const randomTypeScriptFileName = React.useMemo(() => {
@@ -252,6 +268,8 @@ export default function LiveCodeBlock({
     if (!monacoReady || !m || !editorContainerRef.current || editorRef.current)
       return;
 
+    const typography = getCodeTypographyFromCSS();
+
     const editor = m.editor.create(editorContainerRef.current, {
       value: code,
       language: "typescript",
@@ -273,6 +291,9 @@ export default function LiveCodeBlock({
       stickyScroll: {
         enabled: false,
       },
+      fontFamily: typography.fontFamily,
+      fontSize: typography.fontSize,
+      lineHeight: typography.lineHeight,
     });
 
     // Create a model with the custom file path for proper TypeScript support
@@ -336,12 +357,12 @@ export default function LiveCodeBlock({
   }, [tsCode]);
 
   return (
-    <div className="not-content relative max-h-[600px] flex flex-col">
+    <div className="relative not-content">
       <div
-        className="live-code-block-wrapper flex flex-row"
+        className="live-code-block-wrapper flex flex-row relative max-h-[600px] border border-border-secondary rounded divide-x"
         style={{ height: `${codeWrapperHeight + 20}px` }}
       >
-        <div className="live-code-block w-1/2 shrink-0">
+        <div className="live-code-block w-1/2 shrink-0 px-1 py-2 bg-surface-codeblock rounded-s">
           {monacoReady ? (
             <div
               ref={editorContainerRef}
@@ -353,7 +374,7 @@ export default function LiveCodeBlock({
             </pre>
           )}
         </div>
-        <div className="live-code-block-preview w-1/2 shrink-0">
+        <div className="w-1/2 shrink-0 p-1">
           <ErrorBoundary
             key={errorKey}
             fallbackRender={({ error, resetErrorBoundary }) => (
@@ -367,20 +388,21 @@ export default function LiveCodeBlock({
           </ErrorBoundary>
         </div>
       </div>
-      <div className="absolute right-1/2 bottom-0 p-2 flex flex-row gap-1">
+
+      <div className="absolute p-1 flex flex-row bottom-0 right-1/2">
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 className="cursor-pointer"
                 variant="ghost"
-                size="icon"
+                size="radixIcon"
                 onClick={() => {
                   setTsCode(code);
                   editorRef.current?.setValue(code);
                 }}
               >
-                <ResetIcon width={14} height={14} />
+                <ResetIcon className="size-3" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -393,7 +415,7 @@ export default function LiveCodeBlock({
               <Button
                 className="cursor-pointer"
                 variant="ghost"
-                size="icon"
+                size="radixIcon"
                 onClick={() => {
                   copy(tsCode);
                   setCopyButtonIcon(CheckIcon);
@@ -402,7 +424,7 @@ export default function LiveCodeBlock({
                   }, 1000);
                 }}
               >
-                <CopyButtonIcon width={14} height={14} />
+                <CopyButtonIcon className="size-3" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -416,12 +438,12 @@ export default function LiveCodeBlock({
                 <Button
                   className="cursor-pointer"
                   variant="ghost"
-                  size="icon"
+                  size="radixIcon"
                   onClick={() => {
                     void createSandbox(tsCode, usedPackages);
                   }}
                 >
-                  <CubeIcon width={14} height={14} />
+                  <CubeIcon className="size-3" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>

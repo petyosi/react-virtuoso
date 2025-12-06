@@ -1,5 +1,8 @@
 ---
 // @ts-nocheck
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/600.css';
+
 import config from 'virtual:starlight/user-config';
 
 import LanguageSelect from 'virtual:starlight/components/LanguageSelect';
@@ -37,7 +40,7 @@ const navLinks = [
 		<div class="sl-flex social-icons">
       <a href="https://github.com/petyosi/react-virtuoso" rel="me" class="sl-flex text-text-primary active:text-text-link">
 					<span class="sr-only">react-virtuoso in Github</span>
-					<GitHubLogoIcon  />
+					<GitHubLogoIcon className='size-radix-icon' />
 				</a>
 		</div>
 		<ThemeSelect />

@@ -7,7 +7,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { dirname, resolve } from "node:path";
 import initAstroTypedoc from "./src/plugins/astro-typedoc";
 import { fileURLToPath } from "node:url";
-import { remarkLiveCode } from "./src/plugins/remark-live-code";
+import { remarkCustomCodeBlocks } from "./src/plugins/remark-custom-code-blocks";
 import { autoImports } from "./src/plugins/auto-imports";
 import { docsSync } from "./src/integrations/docs-sync";
 
@@ -18,7 +18,11 @@ const autoImportConfig = {
   imports: {
     LiveCodeBlock: {
       // Use absolute path from project root for MDX imports
-      from: "/src/components/LiveCodeBlock/LiveCodeBLock.tsx",
+      from: "/src/components/LiveCodeBlock/LiveCodeBlock.tsx",
+      default: true,
+    },
+    StaticCodeBlock: {
+      from: "/src/components/StaticCodeBlock/StaticCodeBlock.tsx",
       default: true,
     },
   },
@@ -39,7 +43,7 @@ export default defineConfig({
   },
   markdown: {
     // @ts-ignore
-    remarkPlugins: [remarkLiveCode, [autoImports, autoImportConfig]],
+    remarkPlugins: [remarkCustomCodeBlocks, [autoImports, autoImportConfig]],
   },
   integrations: [
     docsSync({

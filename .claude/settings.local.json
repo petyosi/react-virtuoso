@@ -36,7 +36,11 @@
       "WebFetch(domain:ui.shadcn.com)",
       "Bash(pnpm list:*)",
       "mcp__serena__think_about_collected_information",
-      "Bash(pnpm dlx:*)"
+      "Bash(pnpm dlx:*)",
+      "Bash(grep:*)",
+      "Bash(pnpm run dev)",
+      "mcp__context7__get-library-docs",
+      "WebFetch(domain:shiki.style)"
     ],
     "deny": [],
     "ask": []

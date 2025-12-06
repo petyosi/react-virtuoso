@@ -14,11 +14,11 @@ MoonIcon,
   <button
     type="button"
     aria-label={Astro.locals.t('themeSelect.accessibleLabel')}
-    class="sl-flex theme-toggle"
+    class="sl-flex theme-toggle [&>svg]:size-radix-icon"
   >
-    <Half2Icon className="icon icon-auto" />
-    <MoonIcon className="icon icon-dark" />
-    <SunIcon className="icon icon-light" />
+    <Half2Icon data-theme-icon className="icon-auto" />
+    <MoonIcon data-theme-icon className="icon-dark" />
+    <SunIcon data-theme-icon className="icon-light" />
   </button>
 </starlight-theme-select>
 
@@ -48,7 +48,7 @@ MoonIcon,
 
   function updateIcons(theme: Theme): void {
     document.querySelectorAll('starlight-theme-select').forEach((picker) => {
-      picker.querySelectorAll('.icon').forEach((icon) => {
+      picker.querySelectorAll('[data-theme-icon]').forEach((icon) => {
         (icon as HTMLElement).style.display = 'none';
       });
       const activeIcon = picker.querySelector(`.icon-${theme}`);
