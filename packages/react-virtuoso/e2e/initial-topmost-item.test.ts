@@ -6,7 +6,8 @@ import { navigateToExample } from './utils.ts'
 test.describe('jagged list with initial topmost item', () => {
   test.beforeEach(async ({ baseURL, page }) => {
     await navigateToExample(page, baseURL, 'initial-topmost-item')
-    await page.waitForTimeout(100)
+    await page.waitForSelector('[data-testid=virtuoso-scroller]')
+    await page.waitForTimeout(500)
   })
 
   // the real position here would be 1500, but the calc is based on the

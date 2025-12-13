@@ -22,7 +22,6 @@ let shikiInitialized = false
 function configureMonacoWorkers() {
   if (typeof self === 'undefined') return
 
-  // @ts-expect-error - MonacoEnvironment is a global property set for worker configuration
   self.MonacoEnvironment = {
     getWorker: function (_workerId: string, label: string) {
       if (label === 'typescript' || label === 'javascript') {

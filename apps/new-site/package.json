@@ -27,6 +27,7 @@
     "@shikijs/monaco": "^3.19.0",
     "@tailwindcss/vite": "^4.1.17",
     "@virtuoso.dev/message-list": "^1.15.1",
+    "@virtuoso.dev/masonry": "workspace:*",
     "astro": "^5.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
