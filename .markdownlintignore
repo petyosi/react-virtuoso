@@ -13,3 +13,6 @@ apps/virtuoso.dev/docs/
 # Changeset files (except README)
 .changeset/*.md
 !.changeset/README.md
+
+# Specs (internal planning docs)
+specs/
