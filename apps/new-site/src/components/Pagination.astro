@@ -1,0 +1,75 @@
+---
+import { ChevronLeftIcon, ChevronRightIcon } from '@radix-ui/react-icons'
+
+const { dir, pagination } = Astro.locals.starlightRoute
+const { next, prev } = pagination
+
+const stripNumericPrefix = (label: string) => label.replace(/^\d+\.\s*/, '')
+---
+
+<div class="pagination-links print:hidden" dir={dir}>
+  {
+    prev && (
+      <a href={prev.href} rel="prev">
+        <ChevronLeftIcon />
+        <div class="flex flex-col">
+          <span class="text-sm">{Astro.locals.t('page.previousLink')}</span>
+          <span class="link-title">{stripNumericPrefix(prev.label)}</span>
+        </div>
+      </a>
+    )
+  }
+  {
+    next && (
+      <a href={next.href} rel="next">
+        <ChevronRightIcon />
+        <div class="flex flex-col">
+          <span class="text-sm">{Astro.locals.t('page.nextLink')}</span>
+          <span class="link-title">{stripNumericPrefix(next.label)}</span>
+        </div>
+      </a>
+    )
+  }
+</div>
+
+<style>
+  @layer starlight.core {
+    .pagination-links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+      gap: 1rem;
+    }
+
+    a {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.5rem;
+      width: 100%;
+      flex-basis: calc(50% - 0.5rem);
+      flex-grow: 1;
+      padding: 1rem;
+      text-decoration: none;
+      color: var(--sl-color-gray-2);
+      overflow-wrap: anywhere;
+    }
+    [rel='next'] {
+      justify-content: end;
+      text-align: end;
+      flex-direction: row-reverse;
+    }
+    a:hover {
+      border-color: var(--sl-color-gray-2);
+    }
+
+    .link-title {
+      color: var(--sl-color-white);
+      font-size: var(--sl-text-lg);
+      line-height: var(--sl-line-height-headings);
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+</style>

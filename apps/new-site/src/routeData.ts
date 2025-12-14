@@ -38,6 +38,13 @@ function sortAndCleanEntries(entries: SidebarEntry[]) {
 }
 
 export const onRequest = defineRouteMiddleware((context) => {
-  const { sidebar } = context.locals.starlightRoute
+  const { head, id, sidebar } = context.locals.starlightRoute
   sortAndCleanEntries(sidebar)
+
+  // Add OG image meta tags
+  // Content collection IDs normalize folder/index.mdx to just folder
+  const ogId = id.replace(/\/index$/, '') || 'index'
+  const ogImageUrl = new URL(`/og/${ogId}.png`, context.site)
+  head.push({ attrs: { content: ogImageUrl.href, property: 'og:image' }, tag: 'meta' })
+  head.push({ attrs: { content: ogImageUrl.href, name: 'twitter:image' }, tag: 'meta' })
 })

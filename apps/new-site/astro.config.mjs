@@ -123,10 +123,15 @@ export default defineConfig({
       components: {
         Header: './src/components/Header.astro',
         PageFrame: './src/components/PageFrame.astro',
+        Pagination: './src/components/Pagination.astro',
         SiteTitle: './src/components/SiteTitle.astro',
         ThemeSelect: './src/components/ThemeSelect.astro',
       },
-      customCss: ['@fontsource/ibm-plex-mono/400.css', '@fontsource/ibm-plex-mono/600.css', './src/styles/global.css'],
+      customCss: [
+        // '@fontsource/ibm-plex-mono/400.css',
+        // '@fontsource/ibm-plex-mono/600.css',
+        './src/styles/global.css',
+      ],
       head: [
         {
           attrs: {
@@ -143,6 +148,22 @@ export default defineConfig({
         gtag('config', 'G-FXF8T3XR4N');
       `,
           tag: 'script',
+        },
+        {
+          attrs: {
+            href: '/favicon.ico',
+            rel: 'icon',
+            sizes: '32x32',
+          },
+          tag: 'link',
+        },
+        {
+          attrs: {
+            href: '/apple-touch-icon.png',
+            rel: 'apple-touch-icon',
+            sizes: '180x180',
+          },
+          tag: 'link',
         },
       ],
       plugins: [
@@ -188,6 +209,7 @@ export default defineConfig({
   markdown: {
     remarkPlugins: [remarkCustomCodeBlocks, [autoImports, autoImportConfig]],
   },
+  site: 'https://virtuoso.dev',
   vite: {
     plugins: [tailwindcss()],
     resolve: {

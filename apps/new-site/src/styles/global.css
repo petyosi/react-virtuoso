@@ -11,7 +11,6 @@
 @custom-variant dark (&:is([data-theme="dark"] *));
 
 @theme {
-  --font-mono: 'IBM Plex Mono';
   --size-radix-icon: 15px;
 
   --color-accent-50: var(--color-blue-50);
@@ -205,6 +204,8 @@
   --sidebar-ring: oklch(0.708 0 0);
 
   --sl-color-accent: var(--color-accent-500);
+  --sl-color-inline-code: var(--color-sky-800);
+  --sl-color-bg-inline-code: var(--color-slate-100);
 }
 
 [data-theme='dark'] {
@@ -241,6 +242,8 @@
   --sidebar-ring: oklch(0.556 0 0);
 
   --sl-color-text-accent: var(--color-accent-400);
+  --sl-color-inline-code: var(--color-sky-200);
+  --sl-color-bg-inline-code: var(--color-gray-800);
 }
 
 @layer base {
@@ -253,6 +256,14 @@
 }
 
 @layer starlight-overrides {
+  :root {
+    --sl-text-h1: 2rem;
+    --sl-text-h2: 1.5rem;
+    --sl-text-h3: 1.25rem;
+    --sl-text-h4: 1.1rem;
+    --sl-text-h5: 1rem;
+  }
+
   /** first level sidebar links to red **/
   .large {
     font-size: var(--sl-text-sm);
@@ -310,5 +321,11 @@
   .sidebar-content svg {
     width: 16px;
     height: 16px;
+  }
+
+  .sl-markdown-content code:not(:where(.not-content *)) {
+    color: var(--sl-color-inline-code);
+    border-radius: var(--radius-sm);
+    padding: 0.125rem 0.225rem;
   }
 }

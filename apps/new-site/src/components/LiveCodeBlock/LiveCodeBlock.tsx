@@ -22,6 +22,7 @@ let shikiInitialized = false
 function configureMonacoWorkers() {
   if (typeof self === 'undefined') return
 
+  // @ts-expect-error don't know why
   self.MonacoEnvironment = {
     getWorker: function (_workerId: string, label: string) {
       if (label === 'typescript' || label === 'javascript') {

@@ -5,7 +5,8 @@
       "mcp__chrome-devtools__evaluate_script",
       "mcp__chrome-devtools__take_screenshot",
       "Bash(pnpm typecheck:*)",
-      "Bash(pnpm lint:*)"
+      "Bash(pnpm lint:*)",
+      "mcp__context7__get-library-docs"
     ],
     "deny": [],
     "ask": []
