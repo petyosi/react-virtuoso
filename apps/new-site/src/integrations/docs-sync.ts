@@ -9,6 +9,8 @@ import { fileURLToPath } from 'node:url'
 export interface DocsSyncSource {
   /** Target subdirectory under src/content/docs/ */
   dest: string
+  /** Override destination filename for single file sync */
+  destFileName?: string
   /** Single file to sync */
   file?: string
   /** Source directory path (relative to project root or absolute) */
@@ -74,9 +76,10 @@ function injectSidebarOrder(content: string, filename: string): string {
       return frontmatter + `sidebar:\n  order: ${order}\n  label: "${prefixedLabel}"\n` + rest
     }
   } else {
-    // No frontmatter, add it
+    // No frontmatter, add it with title (required by Starlight)
     const cleanName = filename.replace(/^\d+\./, '').replace(/\.(md|mdx)$/, '')
-    return `---\nsidebar:\n  order: ${order}\n  label: "${order}.${cleanName}"\n---\n\n${content}`
+    const title = cleanName.charAt(0).toUpperCase() + cleanName.slice(1)
+    return `---\ntitle: "${title}"\nsidebar:\n  order: ${order}\n  label: "${order}.${cleanName}"\n---\n\n${content}`
   }
 
   return content
@@ -185,9 +188,9 @@ async function syncSource(
     }
 
     const fileName = basename(sourcePath)
-    // For single files, use index.mdx if dest is a directory name
-    const destFileName = fileName.toLowerCase() === 'readme.md' ? 'index.mdx' : fileName
-    const destPath = join(destDir, destFileName)
+    // Use destFileName if provided, otherwise use index.mdx for README or original filename
+    const resolvedDestFileName = source.destFileName ?? (fileName.toLowerCase() === 'readme.md' ? 'index.mdx' : fileName)
+    const destPath = join(destDir, resolvedDestFileName)
 
     const result = await syncFile(sourcePath, destPath, source.transform)
     if (result) syncedFiles.push(result)
@@ -259,8 +262,8 @@ export function docsSync(options: DocsSyncOptions): AstroIntegration {
                 if (changedFile !== fileName) return
 
                 const destDir = join(docsDir, source.dest)
-                const destFileName = fileName.toLowerCase() === 'readme.md' ? 'index.mdx' : fileName
-                const destPath = join(destDir, destFileName)
+                const resolvedDestFileName = source.destFileName ?? (fileName.toLowerCase() === 'readme.md' ? 'index.mdx' : fileName)
+                const destPath = join(destDir, resolvedDestFileName)
 
                 if (eventType === 'rename') {
                   try {

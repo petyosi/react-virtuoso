@@ -49,11 +49,24 @@ export default defineConfig({
         },
         {
           dest: 'react-virtuoso',
+          destFileName: '98.changelog.md',
+          file: '../../packages/react-virtuoso/CHANGELOG.md',
+        },
+        {
+          dest: 'react-virtuoso',
           path: '../../packages/react-virtuoso/docs',
         },
         {
           dest: 'masonry',
           file: '../../packages/masonry/README.md',
+        },
+        {
+          dest: 'masonry',
+          destFileName: '98.changelog.md',
+          file: '../../packages/masonry/CHANGELOG.md',
+          transform: (content) => {
+            return content.split('\n').slice(1).join('\n')
+          },
         },
         {
           dest: 'masonry',
@@ -70,6 +83,11 @@ export default defineConfig({
         {
           dest: 'message-list',
           file: '../../packages/message-list/README.md',
+        },
+        {
+          dest: 'message-list',
+          destFileName: '98.changelog.md',
+          file: './node_modules/@virtuoso.dev/message-list/CHANGELOG.md',
         },
         {
           dest: 'message-list',

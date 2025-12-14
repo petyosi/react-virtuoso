@@ -18,6 +18,7 @@
     "prepare": "lefthook install"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.5.2",
     "@changesets/cli": "^2.29.8",
     "lefthook": "^2.0.8",
     "markdownlint-cli": "^0.46.0"
