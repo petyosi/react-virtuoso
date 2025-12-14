@@ -364,4 +364,50 @@
       }
     }
   }
+
+  /* Table styling overrides */
+  .sl-markdown-content table {
+    @apply w-full border border-solid rounded-md overflow-hidden text-sm;
+    display: table;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-color: var(--sl-color-gray-5);
+  }
+
+  .sl-markdown-content th {
+    @apply text-center text-xs font-semibold px-4 py-2.5;
+    background-color: var(--sl-color-gray-7);
+    border-bottom: 1px solid var(--sl-color-gray-5);
+    border-right: 1px solid var(--sl-color-gray-5);
+  }
+
+  .sl-markdown-content th:last-child {
+    border-right: none;
+  }
+
+  .sl-markdown-content td {
+    @apply text-sm px-4 py-2;
+    border-bottom: 1px solid var(--sl-color-gray-6);
+    border-right: 1px solid var(--sl-color-gray-6);
+  }
+
+  .sl-markdown-content td:last-child {
+    border-right: none;
+  }
+
+  .sl-markdown-content tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Reset Starlight's default first/last cell padding overrides */
+  .sl-markdown-content th:first-child,
+  .sl-markdown-content td:first-child {
+    @apply ps-4;
+  }
+
+  .sl-markdown-content th:last-child,
+  .sl-markdown-content td:last-child {
+    @apply pe-4;
+  }
 }

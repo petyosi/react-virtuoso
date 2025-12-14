@@ -3,7 +3,7 @@
     "parallel": true,
     "commands": {
       "markdown-lint": {
-        "glob": "*.md",
+        "glob": "**/*.md",
         "run": "pnpm exec markdownlint --ignore-path .markdownlintignore {staged_files}",
         "stage_fixed": true,
         "skip": ["merge", "rebase"]

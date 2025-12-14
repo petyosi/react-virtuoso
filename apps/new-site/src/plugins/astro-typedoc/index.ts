@@ -32,16 +32,36 @@ const objectToFrontmatter = (object: FrontmatterObject = {}): string =>
     .map(([key, value]) => `${key}: ${value}`)
     .join('\n')
 
-// Extract @group tag from a reflection's comment
-const getGroupFromReflection = (reflection: DeclarationReflection): string | undefined => {
-  const comment = reflection.comment
-  if (!comment) return undefined
+interface CommentType {
+  blockTags?: { content: { text: string }[]; tag: string }[]
+}
 
-  // Check for @group block tag
+// Extract @group tag from a comment
+const getGroupFromComment = (comment: CommentType | undefined): string | undefined => {
+  if (!comment?.blockTags) return undefined
+
   const groupTag = comment.blockTags.find((tag) => tag.tag === '@group')
   if (groupTag && groupTag.content.length > 0) {
     return groupTag.content[0].text.trim()
   }
+  return undefined
+}
+
+// Extract @group tag from a reflection's comment
+// For function reflections (created by @function tag), the comment may be on the signature
+const getGroupFromReflection = (reflection: DeclarationReflection): string | undefined => {
+  // Check direct comment first
+  const directGroup = getGroupFromComment(reflection.comment as CommentType)
+  if (directGroup) return directGroup
+
+  // For functions, check signatures
+  if (reflection.signatures && reflection.signatures.length > 0) {
+    for (const sig of reflection.signatures) {
+      const sigGroup = getGroupFromComment(sig.comment as CommentType)
+      if (sigGroup) return sigGroup
+    }
+  }
+
   return undefined
 }
 
@@ -50,9 +70,8 @@ const onRendererPageEnd = (frontmatterObject?: FrontmatterObject) => (event: Pag
     return
   }
 
-  // Extract group from the model's comment
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const group = event.model && 'comment' in event.model ? getGroupFromReflection(event.model as DeclarationReflection) : undefined
+  // Extract group from the model's comment (or from signatures for functions)
+  const group = getGroupFromReflection(event.model as DeclarationReflection)
 
   const prependix = `---
 title: '${event.model.name}'
@@ -89,6 +108,7 @@ const markdownPluginConfig = {
   hideBreadcrumbs: true,
   hidePageHeader: true,
   hidePageTitle: true,
+  parametersFormat: 'table',
 }
 
 // Remove redundant prefixes like "class.", "function.", "interface.", etc.
@@ -128,6 +148,28 @@ interface GroupedFile {
 }
 
 const GROUP_ORDER = ['Virtuoso', 'GroupedVirtuoso', 'VirtuosoGrid', 'TableVirtuoso', 'GroupedTableVirtuoso', 'Common', 'Misc']
+
+// Custom sort order for items within each group
+// Items not in this list will be sorted alphabetically after the listed ones
+const ITEM_SORT_ORDER: Record<string, string[]> = {
+  Common: [],
+  GroupedTableVirtuoso: ['GroupedTableVirtuoso', 'GroupedTableVirtuosoProps', 'GroupedTableVirtuosoHandle'],
+  GroupedVirtuoso: ['GroupedVirtuoso', 'GroupedVirtuosoProps', 'GroupedVirtuosoHandle'],
+  Misc: [],
+  TableVirtuoso: ['TableVirtuoso', 'TableVirtuosoProps', 'TableVirtuosoHandle', 'TableComponents'],
+  Virtuoso: ['Virtuoso', 'VirtuosoProps', 'VirtuosoHandle', 'Components', 'ItemContent'],
+  VirtuosoGrid: ['VirtuosoGrid', 'VirtuosoGridProps', 'VirtuosoGridHandle', 'GridComponents'],
+}
+
+// Get sort priority for an item within a group (lower = first)
+const getItemSortPriority = (group: string, title: string): number => {
+  const order = ITEM_SORT_ORDER[group] as string[] | undefined
+  if (!order) {
+    return Infinity
+  }
+  const index = order.indexOf(title)
+  return index >= 0 ? index : Infinity
+}
 
 const toKebabCase = (str: string): string => str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
 
@@ -201,7 +243,7 @@ const fixCrossLinks = (content: string, fileToGroupMap: Map<string, string>): st
       // Use existing anchor if present, otherwise create anchor from filename
       const anchor = existingAnchor || titleToAnchor(baseFilename)
 
-      return `[${linkText}](../${groupFilename}#${anchor})`
+      return `[${linkText}](../${groupFilename}/#${anchor})`
     }
 
     // If not found in our map, keep the original link
@@ -223,8 +265,8 @@ const mergeFilesByGroup = async (dir: string): Promise<void> => {
     const titleMatch = /^title:\s*['"]?(.+?)['"]?\s*$/m.exec(content)
     const title = titleMatch?.[1] ?? file.name.replace(/\.mdx?$/, '')
 
-    // Skip module-level entries (package names like @scope/package)
-    if (title.startsWith('@') || title.includes('/')) {
+    // Skip module-level entries (package names like @scope/package or module names like react-virtuoso)
+    if (title.startsWith('@') || title.includes('/') || title.includes('-')) {
       await unlink(file.path)
       continue
     }
@@ -261,8 +303,13 @@ const mergeFilesByGroup = async (dir: string): Promise<void> => {
     const filename = `${orderPrefix}${toKebabCase(group)}.mdx`
     const sidebarOrder = order >= 0 ? order + 1 : 99
 
-    // Sort files alphabetically by title for consistent ordering
-    groupFiles.sort((a, b) => a.title.localeCompare(b.title))
+    // Sort files by custom priority first, then alphabetically for items without priority
+    groupFiles.sort((a, b) => {
+      const priorityA = getItemSortPriority(group, a.title)
+      const priorityB = getItemSortPriority(group, b.title)
+      if (priorityA !== priorityB) return priorityA - priorityB
+      return a.title.localeCompare(b.title)
+    })
 
     // Process each file: increase heading levels and fix cross-links
     const processedFiles = groupFiles.map((f) => {
@@ -275,6 +322,7 @@ const mergeFilesByGroup = async (dir: string): Promise<void> => {
 title: '${group}'
 sidebar:
   order: ${sidebarOrder}
+  label: '${group}'
 ---
 
 ${processedFiles.join('\n\n---\n\n')}

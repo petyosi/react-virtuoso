@@ -326,6 +326,31 @@ function resolveGapValue(property: string, value: string | undefined, log: Log) 
   return parseInt(value ?? '0', 10)
 }
 
+/**
+ * A virtualized grid component for efficiently rendering large datasets in a grid/masonry layout.
+ * Automatically calculates visible items based on container and item dimensions.
+ *
+ * @typeParam ItemData - The type of data items in the grid
+ * @typeParam Context - The type of additional context passed to callbacks
+ *
+ * @param props - {@link VirtuosoGridProps}
+ *
+ * @function
+ * @group VirtuosoGrid
+ *
+ * @example
+ * ```tsx
+ * <VirtuosoGrid
+ *   totalCount={1000}
+ *   itemContent={(index) => <div className="grid-item">Item {index}</div>}
+ *   listClassName="grid-container"
+ * />
+ * ```
+ *
+ * @see {@link VirtuosoGridProps} for available props
+ * @see {@link VirtuosoGridHandle} for imperative methods
+ * @see {@link GridComponents} for customizing grid elements
+ */
 export const VirtuosoGrid = Grid as <ItemData = any, Context = any>(
   props: VirtuosoGridProps<ItemData, Context> & { ref?: React.Ref<VirtuosoGridHandle> }
 ) => React.ReactElement

@@ -21,7 +21,11 @@ import type {
 import { LogLevel } from '../loggerSystem'
 
 /**
- * Exposes the GroupedVirtuoso component methods.
+ * Exposes the GroupedVirtuoso component methods for imperative control.
+ * Access via ref on the GroupedVirtuoso component.
+ *
+ * @see {@link GroupedVirtuoso} for the component
+ * @see {@link GroupedVirtuosoProps} for available props
  * @group GroupedVirtuoso
  */
 export interface GroupedVirtuosoHandle {
@@ -39,6 +43,12 @@ export interface GroupedVirtuosoHandle {
 
 /**
  * The props for the GroupedVirtuoso component.
+ *
+ * @typeParam D - The type of data items in the list
+ * @typeParam C - The type of additional context passed to callbacks
+ *
+ * @see {@link GroupedVirtuoso} for the component
+ * @see {@link GroupedVirtuosoHandle} for imperative methods
  * @group GroupedVirtuoso
  */
 export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'itemContent' | 'totalCount'> {
@@ -75,7 +85,11 @@ export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'i
 }
 
 /**
- * Exposes the Virtuoso component methods.
+ * Exposes the Virtuoso component methods for imperative control.
+ * Access via ref on the Virtuoso component.
+ *
+ * @see {@link Virtuoso} for the component
+ * @see {@link VirtuosoProps} for available props
  * @group Virtuoso
  */
 export interface VirtuosoHandle {
@@ -108,6 +122,12 @@ export interface VirtuosoHandle {
 
 /**
  * The props for the Virtuoso component.
+ *
+ * @typeParam D - The type of data items in the list
+ * @typeParam C - The type of additional context passed to callbacks
+ *
+ * @see {@link Virtuoso} for the component
+ * @see {@link VirtuosoHandle} for imperative methods
  * @group Virtuoso
  */
 export interface VirtuosoProps<D, C> extends ListRootProps {

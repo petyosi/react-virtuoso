@@ -422,10 +422,76 @@ const {
 const Scroller = /*#__PURE__*/ buildScroller({ useEmitter, useEmitterValue, usePublisher })
 const WindowScroller = /*#__PURE__*/ buildWindowScroller({ useEmitter, useEmitterValue, usePublisher })
 
+/**
+ * A virtualized table component for efficiently rendering large tabular datasets.
+ * Renders semantic HTML table markup with support for fixed headers and footers.
+ *
+ * @typeParam ItemData - The type of data items in the table
+ * @typeParam Context - The type of additional context passed to callbacks
+ *
+ * @param props - {@link TableVirtuosoProps}
+ *
+ * @function
+ * @group TableVirtuoso
+ *
+ * @example
+ * ```tsx
+ * <TableVirtuoso
+ *   totalCount={1000}
+ *   fixedHeaderContent={() => (
+ *     <tr>
+ *       <th>Name</th>
+ *       <th>Description</th>
+ *     </tr>
+ *   )}
+ *   itemContent={(index) => (
+ *     <>
+ *       <td>Item {index}</td>
+ *       <td>Description {index}</td>
+ *     </>
+ *   )}
+ * />
+ * ```
+ *
+ * @see {@link TableVirtuosoProps} for available props
+ * @see {@link TableVirtuosoHandle} for imperative methods
+ * @see {@link TableComponents} for customizing table elements
+ */
 export const TableVirtuoso = Table as <ItemData = any, Context = any>(
   props: TableVirtuosoProps<ItemData, Context> & { ref?: React.Ref<TableVirtuosoHandle> }
 ) => React.ReactElement
 
+/**
+ * A virtualized table component for rendering grouped tabular data with sticky group headers.
+ * Combines TableVirtuoso functionality with group support for hierarchical data.
+ *
+ * @typeParam ItemData - The type of data items in the table
+ * @typeParam Context - The type of additional context passed to callbacks
+ *
+ * @param props - {@link GroupedTableVirtuosoProps}
+ *
+ * @function
+ * @group GroupedTableVirtuoso
+ *
+ * @example
+ * ```tsx
+ * <GroupedTableVirtuoso
+ *   groupCounts={[10, 20, 15]}
+ *   groupContent={(index) => (
+ *     <td colSpan={2}>Group {index}</td>
+ *   )}
+ *   itemContent={(index, groupIndex) => (
+ *     <>
+ *       <td>Item {index}</td>
+ *       <td>Group {groupIndex}</td>
+ *     </>
+ *   )}
+ * />
+ * ```
+ *
+ * @see {@link GroupedTableVirtuosoProps} for available props
+ * @see {@link GroupedTableVirtuosoHandle} for imperative methods
+ */
 export const GroupedTableVirtuoso = Table as <ItemData = any, Context = any>(
   props: GroupedTableVirtuosoProps<ItemData, Context> & { ref?: React.Ref<GroupedTableVirtuosoHandle> }
 ) => React.ReactElement

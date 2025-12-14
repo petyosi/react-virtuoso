@@ -33,7 +33,11 @@ interface BaseTableVirtuosoHandle {
 }
 
 /**
- * Exposes the TableVirtuoso component methods.
+ * Exposes the TableVirtuoso component methods for imperative control.
+ * Access via ref on the TableVirtuoso component.
+ *
+ * @see {@link TableVirtuoso} for the component
+ * @see {@link TableVirtuosoProps} for available props
  * @group TableVirtuoso
  */
 export interface TableVirtuosoHandle extends BaseTableVirtuosoHandle {
@@ -42,7 +46,11 @@ export interface TableVirtuosoHandle extends BaseTableVirtuosoHandle {
 }
 
 /**
- * Exposes the GroupedTableVirtuoso component methods.
+ * Exposes the GroupedTableVirtuoso component methods for imperative control.
+ * Access via ref on the GroupedTableVirtuoso component.
+ *
+ * @see {@link GroupedTableVirtuoso} for the component
+ * @see {@link GroupedTableVirtuosoProps} for available props
  * @group GroupedTableVirtuoso
  */
 export interface GroupedTableVirtuosoHandle extends BaseTableVirtuosoHandle {
@@ -52,6 +60,13 @@ export interface GroupedTableVirtuosoHandle extends BaseTableVirtuosoHandle {
 
 /**
  * The props for the TableVirtuoso component.
+ *
+ * @typeParam D - The type of data items in the table
+ * @typeParam C - The type of additional context passed to callbacks
+ *
+ * @see {@link TableVirtuoso} for the component
+ * @see {@link TableVirtuosoHandle} for imperative methods
+ * @see {@link TableComponents} for customizing table elements
  * @group TableVirtuoso
  */
 export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'components' | 'headerFooterTag'> {
@@ -278,6 +293,12 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
 
 /**
  * The props for the GroupedTableVirtuoso component.
+ *
+ * @typeParam D - The type of data items in the table
+ * @typeParam C - The type of additional context passed to callbacks
+ *
+ * @see {@link GroupedTableVirtuoso} for the component
+ * @see {@link GroupedTableVirtuosoHandle} for imperative methods
  * @group GroupedTableVirtuoso
  */
 export interface GroupedTableVirtuosoProps<D, C> extends Omit<TableVirtuosoProps<D, C>, 'itemContent' | 'totalCount'> {

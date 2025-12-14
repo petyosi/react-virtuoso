@@ -10,10 +10,31 @@ declare namespace window {
   let VIRTUOSO_LOG_LEVEL: LogLevel | undefined
 }
 
+/**
+ * Log levels for controlling virtuoso diagnostic output.
+ * Use with the `logLevel` prop to enable debugging information.
+ *
+ * @example
+ * ```tsx
+ * import { Virtuoso, LogLevel } from 'react-virtuoso'
+ *
+ * <Virtuoso
+ *   totalCount={1000}
+ *   logLevel={LogLevel.DEBUG}
+ *   itemContent={(index) => <div>Item {index}</div>}
+ * />
+ * ```
+ *
+ * @group Common
+ */
 export enum LogLevel {
+  /** Detailed debugging information including item measurements */
   DEBUG,
+  /** General informational messages */
   INFO,
+  /** Warning messages for potential issues */
   WARN,
+  /** Error messages for failures (default level) */
   ERROR,
 }
 export type Log = (label: string, message: any, level?: LogLevel) => void

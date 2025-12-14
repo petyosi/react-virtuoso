@@ -28,6 +28,21 @@ export interface ContextProp<C> {
 
 /**
  * Customize the Virtuoso rendering by passing a set of custom components.
+ *
+ * @typeParam Data - The type of data items in the list
+ * @typeParam Context - The type of additional context passed to components
+ *
+ * @example
+ * ```tsx
+ * const components: Components<User, AppContext> = {
+ *   Item: ({ children, context }) => <div className="item">{children}</div>,
+ *   Header: ({ context }) => <div>Header</div>,
+ *   Footer: ({ context }) => <div>Footer</div>,
+ * }
+ * <Virtuoso components={components} />
+ * ```
+ *
+ * @see {@link VirtuosoProps.components} for usage in Virtuoso
  * @group Virtuoso
  */
 export interface Components<Data = unknown, Context = unknown> {
@@ -79,6 +94,12 @@ export interface Components<Data = unknown, Context = unknown> {
 }
 
 /**
+ * Callback type for computing unique keys for list items.
+ *
+ * @typeParam D - The type of the data item
+ * @typeParam C - The type of context passed from the component
+ *
+ * @see {@link VirtuosoProps.computeItemKey} for usage in Virtuoso
  * @group Common
  */
 export type ComputeItemKey<D, C> = (index: number, item: D, context: C) => React.Key
@@ -92,11 +113,35 @@ export interface FillerRowProps {
 }
 
 /**
+ * Callback type for rendering fixed footer content in a table.
+ * The footer remains visible at the bottom of the viewport.
+ *
+ * @example
+ * ```tsx
+ * const fixedFooterContent: FixedFooterContent = () => (
+ *   <tr><td>Total: 100 items</td></tr>
+ * )
+ * <TableVirtuoso fixedFooterContent={fixedFooterContent} />
+ * ```
+ *
+ * @see {@link TableVirtuosoProps.fixedFooterContent} for usage
  * @group TableVirtuoso
  */
 export type FixedFooterContent = (() => React.ReactNode) | null
 
 /**
+ * Callback type for rendering fixed header content in a table.
+ * The header remains visible at the top of the viewport.
+ *
+ * @example
+ * ```tsx
+ * const fixedHeaderContent: FixedHeaderContent = () => (
+ *   <tr><th>Name</th><th>Email</th></tr>
+ * )
+ * <TableVirtuoso fixedHeaderContent={fixedHeaderContent} />
+ * ```
+ *
+ * @see {@link TableVirtuosoProps.fixedHeaderContent} for usage
  * @group TableVirtuoso
  */
 export type FixedHeaderContent = (() => React.ReactNode) | null
@@ -135,6 +180,19 @@ export type FollowOutputScalarType = 'auto' | 'smooth' | boolean
 
 /**
  * Customize the VirtuosoGrid rendering by passing a set of custom components.
+ *
+ * @typeParam Context - The type of additional context passed to components
+ *
+ * @example
+ * ```tsx
+ * const components: GridComponents<AppContext> = {
+ *   Item: ({ children, className }) => <div className={className}>{children}</div>,
+ *   Header: ({ context }) => <div>Header</div>,
+ * }
+ * <VirtuosoGrid components={components} />
+ * ```
+ *
+ * @see {@link VirtuosoGridProps.components} for usage in VirtuosoGrid
  * @group VirtuosoGrid
  */
 export interface GridComponents<Context = any> {
@@ -174,6 +232,12 @@ export interface GridComponents<Context = any> {
 }
 
 /**
+ * Callback type for computing unique keys for grid items.
+ *
+ * @typeParam D - The type of the data item
+ * @typeParam C - The type of context passed from the component
+ *
+ * @see {@link VirtuosoGridProps.computeItemKey} for usage
  * @group VirtuosoGrid
  */
 export type GridComputeItemKey<D, C> = (index: number, item: D, context: C) => React.Key
@@ -192,6 +256,20 @@ export interface GridItem<D> {
 }
 
 /**
+ * Callback type for rendering item content in a VirtuosoGrid.
+ *
+ * @typeParam D - The type of the data item
+ * @typeParam C - The type of context passed from the component
+ *
+ * @example
+ * ```tsx
+ * const itemContent: GridItemContent<Product, AppContext> = (index, product, context) => (
+ *   <div className="grid-item">{product.name}</div>
+ * )
+ * <VirtuosoGrid itemContent={itemContent} data={products} />
+ * ```
+ *
+ * @see {@link VirtuosoGridProps.itemContent} for usage
  * @group VirtuosoGrid
  */
 export type GridItemContent<D, C> = (index: number, data: D, context: C) => React.ReactNode
@@ -230,6 +308,19 @@ export interface GridScrollSeekPlaceholderProps {
 }
 
 /**
+ * Callback type for rendering group header content in GroupedVirtuoso.
+ *
+ * @typeParam C - The type of context passed from the component
+ *
+ * @example
+ * ```tsx
+ * const groupContent: GroupContent<AppContext> = (index, context) => (
+ *   <div className="group-header">Group {index}</div>
+ * )
+ * <GroupedVirtuoso groupContent={groupContent} />
+ * ```
+ *
+ * @see {@link GroupedVirtuosoProps.groupContent} for usage
  * @group GroupedVirtuoso
  */
 export type GroupContent<C> = (index: number, context: C) => React.ReactNode
@@ -260,6 +351,22 @@ export interface GroupItem<D> extends Item<D> {
 }
 
 /**
+ * Callback type for rendering item content in a GroupedVirtuoso list.
+ * Similar to ItemContent but includes the group index.
+ *
+ * @typeParam D - The type of the data item
+ * @typeParam C - The type of context passed from the component
+ *
+ * @example
+ * ```tsx
+ * const itemContent: GroupItemContent<User, AppContext> = (index, groupIndex, user, context) => (
+ *   <div>{user.name} (Group {groupIndex})</div>
+ * )
+ * <GroupedVirtuoso itemContent={itemContent} />
+ * ```
+ *
+ * @see {@link GroupedVirtuosoProps.itemContent} for usage
+ * @see {@link ItemContent} for non-grouped list variant
  * @group GroupedVirtuoso
  */
 export type GroupItemContent<D, C> = (index: number, groupIndex: number, data: D, context: C) => React.ReactNode
@@ -289,6 +396,21 @@ export interface Item<D> {
 }
 
 /**
+ * Callback type for rendering item content in a Virtuoso list.
+ *
+ * @typeParam D - The type of the data item
+ * @typeParam C - The type of context passed from the component
+ *
+ * @example
+ * ```tsx
+ * const itemContent: ItemContent<User, AppContext> = (index, user, context) => (
+ *   <div>{user.name}</div>
+ * )
+ * <Virtuoso itemContent={itemContent} data={users} />
+ * ```
+ *
+ * @see {@link VirtuosoProps.itemContent} for usage in Virtuoso
+ * @see {@link GroupItemContent} for grouped list variant
  * @group Virtuoso
  */
 export type ItemContent<D, C> = (index: number, data: D, context: C) => React.ReactNode
@@ -306,6 +428,12 @@ export type ItemProps<D> = Pick<React.ComponentProps<'div'>, 'children' | 'style
 }
 
 /**
+ * Union type representing either a regular item or a group header item in the list.
+ *
+ * @typeParam D - The type of the data item
+ *
+ * @see {@link RecordItem} for regular items
+ * @see {@link GroupItem} for group header items
  * @group Common
  */
 export type ListItem<D> = GroupItem<D> | RecordItem<D>
@@ -320,10 +448,16 @@ export type ListProps = Pick<React.ComponentProps<'div'>, 'children' | 'style'> 
   }
 
 /**
+ * Represents a range of items in the list by their indices.
+ * Used to track which items are currently visible in the viewport.
+ *
+ * @see {@link VirtuosoProps.rangeChanged} for visibility change events
  * @group Common
  */
 export interface ListRange {
+  /** The index of the last visible item */
   endIndex: number
+  /** The index of the first visible item */
   startIndex: number
 }
 
@@ -421,11 +555,26 @@ const defaultCalculateViewLocation: CalculateViewLocation = ({
 }
 
 /**
+ * Configuration for scroll seek mode, which renders placeholders during fast scrolling.
+ * This improves performance when users scroll rapidly through large lists.
+ *
+ * @example
+ * ```tsx
+ * const scrollSeekConfiguration: ScrollSeekConfiguration = {
+ *   enter: (velocity) => Math.abs(velocity) > 200,
+ *   exit: (velocity) => Math.abs(velocity) < 30,
+ *   change: (velocity, range) => console.log('Scrolling', range),
+ * }
+ * <Virtuoso scrollSeekConfiguration={scrollSeekConfiguration} />
+ * ```
+ *
+ * @see {@link VirtuosoProps.scrollSeekConfiguration} for usage
+ * @see {@link Components.ScrollSeekPlaceholder} for custom placeholder rendering
  * @group Common
  */
 export interface ScrollSeekConfiguration {
   /**
-   * called during scrolling in scroll seek mode - use to display a hint where the list is.
+   * Called during scrolling in scroll seek mode - use to display a hint where the list is.
    */
   change?: (velocity: number, range: ListRange) => void
   /**
@@ -455,7 +604,10 @@ export interface ScrollSeekPlaceholderProps {
 export type ScrollSeekToggle = (velocity: number, range: ListRange) => boolean
 
 /**
- * Calculates the height of `el`, which will be the `Item` element in the DOM.
+ * Custom function for calculating item sizes.
+ * Override to account for margins, padding, or other layout considerations.
+ *
+ * @see {@link VirtuosoProps.itemSize} for usage
  * @group Common
  */
 export type SizeFunction = (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number
@@ -470,15 +622,26 @@ export interface SizeRange {
 }
 
 /**
+ * Callback type for receiving state snapshots for persistence.
+ *
+ * @see {@link VirtuosoProps.getState} for usage
+ * @see {@link StateSnapshot} for the snapshot structure
  * @group Common
  */
 export type StateCallback = (state: StateSnapshot) => void
 
 /**
+ * A snapshot of the virtuoso state that can be saved and restored.
+ * Use this to persist scroll position and item sizes across page reloads.
+ *
+ * @see {@link VirtuosoProps.restoreStateFrom} for restoring state
+ * @see {@link VirtuosoHandle.getState} for capturing state
  * @group Common
  */
 export interface StateSnapshot {
+  /** The measured size ranges of items */
   ranges: SizeRange[]
+  /** The scroll position in pixels */
   scrollTop: number
 }
 
@@ -493,6 +656,20 @@ export type TableBodyProps = Pick<React.ComponentProps<'tbody'>, 'children' | 'c
 
 /**
  * Customize the TableVirtuoso rendering by passing a set of custom components.
+ *
+ * @typeParam Data - The type of data items in the table
+ * @typeParam Context - The type of additional context passed to components
+ *
+ * @example
+ * ```tsx
+ * const components: TableComponents<User, AppContext> = {
+ *   Table: ({ children, style }) => <table style={style}>{children}</table>,
+ *   TableRow: ({ children, item }) => <tr>{children}</tr>,
+ * }
+ * <TableVirtuoso components={components} />
+ * ```
+ *
+ * @see {@link TableVirtuosoProps.components} for usage in TableVirtuoso
  * @group TableVirtuoso
  */
 export interface TableComponents<Data = unknown, Context = unknown> {

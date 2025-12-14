@@ -11,33 +11,54 @@ import type {
 import { LogLevel } from '../loggerSystem'
 
 /**
+ * Dimensions of an element in pixels.
+ *
  * @group VirtuosoGrid
  */
 export interface ElementDimensions {
+  /** Height in pixels */
   height: number
+  /** Width in pixels */
   width: number
 }
 
 /**
+ * Gap between grid items in pixels.
+ *
  * @group VirtuosoGrid
  */
 export interface Gap {
+  /** Horizontal gap between columns */
   column: number
+  /** Vertical gap between rows */
   row: number
 }
 
 /**
+ * A snapshot of the VirtuosoGrid state that can be saved and restored.
+ * Use this to persist scroll position and layout across page reloads.
+ *
+ * @see {@link VirtuosoGridProps.restoreStateFrom} for restoring state
+ * @see {@link VirtuosoGridProps.stateChanged} for capturing state
  * @group VirtuosoGrid
  */
 export interface GridStateSnapshot {
+  /** Gap between items */
   gap: Gap
+  /** Item dimensions */
   item: ElementDimensions
+  /** Scroll position in pixels */
   scrollTop: number
+  /** Viewport dimensions */
   viewport: ElementDimensions
 }
 
 /**
- * Exposes the VirtuosoGrid component methods.
+ * Exposes the VirtuosoGrid component methods for imperative control.
+ * Access via ref on the VirtuosoGrid component.
+ *
+ * @see {@link VirtuosoGrid} for the component
+ * @see {@link VirtuosoGridProps} for available props
  * @group VirtuosoGrid
  */
 export interface VirtuosoGridHandle {
@@ -48,6 +69,12 @@ export interface VirtuosoGridHandle {
 
 /**
  * The props for the VirtuosoGrid component.
+ *
+ * @typeParam D - The type of data items in the grid
+ * @typeParam C - The type of additional context passed to callbacks
+ *
+ * @see {@link VirtuosoGrid} for the component
+ * @see {@link VirtuosoGridHandle} for imperative methods
  * @group VirtuosoGrid
  */
 export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {

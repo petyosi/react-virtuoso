@@ -3,6 +3,14 @@ import { defineRouteMiddleware } from '@astrojs/starlight/route-data'
 const leadingNumberAndDotRegEx = /^(\d+)\./
 
 function toTitleCase(str: string) {
+  if (!str.includes('-')) {
+    // Check if already has internal capitals (PascalCase) - preserve as-is
+    if (/[a-z][A-Z]/.test(str)) {
+      return str
+    }
+    // Single word without dashes - just capitalize first letter
+    return str.charAt(0).toUpperCase() + str.slice(1)
+  }
   return str
     .split('-')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
