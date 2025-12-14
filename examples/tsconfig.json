@@ -1,0 +1,11 @@
+{
+  "extends": ["@virtuoso.dev/tooling/tsconfig.base.json"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["**/*", ".ladle/**/*", "eslint.config.mjs", "prettier.config.mjs"],
+  "exclude": ["dist"]
+}

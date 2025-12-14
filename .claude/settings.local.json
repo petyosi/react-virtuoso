@@ -60,7 +60,8 @@
       "mcp__context7__resolve-library-id",
       "Bash(ls:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "mcp__serena__initial_instructions"
+      "mcp__serena__initial_instructions",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

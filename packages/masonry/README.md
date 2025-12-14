@@ -1,11 +1,16 @@
----
-title: Overview
----
+# Virtuoso Masonry
 
-## Masonry
+[![npm version](https://img.shields.io/npm/v/@virtuoso.dev/masonry.svg)](https://www.npmjs.com/package/@virtuoso.dev/masonry) [![npm downloads](https://img.shields.io/npm/dm/@virtuoso.dev/masonry.svg)](https://www.npmjs.com/package/@virtuoso.dev/masonry) [![license](https://img.shields.io/npm/l/@virtuoso.dev/masonry.svg)](https://github.com/petyosi/react-virtuoso/blob/master/LICENSE) [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
-The Masonry component is a layout component that arranges items in a grid with varying heights. It is useful for displaying images, cards, product images, etc.
-The column count property can be changed dynamically based on the screen/container width.
+A virtualized masonry layout component for React that arranges items in a grid with varying heights.
+
+## Features
+
+- **Virtualized rendering** - only renders visible items for optimal performance with large datasets
+- **Variable item heights** - items can have different heights, automatically measured and arranged
+- **Dynamic column count** - change column count based on screen/container width
+- **Window scroll support** - can use the window as the scroll container
+- **Just-in-time distribution** - items are distributed to columns as you scroll
 
 :::note
 The column distribution algorithm distributes the items just-in-time, so if you scroll very fast, you will be able to see the arrangement happening.
@@ -17,7 +22,7 @@ The column distribution algorithm distributes the items just-in-time, so if you 
 npm install @virtuoso.dev/masonry
 ```
 
-## Basic Example
+## Quick Start
 
 ```tsx live
 import { VirtuosoMasonry } from '@virtuoso.dev/masonry'
@@ -94,3 +99,11 @@ export default function App() {
   )
 }
 ```
+
+## Links
+
+- [Documentation](https://virtuoso.dev/masonry/)
+- [API Reference](https://virtuoso.dev/masonry/api-reference/)
+- [Contributing](https://github.com/petyosi/react-virtuoso/blob/master/CONTRIBUTING.md)
+- [Changelog](./CHANGELOG.md)
+- [License](./LICENSE)

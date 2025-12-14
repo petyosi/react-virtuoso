@@ -1,22 +1,17 @@
----
-title: Overview
----
+# Gurx
 
-Gurx is a typescript-native reactive state management library for complex web applications and components that do not have the symmetry of the store object and the component tree.
+[![npm version](https://img.shields.io/npm/v/@virtuoso.dev/gurx.svg)](https://www.npmjs.com/package/@virtuoso.dev/gurx) [![npm downloads](https://img.shields.io/npm/dm/@virtuoso.dev/gurx.svg)](https://www.npmjs.com/package/@virtuoso.dev/gurx) [![license](https://img.shields.io/npm/l/@virtuoso.dev/gurx.svg)](https://github.com/petyosi/react-virtuoso/blob/master/LICENSE) [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
-## Why should you consider Gurx?
+A TypeScript-native reactive state management library for complex web applications and components that do not have the symmetry of the store object and the component tree.
 
-- **Push-based recalculation model**. Unlike the regular, "pull", imperative state recalculation model. Gurx uses a push-based model, where data flows through pipes described with functional operators. Among other benefits, this lets you publish values into multiple nodes **and** subscribe for changes in multiple nodes simultaneously, reducing the amount of UI re-renders.
+## Features
 
-- **Open and Extendable**. The cell/signal definition approach lets you extend the logic of the state management by connecting more nodes and interactions to the existing ones in multiple modules. This lets you design your state management as smaller distributed pieces and even build a plugin system on top of it.
-
-- **Optimized**. The Gurx nodes are distinct by default. A distinct node pushes through its subscribers only when a value different than the previous one is published. This allows you to avoid expensive computations and re-renders.
-
-- **Type-safe**. cells and signals are typed and carry the right value types through the node operators and the React hooks that refer them.
-
-- **Testable**. You can easily initiate a realm and interact with your nodes outside of React. This makes it easy to unit-test your state management logic.
-
-- **React friendly**. Gurx ships a Realm provider component and set of hooks that let you access the values and publish new values in the given nodes. Under the hood, the hooks use `useSyncExternalStore`.
+- **Push-based recalculation model** - data flows through pipes described with functional operators, reducing UI re-renders
+- **Open and extendable** - cell/signal definition approach lets you extend logic by connecting more nodes in multiple modules
+- **Optimized** - nodes are distinct by default, pushing through subscribers only when values change
+- **Type-safe** - cells and signals are typed and carry the right value types through operators and React hooks
+- **Testable** - easily initiate a realm and interact with nodes outside of React for unit testing
+- **React friendly** - ships with a Realm provider component and hooks using `useSyncExternalStore`
 
 ## Conceptual Overview
 
@@ -162,3 +157,11 @@ Additional hooks include `usePublisher`, `useCellValues`, and the low-level `use
 ## Next steps
 
 The README is meant to give you a breath-first overview of the library. More details about the operators, hooks, and realm capabilities can be found in the API Reference.
+
+## Links
+
+- [Documentation](https://virtuoso.dev/gurx/)
+- [API Reference](https://virtuoso.dev/gurx/api-reference/)
+- [Contributing](https://github.com/petyosi/react-virtuoso/blob/master/CONTRIBUTING.md)
+- [Changelog](./CHANGELOG.md)
+- [License](./LICENSE)

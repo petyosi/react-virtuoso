@@ -1,10 +1,8 @@
----
-id: react-virtuoso-readme
-title: Overview
-sidebar_label: Overview
----
+# React Virtuoso
 
-**React Virtuoso** is a family of React components that display large data sets using **virtualized rendering**, automatically handling variable item sizes and changes in items' sizes.
+[![npm version](https://img.shields.io/npm/v/react-virtuoso.svg)](https://www.npmjs.com/package/react-virtuoso) [![npm downloads](https://img.shields.io/npm/dm/react-virtuoso.svg)](https://www.npmjs.com/package/react-virtuoso) [![license](https://img.shields.io/npm/l/react-virtuoso.svg)](https://github.com/petyosi/react-virtuoso/blob/master/LICENSE) [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+
+React components for efficiently rendering large lists, grids, and tables with virtualization.
 
 | Component         | Purpose                                      |
 | ----------------- | -------------------------------------------- |
@@ -12,48 +10,26 @@ sidebar_label: Overview
 | `GroupedVirtuoso` | Groups of items with sticky group headers    |
 | `VirtuosoGrid`    | Same-sized items in a responsive grid layout |
 | `TableVirtuoso`   | Tables with virtualized rows                 |
-| `MessageList`     | Human/AI chat interfaces                     |
-| `Masonry`         | Photos/Product listings                      |
 
-:::info
+## Features
 
-## Virtuoso Message List
+- **Variable item sizes** - handles items with different heights automatically, no manual measurement needed
+- **Dynamic size changes** - observes item size changes via ResizeObserver and readjusts automatically
+- **Responsive container sizing** - adapts to parent/viewport size changes, safe for flexbox layouts
+- **Bi-directional endless scrolling** - supports `startReached` and `endReached` callbacks for loading data on demand
+- **Press to load more** - append or prepend items while retaining scroll position
+- **Initial scroll position** - start from any location, skipping initial rendering of earlier items
+- **Customizable markup** - custom Header, Footer, Scroller, and item wrapper components
+- **UI library integration** - works with shadcn/ui, MUI, Mantine, and other component libraries
+- **Drag-and-drop support** - integrates with drag-and-drop libraries through custom components
 
-The `VirtuosoMessageList` component is a newly released React component built **specifically for human and AI chatbot conversations**. [Check out the live example](/virtuoso-message-list/).
-:::
-
-## License
-
-The `react-virtuoso` package is distributed under the MIT license. The `VirtuosoMessageList` component and the contents of the `@virtuoso.dev/message-list` package are distributed under a commercial license. See [pricing](/pricing) for more details.
-
-## Feature Highlights
-
-The Virtuoso components automatically handle **items with variable heights**. You don't have to hard-code or manually measure item sizes. The components observe changes of the items' sizes (for example, due to content load) and automatically readjust the scroll area size. The component container size itself is observed and list readjusts its display automatically when the browser or its parent container changes sizes. You can safely use the Virtuoso components in responsive flexbox layouts.
-
-A common use case covered by the components' API is the **bi-directional endless scrolling** and the **press to load more** UI patterns. The components can be configured to **start from an initial location**, thus skipping the initial rendering (and the potential need of data loading) of earlier items. The components expose `startReached` and `endReached` callback properties, suitable for loading data on demand. After the data has been loaded, You can **append** or **prepend** additional items, while retaining the current scroll location.
-
-The markup of the components is customizable by passing custom components as props, supporting optional **Header** and **Footer**, or even replacing the **Scroller element with a custom one** (usually when integrating third party scrollbar library).
-The custom components props allow the easy integration of your UI library of choice (e.g. shadcn/ui, MUI, Mantine), or even integrate drag-and-drop through a third-party library.
-
-To get a better impression of what's possible, examine the various examples in the documentation, and skim through the API reference.
-
-## Installation (react-virtuoso)
-
-The Virtuoso components are distributed as NPM packages.
-
-To use the `Virtuoso`, `TableVirtuoso`, `GroupedVirtuoso`, and `VirtuosoGrid` components, install `react-virtuoso` in your React project.
+## Installation
 
 ```bash
 npm install react-virtuoso
 ```
 
-Install the `@virtuoso.dev/message-list` package to use the `VirtuosoMessageList` component.
-
-```bash
-npm install @virtuoso.dev/message-list
-```
-
-## Hello World
+## Quick Start
 
 ### Virtuoso
 
@@ -64,37 +40,6 @@ import { Virtuoso } from 'react-virtuoso'
 
 export default function App() {
   return <Virtuoso style={{ height: '100%' }} totalCount={200} itemContent={(index) => <div>Item {index}</div>} />
-}
-```
-
-### VirtuosoMessageList
-
-The Message List component is specifically built for human and/or AI chatbot conversations. Follow the instructions in the [Virtuoso Message List](/virtuoso-message-list) guide to install and use the `VirtuosoMessageList` component.
-
-```tsx live
-import { VirtuosoMessageListLicense, VirtuosoMessageList } from '@virtuoso.dev/message-list'
-import { useMemo } from 'react'
-
-export default function App() {
-  const data = useMemo(() => Array.from({ length: 100 }, (_, index) => index), [])
-  return (
-    <VirtuosoMessageListLicense licenseKey="">
-      <VirtuosoMessageList
-        ItemContent={({ data }) => <div>Message {data}</div>}
-        style={{ height: '100%' }}
-        data={{
-          data: data,
-          scrollModifier: {
-            type: 'item-location',
-            location: {
-              index: 'LAST',
-              align: 'end',
-            },
-          },
-        }}
-      />
-    </VirtuosoMessageListLicense>
-  )
 }
 ```
 
@@ -143,9 +88,9 @@ export default function App() {
 ```
 
 Check the
-[grouped numbers](/grouped-numbers),
-[grouped by first letter](/grouped-by-first-letter) and
-[groups with load on demand](/grouped-with-load-on-demand)
+[grouped numbers](https://virtuoso.dev/react-virtuoso/grouped-numbers),
+[grouped by first letter](https://virtuoso.dev/react-virtuoso/grouped-by-first-letter) and
+[groups with load on demand](https://virtuoso.dev/react-virtuoso/grouped-with-load-on-demand)
 examples.
 
 ### TableVirtuoso
@@ -248,10 +193,6 @@ export default function App() {
 }
 ```
 
-### Masonry
-
-The masonry component renders columns from varying-height items, suitable for product listings, image galleries, etc. Check the examples in the [masonry section](/hello-masonry) for more details.
-
 ## Performance
 
 Several factors affect the component's performance.
@@ -295,7 +236,7 @@ to `150` will cause the list to render **at least** `250px` of content.
 Loading images and displaying complex components while scrolling can cause jank.
 To fix that, you can hook to the `isScrolling` callback and replace
 the problematic content in the item with a simplified one.
-Check the [scroll handling example](/scroll-handling) for a possible implementation.
+Check the [scroll handling example](https://virtuoso.dev/react-virtuoso/scroll-handling) for a possible implementation.
 
 ## Caveats
 
@@ -316,4 +257,13 @@ To avoid that, if you are putting paragraphs and headings inside the `item`, mak
 />
 ```
 
-A few more common problems are present in the [troubleshooting section](/troubleshooting).
+A few more common problems are present in the [troubleshooting section](https://virtuoso.dev/react-virtuoso/troubleshooting).
+
+## Links
+
+- [Documentation](https://virtuoso.dev/react-virtuoso/)
+- [API Reference](https://virtuoso.dev/react-virtuoso/api-reference/)
+- [Examples](https://virtuoso.dev/react-virtuoso/)
+- [Contributing](https://github.com/petyosi/react-virtuoso/blob/master/CONTRIBUTING.md)
+- [Changelog](./CHANGELOG.md)
+- [License](./LICENSE)

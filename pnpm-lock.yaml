@@ -362,6 +362,46 @@ importers:
         specifier: ^1.6.1
         version: 1.6.1(typedoc@0.28.14(typescript@5.9.3))
 
+  examples:
+    dependencies:
+      '@ladle/react':
+        specifier: ^5.1.1
+        version: 5.1.1(@types/node@22.19.1)(@types/react@19.2.7)(jiti@2.6.1)(lightningcss@1.30.2)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.1)
+      '@virtuoso.dev/masonry':
+        specifier: workspace:*
+        version: link:../packages/masonry
+      '@virtuoso.dev/tooling':
+        specifier: workspace:*
+        version: link:../packages/tooling
+      eslint:
+        specifier: ^9.23.0
+        version: 9.39.1(jiti@2.6.1)
+      prettier:
+        specifier: ^3.4.2
+        version: 3.7.1
+      react:
+        specifier: ^19.2.3
+        version: 19.2.3
+      react-dom:
+        specifier: ^19.2.3
+        version: 19.2.3(react@19.2.3)
+      react-virtuoso:
+        specifier: workspace:*
+        version: link:../packages/react-virtuoso
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.48.0
+        version: 8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.7
+        version: 19.2.7
+      '@types/react-dom':
+        specifier: ^19.2.3
+        version: 19.2.3(@types/react@19.2.7)
+
   packages/gurx:
     devDependencies:
       '@microsoft/api-extractor':
@@ -8646,6 +8686,11 @@ packages:
     peerDependencies:
       react: ^19.2.0
 
+  react-dom@19.2.3:
+    resolution: {integrity: sha512-yELu4WmLPw5Mr/lmeEpox5rw3RETacE++JgHqQzd2dg+YbJuat3jH4ingc+WPZhxaoFzdv9y33G+F7Nl5O0GBg==}
+    peerDependencies:
+      react: ^19.2.3
+
   react-error-boundary@5.0.0:
     resolution: {integrity: sha512-tnjAxG+IkpLephNcePNA7v6F/QpWLH8He65+DmedchDwg162JZqx4NmbXj0mlAYVVEd81OW7aFhmbsScYfiAFQ==}
     peerDependencies:
@@ -8789,6 +8834,10 @@ packages:
 
   react@19.2.0:
     resolution: {integrity: sha512-tmbWg6W31tQLeB5cdIBOicJDJRR2KzXsV7uSK9iNfLWQ5bIZfxuPEHp7M8wiHyHnn0DD1i7w3Zmin0FtkrwoCQ==}
+    engines: {node: '>=0.10.0'}
+
+  react@19.2.3:
+    resolution: {integrity: sha512-Ku/hhYbVjOQnXDZFv2+RibmLFGwFdeeKHFcOTlrt7xplBnya5OGn/hIRDsqDiSUcfORsDC7MPxwork8jBwsIWA==}
     engines: {node: '>=0.10.0'}
 
   read-cache@1.0.0:
@@ -13338,6 +13387,11 @@ snapshots:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
 
+  '@ladle/react-context@1.0.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+    dependencies:
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+
   '@ladle/react@5.1.1(@swc/helpers@0.5.17)(@types/node@22.19.1)(@types/react@19.2.7)(jiti@2.6.1)(lightningcss@1.30.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.1)':
     dependencies:
       '@babel/code-frame': 7.27.1
@@ -13373,6 +13427,65 @@ snapshots:
       react-dom: 19.2.0(react@19.2.0)
       react-hotkeys-hook: 4.6.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react-inspector: 6.0.2(react@19.2.0)
+      rehype-class-names: 2.0.0
+      rehype-raw: 7.0.0
+      remark-gfm: 4.0.1
+      source-map: 0.7.6
+      vfile: 6.0.3
+      vite: 6.4.1(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.1)
+      vite-tsconfig-paths: 5.1.4(typescript@5.9.3)(vite@6.4.1(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.1))
+    transitivePeerDependencies:
+      - '@swc/helpers'
+      - '@types/node'
+      - '@types/react'
+      - jiti
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - typescript
+      - yaml
+
+  '@ladle/react@5.1.1(@types/node@22.19.1)(@types/react@19.2.7)(jiti@2.6.1)(lightningcss@1.30.2)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.1)':
+    dependencies:
+      '@babel/code-frame': 7.27.1
+      '@babel/core': 7.28.5
+      '@babel/generator': 7.28.5
+      '@babel/parser': 7.28.5
+      '@babel/template': 7.27.2
+      '@babel/traverse': 7.28.5
+      '@babel/types': 7.28.5
+      '@ladle/react-context': 1.0.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@mdx-js/mdx': 3.1.1
+      '@mdx-js/react': 3.1.1(@types/react@19.2.7)(react@19.2.3)
+      '@vitejs/plugin-react': 4.7.0(vite@6.4.1(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.1))
+      '@vitejs/plugin-react-swc': 3.11.0(@swc/helpers@0.5.17)(vite@6.4.1(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.1))
+      axe-core: 4.11.0
+      boxen: 8.0.1
+      chokidar: 4.0.3
+      classnames: 2.5.1
+      commander: 12.1.0
+      cross-spawn: 7.0.6
+      debug: 4.4.3
+      get-port: 7.1.0
+      globby: 14.1.0
+      history: 5.3.0
+      koa: 2.16.3
+      lodash.merge: 4.6.2
+      msw: 2.12.3(@types/node@22.19.1)(typescript@5.9.3)
+      open: 10.2.0
+      prism-react-renderer: 2.4.1(react@19.2.3)
+      prop-types: 15.8.1
+      query-string: 9.3.1
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+      react-hotkeys-hook: 4.6.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      react-inspector: 6.0.2(react@19.2.3)
       rehype-class-names: 2.0.0
       rehype-raw: 7.0.0
       remark-gfm: 4.0.1
@@ -13456,6 +13569,12 @@ snapshots:
       '@types/mdx': 2.0.13
       '@types/react': 19.2.7
       react: 19.2.0
+
+  '@mdx-js/react@3.1.1(@types/react@19.2.7)(react@19.2.3)':
+    dependencies:
+      '@types/mdx': 2.0.13
+      '@types/react': 19.2.7
+      react: 19.2.3
 
   '@microsoft/api-extractor-model@7.32.1(@types/node@22.19.1)':
     dependencies:
@@ -20348,6 +20467,12 @@ snapshots:
       clsx: 2.1.1
       react: 19.2.0
 
+  prism-react-renderer@2.4.1(react@19.2.3):
+    dependencies:
+      '@types/prismjs': 1.26.5
+      clsx: 2.1.1
+      react: 19.2.3
+
   prismjs@1.30.0: {}
 
   process-nextick-args@2.0.1: {}
@@ -20496,6 +20621,11 @@ snapshots:
       react: 19.2.0
       scheduler: 0.27.0
 
+  react-dom@19.2.3(react@19.2.3):
+    dependencies:
+      react: 19.2.3
+      scheduler: 0.27.0
+
   react-error-boundary@5.0.0(react@19.2.0):
     dependencies:
       '@babel/runtime': 7.28.4
@@ -20513,9 +20643,18 @@ snapshots:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
 
+  react-hotkeys-hook@4.6.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
+    dependencies:
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
+
   react-inspector@6.0.2(react@19.2.0):
     dependencies:
       react: 19.2.0
+
+  react-inspector@6.0.2(react@19.2.3):
+    dependencies:
+      react: 19.2.3
 
   react-is@16.13.1: {}
 
@@ -20642,6 +20781,8 @@ snapshots:
       react-dom: 19.2.0(react@19.2.0)
 
   react@19.2.0: {}
+
+  react@19.2.3: {}
 
   read-cache@1.0.0:
     dependencies:

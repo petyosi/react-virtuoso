@@ -1,0 +1,32 @@
+{
+  "name": "@virtuoso.dev/examples",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ladle dev",
+    "lint": "eslint",
+    "format": "prettier --write ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.24.0",
+  "dependencies": {
+    "@ladle/react": "^5.1.1",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "@virtuoso.dev/masonry": "workspace:*",
+    "@virtuoso.dev/tooling": "workspace:*",
+    "react-virtuoso": "workspace:*",
+    "eslint": "^9.23.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3"
+  }
+}

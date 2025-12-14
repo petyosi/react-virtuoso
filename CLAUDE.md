@@ -13,7 +13,7 @@ This is a pnpm workspaces monorepo. Run commands from the root or within specifi
 - Lint all: `pnpm lint`
 - Test all: `pnpm test`
 - E2E tests all: `pnpm e2e`
-- Full CI: `pnpm ci` (setup, build, typecheck, lint, test, e2e)
+- Full CI: `pnpm ci` (setup, build, typecheck, lint, lint:md, test, e2e)
 - Release: `pnpm release` (build + publish with changesets)
 - Add changeset: `pnpm changeset-add`
 - Dev docs site: `pnpm dev:docs`
@@ -34,6 +34,12 @@ This is a pnpm workspaces monorepo. Run commands from the root or within specifi
 - Dev server: `pnpm run dev` (port 3001)
 - Build: `pnpm run build`
 
+### new-site Starlight docs (apps/new-site/)
+
+- Dev server: `pnpm run dev`
+- Build: `pnpm run build`
+- Typecheck: `pnpm run typecheck`
+
 ## Monorepo Structure
 
 ```text
@@ -41,11 +47,14 @@ packages/
   react-virtuoso/    - Main virtualization library
   gurx/             - urx state management (fork/variant)
   masonry/          - Masonry layout component
+  message-list/     - Chat/message list component
   tooling/          - Shared build tooling
 
 apps/
-  virtuoso.dev/     - Docusaurus documentation site
-  astro-poc/        - Astro experimentation
+  virtuoso.dev/     - Docusaurus documentation site (current)
+  new-site/         - Starlight/Astro documentation site (migration in progress)
+
+examples/            - Ladle stories for testing/development
 ```
 
 ## Architecture
@@ -159,7 +168,7 @@ const foo = 'bar'
 ### Linting
 
 - Run `pnpm lint:md` to check markdown files
-- Run `pnpm lint:md:fix"` to auto-fix issues
+- Run `pnpm lint:md:fix` to auto-fix issues
 - Pre-commit hooks automatically lint staged .md files
 - Configuration: `.markdownlint.json` and `.markdownlintignore`
 - If necessary, use `markdownlint` CLI directly, but prefer pnpm scripts
@@ -198,7 +207,7 @@ LEFTHOOK=0 git commit -m "WIP: work in progress"
 
 ### Hook Management
 
-- Configuration: `.lefthook.yml`
+- Configuration: `lefthook.json`
 - Install hooks: `pnpm exec lefthook install`
 - Uninstall hooks: `pnpm exec lefthook uninstall`
 - Run manually: `pnpm exec lefthook run pre-commit`

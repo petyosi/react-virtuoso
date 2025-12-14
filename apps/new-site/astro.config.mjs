@@ -46,6 +46,19 @@ export default defineConfig({
         {
           dest: 'react-virtuoso',
           file: '../../packages/react-virtuoso/README.md',
+          transform: (content) => {
+            const frontmatter = `---
+title: React Virtuoso
+sidebar:
+  label: Overview
+  order: 0
+---
+
+`
+            // Remove the H1 heading line and following blank line
+            const withoutH1 = content.replace(/^# .+\n\n/, '')
+            return frontmatter + withoutH1
+          },
         },
         {
           dest: 'react-virtuoso',
@@ -59,6 +72,18 @@ export default defineConfig({
         {
           dest: 'masonry',
           file: '../../packages/masonry/README.md',
+          transform: (content) => {
+            const frontmatter = `---
+title: Virtuoso Masonry
+sidebar:
+  label: Overview
+  order: 0
+---
+
+`
+            const withoutH1 = content.replace(/^# .+\n\n/, '')
+            return frontmatter + withoutH1
+          },
         },
         {
           dest: 'masonry',
@@ -75,6 +100,18 @@ export default defineConfig({
         {
           dest: 'gurx',
           file: '../../packages/gurx/README.md',
+          transform: (content) => {
+            const frontmatter = `---
+title: Gurx
+sidebar:
+  label: Overview
+  order: 0
+---
+
+`
+            const withoutH1 = content.replace(/^# .+\n\n/, '')
+            return frontmatter + withoutH1
+          },
         },
         {
           dest: 'gurx',
@@ -83,6 +120,18 @@ export default defineConfig({
         {
           dest: 'message-list',
           file: '../../packages/message-list/README.md',
+          transform: (content) => {
+            const frontmatter = `---
+title: Virtuoso Message List
+sidebar:
+  label: Overview
+  order: 0
+---
+
+`
+            const withoutH1 = content.replace(/^# .+\n\n/, '')
+            return frontmatter + withoutH1
+          },
         },
         {
           dest: 'message-list',

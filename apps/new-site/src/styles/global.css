@@ -413,4 +413,8 @@
   .sl-markdown-content td:last-child {
     @apply pe-4;
   }
+
+  .sl-markdown-content p:first-child img {
+    display: inline;
+  }
 }
