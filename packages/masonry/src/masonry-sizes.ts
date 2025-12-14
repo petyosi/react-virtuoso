@@ -128,7 +128,7 @@ const lastHeights$ = DerivedCell<number[]>([], () =>
   )
 )
 
-export const lastOffsets$ = DerivedCell<number[]>([], () =>
+const lastOffsets$ = DerivedCell<number[]>([], () =>
   pipe(
     offsetTreesState$,
     map((state) => state.map(([, , lastOffset]) => lastOffset))

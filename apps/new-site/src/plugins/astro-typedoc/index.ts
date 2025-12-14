@@ -219,13 +219,19 @@ const mergeFilesByGroup = async (dir: string): Promise<void> => {
   for (const file of files) {
     const content = await readFile(file.path, 'utf-8')
 
-    // Extract group from frontmatter (group: 'GroupName'), default to 'Misc' if not found
-    const groupMatch = /^group:\s*['"]?(\w+)['"]?\s*$/m.exec(content)
-    const group = groupMatch ? groupMatch[1] : 'Misc'
-
     // Extract title from frontmatter
     const titleMatch = /^title:\s*['"]?(.+?)['"]?\s*$/m.exec(content)
     const title = titleMatch?.[1] ?? file.name.replace(/\.mdx?$/, '')
+
+    // Skip module-level entries (package names like @scope/package)
+    if (title.startsWith('@') || title.includes('/')) {
+      await unlink(file.path)
+      continue
+    }
+
+    // Extract group from frontmatter (group: 'GroupName'), default to 'Misc' if not found
+    const groupMatch = /^group:\s*['"]?(\w+)['"]?\s*$/m.exec(content)
+    const group = groupMatch ? groupMatch[1] : 'Misc'
 
     // Build mapping from filename (without extension) to group
     const baseFilename = file.name.replace(/\.mdx?$/, '')

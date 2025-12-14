@@ -9,9 +9,21 @@ import { listOffset$, scrollHeight$, scrollTop$, useWindowScroll$, viewportHeigh
 import { type MasonryItem, masonryItemsState$ } from './masonry-item-state'
 import { absoluteSizes$, columnCount$, indexesInColumns$, initialItemCount$, knownSizes$, masonryRanges$ } from './masonry-sizes'
 
+/**
+ * Props for the VirtuosoMasonry component.
+ * @typeParam Data - The type of items in the data array passed to the component.
+ * @typeParam Context - Optional contextual data passed to the ItemContent render callback.
+ * @group VirtuosoMasonry
+ */
 export interface VirtuosoMasonryProps<Data, Context> extends ScrollerProps {
   /**
    * The number of columns to be rendered. This prop is required.
+   * The component distributes items across columns using a shortest-column-first algorithm.
+   *
+   * @example
+   * ```tsx
+   * <VirtuosoMasonry columnCount={3} data={items} />
+   * ```
    */
   columnCount: number
   /**
@@ -19,23 +31,53 @@ export interface VirtuosoMasonryProps<Data, Context> extends ScrollerProps {
    */
   context?: Context
   /**
-   * The data to be rendered. This prop is required.
+   * The data array to be rendered. This prop is required.
+   * Each item will be passed to the {@link ItemContent} component for rendering.
+   *
+   * @example
+   * ```tsx
+   * const items = [
+   *   { id: 1, title: 'Item 1', imageUrl: '...' },
+   *   { id: 2, title: 'Item 2', imageUrl: '...' },
+   * ]
+   * <VirtuosoMasonry data={items} columnCount={3} />
+   * ```
    */
   data: Data[]
   /**
-   * Use this prop for SSR rendering.
+   * Use this prop for SSR rendering of a pre-defined amount of items.
    */
   initialItemCount?: number
   /**
-   * A React component that's used to render the individual item. See {@link ItemContent} for further details on the accepted props.
+   * A React component that renders each individual item in the masonry grid.
+   * Receives `data`, `index`, and `context` as props.
+   *
+   * @example
+   * ```tsx
+   * const MyItemContent: ItemContent<MyData> = ({ data, index }) => (
+   *   <div style={{ padding: 8 }}>
+   *     <img src={data.imageUrl} style={{ width: '100%' }} />
+   *     <p>{data.title}</p>
+   *   </div>
+   * )
+   *
+   * <VirtuosoMasonry data={items} columnCount={3} ItemContent={MyItemContent} />
+   * ```
    */
   ItemContent?: NoInfer<ItemContent<Data, Context>>
   /**
-   * Set to true to make the component use window scroll instead of the scroller element.
+   * Set to true to make the component use the document scroller instead of creating an element with `overflow-y: auto`.
    */
   useWindowScroll?: boolean
 }
 
+/**
+ * A React component for efficiently rendering large masonry/Pinterest-style layouts with variable-height items
+ * distributed across multiple columns. Supports virtualization, window scrolling, and SSR.
+ * @typeParam Data - The type of items in the data array passed to the component.
+ * @typeParam Context - Optional contextual data passed to the ItemContent render callback.
+ * @group VirtuosoMasonry
+ */
 export const VirtuosoMasonry = forwardRef<Record<string, never>, VirtuosoMasonryProps<unknown, unknown>>(
   (
     { columnCount, context, data, initialItemCount = 0, ItemContent = DefaultItemContent, useWindowScroll = false, ...scrollerProps },

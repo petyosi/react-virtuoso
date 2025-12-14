@@ -57,7 +57,8 @@
       "Bash(git commit:*)",
       "Bash(pnpm exec lefthook:*)",
       "Bash(pnpm exec markdownlint:*)",
-      "mcp__context7__resolve-library-id"
+      "mcp__context7__resolve-library-id",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
