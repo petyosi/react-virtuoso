@@ -33,8 +33,8 @@ Notice that the `List` component must accept and pass its `ref` to the actual DO
 The example below adds borders to each customizable element.
 
 
-:::note
-If you pass the components inline and combine that with `useState`, each re-render will pass a fresh instance component, causing unnecessary unmounting and remounting.
+:::note[Do not inline the components definitions in the prop]
+If you pass the components inline and combine that with `useState`, each re-render will pass a new instance component, causing unnecessary unmounting and remounting.
 Don't do
 
 ```tsx

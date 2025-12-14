@@ -13,6 +13,18 @@
 @theme {
   --size-radix-icon: 15px;
 
+  --color-gray-50: var(--color-zinc-50);
+  --color-gray-100: var(--color-zinc-100);
+  --color-gray-200: var(--color-zinc-200);
+  --color-gray-300: var(--color-zinc-300);
+  --color-gray-400: var(--color-zinc-400);
+  --color-gray-500: var(--color-zinc-500);
+  --color-gray-600: var(--color-zinc-600);
+  --color-gray-700: var(--color-zinc-700);
+  --color-gray-800: var(--color-zinc-800);
+  --color-gray-900: var(--color-zinc-900);
+  --color-gray-950: var(--color-zinc-950);
+
   --color-accent-50: var(--color-blue-50);
   --color-accent-100: var(--color-blue-100);
   --color-accent-200: var(--color-blue-200);
@@ -24,8 +36,6 @@
   --color-accent-800: var(--color-blue-800);
   --color-accent-900: var(--color-blue-900);
   --color-accent-950: var(--color-blue-950);
-
-  --sl-content-width: 60rem;
 
   /* Text Hierarchy Tokens */
   --color-text-primary: var(--sl-color-white);
@@ -76,6 +86,8 @@
   --font-code-family: var(--sl-font-system-mono);
   --font-code-size: var(--sl-text-2xs);
   --font-code-line-height: var(--sl-line-height);
+
+  --sl-content-width: 60rem;
 }
 
 @layer components {
@@ -206,6 +218,15 @@
   --sl-color-accent: var(--color-accent-500);
   --sl-color-inline-code: var(--color-sky-800);
   --sl-color-bg-inline-code: var(--color-slate-100);
+
+  --sl-text-h1: 2rem;
+  --sl-text-h2: 1.5rem;
+  --sl-text-h3: 1.25rem;
+  --sl-text-h4: 1.1rem;
+  --sl-text-h5: 1rem;
+
+  /** asides (admonitions) */
+  --sl-hue-blue: 208;
 }
 
 [data-theme='dark'] {
@@ -256,17 +277,14 @@
 }
 
 @layer starlight-overrides {
-  :root {
-    --sl-text-h1: 2rem;
-    --sl-text-h2: 1.5rem;
-    --sl-text-h3: 1.25rem;
-    --sl-text-h4: 1.1rem;
-    --sl-text-h5: 1rem;
-  }
-
   /** first level sidebar links to red **/
   .large {
     font-size: var(--sl-text-sm);
+  }
+
+  .starlight-aside {
+    border-radius: var(--radius-sm);
+    border-inline-start-width: 2px;
   }
 
   .top-level > li > a.large {
@@ -327,5 +345,23 @@
     color: var(--sl-color-inline-code);
     border-radius: var(--radius-sm);
     padding: 0.125rem 0.225rem;
+  }
+
+  site-search {
+    @media (min-width: 50rem) {
+      button[data-open-modal] {
+        border-radius: var(--radius-lg);
+        & > span {
+          color: var(--sl-color-gray-4);
+        }
+
+        & > kbd {
+          background-color: var(--sl-color-gray-7);
+          border: 1px solid var(--sl-color-gray-5);
+          border-radius: var(--radius-sm);
+          color: var(--sl-color-gray-2);
+        }
+      }
+    }
   }
 }
