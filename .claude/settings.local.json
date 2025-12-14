@@ -59,7 +59,8 @@
       "Bash(pnpm exec markdownlint:*)",
       "mcp__context7__resolve-library-id",
       "Bash(ls:*)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "mcp__serena__initial_instructions"
     ],
     "deny": [],
     "ask": []

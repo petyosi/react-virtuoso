@@ -63,14 +63,14 @@ export interface GroupedVirtuosoHandle {
 /**
  * The props for the GroupedVirtuoso component.
  *
- * @typeParam D - The type of data items in the list
- * @typeParam C - The type of additional context passed to callbacks
+ * @typeParam Data - The type of data items in the list
+ * @typeParam Context - The type of additional context passed to callbacks
  *
  * @see {@link GroupedVirtuoso} for the component
  * @see {@link GroupedVirtuosoHandle} for imperative methods
  * @group GroupedVirtuoso
  */
-export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'itemContent' | 'totalCount'> {
+export interface GroupedVirtuosoProps<Data, Context> extends Omit<VirtuosoProps<Data, Context>, 'itemContent' | 'totalCount'> {
   /**
    * Use when implementing inverse infinite scrolling, decrease the value this property
    * in combination with a change in `groupCounts` to prepend groups items to the top of the list.
@@ -89,7 +89,7 @@ export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'i
   /**
    * Specifies how each each group header gets rendered. The callback receives the zero-based index of the group.
    */
-  groupContent?: GroupContent<C>
+  groupContent?: GroupContent<Context>
 
   /**
    * Specifies the amount of items in each group (and, actually, how many groups are there).
@@ -100,7 +100,7 @@ export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'i
   /**
    * Specifies how each each item gets rendered.
    */
-  itemContent?: GroupItemContent<D, C>
+  itemContent?: GroupItemContent<Data, Context>
 }
 
 /**
@@ -147,14 +147,14 @@ export interface VirtuosoHandle {
 /**
  * The props for the Virtuoso component.
  *
- * @typeParam D - The type of data items in the list
- * @typeParam C - The type of additional context passed to callbacks
+ * @typeParam Data - The type of data items in the list
+ * @typeParam Context - The type of additional context passed to callbacks
  *
  * @see {@link Virtuoso} for the component
  * @see {@link VirtuosoHandle} for imperative methods
  * @group Virtuoso
  */
-export interface VirtuosoProps<D, C> extends ListRootProps {
+export interface VirtuosoProps<Data, Context> extends ListRootProps {
   /**
    * Setting `alignToBottom` to `true` aligns the items to the bottom of the list if the list is shorter than the viewport.
    * Use `followOutput` property to keep the list aligned when new items are appended.
@@ -189,17 +189,17 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   /**
    * Use the `components` property for advanced customization of the elements rendered by the list.
    */
-  components?: Components<D, C>
+  components?: Components<Data, Context>
 
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.
    */
-  computeItemKey?: ComputeItemKey<D, C>
+  computeItemKey?: ComputeItemKey<Data, Context>
 
   /**
    * Additional context available in the custom components and content callbacks
    */
-  context?: C
+  context?: Context
 
   /**
    * Pass a reference to a scrollable parent element, so that the list won't wrap in its own.
@@ -209,7 +209,7 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   /**
    * The data items to be rendered. If data is set, the total count will be inferred from the length of the array.
    */
-  data?: readonly D[]
+  data?: readonly Data[]
 
   /**
    * By default, the component assumes the default item height from the first rendered item (rendering it as a "probe").
@@ -295,7 +295,7 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
    * Use the context contents if you need to implement custom logic based on the current state of the list.
    */
   scrollIntoViewOnChange?: (params: {
-    context: C
+    context: Context
     totalCount: number
     scrollingInProgress: boolean
   }) => ScrollIntoViewLocation | null | undefined | false
@@ -356,7 +356,7 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   /**
    * Set the callback to specify the contents of the item.
    */
-  itemContent?: ItemContent<D, C>
+  itemContent?: ItemContent<Data, Context>
 
   /**
    * Allows customizing the height/width calculation of `Item` elements.
@@ -368,7 +368,7 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   /**
    * Called with the new set of items each time the list items are rendered due to scrolling.
    */
-  itemsRendered?: (items: ListItem<D>[]) => void
+  itemsRendered?: (items: ListItem<Data>[]) => void
 
   /**
    * set to LogLevel.DEBUG to enable various diagnostics in the console, the most useful being the item measurement reports.

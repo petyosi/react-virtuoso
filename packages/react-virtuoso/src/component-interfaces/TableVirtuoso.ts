@@ -86,15 +86,15 @@ export interface GroupedTableVirtuosoHandle extends BaseTableVirtuosoHandle {
 /**
  * The props for the TableVirtuoso component.
  *
- * @typeParam D - The type of data items in the table
- * @typeParam C - The type of additional context passed to callbacks
+ * @typeParam Data - The type of data items in the table
+ * @typeParam Context - The type of additional context passed to callbacks
  *
  * @see {@link TableVirtuoso} for the component
  * @see {@link TableVirtuosoHandle} for imperative methods
  * @see {@link TableComponents} for customizing table elements
  * @group TableVirtuoso
  */
-export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'components' | 'headerFooterTag'> {
+export interface TableVirtuosoProps<Data, Context> extends Omit<VirtuosoProps<Data, Context>, 'components' | 'headerFooterTag'> {
   /**
    * Setting `alignToBottom` to `true` aligns the items to the bottom of the list if the list is shorter than the viewport.
    * Use `followOutput` property to keep the list aligned when new items are appended.
@@ -125,12 +125,12 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
   /**
    * Use the `components` property for advanced customization of the elements rendered by the table.
    */
-  components?: TableComponents<D, C>
+  components?: TableComponents<Data, Context>
 
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.
    */
-  computeItemKey?: ComputeItemKey<D, C>
+  computeItemKey?: ComputeItemKey<Data, Context>
 
   /**
    * Pass a reference to a scrollable parent element, so that the table won't wrap in its own.
@@ -140,7 +140,7 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
   /**
    * The data items to be rendered. If data is set, the total count will be inferred from the length of the array.
    */
-  data?: readonly D[]
+  data?: readonly Data[]
 
   /**
    * By default, the component assumes the default item height from the first rendered item (rendering it as a "probe").
@@ -245,7 +245,7 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
   /**
    * Set the callback to specify the contents of the item.
    */
-  itemContent?: ItemContent<D, C>
+  itemContent?: ItemContent<Data, Context>
 
   /**
    * Allows customizing the height/width calculation of `Item` elements.
@@ -257,7 +257,7 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
   /**
    * Called with the new set of items each time the list items are rendered due to scrolling.
    */
-  itemsRendered?: (items: ListItem<D>[]) => void
+  itemsRendered?: (items: ListItem<Data>[]) => void
 
   /**
    * Set the overscan property to make the component "chunk" the rendering of new items on scroll.
@@ -319,14 +319,14 @@ export interface TableVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'com
 /**
  * The props for the GroupedTableVirtuoso component.
  *
- * @typeParam D - The type of data items in the table
- * @typeParam C - The type of additional context passed to callbacks
+ * @typeParam Data - The type of data items in the table
+ * @typeParam Context - The type of additional context passed to callbacks
  *
  * @see {@link GroupedTableVirtuoso} for the component
  * @see {@link GroupedTableVirtuosoHandle} for imperative methods
  * @group GroupedTableVirtuoso
  */
-export interface GroupedTableVirtuosoProps<D, C> extends Omit<TableVirtuosoProps<D, C>, 'itemContent' | 'totalCount'> {
+export interface GroupedTableVirtuosoProps<Data, Context> extends Omit<TableVirtuosoProps<Data, Context>, 'itemContent' | 'totalCount'> {
   /**
    * Use when implementing inverse infinite scrolling, decrease the value this property
    * in combination with a change in `groupCounts` to prepend groups items to the top of the list.
@@ -345,7 +345,7 @@ export interface GroupedTableVirtuosoProps<D, C> extends Omit<TableVirtuosoProps
   /**
    * Specifies how each each group header gets rendered. The callback receives the zero-based index of the group.
    */
-  groupContent?: GroupContent<C>
+  groupContent?: GroupContent<Context>
 
   /**
    * Specifies the amount of items in each group (and, actually, how many groups are there).
@@ -356,5 +356,5 @@ export interface GroupedTableVirtuosoProps<D, C> extends Omit<TableVirtuosoProps
   /**
    * Specifies how each each item gets rendered.
    */
-  itemContent?: GroupItemContent<D, C>
+  itemContent?: GroupItemContent<Data, Context>
 }

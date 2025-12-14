@@ -27,9 +27,9 @@ export interface CalculateViewLocationParams {
 /**
  * @group Common
  */
-export interface ContextProp<C> {
+export interface ContextProp<Context> {
   /** The context value passed from the parent component */
-  context: C
+  context: Context
 }
 
 /**
@@ -102,13 +102,13 @@ export interface Components<Data = unknown, Context = unknown> {
 /**
  * Callback type for computing unique keys for list items.
  *
- * @typeParam D - The type of the data item
- * @typeParam C - The type of context passed from the component
+ * @typeParam Data - The type of the data item
+ * @typeParam Context - The type of context passed from the component
  *
  * @see {@link VirtuosoProps.computeItemKey} for usage in Virtuoso
  * @group Common
  */
-export type ComputeItemKey<D, C> = (index: number, item: D, context: C) => React.Key
+export type ComputeItemKey<Data, Context> = (index: number, item: Data, context: Context) => React.Key
 
 /**
  * Passed to the Components.FillerRow custom component
@@ -242,13 +242,13 @@ export interface GridComponents<Context = any> {
 /**
  * Callback type for computing unique keys for grid items.
  *
- * @typeParam D - The type of the data item
- * @typeParam C - The type of context passed from the component
+ * @typeParam Data - The type of the data item
+ * @typeParam Context - The type of context passed from the component
  *
  * @see {@link VirtuosoGridProps.computeItemKey} for usage
  * @group VirtuosoGrid
  */
-export type GridComputeItemKey<D, C> = (index: number, item: D, context: C) => React.Key
+export type GridComputeItemKey<Data, Context> = (index: number, item: Data, context: Context) => React.Key
 
 /**
  * @group VirtuosoGrid
@@ -258,9 +258,9 @@ export type GridIndexLocation = FlatIndexLocationWithAlign | number
 /**
  * @group VirtuosoGrid
  */
-export interface GridItem<D> {
+export interface GridItem<Data> {
   /** The data associated with this grid item */
-  data?: D
+  data?: Data
   /** The index of the item in the grid */
   index: number
 }
@@ -268,8 +268,8 @@ export interface GridItem<D> {
 /**
  * Callback type for rendering item content in a VirtuosoGrid.
  *
- * @typeParam D - The type of the data item
- * @typeParam C - The type of context passed from the component
+ * @typeParam Data - The type of the data item
+ * @typeParam Context - The type of context passed from the component
  *
  * @example
  * ```tsx
@@ -282,7 +282,7 @@ export interface GridItem<D> {
  * @see {@link VirtuosoGridProps.itemContent} for usage
  * @group VirtuosoGrid
  */
-export type GridItemContent<D, C> = (index: number, data: D, context: C) => React.ReactNode
+export type GridItemContent<Data, Context> = (index: number, data: Data, context: Context) => React.ReactNode
 
 /**
  * Passed to the GridComponents.Item custom component
@@ -323,7 +323,7 @@ export interface GridScrollSeekPlaceholderProps {
 /**
  * Callback type for rendering group header content in GroupedVirtuoso.
  *
- * @typeParam C - The type of context passed from the component
+ * @typeParam Context - The type of context passed from the component
  *
  * @example
  * ```tsx
@@ -336,7 +336,7 @@ export interface GridScrollSeekPlaceholderProps {
  * @see {@link GroupedVirtuosoProps.groupContent} for usage
  * @group GroupedVirtuoso
  */
-export type GroupContent<C> = (index: number, context: C) => React.ReactNode
+export type GroupContent<Context> = (index: number, context: Context) => React.ReactNode
 
 /**
  * @group GroupedVirtuoso
@@ -359,7 +359,7 @@ export interface GroupIndexLocationWithAlign extends LocationOptions {
 /**
  * @group GroupedVirtuoso
  */
-export interface GroupItem<D> extends Item<D> {
+export interface GroupItem<Data> extends Item<Data> {
   /** The original index before any transformations were applied */
   originalIndex?: number
   /** Identifies this as a group header item */
@@ -370,8 +370,8 @@ export interface GroupItem<D> extends Item<D> {
  * Callback type for rendering item content in a GroupedVirtuoso list.
  * Similar to ItemContent but includes the group index.
  *
- * @typeParam D - The type of the data item
- * @typeParam C - The type of context passed from the component
+ * @typeParam Data - The type of the data item
+ * @typeParam Context - The type of context passed from the component
  *
  * @example
  * ```tsx
@@ -385,7 +385,7 @@ export interface GroupItem<D> extends Item<D> {
  * @see {@link ItemContent} for non-grouped list variant
  * @group GroupedVirtuoso
  */
-export type GroupItemContent<D, C> = (index: number, groupIndex: number, data: D, context: C) => React.ReactNode
+export type GroupItemContent<Data, Context> = (index: number, groupIndex: number, data: Data, context: Context) => React.ReactNode
 
 /**
  * Passed to the Components.Group custom component
@@ -409,9 +409,9 @@ export type IndexLocationWithAlign = FlatIndexLocationWithAlign | GroupIndexLoca
  * Base interface for list items with position and size information.
  * @group Common
  */
-export interface Item<D> {
+export interface Item<Data> {
   /** The data associated with this item */
-  data?: D
+  data?: Data
   /** The index of the item in the list */
   index: number
   /** The offset position of the item from the start of the list in pixels */
@@ -423,8 +423,8 @@ export interface Item<D> {
 /**
  * Callback type for rendering item content in a Virtuoso list.
  *
- * @typeParam D - The type of the data item
- * @typeParam C - The type of context passed from the component
+ * @typeParam Data - The type of the data item
+ * @typeParam Context - The type of context passed from the component
  *
  * @example
  * ```tsx
@@ -438,30 +438,30 @@ export interface Item<D> {
  * @see {@link GroupItemContent} for grouped list variant
  * @group Virtuoso
  */
-export type ItemContent<D, C> = (index: number, data: D, context: C) => React.ReactNode
+export type ItemContent<Data, Context> = (index: number, data: Data, context: Context) => React.ReactNode
 
 /**
  * Passed to the Components.Item custom component
  * @group Virtuoso
  */
-export type ItemProps<D> = Pick<React.ComponentProps<'div'>, 'children' | 'style'> & {
+export type ItemProps<Data> = Pick<React.ComponentProps<'div'>, 'children' | 'style'> & {
   'data-index': number
   'data-item-group-index'?: number
   'data-item-index': number
   'data-known-size': number
-  item: D
+  item: Data
 }
 
 /**
  * Union type representing either a regular item or a group header item in the list.
  *
- * @typeParam D - The type of the data item
+ * @typeParam Data - The type of the data item
  *
  * @see {@link RecordItem} for regular items
  * @see {@link GroupItem} for group header items
  * @group Common
  */
-export type ListItem<D> = GroupItem<D> | RecordItem<D>
+export type ListItem<Data> = GroupItem<Data> | RecordItem<Data>
 
 /**
  * Passed to the Components.List custom component
@@ -513,9 +513,9 @@ export interface LocationOptions {
  * Represents a regular data item (not a group header) in the list.
  * @group Common
  */
-export interface RecordItem<D> extends Item<D> {
+export interface RecordItem<Data> extends Item<Data> {
   /** The data associated with this item */
-  data?: D
+  data?: Data
   /** The index of the group this item belongs to (if in a grouped list) */
   groupIndex?: number
   /** The original index before any transformations were applied */

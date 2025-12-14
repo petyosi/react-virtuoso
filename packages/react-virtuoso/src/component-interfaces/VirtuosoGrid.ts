@@ -82,14 +82,14 @@ export interface VirtuosoGridHandle {
 /**
  * The props for the VirtuosoGrid component.
  *
- * @typeParam D - The type of data items in the grid
- * @typeParam C - The type of additional context passed to callbacks
+ * @typeParam Data - The type of data items in the grid
+ * @typeParam Context - The type of additional context passed to callbacks
  *
  * @see {@link VirtuosoGrid} for the component
  * @see {@link VirtuosoGridHandle} for imperative methods
  * @group VirtuosoGrid
  */
-export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
+export interface VirtuosoGridProps<Data, Context = unknown> extends GridRootProps {
   /**
    * Called with true / false when the list has reached the bottom / gets scrolled up.
    * Can be used to load newer items, like `tail -f`.
@@ -104,17 +104,17 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
   /**
    * Use the `components` property for advanced customization of the elements rendered by the list.
    */
-  components?: GridComponents<C>
+  components?: GridComponents<Context>
 
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.
    */
-  computeItemKey?: GridComputeItemKey<D, C>
+  computeItemKey?: GridComputeItemKey<Data, Context>
 
   /**
    * Additional context available in the custom components and content callbacks
    */
-  context?: C
+  context?: Context
 
   /**
    * Pass a reference to a scrollable parent element, so that the grid won't wrap in its own.
@@ -124,7 +124,7 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
   /**
    * The data items to be rendered. If data is set, the total count will be inferred from the length of the array.
    */
-  data?: readonly D[]
+  data?: readonly Data[]
 
   /**
    * Gets called when the user scrolls to the end of the list.
@@ -168,7 +168,7 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
   /**
    * Set the callback to specify the contents of the item.
    */
-  itemContent?: GridItemContent<D, C>
+  itemContent?: GridItemContent<Data, Context>
 
   /**
    * Sets the className for the list DOM element
