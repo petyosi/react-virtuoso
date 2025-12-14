@@ -346,6 +346,9 @@
     border-radius: var(--radius-sm);
     padding: 0.125rem 0.225rem;
   }
+  .sl-markdown-content hr:not(:where(.not-content *)) {
+    border-bottom-color: var(--sl-color-gray-7);
+  }
 
   site-search {
     @media (min-width: 50rem) {

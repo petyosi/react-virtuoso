@@ -9,13 +9,18 @@ export type CalculateViewLocation = (params: CalculateViewLocationParams) => Ind
  * @group Common
  */
 export interface CalculateViewLocationParams {
+  /** The bottom edge position of the item in pixels */
   itemBottom: number
+  /** The top edge position of the item in pixels */
   itemTop: number
+  /** The scroll location parameters including alignment and behavior options */
   locationParams: {
     align?: 'center' | 'end' | 'start'
     behavior?: 'auto' | 'smooth'
   } & ({ groupIndex: number } | { index: number })
+  /** The bottom edge position of the viewport in pixels */
   viewportBottom: number
+  /** The top edge position of the viewport in pixels */
   viewportTop: number
 }
 
@@ -23,6 +28,7 @@ export interface CalculateViewLocationParams {
  * @group Common
  */
 export interface ContextProp<C> {
+  /** The context value passed from the parent component */
   context: C
 }
 
@@ -109,6 +115,7 @@ export type ComputeItemKey<D, C> = (index: number, item: D, context: C) => React
  * @group TableVirtuoso
  */
 export interface FillerRowProps {
+  /** The height of the filler row in pixels */
   height: number
 }
 
@@ -160,6 +167,7 @@ export interface FlatIndexLocationWithAlign extends LocationOptions {
  * @group Common
  */
 export interface FlatScrollIntoViewLocation extends ScrollIntoViewLocationOptions {
+  /** The index of the item to scroll into view */
   index: number
 }
 
@@ -251,7 +259,9 @@ export type GridIndexLocation = FlatIndexLocationWithAlign | number
  * @group VirtuosoGrid
  */
 export interface GridItem<D> {
+  /** The data associated with this grid item */
   data?: D
+  /** The index of the item in the grid */
   index: number
 }
 
@@ -302,8 +312,11 @@ export type GridRootProps = Omit<React.HTMLProps<HTMLDivElement>, 'data' | 'ref'
  * @group VirtuosoGrid
  */
 export interface GridScrollSeekPlaceholderProps {
+  /** The height of the placeholder in pixels */
   height: number
+  /** The index of the item being replaced by the placeholder */
   index: number
+  /** The width of the placeholder in pixels */
   width: number
 }
 
@@ -329,6 +342,7 @@ export type GroupContent<C> = (index: number, context: C) => React.ReactNode
  * @group GroupedVirtuoso
  */
 export interface GroupedScrollIntoViewLocation extends ScrollIntoViewLocationOptions {
+  /** The index of the group to scroll into view */
   groupIndex: number
 }
 
@@ -346,7 +360,9 @@ export interface GroupIndexLocationWithAlign extends LocationOptions {
  * @group GroupedVirtuoso
  */
 export interface GroupItem<D> extends Item<D> {
+  /** The original index before any transformations were applied */
   originalIndex?: number
+  /** Identifies this as a group header item */
   type: 'group'
 }
 
@@ -372,11 +388,15 @@ export interface GroupItem<D> extends Item<D> {
 export type GroupItemContent<D, C> = (index: number, groupIndex: number, data: D, context: C) => React.ReactNode
 
 /**
+ * Passed to the Components.Group custom component
  * @group GroupedVirtuoso
  */
 export type GroupProps = Pick<React.ComponentProps<'div'>, 'children' | 'style'> & {
+  /** The index of the group */
   'data-index': number
+  /** The item index within the flattened list */
   'data-item-index': number
+  /** The measured size of the group header in pixels */
   'data-known-size': number
 }
 
@@ -386,12 +406,17 @@ export type GroupProps = Pick<React.ComponentProps<'div'>, 'children' | 'style'>
 export type IndexLocationWithAlign = FlatIndexLocationWithAlign | GroupIndexLocationWithAlign
 
 /**
+ * Base interface for list items with position and size information.
  * @group Common
  */
 export interface Item<D> {
+  /** The data associated with this item */
   data?: D
+  /** The index of the item in the list */
   index: number
+  /** The offset position of the item from the start of the list in pixels */
   offset: number
+  /** The measured size of the item in pixels */
   size: number
 }
 
@@ -485,21 +510,30 @@ export interface LocationOptions {
 }
 
 /**
+ * Represents a regular data item (not a group header) in the list.
  * @group Common
  */
 export interface RecordItem<D> extends Item<D> {
+  /** The data associated with this item */
   data?: D
+  /** The index of the group this item belongs to (if in a grouped list) */
   groupIndex?: number
+  /** The original index before any transformations were applied */
   originalIndex?: number
+  /** Undefined for regular items (used to distinguish from group items) */
   type?: undefined
 }
 
 /**
+ * Represents the current scroll state of the container.
  * @group Common
  */
 export interface ScrollContainerState {
+  /** The total scrollable height of the content in pixels */
   scrollHeight: number
+  /** The current scroll position from the top in pixels */
   scrollTop: number
+  /** The visible height of the viewport in pixels */
   viewportHeight: number
 }
 
@@ -519,10 +553,13 @@ export type ScrollerProps = Pick<React.ComponentProps<'div'>, 'children' | 'styl
 export type ScrollIntoViewLocation = FlatScrollIntoViewLocation | GroupedScrollIntoViewLocation
 
 /**
+ * Options for scrolling an item into view.
  * @group Common
  */
 export interface ScrollIntoViewLocationOptions {
+  /** How to align the item within the viewport */
   align?: 'center' | 'end' | 'start'
+  /** The scroll behavior - 'smooth' for animated scrolling, 'auto' for instant */
   behavior?: 'auto' | 'smooth'
   /**
    * Use this function to fine-tune the scrollIntoView behavior.
@@ -592,9 +629,13 @@ export interface ScrollSeekConfiguration {
  * @group Virtuoso
  */
 export interface ScrollSeekPlaceholderProps {
+  /** The group index if this placeholder represents a group header */
   groupIndex?: number
+  /** The height of the placeholder in pixels */
   height: number
+  /** The index of the item being replaced by the placeholder */
   index: number
+  /** Whether this placeholder represents a group header or a regular item */
   type: 'group' | 'item'
 }
 
@@ -613,11 +654,15 @@ export type ScrollSeekToggle = (velocity: number, range: ListRange) => boolean
 export type SizeFunction = (el: HTMLElement, field: 'offsetHeight' | 'offsetWidth') => number
 
 /**
+ * Represents a range of items that share the same size.
  * @group Common
  */
 export interface SizeRange {
+  /** The ending index of items in this size range (inclusive) */
   endIndex: number
+  /** The size in pixels shared by items in this range */
   size: number
+  /** The starting index of items in this size range */
   startIndex: number
 }
 
@@ -747,10 +792,14 @@ export type TableRootProps = Omit<React.HTMLProps<HTMLTableElement>, 'data' | 'r
 export type TopItemListProps = Pick<React.ComponentProps<'div'>, 'children' | 'style'>
 
 /**
+ * Information about the window viewport when using window scrolling mode.
  * @group Common
  */
 export interface WindowViewportInfo {
+  /** The offset from the top of the document to the list container in pixels */
   offsetTop: number
+  /** The visible height of the window viewport in pixels */
   visibleHeight: number
+  /** The visible width of the window viewport in pixels */
   visibleWidth: number
 }

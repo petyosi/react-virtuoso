@@ -3,7 +3,10 @@ import type { AstroIntegration } from 'astro'
 
 import { watch } from 'node:fs'
 import { readdir, readFile, rename, rmdir, unlink, writeFile } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 import {
   Application,
   Converter,
@@ -214,6 +217,47 @@ const increaseHeadingLevels = (content: string): string => {
   return content.replace(/^(#{2,5}) /gm, '#$1 ')
 }
 
+// Merge property headings with their type annotations
+// Transforms:
+//   #### propName?
+//
+//   `boolean`
+// Into:
+//   #### propName?: `boolean`
+const mergeHeadingsWithTypes = (content: string): string => {
+  // Split into lines and process
+  const lines = content.split('\n')
+  const result: string[] = []
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    const nextLine = lines[i + 1]
+    const lineAfterNext = lines[i + 2]
+
+    // Check if this is a property heading (#### propName?)
+    // followed by empty line, then a type line (not blockquote/heading/rule)
+    if (
+      /^#{3,6} \S+\?$/.test(line) &&
+      nextLine === '' &&
+      lineAfterNext &&
+      !lineAfterNext.startsWith('>') &&
+      !lineAfterNext.startsWith('#') &&
+      !lineAfterNext.startsWith('***') &&
+      !lineAfterNext.startsWith('*The ') && // Skip italic notes like "*The property accepts pixel values*"
+      (lineAfterNext.includes('`') || lineAfterNext.includes('['))
+    ) {
+      // Merge heading with type
+      result.push(`${line}: ${lineAfterNext}`)
+      result.push('') // Keep a blank line after
+      i += 2 // Skip the empty line and type line
+    } else {
+      result.push(line)
+    }
+  }
+
+  return result.join('\n')
+}
+
 // Convert a title to a markdown anchor (lowercase, spaces to hyphens, remove special chars)
 const titleToAnchor = (title: string): string => {
   return title
@@ -311,10 +355,11 @@ const mergeFilesByGroup = async (dir: string): Promise<void> => {
       return a.title.localeCompare(b.title)
     })
 
-    // Process each file: increase heading levels and fix cross-links
+    // Process each file: increase heading levels, merge types into headings, and fix cross-links
     const processedFiles = groupFiles.map((f) => {
       const adjustedContent = increaseHeadingLevels(f.content)
-      const fixedContent = fixCrossLinks(adjustedContent, fileToGroupMap)
+      const mergedContent = mergeHeadingsWithTypes(adjustedContent)
+      const fixedContent = fixCrossLinks(mergedContent, fileToGroupMap)
       return `## ${f.title}\n\n${fixedContent}`
     })
 
@@ -355,9 +400,10 @@ export const initAstroTypedoc = async ({
     basePath: baseUrl,
     entryPoints: entryPoints.map((e) => e.path),
     excludeExternals,
-    plugin: ['typedoc-plugin-markdown'],
+    plugin: ['typedoc-plugin-markdown', resolve(__dirname, 'theme.js')],
     readme: 'none',
     skipErrorChecking: true,
+    theme: 'custom-markdown-theme',
     tsconfig,
   })
 

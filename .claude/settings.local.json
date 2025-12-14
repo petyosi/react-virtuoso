@@ -58,7 +58,8 @@
       "Bash(pnpm exec lefthook:*)",
       "Bash(pnpm exec markdownlint:*)",
       "mcp__context7__resolve-library-id",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "deny": [],
     "ask": []

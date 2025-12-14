@@ -62,8 +62,20 @@ export interface GridStateSnapshot {
  * @group VirtuosoGrid
  */
 export interface VirtuosoGridHandle {
+  /**
+   * Scrolls the component by the specified amount.
+   * @param location - The scroll offset options
+   */
   scrollBy(location: ScrollToOptions): void
+  /**
+   * Scrolls the component to the specified position.
+   * @param location - The scroll position options
+   */
   scrollTo(location: ScrollToOptions): void
+  /**
+   * Scrolls the component to the specified item index.
+   * @param location - The item index or location with alignment options
+   */
   scrollToIndex(location: GridIndexLocation): void
 }
 
@@ -137,7 +149,7 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
    */
   initialItemCount?: number
 
-  /*
+  /**
    * Set to a value between 0 and totalCount - 1 to make the grid start scrolled to that item.
    * Pass in an object to achieve additional effects similar to `scrollToIndex`.
    */
@@ -187,6 +199,10 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
    */
   readyStateChanged?: (ready: boolean) => void
 
+  /**
+   * Pass a state obtained from the `stateChanged` callback to restore the grid state.
+   * This includes scroll position and item measurements.
+   */
   restoreStateFrom?: GridStateSnapshot | null | undefined
 
   /**

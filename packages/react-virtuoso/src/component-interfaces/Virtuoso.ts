@@ -29,15 +29,34 @@ import { LogLevel } from '../loggerSystem'
  * @group GroupedVirtuoso
  */
 export interface GroupedVirtuosoHandle {
+  /**
+   * Scrolls to the bottom of the list if follow output is active. Useful when images load in the list.
+   */
   autoscrollToBottom(): void
   /**
    * Obtains the internal size state of the component, so that it can be restored later. This does not include the data items.
+   * @param stateCb - Callback that receives the state snapshot
    */
   getState(stateCb: StateCallback): void
+  /**
+   * Scrolls the component by the specified amount.
+   * @param location - The scroll offset options
+   */
   scrollBy(location: ScrollToOptions): void
+  /**
+   * Scrolls the specified item into view if it's not already visible.
+   * @param location - The item index or scroll location options
+   */
   scrollIntoView(location: number | ScrollIntoViewLocation): void
+  /**
+   * Scrolls the component to the specified position.
+   * @param location - The scroll position options
+   */
   scrollTo(location: ScrollToOptions): void
-
+  /**
+   * Scrolls the component to the specified item index.
+   * @param location - The item index or location with alignment options
+   */
   scrollToIndex(location: IndexLocationWithAlign | number): void
 }
 
@@ -99,23 +118,28 @@ export interface VirtuosoHandle {
   autoscrollToBottom(): void
   /**
    * Obtains the internal size state of the component, so that it can be restored later. This does not include the data items.
+   * @param stateCb - Callback that receives the state snapshot
    */
   getState(stateCb: StateCallback): void
   /**
    * Scrolls the component with the specified amount. See [ScrollToOptions (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/ScrollToOptions)
+   * @param location - The scroll offset options
    */
   scrollBy(location: ScrollToOptions): void
   /**
    * Scrolls the item into view if necessary. See [the website example](http://virtuoso.dev/keyboard-navigation/) for an implementation.
+   * @param location - The scroll into view location options
    */
   scrollIntoView(location: FlatScrollIntoViewLocation): void
   /**
    * Scrolls the component to the specified location. See [ScrollToOptions (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/ScrollToOptions)
+   * @param location - The scroll position options
    */
   scrollTo(location: ScrollToOptions): void
 
   /**
    * Scrolls the component to the specified item index. See {@link IndexLocationWithAlign} for more options.
+   * @param location - The item index or location with alignment options
    */
   scrollToIndex(location: FlatIndexLocationWithAlign | number): void
 }

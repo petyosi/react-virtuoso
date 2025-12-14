@@ -26,9 +26,18 @@ import type { VirtuosoProps } from './Virtuoso'
 interface BaseTableVirtuosoHandle {
   /**
    * Obtains the internal size state of the component, so that it can be restored later. This does not include the data items.
+   * @param stateCb - Callback that receives the state snapshot
    */
   getState(stateCb: StateCallback): void
+  /**
+   * Scrolls the component by the specified amount.
+   * @param location - The scroll offset options
+   */
   scrollBy(location: ScrollToOptions): void
+  /**
+   * Scrolls the component to the specified position.
+   * @param location - The scroll position options
+   */
   scrollTo(location: ScrollToOptions): void
 }
 
@@ -41,7 +50,15 @@ interface BaseTableVirtuosoHandle {
  * @group TableVirtuoso
  */
 export interface TableVirtuosoHandle extends BaseTableVirtuosoHandle {
+  /**
+   * Scrolls the specified item into view if it's not already visible.
+   * @param location - The item index or scroll into view location options
+   */
   scrollIntoView(location: FlatScrollIntoViewLocation | number): void
+  /**
+   * Scrolls the component to the specified item index.
+   * @param location - The item index or location with alignment options
+   */
   scrollToIndex(location: FlatIndexLocationWithAlign | number): void
 }
 
@@ -54,7 +71,15 @@ export interface TableVirtuosoHandle extends BaseTableVirtuosoHandle {
  * @group GroupedTableVirtuoso
  */
 export interface GroupedTableVirtuosoHandle extends BaseTableVirtuosoHandle {
+  /**
+   * Scrolls the specified item into view if it's not already visible.
+   * @param location - The scroll into view location options
+   */
   scrollIntoView(location: ScrollIntoViewLocationOptions): void
+  /**
+   * Scrolls the component to the specified item index.
+   * @param location - The item index or location with alignment options
+   */
   scrollToIndex(location: IndexLocationWithAlign | number): void
 }
 
