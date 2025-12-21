@@ -6,7 +6,11 @@
       "mcp__chrome-devtools__take_screenshot",
       "Bash(pnpm typecheck:*)",
       "Bash(pnpm lint:*)",
-      "mcp__context7__get-library-docs"
+      "mcp__context7__get-library-docs",
+      "Bash(cat:*)",
+      "Bash(pnpm add:*)",
+      "Bash(npm ls:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

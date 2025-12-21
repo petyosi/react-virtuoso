@@ -315,8 +315,8 @@ const mergeFilesByGroup = async (dir: string): Promise<void> => {
       continue
     }
 
-    // Extract group from frontmatter (group: 'GroupName'), default to 'Misc' if not found
-    const groupMatch = /^group:\s*['"]?(\w+)['"]?\s*$/m.exec(content)
+    // Extract group from frontmatter (group: 'GroupName' or group: 'Multi Word'), default to 'Misc' if not found
+    const groupMatch = /^group:\s*['"]([^'"]+)['"]\s*$/m.exec(content)
     const group = groupMatch ? groupMatch[1] : 'Misc'
 
     // Build mapping from filename (without extension) to group
@@ -400,7 +400,7 @@ export const initAstroTypedoc = async ({
     basePath: baseUrl,
     entryPoints: entryPoints.map((e) => e.path),
     excludeExternals,
-    plugin: ['typedoc-plugin-markdown', resolve(__dirname, 'theme.js')],
+    plugin: ['typedoc-plugin-markdown', 'typedoc-plugin-no-inherit', resolve(__dirname, 'theme.js')],
     readme: 'none',
     skipErrorChecking: true,
     theme: 'custom-markdown-theme',

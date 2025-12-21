@@ -125,9 +125,8 @@
       background-color: transparent !important;
     }
     & .languageLabel {
-      right: auto !important;
-      top: 0.1rem !important;
-      left: 0.35rem !important;
+      top: 0.2rem !important;
+      right: 0.35rem !important;
       font-size: 0.65rem !important;
     }
   }
@@ -327,6 +326,15 @@
     background-color: color-mix(in oklch, var(--color-accent-950) 10%, transparent);
   }
 
+  .sidebar-content svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .sidebar-content .top-level > li {
+    margin-top: 0.35rem;
+  }
+
   starlight-toc > nav > ul > li > a {
     font-weight: var(--font-weight-medium);
   }
@@ -334,11 +342,6 @@
   starlight-toc > nav > ul > li li a {
     font-weight: var(--font-weight-normal);
     font-size: var(--sl-text-2xs);
-  }
-
-  .sidebar-content svg {
-    width: 16px;
-    height: 16px;
   }
 
   .sl-markdown-content code:not(:where(.not-content *)) {
