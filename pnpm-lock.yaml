@@ -14,12 +14,21 @@ importers:
       '@changesets/cli':
         specifier: ^2.29.8
         version: 2.29.8(@types/node@22.19.1)
+      '@types/node':
+        specifier: ^22.19.1
+        version: 22.19.1
+      knip:
+        specifier: ^5.70.2
+        version: 5.70.2(@types/node@22.19.1)(typescript@5.9.3)
       lefthook:
         specifier: ^2.0.8
         version: 2.0.8
       markdownlint-cli:
         specifier: ^0.46.0
         version: 0.46.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   apps/new-site:
     dependencies:
@@ -66,8 +75,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/masonry
       '@virtuoso.dev/message-list':
-        specifier: ^1.15.1
-        version: 1.15.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        specifier: file:/Users/petyo/w/virtuoso/message-list/virtuoso.dev-message-list-0.0.0-semantic-release.tgz
+        version: file:../message-list/virtuoso.dev-message-list-0.0.0-semantic-release.tgz(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       astro:
         specifier: ^5.6.1
         version: 5.16.2(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.3)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.1)
@@ -143,6 +152,9 @@ importers:
       typedoc-plugin-markdown:
         specifier: 4.9.0
         version: 4.9.0(typedoc@0.28.14(typescript@5.9.3))
+      typedoc-plugin-no-inherit:
+        specifier: ^1.6.1
+        version: 1.6.1(typedoc@0.28.14(typescript@5.9.3))
     devDependencies:
       '@types/estree':
         specifier: ^1.0.8
@@ -379,9 +391,6 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@virtuoso.dev/masonry':
-        specifier: workspace:*
-        version: link:../packages/masonry
       '@virtuoso.dev/tooling':
         specifier: workspace:*
         version: link:../packages/tooling
@@ -403,9 +412,6 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
-      typescript-eslint:
-        specifier: ^8.48.0
-        version: 8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
     devDependencies:
       '@types/react':
         specifier: ^19.2.7
@@ -416,9 +422,6 @@ importers:
 
   packages/gurx:
     devDependencies:
-      '@microsoft/api-extractor':
-        specifier: ^7.48.0
-        version: 7.55.1(@types/node@22.19.1)
       '@types/node':
         specifier: ^22.10.1
         version: 22.19.1
@@ -498,9 +501,6 @@ importers:
       eslint:
         specifier: ^9.19.0
         version: 9.39.1(jiti@2.6.1)
-      globals:
-        specifier: ^15.14.0
-        version: 15.15.0
       jsdom:
         specifier: ^26.0.0
         version: 26.1.0
@@ -522,9 +522,6 @@ importers:
       react-dom:
         specifier: 19.2.0
         version: 19.2.0(react@19.2.0)
-      resize-observer-polyfill:
-        specifier: ^1.5.1
-        version: 1.5.1
       typescript:
         specifier: ~5.9.3
         version: 5.9.3
@@ -540,9 +537,6 @@ importers:
 
   packages/react-virtuoso:
     devDependencies:
-      '@emotion/core':
-        specifier: ^11.0.0
-        version: 11.0.0
       '@emotion/styled':
         specifier: ^11.10.8
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.0))(@types/react@19.2.7)(react@19.2.0)
@@ -573,24 +567,15 @@ importers:
       '@types/react-dom':
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.7)
-      '@types/react-router-dom':
-        specifier: ^5.3.3
-        version: 5.3.3
       '@vitejs/plugin-react-swc':
         specifier: ^3.7.2
         version: 3.11.0(@swc/helpers@0.5.17)(vite@6.4.1(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.1))
-      clsx:
-        specifier: ^1.2.1
-        version: 1.2.1
       eslint:
         specifier: ^9.19.0
         version: 9.39.1(jiti@2.6.1)
       eslint-config-prettier:
         specifier: ^10.0.1
         version: 10.1.8(eslint@9.39.1(jiti@2.6.1))
-      eslint-plugin-perfectionist:
-        specifier: ^4.7.0
-        version: 4.15.1(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       eslint-plugin-prettier:
         specifier: ^5.2.3
         version: 5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))(prettier@3.7.1)
@@ -603,9 +588,6 @@ importers:
       globals:
         specifier: ^15.14.0
         version: 15.15.0
-      immer:
-        specifier: ^10.0.1
-        version: 10.2.0
       jsdom:
         specifier: ^26.0.0
         version: 26.1.0
@@ -654,9 +636,6 @@ importers:
       '@eslint/js':
         specifier: ^9.23.0
         version: 9.39.1
-      '@eslint/markdown':
-        specifier: ^6.3.0
-        version: 6.6.0
       eslint:
         specifier: '>=9.0.0'
         version: 9.39.1(jiti@2.6.1)
@@ -2002,9 +1981,6 @@ packages:
 
   '@emotion/cache@11.14.0':
     resolution: {integrity: sha512-L/B1lc/TViYk4DcpGxtAVbx0ZyiKM5ktoIyafGkH6zg/tj+mA+NE//aPYKG0k8kCHSHVJrpLpcAlOBEXQ3SavA==}
-
-  '@emotion/core@11.0.0':
-    resolution: {integrity: sha512-w4sE3AmHmyG6RDKf6mIbtHpgJUSJ2uGvPQb8VXFL7hFjMPibE8IiehG8cMX3Ztm4svfCQV6KqusQbeIOkurBcA==}
 
   '@emotion/hash@0.9.2':
     resolution: {integrity: sha512-MyqliTZGuOm3+5ZRSaaBGP3USLw6+EGykkwZns2EPC5g8jJ4z9OrdZY9apkl3+UP9+sdz76YYkwCKP5gh8iY3g==}
@@ -4517,6 +4493,13 @@ packages:
       react: '>= 16 || >= 17 || >= 18 || >= 19'
       react-dom: '>= 16 || >= 17 || >= 18 || >= 19'
 
+  '@virtuoso.dev/message-list@file:../message-list/virtuoso.dev-message-list-0.0.0-semantic-release.tgz':
+    resolution: {integrity: sha512-wSnbf7ok6NmaIhkob+vrGXsOhI1HJN7EWz5z4TwEez1qcLySVSEi2EHuMeRc2vHCjJwNMkI/mttKxUOq5M2uTQ==, tarball: file:../message-list/virtuoso.dev-message-list-0.0.0-semantic-release.tgz}
+    version: 0.0.0-semantic-release
+    peerDependencies:
+      react: '>= 16 || >= 17 || >= 18 || >= 19'
+      react-dom: '>= 16 || >= 17 || >= 18 || >= 19'
+
   '@virtuoso.dev/react-monaco-editor@0.60.0':
     resolution: {integrity: sha512-jfPrT5Px8GrmZXxBSz3lTVCbSwO+uBFi/jUJO33TrYlqYxhMSVBwoGeihohTsF2hkY0i4DSW2US0UhVNKFjc3Q==}
     peerDependencies:
@@ -5246,10 +5229,6 @@ packages:
   clone@2.1.2:
     resolution: {integrity: sha512-3Pe/CF1Nn94hyhIYpjtiLhdCoEoz0DqQ+988E9gmeEdQZlojxnOb74wctFyuwWQHzqyf9X7C7MG8juUpqBJT8w==}
     engines: {node: '>=0.8'}
-
-  clsx@1.2.1:
-    resolution: {integrity: sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==}
-    engines: {node: '>=6'}
 
   clsx@2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
@@ -6749,9 +6728,6 @@ packages:
     resolution: {integrity: sha512-IRqXKlaXwgSMAMtpNzZa1ZAe8m+Sa1770Dhk8VkSsP9LS+iHD62Zd8FQKs8fbPiagBE7BzoFX23cxFnwshpV6w==}
     engines: {node: '>=16.x'}
     hasBin: true
-
-  immer@10.2.0:
-    resolution: {integrity: sha512-d/+XTN3zfODyjr89gM3mPq1WNX2B8pYsu7eORitdwyA2sBubnTl3laYlBk4sXY5FUa5qTZGBDPJICVbvqzjlbw==}
 
   import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
@@ -9110,9 +9086,6 @@ packages:
 
   requires-port@1.0.0:
     resolution: {integrity: sha512-KigOCHcocU3XODJxsu8i/j8T9tzT4adHiecwORRQ0ZZFcp7ahwXuRU1m+yuO90C5ZUyGeGfocHDI14M3L3yDAQ==}
-
-  resize-observer-polyfill@1.5.1:
-    resolution: {integrity: sha512-LwZrotdHOo12nQuZlHEmtuXdqGoOD0OhaxopaNFxWzInpEgaLWoVuAMbTzixuosCx2nEG58ngzW3vxdWoxIgdg==}
 
   resolve-alpn@1.2.1:
     resolution: {integrity: sha512-0a1F4l73/ZFZOakJnQ3FvkJ2+gSTQWz/r2KE5OdDY0TxPm5h4GkqkWWfM47T7HsbnOtcJVEF4epCVy6u7Q3K+g==}
@@ -12974,8 +12947,6 @@ snapshots:
       '@emotion/weak-memoize': 0.4.0
       stylis: 4.2.0
 
-  '@emotion/core@11.0.0': {}
-
   '@emotion/hash@0.9.2': {}
 
   '@emotion/is-prop-valid@1.4.0':
@@ -15658,6 +15629,12 @@ snapshots:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
 
+  '@virtuoso.dev/message-list@file:../message-list/virtuoso.dev-message-list-0.0.0-semantic-release.tgz(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+    dependencies:
+      '@virtuoso.dev/gurx': 1.1.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+
   '@virtuoso.dev/react-monaco-editor@0.60.0(monaco-editor@0.52.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       monaco-editor: 0.52.2
@@ -16635,8 +16612,6 @@ snapshots:
       shallow-clone: 3.0.1
 
   clone@2.1.2: {}
-
-  clsx@1.2.1: {}
 
   clsx@2.1.1: {}
 
@@ -18419,8 +18394,6 @@ snapshots:
   ignore@7.0.5: {}
 
   image-size@2.0.2: {}
-
-  immer@10.2.0: {}
 
   import-fresh@3.3.1:
     dependencies:
@@ -21310,8 +21283,6 @@ snapshots:
   require-like@0.1.2: {}
 
   requires-port@1.0.0: {}
-
-  resize-observer-polyfill@1.5.1: {}
 
   resolve-alpn@1.2.1: {}
 

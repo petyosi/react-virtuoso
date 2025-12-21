@@ -19,7 +19,7 @@ export default defineConfig({
     },
     minify: true,
     rollupOptions: {
-      external: ['react', 'react-dom', 'react/jsx-runtime', '@virtuoso.dev/urx', '@virtuoso.dev/react-urx'],
+      external: ['react', 'react-dom', 'react/jsx-runtime'],
     },
     target: ['es2020', 'edge88', 'firefox78', 'chrome79', 'safari14'],
   },

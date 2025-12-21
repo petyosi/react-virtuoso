@@ -7,7 +7,7 @@ import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { GridComponents, GridComputeItemKey, GridItemContent, GridRootProps } from './interfaces'
 import { Log, LogLevel } from './loggerSystem'
-import { RefHandle, systemToComponent } from './react-urx'
+import { systemToComponent } from './react-urx'
 import * as u from './urx'
 import { VirtuosoGridMockContext } from './utils/context'
 import { correctItemSize } from './utils/correctItemSize'
@@ -310,8 +310,6 @@ const {
   },
   GridRoot
 )
-
-export type GridHandle = RefHandle<typeof Grid>
 
 const Scroller = /*#__PURE__*/ buildScroller({ useEmitter, useEmitterValue, usePublisher })
 const WindowScroller = /*#__PURE__*/ buildWindowScroller({ useEmitter, useEmitterValue, usePublisher })

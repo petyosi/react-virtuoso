@@ -154,7 +154,7 @@ export function walk<T>(node: AANode<T>): NodeData<T>[] {
   return [...walk(node.l), { k: node.k, v: node.v }, ...walk(node.r)]
 }
 
-export function walkWithin<T>(node: AANode<T>, start: number, end: number): NodeData<T>[] {
+function walkWithin<T>(node: AANode<T>, start: number, end: number): NodeData<T>[] {
   if (empty(node)) {
     return []
   }

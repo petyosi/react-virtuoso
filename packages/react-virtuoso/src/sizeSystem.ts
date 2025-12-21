@@ -32,7 +32,7 @@ export function hasGroups(sizes: SizeState) {
   return !empty(sizes.groupOffsetTree)
 }
 
-export function indexComparator({ index: itemIndex }: OffsetPoint, index: number) {
+function indexComparator({ index: itemIndex }: OffsetPoint, index: number) {
   return index === itemIndex ? 0 : index < itemIndex ? -1 : 1
 }
 
@@ -48,7 +48,7 @@ export function initialSizeState(): SizeState {
   }
 }
 
-export function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[]) {
+function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[]) {
   let syncStart = empty(sizeTree) ? 0 : Infinity
 
   for (const range of ranges) {
@@ -99,12 +99,12 @@ export function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[]) {
   return [sizeTree, syncStart] as const
 }
 
-export function isGroupLocation(location: FlatOrGroupedLocation): location is { groupIndex: number } {
+function isGroupLocation(location: FlatOrGroupedLocation): location is { groupIndex: number } {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   return typeof (location as any).groupIndex !== 'undefined'
 }
 
-export function offsetComparator({ offset: itemOffset }: OffsetPoint, offset: number) {
+function offsetComparator({ offset: itemOffset }: OffsetPoint, offset: number) {
   return offset === itemOffset ? 0 : offset < itemOffset ? -1 : 1
 }
 

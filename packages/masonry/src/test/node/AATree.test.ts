@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import type { AANode } from './AATree'
+import type { AANode } from '../../sizing/AATree'
 
-import * as AA from './AATree'
+import * as AA from '../../sizing/AATree'
 
 function range(start: number, end: number) {
   const result = []

@@ -204,7 +204,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
   )
 })
 
-export const scrollerStyle: React.CSSProperties = {
+const scrollerStyle: React.CSSProperties = {
   height: '100%',
   outline: 'none',
   overflowY: 'auto',

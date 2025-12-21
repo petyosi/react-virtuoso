@@ -64,14 +64,6 @@ export function joinProc(...procs: Proc[]) {
 export function noop() {}
 
 /**
- * Returns a function which extracts the property from from the passed object.
- */
-export function prop(property: string) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-  return (object: any) => object[property]
-}
-
-/**
  * Calls callback with the first argument, and returns it.
  */
 export function tap<T>(arg: T, proc: (arg: T) => any): T {

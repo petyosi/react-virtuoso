@@ -61,7 +61,8 @@
       "Bash(ls:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "mcp__serena__initial_instructions",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(pnpm typecheck:*)"
     ],
     "deny": [],
     "ask": []

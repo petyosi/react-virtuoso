@@ -8,8 +8,6 @@ export const viewportWidth$ = Cell(0)
 
 export const scrollHeight$ = Cell(0)
 
-export const listScrollTop$ = scrollTop$
-
 export const listOffset$ = Cell(0)
 
 export const useWindowScroll$ = Cell(false)

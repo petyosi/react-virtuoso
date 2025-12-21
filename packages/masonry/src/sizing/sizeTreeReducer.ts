@@ -3,7 +3,6 @@ import type { SizeRange } from '../interfaces'
 import { type AANode, empty, insert, newTree } from './AATree'
 import { insertRanges } from './insertRanges'
 
-export const SIZE_TREE_SEED = [newTree(), 0] as [AANode, number]
 export function sizeTreeReducer(currentTree: AANode, [ranges, groupIndices]: [SizeRange[], number[]]) {
   // We receive probe item results from a group probe,
   // which should always pass an item and a group

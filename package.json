@@ -15,13 +15,17 @@
     "changeset-add": "pnpm changeset add",
     "dev:docs": "pnpm --filter @virtuoso.dev/virtuoso.dev run dev",
     "build-virtuoso.dev": "pnpm --filter @virtuoso.dev/virtuoso.dev run build",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "knip": "knip"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.2",
     "@changesets/cli": "^2.29.8",
+    "@types/node": "^22.19.1",
+    "knip": "^5.70.2",
     "lefthook": "^2.0.8",
-    "markdownlint-cli": "^0.46.0"
+    "markdownlint-cli": "^0.46.0",
+    "typescript": "^5.9.3"
   },
   "packageManager": "pnpm@10.24.0",
   "pnpm": {

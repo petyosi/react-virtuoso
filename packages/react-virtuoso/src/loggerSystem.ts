@@ -39,12 +39,6 @@ export enum LogLevel {
 }
 export type Log = (label: string, message: any, level?: LogLevel) => void
 
-export interface LogMessage {
-  label: string
-  level: LogLevel
-  message: any
-}
-
 const CONSOLE_METHOD_MAP = {
   [LogLevel.DEBUG]: 'debug',
   [LogLevel.ERROR]: 'error',
