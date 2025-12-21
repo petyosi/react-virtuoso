@@ -1,8 +1,7 @@
-import react from '@vitejs/plugin-react-swc'
-/// <reference types="vitest/config" />
+import react from '@vitejs/plugin-react'
 import { resolve } from 'node:path'
-import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
+import { defineConfig } from 'vitest/config'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -12,7 +11,7 @@ export default defineConfig({
       fileName: 'index',
       formats: ['es'],
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
       output: { exports: 'named' },
     },
@@ -20,8 +19,8 @@ export default defineConfig({
   plugins: [
     ...react(),
     dts({
+      bundleTypes: true,
       compilerOptions: { skipLibCheck: true },
-      rollupTypes: true,
       staticImport: true,
     }),
   ],

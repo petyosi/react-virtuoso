@@ -1,8 +1,7 @@
-import react from '@vitejs/plugin-react-swc'
+import react from '@vitejs/plugin-react'
 import { resolve } from 'node:path'
-/// <reference types="vitest" />
-import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
+import { defineConfig } from 'vitest/config'
 
 const inLadle = process.env.LADLE === 'true'
 
@@ -23,7 +22,7 @@ export default inLadle
           name: 'Virtuoso',
         },
         minify: true,
-        rollupOptions: {
+        rolldownOptions: {
           external: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', '@virtuoso.dev/gurx', '@ladle/react'],
           output: {
             exports: 'named',
@@ -34,8 +33,8 @@ export default inLadle
       plugins: [
         react(),
         dts({
+          bundleTypes: true,
           compilerOptions: { skipLibCheck: true },
-          rollupTypes: true,
           staticImport: true,
         }),
       ],

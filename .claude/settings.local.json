@@ -63,7 +63,10 @@
       "mcp__serena__initial_instructions",
       "Bash(test:*)",
       "Bash(pnpm typecheck:*)",
-      "WebFetch(domain:devblogs.microsoft.com)"
+      "WebFetch(domain:devblogs.microsoft.com)",
+      "WebFetch(domain:vite.dev)",
+      "Bash(npm view:*)",
+      "Bash(pnpm test:*)"
     ],
     "deny": [],
     "ask": []

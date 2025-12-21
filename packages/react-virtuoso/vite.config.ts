@@ -1,6 +1,5 @@
-import react from '@vitejs/plugin-react-swc'
-/// <reference types="vitest" />
-import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vitest/config'
 import dts from 'vite-plugin-dts'
 
 const ext = {
@@ -18,12 +17,12 @@ export default defineConfig({
       formats: ['es', 'cjs'],
     },
     minify: true,
-    rollupOptions: {
+    rolldownOptions: {
       external: ['react', 'react-dom', 'react/jsx-runtime'],
     },
     target: ['es2020', 'edge88', 'firefox78', 'chrome79', 'safari14'],
   },
-  plugins: [react(), dts({ rollupTypes: true })],
+  plugins: [react(), dts({ bundleTypes: true })],
   test: {
     environment: 'jsdom',
     include: ['test/**/*.test.{ts,tsx}'],

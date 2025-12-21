@@ -29,6 +29,7 @@
     "@virtuoso.dev/masonry": "workspace:*",
     "@virtuoso.dev/message-list": "file:/Users/petyo/w/virtuoso/message-list/virtuoso.dev-message-list-0.0.0-semantic-release.tgz",
     "astro": "^5.6.1",
+    "vite": "^6.0.0",
     "astro-og-canvas": "^0.7.2",
     "canvaskit-wasm": "^0.40.0",
     "class-variance-authority": "^0.7.1",
