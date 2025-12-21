@@ -174,7 +174,11 @@ const getItemSortPriority = (group: string, title: string): number => {
   return index >= 0 ? index : Infinity
 }
 
-const toKebabCase = (str: string): string => str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
+const toKebabCase = (str: string): string =>
+  str
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replace(/\s+/g, '-')
+    .toLowerCase()
 
 // Recursively collect all markdown files from a directory
 const collectMarkdownFiles = async (dir: string): Promise<{ name: string; path: string }[]> => {
