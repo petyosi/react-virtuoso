@@ -38,7 +38,7 @@
     "dev": "vite build",
     "ladle": "ladle serve",
     "test": "vitest",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsgo --noEmit",
     "lint": "eslint",
     "knip": "knip"
   },

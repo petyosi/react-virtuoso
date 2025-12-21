@@ -62,7 +62,8 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "mcp__serena__initial_instructions",
       "Bash(test:*)",
-      "Bash(pnpm typecheck:*)"
+      "Bash(pnpm typecheck:*)",
+      "WebFetch(domain:devblogs.microsoft.com)"
     ],
     "deny": [],
     "ask": []

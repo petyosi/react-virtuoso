@@ -8,7 +8,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsgo --noEmit",
     "lint": "eslint",
     "format": "prettier --write ."
   },

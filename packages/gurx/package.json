@@ -12,7 +12,7 @@
     "test": "vitest",
     "ci-lint": "eslint",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsgo --noEmit"
   },
   "publishConfig": {
     "access": "public",
