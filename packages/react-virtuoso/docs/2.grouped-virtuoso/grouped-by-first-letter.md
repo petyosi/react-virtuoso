@@ -1,5 +1,6 @@
 ---
 title: Grouped by First Letter
+description: Build alphabetically grouped lists with sticky headers using GroupedVirtuoso for contact lists and directories.
 sidebar:
   label: Grouped by First Letter
   order: 2

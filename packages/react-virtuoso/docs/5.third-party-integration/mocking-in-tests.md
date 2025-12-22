@@ -1,5 +1,6 @@
 ---
 title: Mocking in tests
+description: Test React Virtuoso components in Jest and Testing Library using VirtuosoMockContext to simulate DOM measurements.
 sidebar:
   label: Mocking in tests
 ---

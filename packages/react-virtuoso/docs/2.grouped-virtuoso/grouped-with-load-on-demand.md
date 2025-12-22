@@ -1,5 +1,6 @@
 ---
 title: Grouped Load on Demand
+description: Implement infinite scrolling with grouped data in React Virtuoso by dynamically loading and appending groups.
 sidebar:
   label: Load on Demand
   order: 4

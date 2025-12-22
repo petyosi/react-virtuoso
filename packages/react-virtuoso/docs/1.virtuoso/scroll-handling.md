@@ -1,5 +1,6 @@
 ---
 title: Scroll Handling
+description: Optimize React Virtuoso scroll performance by detecting scroll state and replacing heavy content with placeholders.
 sidebar:
   label: Scroll Handling
   order: 302

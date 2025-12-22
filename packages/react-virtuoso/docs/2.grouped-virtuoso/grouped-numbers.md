@@ -1,5 +1,6 @@
 ---
 title: Grouped 10,000 numbers
+description: Display large datasets in groups with sticky headers using React Virtuoso GroupedVirtuoso component.
 sidebar:
   label: Grouped Numbers
   order: 1

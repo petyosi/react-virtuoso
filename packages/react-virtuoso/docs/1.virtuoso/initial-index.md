@@ -1,5 +1,6 @@
 ---
 title: Start from a certain item
+description: Use initialTopMostItemIndex to start React Virtuoso lists at a specific item position on mount.
 sidebar:
   label: Initial Index
   order: 4

@@ -1,5 +1,6 @@
 ---
 title: Table Virtuoso Example with Fixed Columns
+description: Create horizontally scrollable tables with sticky frozen columns using TableVirtuoso and CSS positioning.
 sidebar:
   label: Fixed Columns
 ---

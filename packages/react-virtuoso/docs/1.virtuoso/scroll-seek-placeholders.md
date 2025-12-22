@@ -1,5 +1,6 @@
 ---
 title: Scroll Seek Placeholders
+description: Improve React Virtuoso fast scrolling performance by showing lightweight placeholders during rapid scroll.
 sidebar:
   label: Scroll Seek Placeholders
   order: 502

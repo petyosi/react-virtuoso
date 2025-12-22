@@ -1,5 +1,6 @@
 ---
 title: Table Virtuoso Example with Grouped Rows
+description: Display grouped table data with sticky group headers using GroupedTableVirtuoso for organized data presentation.
 sidebar:
   label: Grouped Rows
 ---

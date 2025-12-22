@@ -1,5 +1,6 @@
 ---
 title: Grid with Responsive Columns
+description: Build responsive virtualized grids with VirtuosoGrid using CSS flexbox or grid for adaptive column layouts.
 sidebar:
   label: Responsive Columns
 ---

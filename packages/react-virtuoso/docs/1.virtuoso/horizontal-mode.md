@@ -1,5 +1,6 @@
 ---
 title: Horizontal Mode
+description: Render React Virtuoso lists horizontally with the horizontalDirection property for carousels and horizontal scrolling UIs.
 sidebar_title: Horizontal Mode
 sidebar:
   order: 90

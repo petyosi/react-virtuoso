@@ -1,5 +1,6 @@
 ---
 title: Table Virtuoso with MUI Table
+description: Integrate React Virtuoso TableVirtuoso with Material UI Table components for virtualized data grids.
 sidebar:
   label: MUI Table
   order: 1

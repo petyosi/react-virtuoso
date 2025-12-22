@@ -1,5 +1,6 @@
 ---
 title: Table Virtuoso Example with Fixed Headers
+description: Add sticky table headers that remain visible while scrolling using TableVirtuoso's fixedHeaderContent prop.
 sidebar:
   label: Fixed Headers
 ---

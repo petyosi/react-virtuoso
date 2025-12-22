@@ -1,5 +1,6 @@
 ---
 title: Top Items List Example
+description: Pin the first N items at the top of React Virtuoso lists with the topItemCount property for sticky headers.
 sidebar:
   label: Top Items
 ---

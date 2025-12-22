@@ -1,5 +1,6 @@
 ---
 title: Keyboard Navigation
+description: Implement keyboard navigation in React Virtuoso lists using the scrollIntoView method with arrow key support.
 sidebar:
   label: Keyboard Navigation
   order: 121

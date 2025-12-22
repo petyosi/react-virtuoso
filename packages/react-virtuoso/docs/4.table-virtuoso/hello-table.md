@@ -1,5 +1,6 @@
 ---
 title: Table Virtuoso Basic Example
+description: Virtualize large HTML tables with unknown row heights using TableVirtuoso for efficient rendering.
 position: 1
 sidebar:
   label: Basic Example

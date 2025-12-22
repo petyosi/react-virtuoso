@@ -1,5 +1,6 @@
 ---
 title: Virtuoso Message List End User License Agreement
+description: End User License Agreement for @virtuoso.dev/message-list commercial component including licensing terms and restrictions.
 template: splash
 tableOfContents: false
 ---

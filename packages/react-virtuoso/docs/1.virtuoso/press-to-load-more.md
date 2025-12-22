@@ -1,5 +1,6 @@
 ---
 title: Press to Load More
+description: Add a load more button to React Virtuoso lists for user-triggered pagination instead of automatic infinite scrolling.
 sidebar:
   label: Press to Load More
   order: 101

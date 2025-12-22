@@ -1,5 +1,6 @@
 ---
 title: Scroll to Index
+description: Programmatically scroll to any item in React Virtuoso using scrollToIndex with alignment and smooth scroll options.
 sidebar:
   label: Scroll to Index
   order: 50

@@ -1,5 +1,6 @@
 ---
 title: MUI List
+description: Use React Virtuoso with Material UI List components for virtualized grouped lists with MUI styling.
 sidebar:
   label: MUI List
   order: 1

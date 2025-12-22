@@ -1,5 +1,6 @@
 ---
 title: List with Footer Example
+description: Add a custom footer component to React Virtuoso lists for loading indicators, load more buttons, or end-of-list messages.
 sidebar:
   label: Footer
   order: 5

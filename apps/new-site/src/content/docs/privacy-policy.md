@@ -1,5 +1,6 @@
 ---
 title: Privacy Policy
+description: Privacy policy for virtuoso.dev and Martiti 2 Ltd covering data collection, usage, cookies, and third-party services.
 template: splash
 tableOfContents: false
 ---

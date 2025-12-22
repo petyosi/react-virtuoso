@@ -1,5 +1,6 @@
 ---
 title: Customize Rendering
+description: Replace React Virtuoso's default DOM elements with custom components for full control over list rendering and styling.
 position: 501
 sidebar:
   label: Customize Rendering

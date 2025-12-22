@@ -1,5 +1,6 @@
 ---
 title: Customize Root Element
+description: Customize the React Virtuoso scroller element with custom styling, DOM event handlers, or integrate with custom scrollbar libraries.
 position: 500
 sidebar:
   label: Customize Scroller

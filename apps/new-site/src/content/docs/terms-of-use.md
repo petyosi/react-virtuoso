@@ -1,5 +1,6 @@
 ---
 title: Terms of Use
+description: Terms of use for virtuoso.dev website including payment processing via Paddle.com and usage restrictions.
 template: splash
 tableOfContents: false
 ---

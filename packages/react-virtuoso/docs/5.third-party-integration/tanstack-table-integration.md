@@ -1,5 +1,6 @@
 ---
 title: Table Virtuoso integrated with @tanstack/table
+description: Combine TanStack Table's sorting and filtering with TableVirtuoso's virtualization for large datasets.
 sidebar:
   label: "@tanstack/table"
 ---

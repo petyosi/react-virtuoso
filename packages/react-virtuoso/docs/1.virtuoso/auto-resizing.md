@@ -1,5 +1,6 @@
 ---
 title: Auto Resizing Virtual List
+description: React Virtuoso automatically handles dynamic item height changes from content resizing, images loading, and container resizing.
 sidebar:
   label: Auto Resizing
   order: 2

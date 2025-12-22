@@ -1,5 +1,6 @@
 ---
 title: Virtual List With 100,000 Items
+description: Get started with React Virtuoso by rendering a virtual list with 100,000 items of unknown sizes.
 sidebar:
   label: 100,000 Items
   order: 1

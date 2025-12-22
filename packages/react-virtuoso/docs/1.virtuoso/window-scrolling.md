@@ -1,5 +1,6 @@
 ---
 title: Window Scrolling
+description: Use the browser window as the scroll container for React Virtuoso lists with the useWindowScroll property.
 sidebar:
   label: Window Scrolling
   order: 250

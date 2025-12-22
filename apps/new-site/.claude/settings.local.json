@@ -10,7 +10,8 @@
       "Bash(cat:*)",
       "Bash(pnpm add:*)",
       "Bash(npm ls:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Skill(seo)"
     ],
     "deny": [],
     "ask": []

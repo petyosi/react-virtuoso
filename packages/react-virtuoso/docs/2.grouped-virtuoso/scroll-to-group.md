@@ -1,5 +1,6 @@
 ---
 title: Scroll to Group
+description: Build iOS-style contact lists with alphabetical navigation and scroll-to-group functionality in React Virtuoso.
 sidebar:
   label: Scroll to Group
   order: 5

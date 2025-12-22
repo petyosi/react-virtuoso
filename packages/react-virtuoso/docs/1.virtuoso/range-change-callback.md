@@ -1,5 +1,6 @@
 ---
 title: Range Change Callback
+description: Track visible item ranges in React Virtuoso lists using the rangeChanged callback for analytics or lazy loading.
 sidebar:
   label: Range Change Callback
   order: 101
