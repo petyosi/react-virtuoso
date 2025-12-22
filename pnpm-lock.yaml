@@ -81,8 +81,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/masonry
       '@virtuoso.dev/message-list':
-        specifier: file:/Users/petyo/w/virtuoso/message-list/virtuoso.dev-message-list-0.0.0-semantic-release.tgz
-        version: file:../message-list/virtuoso.dev-message-list-0.0.0-semantic-release.tgz(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        specifier: ^1.15.2
+        version: 1.15.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       astro:
         specifier: ^5.6.1
         version: 5.16.2(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.53.3)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.1)
@@ -4649,9 +4649,8 @@ packages:
       react: '>= 16 || >= 17 || >= 18 || >= 19'
       react-dom: '>= 16 || >= 17 || >= 18 || >= 19'
 
-  '@virtuoso.dev/message-list@file:../message-list/virtuoso.dev-message-list-0.0.0-semantic-release.tgz':
-    resolution: {integrity: sha512-wSnbf7ok6NmaIhkob+vrGXsOhI1HJN7EWz5z4TwEez1qcLySVSEi2EHuMeRc2vHCjJwNMkI/mttKxUOq5M2uTQ==, tarball: file:../message-list/virtuoso.dev-message-list-0.0.0-semantic-release.tgz}
-    version: 0.0.0-semantic-release
+  '@virtuoso.dev/message-list@1.15.2':
+    resolution: {integrity: sha512-s+aNP+1tsLAVDjkiW9akPQ28SpvNtJawIl3PzaAnVPgQJ+8a92TR8JspVlMb5Nh9sbMZVDr+XTAKvLvkOut1ag==}
     peerDependencies:
       react: '>= 16 || >= 17 || >= 18 || >= 19'
       react-dom: '>= 16 || >= 17 || >= 18 || >= 19'
@@ -15897,7 +15896,7 @@ snapshots:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
 
-  '@virtuoso.dev/message-list@file:../message-list/virtuoso.dev-message-list-0.0.0-semantic-release.tgz(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@virtuoso.dev/message-list@1.15.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@virtuoso.dev/gurx': 1.1.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react: 19.2.0
