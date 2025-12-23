@@ -40,6 +40,24 @@ This is a pnpm workspaces monorepo. Run commands from the root or within specifi
 - Build: `pnpm run build`
 - Typecheck: `pnpm run typecheck`
 
+**IMPORTANT - Documentation Locations:**
+
+**DO NOT EDIT** the following auto-generated directories:
+
+- `apps/new-site/src/content/docs/react-virtuoso/`
+- `apps/new-site/src/content/docs/masonry/`
+- `apps/new-site/src/content/docs/gurx/`
+- `apps/new-site/src/content/docs/message-list/`
+
+These are auto-synced from source files + TypeDoc API via the `docsSync` integration. Any edits will be overwritten.
+
+**To edit package documentation**, modify the source files in each package:
+
+- **react-virtuoso**: `packages/react-virtuoso/README.md` or `packages/react-virtuoso/docs/*.md`
+- **masonry**: `packages/masonry/README.md` or `packages/masonry/docs/*.md`
+- **gurx**: `packages/gurx/README.md` or `packages/gurx/docs/*.md`
+- **message-list**: `packages/message-list/README.md` or `packages/message-list/docs/*.md`
+
 ## Monorepo Structure
 
 ```text

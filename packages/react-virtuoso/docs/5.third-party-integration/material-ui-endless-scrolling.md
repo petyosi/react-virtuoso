@@ -1,5 +1,5 @@
 ---
-title: MUI List
+title: MUI List with Endless Scrolling
 description: Use React Virtuoso with Material UI List components for virtualized grouped lists with MUI styling.
 sidebar:
   label: MUI List
