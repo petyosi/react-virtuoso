@@ -67,7 +67,9 @@
       "WebFetch(domain:vite.dev)",
       "Bash(npm view:*)",
       "Bash(pnpm test:*)",
-      "Bash(lsof:*)"
+      "Bash(lsof:*)",
+      "Bash(pnpm --filter new-site run typecheck:*)",
+      "Bash(pnpm run lint:md:*)"
     ],
     "deny": [],
     "ask": []
