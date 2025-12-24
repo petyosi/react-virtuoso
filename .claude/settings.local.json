@@ -66,7 +66,8 @@
       "WebFetch(domain:devblogs.microsoft.com)",
       "WebFetch(domain:vite.dev)",
       "Bash(npm view:*)",
-      "Bash(pnpm test:*)"
+      "Bash(pnpm test:*)",
+      "Bash(lsof:*)"
     ],
     "deny": [],
     "ask": []

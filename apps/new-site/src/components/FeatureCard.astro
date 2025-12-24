@@ -1,10 +1,11 @@
 ---
 interface Props {
+  href?: string
   icon: string
   title: string
 }
 
-const { icon, title } = Astro.props
+const { href, icon, title } = Astro.props
 
 import { ChatBubbleIcon, DoubleArrowDownIcon, GearIcon, RocketIcon, StackIcon } from '@radix-ui/react-icons'
 
@@ -17,18 +18,21 @@ const iconMap: Record<string, typeof GearIcon> = {
 }
 
 const IconComponent = iconMap[icon] || GearIcon
+const Tag = href ? 'a' : 'div'
 ---
 
-<div
-  class="group flex gap-4 rounded-xl border border-(--sl-color-gray-5) bg-(--sl-color-gray-6) p-6 transition-all duration-200 hover:border-(--sl-color-gray-4) hover:bg-(--sl-color-gray-5)"
->
-  <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-(--sl-color-accent) text-(--sl-color-black)">
-    <IconComponent className="size-5" />
+<Tag class="group flex gap-4 p-6 transition-all duration-200" href={href}>
+  <div
+    class="flex size-10 shrink-0 items-center justify-center text-(--sl-color-gray-3) transition-colors duration-200 group-hover:text-(--sl-color-accent)"
+  >
+    <IconComponent className="size-8" />
   </div>
   <div class="min-w-0 flex-1">
-    <h3 class="mb-2 text-lg font-semibold text-(--sl-color-white)">{title}</h3>
+    <h3 class="mb-2 text-lg font-semibold text-(--sl-color-white) transition-colors duration-200 group-hover:text-(--sl-color-accent)">
+      {title}
+    </h3>
     <p class="m-0 text-[0.9375rem] leading-relaxed text-(--sl-color-gray-2)">
       <slot />
     </p>
   </div>
-</div>
+</Tag>

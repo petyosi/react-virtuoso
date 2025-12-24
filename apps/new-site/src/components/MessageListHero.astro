@@ -5,15 +5,15 @@ import MessageListHeroDemo from './MessageListHeroDemo'
 import OutlinedButton from './OutlinedButton'
 ---
 
-<div class="hero-section min-h-[50vh]!">
+<div class="hero-section">
   <div class="hero-container mx-auto max-w-6xl px-4">
-    <div class="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
+    <div class="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12">
       <div class="hero-demo order-2 flex justify-center lg:order-1 lg:justify-start">
         <MessageListHeroDemo client:load />
       </div>
       <div class="hero-content order-1 lg:order-2">
-        <h2 class="mb-4 text-4xl font-bold text-(--sl-color-white) md:text-5xl lg:text-6xl">Message List</h2>
-        <div class="mb-6 flex flex-wrap items-center gap-2">
+        <h2 class="mb-3 text-3xl font-bold text-(--sl-color-white) md:text-4xl lg:text-5xl">Message List</h2>
+        <div class="mb-4 flex flex-wrap items-center gap-2">
           <a href="https://www.npmjs.com/package/@virtuoso.dev/message-list" rel="noopener noreferrer" target="_blank">
             <img alt="npm version" src="https://img.shields.io/npm/v/@virtuoso.dev/message-list.svg" />
           </a>
@@ -21,7 +21,7 @@ import OutlinedButton from './OutlinedButton'
             <img alt="npm downloads" src="https://img.shields.io/npm/dm/@virtuoso.dev/message-list.svg" />
           </a>
         </div>
-        <p class="mb-8 text-xl leading-relaxed text-(--sl-color-gray-2) md:text-2xl">
+        <p class="mb-6 text-lg leading-relaxed text-(--sl-color-gray-2) md:text-xl">
           Chat interface component built specifically for human/AI conversations. Streaming responses, auto-scroll, and virtualized
           rendering.
         </p>
@@ -42,8 +42,14 @@ import OutlinedButton from './OutlinedButton'
 
 <style>
   .hero-section {
-    min-height: 70vh;
+    padding: 3rem 0;
     display: flex;
     align-items: center;
+  }
+
+  @media (min-width: 768px) {
+    .hero-section {
+      padding: 4rem 0;
+    }
   }
 </style>

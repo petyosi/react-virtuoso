@@ -5,12 +5,12 @@ import HeroDemo from './HeroDemo'
 import OutlinedButton from './OutlinedButton'
 ---
 
-<div class="hero-section">
+<div class="hero-section flex items-center py-12">
   <div class="hero-container mx-auto max-w-6xl px-4">
-    <div class="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
+    <div class="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12">
       <div class="hero-content">
-        <h1 class="mb-4 text-5xl font-bold text-(--sl-color-white) md:text-6xl lg:text-7xl">React Virtuoso</h1>
-        <div class="mb-6 flex flex-wrap items-center gap-2">
+        <h1 class="mb-3 text-4xl font-bold text-(--sl-color-white) md:text-5xl lg:text-6xl">React Virtuoso</h1>
+        <div class="mb-4 flex flex-wrap items-center gap-2">
           <a href="https://www.npmjs.com/package/react-virtuoso" rel="noopener noreferrer" target="_blank">
             <img alt="npm version" src="https://img.shields.io/npm/v/react-virtuoso.svg" />
           </a>
@@ -21,7 +21,7 @@ import OutlinedButton from './OutlinedButton'
             <img alt="GitHub stars" src="https://img.shields.io/github/stars/petyosi/react-virtuoso?style=social" />
           </a>
         </div>
-        <p class="mb-8 text-xl leading-relaxed text-(--sl-color-gray-2) md:text-2xl">
+        <p class="mb-6 text-lg leading-relaxed text-(--sl-color-gray-2) md:text-xl">
           The most complete React virtualization library for lists, grids, tables, and chat interfaces.
         </p>
         <div class="flex flex-wrap items-center gap-4">
@@ -41,11 +41,3 @@ import OutlinedButton from './OutlinedButton'
     </div>
   </div>
 </div>
-
-<style>
-  .hero-section {
-    min-height: 50vh;
-    display: flex;
-    align-items: center;
-  }
-</style>

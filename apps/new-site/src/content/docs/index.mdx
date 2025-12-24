@@ -20,46 +20,26 @@ import ProductCard from '@components/ProductCard.astro'
 ## Why Virtuoso?
 
 <FeatureGrid>
-  <FeatureCard title="Zero Configuration" icon="gear">
+  <FeatureCard title="Zero Configuration" icon="gear" href="/react-virtuoso/1.virtuoso/auto-resizing/">
     Variable-sized items work automatically without manual measurements or hard-coded heights.
   </FeatureCard>
 
-  <FeatureCard title="Complete Component Family" icon="stack">
+  <FeatureCard title="Complete Component Family" icon="stack" href="/react-virtuoso/">
     Lists, grids, tables, chat interfaces, and masonry layouts in one library.
   </FeatureCard>
 
-  <FeatureCard title="Performance at Scale" icon="rocket">
+  <FeatureCard title="Performance at Scale" icon="rocket" href="/react-virtuoso/1.virtuoso/hello/">
     Smooth scrolling with thousands of items through virtualized rendering.
   </FeatureCard>
 
-  <FeatureCard title="Bi-directional Loading" icon="double-arrow">
+  <FeatureCard title="Bi-directional Loading" icon="double-arrow" href="/react-virtuoso/1.virtuoso/endless-scrolling/">
     Built-in support for endless scrolling, load on demand, and initial scroll location.
   </FeatureCard>
 
-  <FeatureCard title="Chat-Optimized" icon="chat">
+  <FeatureCard title="Chat-Optimized" icon="chat" href="/message-list/">
     Commercial VirtuosoMessageList component built specifically for human/AI conversations.
   </FeatureCard>
 </FeatureGrid>
-
-## Quick Example
-
-```tsx live
-import { Virtuoso } from 'react-virtuoso'
-
-export default function App() {
-  return (
-    <Virtuoso
-      style={{ height: '400px' }}
-      totalCount={1000}
-      itemContent={(index) => (
-        <div style={{ padding: '1rem', borderBottom: '1px solid #eee' }}>
-          Item {index}
-        </div>
-      )}
-    />
-  )
-}
-```
 
 ## Explore The Virtuoso Components
 
