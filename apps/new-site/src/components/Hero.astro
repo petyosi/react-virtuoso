@@ -1,7 +1,8 @@
 ---
-import { ArrowRightIcon, ExternalLinkIcon } from '@radix-ui/react-icons'
+import { ArrowRightIcon } from '@radix-ui/react-icons'
 
 import HeroDemo from './HeroDemo'
+import OutlinedButton from './OutlinedButton'
 ---
 
 <div class="hero-section">
@@ -31,13 +32,7 @@ import HeroDemo from './HeroDemo'
             Get Started
             <ArrowRightIcon className="size-5" />
           </a>
-          <a
-            class="inline-flex items-center gap-2 px-4 py-3 text-lg font-medium text-(--sl-color-white) transition-colors hover:text-(--sl-color-text-accent)"
-            href="/react-virtuoso/api-reference/"
-          >
-            View API Reference
-            <ExternalLinkIcon className="size-[18px]" />
-          </a>
+          <OutlinedButton href="/react-virtuoso/virtuoso/hello/"> View examples </OutlinedButton>
         </div>
       </div>
       <div class="hero-demo flex justify-center lg:justify-end">
