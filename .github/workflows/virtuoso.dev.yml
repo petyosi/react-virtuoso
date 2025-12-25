@@ -42,8 +42,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build new site
-        run: pnpm --filter starlight-poc run build
+      - name: Build site
+        run: pnpm --filter @virtuoso.dev/virtuoso.dev run build
         env:
           PADDLE_ENVIRONMENT: ${{ vars.PADDLE_ENVIRONMENT }}
           PADDLE_TOKEN: ${{ vars.PADDLE_TOKEN }}
@@ -53,7 +53,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./apps/new-site/dist
+          path: ./apps/virtuoso.dev/dist
 
   deploy:
     name: Deploy

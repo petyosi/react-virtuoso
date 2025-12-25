@@ -37,8 +37,7 @@ packages/
   tooling/           - Shared build tooling
 
 apps/
-  virtuoso.dev/      - Docusaurus documentation site (current)
-  new-site/          - Starlight/Astro documentation site (migration in progress)
+  virtuoso.dev/      - Starlight/Astro documentation site
 
 examples/            - Ladle stories for testing/development
 ```
@@ -187,10 +186,10 @@ Documentation is auto-synced from package source files to the Starlight docs sit
 
 **DO NOT EDIT** these auto-generated directories:
 
-- `apps/new-site/src/content/docs/react-virtuoso/`
-- `apps/new-site/src/content/docs/masonry/`
-- `apps/new-site/src/content/docs/gurx/`
-- `apps/new-site/src/content/docs/message-list/`
+- `apps/virtuoso.dev/src/content/docs/react-virtuoso/`
+- `apps/virtuoso.dev/src/content/docs/masonry/`
+- `apps/virtuoso.dev/src/content/docs/gurx/`
+- `apps/virtuoso.dev/src/content/docs/message-list/`
 
 Instead, edit the source files in each package:
 
@@ -202,7 +201,7 @@ Instead, edit the source files in each package:
 ### Running the Documentation Site
 
 ```bash
-cd apps/new-site
+cd apps/virtuoso.dev
 pnpm run dev
 ```
 

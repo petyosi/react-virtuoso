@@ -31,11 +31,6 @@ This is a pnpm workspaces monorepo. Run commands from the root or within specifi
 
 ### virtuoso.dev docs app (apps/virtuoso.dev/)
 
-- Dev server: `pnpm run dev` (port 3001)
-- Build: `pnpm run build`
-
-### new-site Starlight docs (apps/new-site/)
-
 - Dev server: `pnpm run dev`
 - Build: `pnpm run build`
 - Typecheck: `pnpm run typecheck`
@@ -44,10 +39,10 @@ This is a pnpm workspaces monorepo. Run commands from the root or within specifi
 
 **DO NOT EDIT** the following auto-generated directories:
 
-- `apps/new-site/src/content/docs/react-virtuoso/`
-- `apps/new-site/src/content/docs/masonry/`
-- `apps/new-site/src/content/docs/gurx/`
-- `apps/new-site/src/content/docs/message-list/`
+- `apps/virtuoso.dev/src/content/docs/react-virtuoso/`
+- `apps/virtuoso.dev/src/content/docs/masonry/`
+- `apps/virtuoso.dev/src/content/docs/gurx/`
+- `apps/virtuoso.dev/src/content/docs/message-list/`
 
 These are auto-synced from source files + TypeDoc API via the `docsSync` integration. Any edits will be overwritten.
 
@@ -69,8 +64,7 @@ packages/
   tooling/          - Shared build tooling
 
 apps/
-  virtuoso.dev/     - Docusaurus documentation site (current)
-  new-site/         - Starlight/Astro documentation site (migration in progress)
+  virtuoso.dev/     - Starlight/Astro documentation site
 
 examples/            - Ladle stories for testing/development
 ```
@@ -230,27 +224,3 @@ LEFTHOOK=0 git commit -m "WIP: work in progress"
 - Uninstall hooks: `pnpm exec lefthook uninstall`
 - Run manually: `pnpm exec lefthook run pre-commit`
 
-## Starlight Migration Project Tracking
-
-When working on Starlight migration tasks (new documentation site), maintain `specs/starlight-migration/STATUS.md`:
-
-**Task lifecycle:**
-
-1. Before starting a task: Update STATUS.md to mark task as "in_progress", update checkbox to `[→]`, update "Current focus" field
-2. After completing a task: Mark as "done" with `[✅]` checkbox, add entry to "Completed Work Log" with date and key outcomes
-3. Update "Progress Overview" counts when tasks change status
-
-**Format conventions:**
-
-- `[ ]` = todo
-- `[→]` = in_progress
-- `[✅]` = done
-- Always update "Last updated" date when making changes
-- Add blockers or important notes to "Notes / Blockers" section if needed
-
-**Reference documents:**
-
-- `specs/starlight-migration/SEQUENCE.md` - Task dependencies and order
-- `specs/starlight-migration/tasks/XX-*.md` - Detailed task specifications
-- `specs/starlight-migration/STATUS.md` - Current progress (always keep updated)
-- do linting and typechecking after the changes.

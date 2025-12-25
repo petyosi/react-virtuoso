@@ -1,8 +1,18 @@
 {
-  // This file is not used in compilation. It is here just for a nice editor experience.
-  "extends": "@docusaurus/tsconfig",
+  "extends": [
+    "@virtuoso.dev/tooling/tsconfig.base.json",
+    "astro/tsconfigs/strict"
+  ],
   "compilerOptions": {
-    "baseUrl": ".",
-    "strictNullChecks": true
-  }
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    ".astro/types.d.ts",
+    "**/*",
+    "eslint.config.mjs",
+    "prettier.config.mjs"
+  ],
+  "exclude": ["dist"]
 }

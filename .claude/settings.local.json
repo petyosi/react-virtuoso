@@ -68,7 +68,7 @@
       "Bash(npm view:*)",
       "Bash(pnpm test:*)",
       "Bash(lsof:*)",
-      "Bash(pnpm --filter new-site run typecheck:*)",
+      "Bash(pnpm --filter @virtuoso.dev/virtuoso.dev run typecheck:*)",
       "Bash(pnpm run lint:md:*)"
     ],
     "deny": [],

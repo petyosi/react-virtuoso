@@ -1,3 +1,0 @@
-# Hello
-
-Some stuff here.
