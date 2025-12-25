@@ -1,60 +1,62 @@
-name: Deploy virtuoso.dev to GitHub pages
+name: Deploy Docs Site
 
 on:
   push:
     branches: ["master"]
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  # Build job
   build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.24.0
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: 22.x
           cache: pnpm
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
         with:
-          static_site_generator: docusaurus
+          static_site_generator: next
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Build the site with docusaurus
-        run: pnpm --filter @virtuoso.dev/virtuoso.dev run build
+
+      - name: Build new site
+        run: pnpm --filter starlight-poc run build
         env:
           PADDLE_ENVIRONMENT: ${{ vars.PADDLE_ENVIRONMENT }}
           PADDLE_TOKEN: ${{ vars.PADDLE_TOKEN }}
           PADDLE_STANDARD_PRICE_ID: ${{ vars.PADDLE_STANDARD_PRICE_ID }}
           PADDLE_PRO_PRICE_ID: ${{ vars.PADDLE_PRO_PRICE_ID }}
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./apps/virtuoso.dev/build
+          path: ./apps/new-site/dist
 
-  # Deployment job
   deploy:
+    name: Deploy
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -1,26 +1,31 @@
-name: CI
-on: [push]
-jobs:
-  build:
-    runs-on: ubuntu-latest
+name: Release
 
-    env:
-      CI: true
-      SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-      USE_SSH: true
-      GIT_USER: petyosi
-      NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
 
     steps:
-      - name: Begin CI...
+      - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.24.0
 
-      - name: Use Node 22
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
@@ -29,26 +34,38 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint markdown
-        run: pnpm lint:md
+      - name: Run CI checks
+        run: pnpm ci
 
-      - name: run CI checks
-        run: pnpm run ci
+      - name: Check for major changesets
+        id: major
+        run: |
+          if grep -r "^major" .changeset/*.md 2>/dev/null; then
+            echo "found=true" >> $GITHUB_OUTPUT
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Release
+      - name: Create Release Pull Request or Publish
         id: changesets
-        if: github.ref == 'refs/heads/master'
         uses: changesets/action@v1
         with:
-          # This expects you to have a script called release which does a build for your packages and calls changeset publish
-          publish: pnpm run release
+          publish: pnpm release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+      - name: Auto-merge non-major version PR
+        if: steps.changesets.outputs.hasChangesets == 'true' && steps.changesets.outputs.pullRequestNumber != '' && steps.major.outputs.found == 'false'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge --squash --auto "${{ steps.changesets.outputs.pullRequestNumber }}"
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-react-virtuoso
+          name: playwright-report-release
           path: packages/react-virtuoso/playwright-report/
           retention-days: 7

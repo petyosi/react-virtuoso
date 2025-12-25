@@ -1,10 +1,22 @@
-# Use `allow` to specify which dependencies to maintain
-
 version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "daily"
-    allow:
-      - dependency-type: "production"
+      interval: "weekly"
+      day: "monday"
+    groups:
+      production:
+        dependency-type: "production"
+      development:
+        dependency-type: "development"
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      actions:
+        patterns:
+          - "*"
