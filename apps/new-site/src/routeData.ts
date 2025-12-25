@@ -46,8 +46,13 @@ function sortAndCleanEntries(entries: SidebarEntry[]) {
 }
 
 export const onRequest = defineRouteMiddleware((context) => {
-  const { head, id, sidebar } = context.locals.starlightRoute
+  const { head, id, sidebar, toc } = context.locals.starlightRoute
   sortAndCleanEntries(sidebar)
+
+  // Remove the "Overview" link from the table of contents
+  if (toc?.items && toc.items.length > 0) {
+    toc.items.shift()
+  }
 
   // Add OG image meta tags
   // Content collection IDs normalize folder/index.mdx to just folder
