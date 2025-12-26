@@ -35,7 +35,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run CI checks
-        run: pnpm ci
+        run: pnpm run ci
 
       - name: Check for major changesets
         id: major

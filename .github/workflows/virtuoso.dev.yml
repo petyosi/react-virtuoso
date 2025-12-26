@@ -42,8 +42,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build site
-        run: pnpm --filter @virtuoso.dev/virtuoso.dev run build
+      - name: Build all packages and the site
+        run: pnpm run build
         env:
           PADDLE_ENVIRONMENT: ${{ vars.PADDLE_ENVIRONMENT }}
           PADDLE_TOKEN: ${{ vars.PADDLE_TOKEN }}
