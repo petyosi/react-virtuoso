@@ -54,7 +54,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build prerequisites
-        run: pnpm --filter @virtuoso.dev/gurx --filter @virtuoso.dev/masonry build
+        run: pnpm --filter @virtuoso.dev/gurx --filter @virtuoso.dev/masonry --filter react-virtuoso build
 
       - name: Type check
         run: pnpm typecheck
