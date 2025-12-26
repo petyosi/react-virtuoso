@@ -14,7 +14,8 @@
     "astro": "astro",
     "typecheck": "astro check",
     "lint": "eslint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@astrojs/check": "^0.9.6",

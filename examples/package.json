@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "ladle dev",
     "lint": "eslint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [],
   "author": "",

@@ -40,6 +40,8 @@
     "test": "vitest",
     "typecheck": "tsgo --noEmit",
     "lint": "eslint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "knip": "knip"
   },
   "dependencies": {

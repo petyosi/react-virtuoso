@@ -12,7 +12,9 @@
     "test": "vitest",
     "ci-lint": "eslint",
     "lint": "eslint",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "tsgo --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "publishConfig": {
     "access": "public",

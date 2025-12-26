@@ -8,11 +8,16 @@ This is a pnpm workspaces monorepo. Run commands from the root or within specifi
 
 ### Root-level commands
 
-- Build all packages: `pnpm build`
+Run from repository root for all packages:
+
+- Build all: `pnpm build`
 - Typecheck all: `pnpm typecheck`
 - Lint all: `pnpm lint`
+- Format all: `pnpm format` (Prettier)
+- Format check: `pnpm format:check`
 - Test all: `pnpm test`
 - E2E tests all: `pnpm e2e`
+- Markdown lint: `pnpm lint:md` / fix: `pnpm lint:md:fix`
 - Full CI: `pnpm ci` (setup, build, typecheck, lint, lint:md, test, e2e)
 - Release: `pnpm release` (build + publish with changesets)
 - Add changeset: `pnpm changeset-add`
@@ -27,6 +32,8 @@ This is a pnpm workspaces monorepo. Run commands from the root or within specifi
 - E2E tests: `pnpm run e2e` (playwright)
 - Lint: `pnpm run lint`
 - Typecheck: `pnpm run typecheck`
+- Format: `pnpm run format` (Prettier)
+- Format check: `pnpm run format:check`
 - Dev/preview examples: `pnpm run ladle` (launches Ladle server for browsing examples/ folder)
 
 ### virtuoso.dev docs app (apps/virtuoso.dev/)
@@ -34,6 +41,9 @@ This is a pnpm workspaces monorepo. Run commands from the root or within specifi
 - Dev server: `pnpm run dev`
 - Build: `pnpm run build`
 - Typecheck: `pnpm run typecheck`
+- Format: `pnpm run format` (Prettier with Astro plugin)
+
+After docs changes: run `pnpm typecheck` from the app directory or root.
 
 **IMPORTANT - Documentation Locations:**
 
@@ -185,16 +195,45 @@ const foo = 'bar'
 - Configuration: `.markdownlint.json` and `.markdownlintignore`
 - If necessary, use `markdownlint` CLI directly, but prefer pnpm scripts
 
+## Code Change Checklist
+
+After making code changes, run these commands to verify quality:
+
+### Required (always run)
+
+- `pnpm typecheck` - Verify TypeScript types pass
+- `pnpm lint` - Check code style (ESLint)
+- `pnpm format` - Format code with Prettier
+- `pnpm test` - Run unit tests (vitest)
+
+### Conditionally Required
+
+- `pnpm lint:md` - If editing markdown files
+- `pnpm lint:md:fix` - Auto-fix markdown issues
+- `pnpm run e2e` - For UI/behavior changes (Playwright tests)
+- `pnpm run ladle` - To visually inspect component changes
+
+### Quick Full Validation
+
+- `pnpm ci` - Run complete CI pipeline (setup, build, typecheck, lint, lint:md, test, e2e)
+- `pnpm format:check` - Check if files are formatted without modifying them
+
+### Fixing Issues
+
+Format issues are auto-fixed by `pnpm format`. ESLint issues must be fixed manually. Configure your editor to:
+
+- Format on save using Prettier (140 char width, single quotes, no semicolons)
+- Show ESLint warnings/errors
+
+Pre-commit hooks will block commits if typecheck or lint fails.
+
 ## Development Workflow
 
 1. Make changes in `packages/react-virtuoso/src/`
-2. Run `pnpm test` to verify unit tests
+2. Run `pnpm format && pnpm typecheck && pnpm lint && pnpm test`
 3. Check examples with `pnpm run ladle` if UI changes
-4. Run `pnpm e2e` for end-to-end validation
-5. Use `pnpm typecheck` and `pnpm lint` before committing
-6. If editing documentation, run `pnpm lint:md` to check markdown
-7. Pre-commit hooks automatically check staged files (markdown, code, types)
-8. Add changeset with `pnpm changeset-add` for versioned changes
+4. Run `pnpm e2e` for end-to-end validation if needed
+5. Add changeset with `pnpm changeset-add` for versioned changes
 
 ## Git Hooks
 

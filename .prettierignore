@@ -1,0 +1,30 @@
+# Dependencies
+node_modules
+pnpm-lock.yaml
+package-lock.json
+
+# Build outputs
+dist
+build
+*.tsbuildinfo
+
+# Cache
+.cache
+.turbo
+.next
+
+# Testing
+test-results
+coverage
+
+# Generated files
+docs/virtuoso-api/*
+docs/virtuoso-message-list-api/*
+docs/virtuoso-masonry-api/*
+apps/virtuoso.dev/docs/virtuoso-masonry-api/*
+
+# Misc
+*.log
+.DS_Store
+.vscode
+.idea

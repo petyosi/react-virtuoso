@@ -43,6 +43,8 @@
     "e2e": "playwright test --workers=1",
     "lint": "eslint",
     "typecheck": "tsgo --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "ladle": "LADLE=true ladle serve",
     "ci-setup": "npx playwright install --with-deps"
   },
