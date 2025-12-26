@@ -1,4 +1,5 @@
 import * as React from 'react'
+import invariant from 'tiny-invariant'
 
 import type { Engine } from './Engine'
 import type { Inp, NodeRef, Out, Subscription } from './types'
@@ -22,9 +23,7 @@ export const EngineContext = React.createContext<Engine | null>(null)
  */
 export function useEngine() {
   const engine = React.useContext(EngineContext)
-  if (engine === null) {
-    throw new Error('useEngine must be used within an EngineProvider')
-  }
+  invariant(engine !== null, 'useEngine must be used within an EngineProvider')
   return engine
 }
 

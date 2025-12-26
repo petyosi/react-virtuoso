@@ -1,3 +1,5 @@
+import invariant from 'tiny-invariant'
+
 import type { NodeInit, NodeRef } from './types'
 
 import { getCurrentEngine, nodeDebugLabels$$, nodeInits$$, nodeInitSubscriptions$$ } from './globals'
@@ -32,17 +34,13 @@ export function addNodeInit(init: NodeInit<unknown>, ...nodes$: NodeRef[]) {
  */
 export function getValue<T>(node: NodeRef<T>): T {
   const engine = getCurrentEngine()
-  if (!engine) {
-    throw new Error('No active engine found. You can use getValue only in the context of node subscription callbacks.')
-  }
+  invariant(engine, 'No active engine found. You can use getValue only in the context of node subscription callbacks.')
   return engine.getValue(node)
 }
 
 export function pub<T>(node: NodeRef<T>, value: T) {
   const engine = getCurrentEngine()
-  if (!engine) {
-    throw new Error('No active engine found. You can use pub only in the context of node subscription callbacks.')
-  }
+  invariant(engine, 'No active engine found. You can use pub only in the context of node subscription callbacks.')
   engine.pub(node, value)
 }
 
@@ -56,9 +54,7 @@ export function pub<T>(node: NodeRef<T>, value: T) {
  */
 export function pubIn(values: Record<symbol, unknown>) {
   const engine = getCurrentEngine()
-  if (!engine) {
-    throw new Error('No active engine found. You can use pub only in the context of node subscription callbacks.')
-  }
+  invariant(engine, 'No active engine found. You can use pubIn only in the context of node subscription callbacks.')
   engine.pubIn(values)
 }
 

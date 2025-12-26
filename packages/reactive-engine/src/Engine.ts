@@ -1,3 +1,5 @@
+import invariant from 'tiny-invariant'
+
 import type { O } from './operators'
 import type {
   CombinedCellRecord,
@@ -546,8 +548,9 @@ export class Engine {
   private getExecutionMap(nodes: symbol[]) {
     let key: symbol | symbol[] = nodes
     if (nodes.length === 1) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      key = nodes[0]!
+      const singleNode = nodes[0]
+      invariant(singleNode, 'Single node array should have one element')
+      key = singleNode
       const existingMap = this.executionMaps.get(key)
       if (existingMap !== undefined) {
         return existingMap

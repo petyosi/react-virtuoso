@@ -1,3 +1,5 @@
+import invariant from 'tiny-invariant'
+
 import type { RouteReference, RouteRefValue } from './types'
 
 import { routeDefinitions$$ } from './Route'
@@ -54,16 +56,18 @@ export function interpolateRoute(route: string, params: NonNullable<RouteRefValu
         const searchParamName = match[1]
         const placeholder = match[2]
 
+        invariant(placeholder, 'Query param placeholder should exist in regex match')
+        invariant(searchParamName, 'Query param name should exist in regex match')
+
         // Extract placeholder name from {name}, {name?}, {name:type}, or {name?:type}
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const placeholderMatch = /^(\w+)/.exec(placeholder!)
+        const placeholderMatch = /^(\w+)/.exec(placeholder)
         if (!placeholderMatch) continue
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const placeholderName = placeholderMatch[1]!
+        const placeholderName = placeholderMatch[1]
+        invariant(placeholderName, 'Placeholder name should exist in regex match')
+
         processedKeys.add(placeholderName)
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        addParam(searchParamName!, queryParams[placeholderName])
+        addParam(searchParamName, queryParams[placeholderName])
       }
     }
 
@@ -115,9 +119,7 @@ export function getUrl(route: RouteReference | string, params?: Record<string, u
   if (typeof route === 'symbol') {
     // It's a RouteReference (which at runtime is a symbol from Cell())
     const definition = routeDefinitions$$.get(route)
-    if (!definition) {
-      throw new Error(`Route definition not found for symbol`)
-    }
+    invariant(definition, 'Route definition not found for symbol')
     routeDefinition = definition
   } else {
     // It's a string path

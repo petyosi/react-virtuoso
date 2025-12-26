@@ -1,3 +1,5 @@
+import invariant from 'tiny-invariant'
+
 import type { Engine } from './Engine'
 import type { NodeInit, NodeRef } from './types'
 
@@ -79,10 +81,7 @@ const engineStorageState$$ = new WeakMap<Engine, EngineStorageState>()
  * ```
  */
 export function linkCellToStorage<T>(cell$: NodeRef<T>, options: StorageLinkOptions<T>): void {
-  // Validate options
-  if (!options.key) {
-    throw new Error('linkCellToStorage: key is required')
-  }
+  invariant(options.key, 'linkCellToStorage: key is required')
 
   // Store metadata globally
   storageLinkMetadata$$.set(cell$, { options } as StorageLinkMetadata<unknown>)
@@ -104,9 +103,8 @@ export function linkCellToStorage<T>(cell$: NodeRef<T>, options: StorageLinkOpti
         })
       }
 
-      // biome-ignore lint/style/noNonNullAssertion: we just checked and set the value above
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const state = engineStorageState$$.get(engine)!
+      const state = engineStorageState$$.get(engine)
+      invariant(state, 'engineStorageState$$ must have value for engine')
       const storageKey = getStorageKey(engine, options)
 
       // Serialization helpers
@@ -304,9 +302,7 @@ function writeCookie<T>(key: string, value: string, options: StorageLinkOptions<
 // Helper: Parse expires string (e.g., "7d", "1h", "30m")
 function parseExpiresString(expires: string): Date {
   const match = /^(\d+)([dhm])$/.exec(expires)
-  if (!match?.[1] || !match[2]) {
-    throw new Error(`Invalid expires format: ${expires}. Use format like "7d", "1h", "30m"`)
-  }
+  invariant(match?.[1] && match[2], `Invalid expires format: ${expires}. Use format like "7d", "1h", "30m"`)
 
   const amount = match[1]
   const unit = match[2]
