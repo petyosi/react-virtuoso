@@ -1,9 +1,6 @@
 import type { Engine } from './Engine'
 import type { Distinct, NodeRef, Out } from './types'
 
-import { CC } from './CC'
-import { getNodeLabel } from './nodeUtils'
-
 /**
  * An operator that transforms a node into another node, used in the {@link Engine.pipe} method.
  * @typeParam I - The type of values that the incoming node will emit.
@@ -18,18 +15,6 @@ export type Operator<I, O> = (source: Out<I>, engine: Engine) => NodeRef<O>
  */
 export type O<In, Out> = Operator<In, Out>
 
-function traceOperator(eng: Engine, opName: string, source: symbol, value: unknown, what?: unknown): void {
-  eng.tracer.log(
-    CC.blue(`OP: ${opName}`),
-    CC.plain(' '),
-    CC.gray(getNodeLabel(source)),
-    CC.plain(' (value: '),
-    CC.plain(JSON.stringify(value)),
-    CC.plain(') with '),
-    CC.yellow(JSON.stringify(what))
-  )
-}
-
 /**
  * Maps a the passed value with a projection function.
  * @typeParam I - The type of values that the incoming node will emit.
@@ -41,7 +26,6 @@ export function map<I, O>(mapFunction: (value: I) => O, distinct: Distinct<O> = 
     const sink = eng.streamInstance<O>(distinct)
     eng.connect({
       map: (done) => (value) => {
-        traceOperator(eng, 'map', source, value, mapFunction.name)
         done(mapFunction(value as I))
       },
       sink,
@@ -92,7 +76,6 @@ export function withLatestFrom<I>(...nodes: Out[]) {
       map:
         (done) =>
         (...args) => {
-          traceOperator(eng, 'withLatestFrom', source, args)
           done(args)
         },
       pulls: nodes,
@@ -114,7 +97,6 @@ export function mapTo<I, O>(value: O): Operator<I, O> {
     const sink = eng.streamInstance<O>()
     eng.connect({
       map: (done) => () => {
-        traceOperator(eng, 'mapTo', source, '', value)
         done(value)
       },
       sink,
@@ -145,12 +127,11 @@ export function mapTo<I, O>(value: O): Operator<I, O> {
  */
 export function filter<I, O extends I>(predicate: (value: I) => value is O): Operator<I, O>
 export function filter<I>(predicate: (value: I) => boolean): Operator<I, I>
-export function filter<I, O extends I>(predicate: ((value: I) => boolean) | ((value: I) => value is O)): Operator<I, I | O> {
+export function filter<I, O extends I>(predicate: ((value: I) => boolean) | ((value: I) => value is O)): Operator<I, O> {
   return (source, eng) => {
-    const sink = eng.streamInstance<I | O>()
+    const sink = eng.streamInstance<O>()
     eng.connect({
       map: (done) => (value) => {
-        traceOperator(eng, 'filter', source, value, predicate.name || '<anonymous>')
         if (predicate(value as I)) {
           done(value)
         }
@@ -176,7 +157,6 @@ export function once<I>(): Operator<I, I> {
     eng.connect({
       map: (done) => (value) => {
         if (!passed) {
-          traceOperator(eng, 'once', source, value)
           passed = true
           done(value)
         }
@@ -202,7 +182,6 @@ export function scan<I, O>(accumulator: (current: O, value: I) => O, seed: O): O
     eng.connect({
       map: (done) => {
         return (value) => {
-          traceOperator(eng, 'scan', source, value, seed)
           result = accumulator(result, value as I)
           done(result)
         }
@@ -226,7 +205,6 @@ export function throttleTime<I>(delay: number): Operator<I, I> {
     let timeout: null | ReturnType<typeof setTimeout> = null
 
     eng.sub(source, (value) => {
-      traceOperator(eng, 'throttle', source, value, `${delay}ms`)
       currentValue = value
 
       if (timeout !== null) {
@@ -255,7 +233,6 @@ export function debounceTime<I>(delay: number): Operator<I, I> {
     let timeout: null | ReturnType<typeof setTimeout> = null
 
     eng.sub(source, (value) => {
-      traceOperator(eng, 'debounceTime', source, value, `${delay}ms`)
       currentValue = value
 
       if (timeout !== null) {
@@ -280,7 +257,6 @@ export function delayWithMicrotask<I>(): Operator<I, I> {
   return (source, eng) => {
     const sink = eng.streamInstance<I>()
     eng.sub(source, (value) => {
-      traceOperator(eng, 'delayWithMicrotask', source, value)
       queueMicrotask(() => {
         eng.pub(sink, value)
       })
@@ -303,7 +279,6 @@ export function onNext<I, O>(bufNode: NodeRef<O>): Operator<I, [I, O]> {
     eng.connect({
       map: (done) => (value) => {
         if (pendingValue !== bufferValue) {
-          traceOperator(eng, 'onNext', source, [pendingValue, value])
           done([pendingValue, value])
           pendingValue = bufferValue
         }
@@ -338,7 +313,6 @@ export function handlePromise<I, OutSuccess, OnLoad, OutError>(
         eng.pub(sink, onLoad())
         value
           .then((value) => {
-            traceOperator(eng, 'handlePromise', source, value)
             eng.pub(sink, onSuccess(value))
             return
           })

@@ -49,7 +49,7 @@ export function RouterEngine(eng: Engine, routes: RouteRef[], layouts?: symbol[]
 
   // Subscribe to goToUrl$ to parse URLs and activate matching routes
   unsubscriptions.push(
-    eng.sub(goToUrl$, async (urlOrRef, eng) => {
+    eng.sub(goToUrl$, (urlOrRef, eng) => {
       // Convert RouteReference to URL string if needed
       const url = typeof urlOrRef === 'string' ? urlOrRef : getUrl(urlOrRef)
 
@@ -201,7 +201,7 @@ function createRouteSubscription({
 
           const awaitedResult = result instanceof Promise ? await result : result
 
-          if (!awaitedResult || awaitedResult === undefined) continue
+          if (!awaitedResult) continue
 
           if ('type' in awaitedResult) {
             if (awaitedResult.type === REDIRECT_RESULT) {

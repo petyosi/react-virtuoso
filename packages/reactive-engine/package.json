@@ -9,6 +9,8 @@
     "test:browser": "vitest",
     "build": "tsc -b && vite build",
     "lint": "eslint",
+    "prettier": "prettier --write .",
+    "prettier:check": "prettier --check .",
     "typecheck": "tsgo --noEmit",
     "start:example": "cd example && vite --config ./vite.config.ts",
     "start:example:todo": "cd example-todo-app && vite --config ./vite.config.ts",

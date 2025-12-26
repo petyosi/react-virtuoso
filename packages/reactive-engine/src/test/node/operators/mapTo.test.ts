@@ -41,7 +41,6 @@ describe('mapTo operator', () => {
 
     // Map to undefined
     const mapped2 = e.pipe(source, e.mapTo(undefined))
-    e.setNodeLabel(mapped2, 'mapped2')
     const spy2 = createSpyWithHistory<undefined>()
     e.sub(mapped2, spy2.spy)
 
@@ -84,7 +83,7 @@ describe('mapTo operator', () => {
 
     expect(history).toHaveLength(1)
     expect(typeof history[0]).toBe('function')
-    expect(history[0]!()).toBe('I am a function')
+    expect(history[0]?.()).toBe('I am a function')
   })
 
   it('handles RegExp as target values', () => {
@@ -98,7 +97,7 @@ describe('mapTo operator', () => {
     eng.pub(source, 'input')
 
     expect(history[0]).toBe(targetRegex)
-    expect(history[0]!.test('Test-Pattern')).toBe(true)
+    expect(history[0]?.test('Test-Pattern')).toBe(true)
   })
 
   // Performance with high frequency

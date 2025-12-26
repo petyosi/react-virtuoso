@@ -92,12 +92,6 @@ export interface StreamDefinition<T> {
   type: typeof STREAM_TYPE
 }
 
-/**
- * The console that the engine uses for outputting logs.
- * @category Logging
- */
-export type TracerConsole = Pick<Console, 'groupCollapsed' | 'groupEnd' | 'log'>
-
 /** @hidden */
 export interface CombinedCellRecord {
   cell: NodeRef

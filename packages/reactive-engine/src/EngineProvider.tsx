@@ -1,7 +1,5 @@
 import * as React from 'react'
 
-import type { TracerConsole } from './types'
-
 import { Engine } from './Engine'
 import { EngineContext, useIsomorphicLayoutEffect } from './hooks'
 
@@ -15,10 +13,6 @@ export interface EngineProviderProps {
    */
   children: React.ReactNode
   /**
-   * A console instance (usually, the browser console, but you can pass your own logger) that enables diagnostic messages about the engine state cycles.
-   */
-  console?: TracerConsole
-  /**
    * Optional stable ID for storage namespacing. Use this for multi-engine apps to prevent storage key conflicts.
    */
   engineId?: string
@@ -26,10 +20,6 @@ export interface EngineProviderProps {
    * The initial values to set in the engine.
    */
   initWith?: Record<symbol, unknown>
-  /**
-   * The label to use in the tracer messages.
-   */
-  label?: string
   /**
    * The values to update in the engine on each render.
    */
@@ -57,14 +47,7 @@ export interface EngineProviderProps {
  * @category React Hooks and Components
  * @function
  */
-export const EngineProvider: React.FC<EngineProviderProps> = ({
-  children,
-  console: theEngineConsole,
-  engineId: id,
-  initWith,
-  label,
-  updateWith = {},
-}) => {
+export const EngineProvider: React.FC<EngineProviderProps> = ({ children, engineId: id, initWith, updateWith = {} }) => {
   const [engine, setEngine] = React.useState<Engine | null>(null)
 
   useIsomorphicLayoutEffect(() => {
@@ -74,14 +57,6 @@ export const EngineProvider: React.FC<EngineProviderProps> = ({
       instance.dispose()
     }
   }, [initWith, id])
-
-  useIsomorphicLayoutEffect(() => {
-    engine?.setTracerConsole(theEngineConsole)
-  }, [theEngineConsole, engine])
-
-  useIsomorphicLayoutEffect(() => {
-    engine?.setLabel(label ?? 'EngineProvider')
-  }, [label, engine])
 
   useIsomorphicLayoutEffect(() => {
     engine?.pubIn(updateWith)

@@ -3,7 +3,6 @@
  * @module @virtuoso.dev/reactive-engine
  */
 
-export { CC } from './CC'
 export * from './combinators'
 export * from './e'
 export * from './Engine'

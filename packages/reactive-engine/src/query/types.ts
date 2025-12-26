@@ -41,7 +41,7 @@ export interface QueryOptions<TParams, TData> {
   initialData?: TData
   initialParams: TParams
   placeholderData?: TData
-  queryFn: (params: TParams, signal: AbortSignal) => Promise<TData>
+  queryFn: (params: TParams, signal: AbortSignal) => Promise<TData> | TData
   refetchInterval?: false | number
   retry?: false | number
   retryDelay?: (attemptIndex: number) => number
@@ -89,7 +89,7 @@ export interface MutationErrorResult {
 export type MutationResult<T> = MutationErrorResult | MutationIdleResult | MutationPendingResult | MutationSuccessResult<T>
 
 export interface MutationOptions<TParams, TData> {
-  mutationFn: (params: TParams) => Promise<TData>
+  mutationFn: (params: TParams) => Promise<TData> | TData
   onError?: (error: unknown) => void
   onSuccess?: (data: TData) => void
   retry?: false | number

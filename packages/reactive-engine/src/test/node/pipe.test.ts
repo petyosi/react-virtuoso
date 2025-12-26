@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { Cell, e, Engine, setNodeLabel, Stream } from '../..'
+import { Cell, e, Engine, Stream } from '../..'
 
 describe('pipe', () => {
   let eng!: Engine
@@ -11,7 +11,6 @@ describe('pipe', () => {
   // Integration tests for operator chaining
   it('chains multiple operators together', () => {
     const a = Stream<number>()
-    setNodeLabel(a, 'a')
 
     const b = e.pipe(
       a,

@@ -38,6 +38,7 @@ export function interpolateRoute(route: string, params: NonNullable<RouteRefValu
             searchParams.append(name, String(v))
           })
         } else {
+          // eslint-disable-next-line @typescript-eslint/no-base-to-string
           searchParams.set(name, String(value))
         }
       }
@@ -50,19 +51,19 @@ export function interpolateRoute(route: string, params: NonNullable<RouteRefValu
       const matches = [...queryPart.matchAll(queryParamPattern)]
 
       for (const match of matches) {
-        // biome-ignore lint/style/noNonNullAssertion: ok
-        const searchParamName = match[1]!
-        // biome-ignore lint/style/noNonNullAssertion: ok
-        const placeholder = match[2]!
+        const searchParamName = match[1]
+        const placeholder = match[2]
 
         // Extract placeholder name from {name}, {name?}, {name:type}, or {name?:type}
-        const placeholderMatch = /^(\w+)/.exec(placeholder)
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const placeholderMatch = /^(\w+)/.exec(placeholder!)
         if (!placeholderMatch) continue
 
-        // biome-ignore lint/style/noNonNullAssertion: ok
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const placeholderName = placeholderMatch[1]!
         processedKeys.add(placeholderName)
-        addParam(searchParamName, queryParams[placeholderName])
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        addParam(searchParamName!, queryParams[placeholderName])
       }
     }
 
@@ -177,9 +178,9 @@ function parsePathParams(urlPath: string, templatePath: string): null | Record<s
 
       const paramDef = templatePath.slice(i + 1, end)
       const isRest = paramDef.startsWith('*')
-      // biome-ignore lint/style/noNonNullAssertion: ok
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const paramName = isRest ? paramDef.slice(1) : paramDef.split(':')[0]!
-      // biome-ignore lint/style/noNonNullAssertion: ok
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const paramType = isRest ? 'string[]' : paramDef.includes(':') ? paramDef.split(':')[1]! : 'string'
 
       paramNames.push({ isRest, name: paramName, type: paramType })
@@ -192,7 +193,7 @@ function parsePathParams(urlPath: string, templatePath: string): null | Record<s
 
       i = end + 1
     } else {
-      // biome-ignore lint/style/noNonNullAssertion: ok
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const char = templatePath[i]!
       if (/[.*+?^${}()|[\]\\]/.test(char)) {
         pattern += `\\${char}`
@@ -216,6 +217,7 @@ function parsePathParams(urlPath: string, templatePath: string): null | Record<s
   // Extract and type-cast parameters
   paramNames.forEach((paramInfo, index) => {
     // biome-ignore lint/style/noNonNullAssertion: ok
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const value = match[index + 1]!
     if (paramInfo.isRest) {
       params[paramInfo.name] = value.split('/')
@@ -243,8 +245,10 @@ function parseQueryParams(urlQuery: string, templateQuery: string): Record<strin
 
   for (const match of matches) {
     // biome-ignore lint/style/noNonNullAssertion: ok
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const queryParamName = match[1]!
     // biome-ignore lint/style/noNonNullAssertion: ok
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const placeholder = match[2]!
 
     // Extract type info from placeholder

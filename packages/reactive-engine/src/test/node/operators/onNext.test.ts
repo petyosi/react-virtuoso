@@ -335,8 +335,8 @@ describe('onNext operator', () => {
     eng.pub(trigger, triggerValue)
 
     expect(history).toHaveLength(1)
-    expect(history[0]![0]).toBe(sourceValue)
-    expect(history[0]![1]).toBe(triggerValue)
+    expect(history[0]?.[0]).toBe(sourceValue)
+    expect(history[0]?.[1]).toBe(triggerValue)
   })
 
   // Integration with other operators

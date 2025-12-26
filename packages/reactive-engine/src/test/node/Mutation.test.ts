@@ -5,7 +5,7 @@ import { Mutation } from '../../query/Mutation'
 
 describe('Mutation', () => {
   it('should start in idle state', () => {
-    const mutationFn = vi.fn(async (params: { name: string }) => params.name)
+    const mutationFn = vi.fn((params: { name: string }) => params.name)
 
     const mutation = Mutation({
       mutationFn,
@@ -72,7 +72,7 @@ describe('Mutation', () => {
   })
 
   it('should handle mutation errors', async () => {
-    const mutationFn = vi.fn(async () => {
+    const mutationFn = vi.fn(() => {
       throw new Error('Mutation failed')
     })
 
@@ -92,7 +92,7 @@ describe('Mutation', () => {
 
     expect(sub).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        error: expect.any(Error),
+        error: expect.any(Error) as Error,
         isError: true,
         isPending: false,
         type: 'error',
@@ -102,7 +102,7 @@ describe('Mutation', () => {
   })
 
   it('should reset mutation state', async () => {
-    const mutationFn = vi.fn(async (params: { value: number }) => params.value * 2)
+    const mutationFn = vi.fn((params: { value: number }) => params.value * 2)
 
     const mutation = Mutation({
       mutationFn,
@@ -134,7 +134,7 @@ describe('Mutation', () => {
   it('should retry on failure', async () => {
     let attemptCount = 0
 
-    const mutationFn = vi.fn(async () => {
+    const mutationFn = vi.fn(() => {
       attemptCount++
       if (attemptCount < 3) {
         throw new Error(`Attempt ${attemptCount} failed`)
@@ -165,7 +165,7 @@ describe('Mutation', () => {
 
   it('should call onSuccess callback', async () => {
     const onSuccess = vi.fn()
-    const mutationFn = vi.fn(async (params: { value: number }) => params.value * 2)
+    const mutationFn = vi.fn((params: { value: number }) => params.value * 2)
 
     const mutation = Mutation({
       mutationFn,
@@ -186,7 +186,7 @@ describe('Mutation', () => {
 
   it('should call onError callback', async () => {
     const onError = vi.fn()
-    const mutationFn = vi.fn(async () => {
+    const mutationFn = vi.fn(() => {
       throw new Error('Mutation failed')
     })
 
@@ -209,7 +209,7 @@ describe('Mutation', () => {
   })
 
   it('should handle retry: false option', async () => {
-    const mutationFn = vi.fn(async () => {
+    const mutationFn = vi.fn(() => {
       throw new Error('Always fails')
     })
 
@@ -234,7 +234,7 @@ describe('Mutation', () => {
   })
 
   it('should handle retry: 0 option', async () => {
-    const mutationFn = vi.fn(async () => {
+    const mutationFn = vi.fn(() => {
       throw new Error('Always fails')
     })
 
@@ -257,7 +257,7 @@ describe('Mutation', () => {
 
   it('should handle multiple mutations', async () => {
     let callCount = 0
-    const mutationFn = vi.fn(async (params: { value: number }) => {
+    const mutationFn = vi.fn((params: { value: number }) => {
       callCount++
       return `Call ${callCount}: ${params.value}`
     })
@@ -291,13 +291,13 @@ describe('Mutation', () => {
   })
 
   it('should handle errors in onSuccess callback', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn())
 
     const onSuccess = vi.fn(() => {
       throw new Error('Callback error')
     })
 
-    const mutationFn = vi.fn(async () => 'Success')
+    const mutationFn = vi.fn(() => 'Success')
 
     const mutation = Mutation({
       mutationFn,
@@ -324,13 +324,13 @@ describe('Mutation', () => {
   })
 
   it('should handle errors in onError callback', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn())
 
     const onError = vi.fn(() => {
       throw new Error('Callback error')
     })
 
-    const mutationFn = vi.fn(async () => {
+    const mutationFn = vi.fn(() => {
       throw new Error('Mutation failed')
     })
 

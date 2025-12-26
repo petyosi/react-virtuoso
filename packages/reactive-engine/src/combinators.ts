@@ -211,7 +211,7 @@ export function combine(...nodes: Out[]): Out {
     if (nodes.length > 0) {
       addNodeInit(
         (r) => {
-          r.link(r.combine.apply(r, nodes), sink$)
+          r.link(r.combine(...nodes), sink$)
         },
         ...nodes
       )
@@ -482,7 +482,7 @@ export function merge(...sources: Out[]): Out {
     if (sources.length > 0) {
       addNodeInit(
         (r) => {
-          r.link(r.merge.apply(r, sources), sink$)
+          r.link(r.merge(...sources), sink$)
         },
         ...sources
       )
@@ -550,6 +550,7 @@ export function subMultiple(nodes: Out[], subscription: Subscription<unknown>): 
  * @category Combinators
  */
 //biome-ignore lint/suspicious/noExplicitAny: this is ok
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function subMultiple(nodes: Out[], subscription: Subscription<any>): void {
   if (nodes.length > 0) {
     addNodeInit(

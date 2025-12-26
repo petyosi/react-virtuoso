@@ -149,6 +149,7 @@ export function useCellValues(...cells: Out[]): unknown[] {
   // biome-ignore lint/correctness/useExhaustiveDependencies: I know better
   const combinedCell = React.useMemo(() => {
     return engine.combineCells(cells)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [engine, ...cells])
 
   return useCellValue(combinedCell)
@@ -201,5 +202,6 @@ export function usePublisher<T>(node$: Inp<T>) {
  */
 export function useCell<T>(cell: NodeRef<T>): [T, (value: T) => void] {
   // biome-ignore lint/suspicious/noExplicitAny: we need that any here
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
   return [useCellValue<T>(cell), usePublisher<T>(cell as any)]
 }

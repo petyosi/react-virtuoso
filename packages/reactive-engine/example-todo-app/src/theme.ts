@@ -21,7 +21,7 @@ e.link(
     e.map(([, currentTheme]) => {
       console.log('Toggling theme from', currentTheme)
       return currentTheme === 'light' ? 'dark' : 'light'
-    }),
+    })
   ),
-  theme$,
+  theme$
 )

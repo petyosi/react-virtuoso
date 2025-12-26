@@ -110,11 +110,7 @@ function Navigation() {
 export function BasicRouter() {
   return (
     <EngineProvider>
-      <Router
-        layouts={[rootLayout, blogLayout]}
-        routes={[home$, about$, user$, blog$, guarded$, notFound$]}
-        guards={[theGuard$]}
-      />
+      <Router layouts={[rootLayout, blogLayout]} routes={[home$, about$, user$, blog$, guarded$, notFound$]} guards={[theGuard$]} />
     </EngineProvider>
   )
 }

@@ -3,7 +3,6 @@ import type * as React from 'react'
 import type { CreateRouteReference, RouteParams } from './types'
 
 import { Cell } from '../nodes'
-import { setNodeLabel } from '../nodeUtils'
 
 /**
  * Route factory creates a typed route reference with compile-time parameter validation.
@@ -23,7 +22,6 @@ export function Route<T extends string>(routeDefinition: T, component?: React.Co
   const route$ = Cell<null | RouteParams<T>>(null)
 
   // Store the route definition for runtime lookups
-  setNodeLabel(route$, routeDefinition)
   routeDefinitions$$.set(route$ as symbol, routeDefinition)
 
   if (component) {

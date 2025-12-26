@@ -1,24 +1,35 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 // biome-ignore-all lint/complexity/noBannedTypes: this is ok here.
 
 import type * as React from 'react'
 
 import type { NodeRef } from '../types'
 
+/**
+ * Checks if a type has all optional properties (is "fully partial").
+ * Used to determine if $search should be optional in RouteParams.
+ */
+type IsFullyPartial<T> = Partial<T> extends T ? true : false
+
 export type RouteParams<Route extends string> = Route extends `${infer Path}?${infer Query}`
   ? ExtractPathParams<Path> extends infer PathParams
     ? ExtractQueryParams<Query> extends infer QueryParams
       ? keyof PathParams extends never
         ? keyof QueryParams extends never
-          ? {}
-          : { $search: QueryParams }
+          ? Record<string, never>
+          : IsFullyPartial<QueryParams> extends true
+            ? { $search?: QueryParams }
+            : { $search: QueryParams }
         : keyof QueryParams extends never
           ? PathParams
-          : PathParams & { $search: QueryParams }
+          : IsFullyPartial<QueryParams> extends true
+            ? PathParams & { $search?: QueryParams }
+            : PathParams & { $search: QueryParams }
       : never
     : never
   : ExtractPathParams<Route> extends infer PathParams
     ? keyof PathParams extends never
-      ? {}
+      ? Record<string, never>
       : PathParams
     : never
 
@@ -124,9 +135,11 @@ export type RouteReference<
  * @typeParam Path - The route path pattern
  */
 export type PathParamExtractor<Path extends string> = Path extends `${infer _Start}{${infer Param}}${infer Rest}`
-  ? Param extends `${infer ParamName}${infer _Rest}`
-    ? ParamName | PathParamExtractor<Rest>
-    : PathParamExtractor<Rest>
+  ? Param extends `*${infer Name}`
+    ? Name | PathParamExtractor<Rest>
+    : Param extends `${infer Name}:${infer _Type}`
+      ? Name | PathParamExtractor<Rest>
+      : Param | PathParamExtractor<Rest>
   : never
 
 /**

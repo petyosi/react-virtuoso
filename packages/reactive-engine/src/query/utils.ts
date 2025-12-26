@@ -7,7 +7,7 @@ export function defaultRetryDelay(attemptIndex: number): number {
 }
 
 export async function executeWithRetry<T>(
-  fn: () => Promise<T>,
+  fn: () => Promise<T> | T,
   options: {
     retry: number
     retryDelay: (n: number) => number

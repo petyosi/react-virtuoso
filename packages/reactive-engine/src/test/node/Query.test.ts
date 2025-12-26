@@ -49,7 +49,7 @@ describe('Query', () => {
   })
 
   it('should handle query errors', async () => {
-    const queryFn = vi.fn(async () => {
+    const queryFn = vi.fn(() => {
       throw new Error('Network error')
     })
 
@@ -67,7 +67,7 @@ describe('Query', () => {
 
     expect(sub).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        error: expect.any(Error),
+        error: expect.any(Error) as Error,
         isError: true,
         isFetching: false,
         isLoading: false,
@@ -78,8 +78,8 @@ describe('Query', () => {
   })
 
   it('should refetch when refetch$ triggered', async () => {
-    const queryFn = vi.fn(async ({ count }: { count: number }) => {
-      return `Result ${count}`
+    const queryFn = vi.fn(({ count }: { count: number }) => {
+      return Promise.resolve(`Result ${count}`)
     })
 
     const query = Query({
@@ -105,8 +105,8 @@ describe('Query', () => {
   })
 
   it('should execute new query when params$ changes', async () => {
-    const queryFn = vi.fn(async ({ userId }: { userId: number }) => {
-      return `User ${userId}`
+    const queryFn = vi.fn(({ userId }: { userId: number }) => {
+      return Promise.resolve(`User ${userId}`)
     })
 
     const query = Query({
@@ -141,7 +141,7 @@ describe('Query', () => {
   })
 
   it('should not execute when enabled$ is false', async () => {
-    const queryFn = vi.fn(async () => 'Result')
+    const queryFn = vi.fn(() => Promise.resolve('Result'))
 
     const query = Query({
       enabled: false,
@@ -237,12 +237,12 @@ describe('Query', () => {
   it('should retry on failure with exponential backoff', async () => {
     let attemptCount = 0
 
-    const queryFn = vi.fn(async () => {
+    const queryFn = vi.fn(() => {
       attemptCount++
       if (attemptCount < 3) {
         throw new Error(`Attempt ${attemptCount} failed`)
       }
-      return 'Success on third attempt'
+      return Promise.resolve('Success on third attempt')
     })
 
     const query = Query({
@@ -266,9 +266,9 @@ describe('Query', () => {
 
   it('should poll with refetchInterval', async () => {
     let callCount = 0
-    const queryFn = vi.fn(async () => {
+    const queryFn = vi.fn(() => {
       callCount++
-      return `Call ${callCount}`
+      return Promise.resolve(`Call ${callCount}`)
     })
 
     const query = Query({
@@ -294,7 +294,7 @@ describe('Query', () => {
   })
 
   it('should use initial data', async () => {
-    const queryFn = vi.fn(async () => 'Fetched data')
+    const queryFn = vi.fn(() => 'Fetched data')
 
     const query = Query({
       initialData: 'Initial data',
@@ -327,7 +327,7 @@ describe('Query', () => {
 
   it('should invalidate and refetch while keeping data', async () => {
     let callCount = 0
-    const queryFn = vi.fn(async () => {
+    const queryFn = vi.fn(() => {
       callCount++
       return `Data ${callCount}`
     })
@@ -372,7 +372,7 @@ describe('Query', () => {
   })
 
   it('should handle retry: false option', async () => {
-    const queryFn = vi.fn(async () => {
+    const queryFn = vi.fn(() => {
       throw new Error('Always fails')
     })
 
@@ -395,7 +395,7 @@ describe('Query', () => {
   })
 
   it('should handle retry: 0 option', async () => {
-    const queryFn = vi.fn(async () => {
+    const queryFn = vi.fn(() => {
       throw new Error('Always fails')
     })
 
@@ -416,7 +416,7 @@ describe('Query', () => {
 
   it('should clear polling when disabled', async () => {
     let callCount = 0
-    const queryFn = vi.fn(async () => {
+    const queryFn = vi.fn(() => {
       callCount++
       return `Call ${callCount}`
     })
@@ -448,9 +448,7 @@ describe('Query', () => {
 
   describe('unload', () => {
     it('should transition to pending from success state', async () => {
-      const queryFn = vi.fn(async () => {
-        return 'User data'
-      })
+      const queryFn = vi.fn(() => 'User data')
 
       const query = Query({
         initialParams: {},
@@ -458,7 +456,7 @@ describe('Query', () => {
       })
 
       const engine = new Engine()
-      engine.sub(query.data$, () => {})
+      engine.sub(query.data$, vi.fn())
 
       await new Promise((resolve) => setTimeout(resolve, 50))
 
@@ -482,7 +480,7 @@ describe('Query', () => {
     })
 
     it('should transition to pending from error state', async () => {
-      const queryFn = vi.fn(async () => {
+      const queryFn = vi.fn(() => {
         throw new Error('Network error')
       })
 
@@ -493,12 +491,12 @@ describe('Query', () => {
       })
 
       const engine = new Engine()
-      engine.sub(query.data$, () => {})
+      engine.sub(query.data$, vi.fn())
 
       await new Promise((resolve) => setTimeout(resolve, 50))
 
       expect(engine.getValue(query.data$)).toMatchObject({
-        error: expect.any(Error),
+        error: expect.any(Error) as Error,
         isError: true,
         type: 'error',
       })
@@ -517,7 +515,7 @@ describe('Query', () => {
     })
 
     it('should remain pending when already pending', async () => {
-      const queryFn = vi.fn(async () => {
+      const queryFn = vi.fn(() => {
         return new Promise((resolve) => {
           setTimeout(() => {
             resolve('Data')
@@ -531,7 +529,7 @@ describe('Query', () => {
       })
 
       const engine = new Engine()
-      engine.sub(query.data$, () => {})
+      engine.sub(query.data$, vi.fn())
 
       expect(engine.getValue(query.data$)).toMatchObject({
         isLoading: true,
@@ -553,9 +551,7 @@ describe('Query', () => {
     })
 
     it('should clear data when Query is disabled', async () => {
-      const queryFn = vi.fn(async () => {
-        return 'User data'
-      })
+      const queryFn = vi.fn(() => 'User data')
 
       const query = Query({
         initialParams: {},
@@ -563,7 +559,7 @@ describe('Query', () => {
       })
 
       const engine = new Engine()
-      engine.sub(query.data$, () => {})
+      engine.sub(query.data$, vi.fn())
 
       await new Promise((resolve) => setTimeout(resolve, 50))
 
@@ -589,7 +585,7 @@ describe('Query', () => {
     })
 
     it('should prevent stale data when unloading before params change', async () => {
-      const queryFn = vi.fn(async ({ userId }: { userId: number }) => {
+      const queryFn = vi.fn(({ userId }: { userId: number }) => {
         return new Promise<string>((resolve) => {
           setTimeout(() => {
             resolve(`User ${userId}`)
@@ -637,7 +633,7 @@ describe('Query', () => {
     })
 
     it('should show stale data when params change without unload', async () => {
-      const queryFn = vi.fn(async ({ userId }: { userId: number }) => {
+      const queryFn = vi.fn(({ userId }: { userId: number }) => {
         return new Promise<string>((resolve) => {
           setTimeout(() => {
             resolve(`User ${userId}`)
@@ -682,7 +678,7 @@ describe('Query', () => {
     it('should abort in-flight requests when unloaded', async () => {
       let abortSignalReceived: AbortSignal | undefined
 
-      const queryFn = vi.fn(async (_params: object, signal: AbortSignal) => {
+      const queryFn = vi.fn((_params: object, signal: AbortSignal) => {
         abortSignalReceived = signal
         return new Promise<string>((resolve, reject) => {
           const timeout = setTimeout(() => {
@@ -701,7 +697,7 @@ describe('Query', () => {
       })
 
       const engine = new Engine()
-      engine.sub(query.data$, () => {})
+      engine.sub(query.data$, vi.fn())
 
       await new Promise((resolve) => setTimeout(resolve, 10))
 
@@ -721,9 +717,7 @@ describe('Query', () => {
     })
 
     it('should preserve polling intervals after unload', async () => {
-      const queryFn = vi.fn(async () => {
-        return 'Data'
-      })
+      const queryFn = vi.fn(() => 'Data')
 
       const query = Query({
         initialParams: {},
@@ -732,7 +726,7 @@ describe('Query', () => {
       })
 
       const engine = new Engine()
-      engine.sub(query.data$, () => {})
+      engine.sub(query.data$, vi.fn())
 
       await new Promise((resolve) => setTimeout(resolve, 120))
 
@@ -752,7 +746,7 @@ describe('Query', () => {
     it('should abort retry sequences when unloaded', async () => {
       let attemptCount = 0
 
-      const queryFn = vi.fn(async () => {
+      const queryFn = vi.fn(() => {
         attemptCount++
         throw new Error('Network error')
       })
@@ -765,7 +759,7 @@ describe('Query', () => {
       })
 
       const engine = new Engine()
-      engine.sub(query.data$, () => {})
+      engine.sub(query.data$, vi.fn())
 
       await new Promise((resolve) => setTimeout(resolve, 50))
 
@@ -782,9 +776,7 @@ describe('Query', () => {
     })
 
     it('should be idempotent with multiple rapid unload calls', async () => {
-      const queryFn = vi.fn(async () => {
-        return 'User data'
-      })
+      const queryFn = vi.fn(() => Promise.resolve('User data'))
 
       const query = Query({
         initialParams: {},

@@ -22,6 +22,7 @@ export interface NavigateResult {
 }
 
 // biome-ignore lint/suspicious/noConfusingVoidType: void is needed for implicit return compatibility
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents, @typescript-eslint/no-invalid-void-type
 export type GuardResult = ContinueResult | NavigateResult | RedirectResult | undefined | void
 
 export type AsyncGuardResult = GuardResult | Promise<GuardResult>

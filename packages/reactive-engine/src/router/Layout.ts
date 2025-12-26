@@ -34,8 +34,7 @@ export function findMatchingLayouts(currentPath: string, layouts?: symbol[]): Re
       // Sort by path length: shortest first (outermost)
       return (a.layoutPath?.length ?? 0) - (b.layoutPath?.length ?? 0)
     })
-    // biome-ignore lint/style/noNonNullAssertion: we know we have layout
-    .map(({ layoutComponent }) => layoutComponent!)
+    .map(({ layoutComponent }) => layoutComponent as React.ComponentType<{ children: React.ReactNode }>)
 
   return matching
 }

@@ -32,8 +32,7 @@ describe('Storage Linked Cells', () => {
       })
 
       const { result } = await renderHook(() => useCellValue(theme$), {
-        initialProps: undefined,
-        wrapper: EngineProvider,
+        wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider>,
       })
 
       // Should initialize from storage, not initial value
@@ -55,8 +54,7 @@ describe('Storage Linked Cells', () => {
           return { count, publish }
         },
         {
-          initialProps: undefined,
-          wrapper: EngineProvider,
+          wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider>,
         }
       )
 
@@ -86,8 +84,7 @@ describe('Storage Linked Cells', () => {
           return { date, publish }
         },
         {
-          initialProps: undefined,
-          wrapper: EngineProvider,
+          wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider>,
         }
       )
 
@@ -110,8 +107,7 @@ describe('Storage Linked Cells', () => {
       })
 
       const { result } = await renderHook(() => useCellValue(data$), {
-        initialProps: undefined,
-        wrapper: EngineProvider,
+        wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider>,
       })
 
       // Should keep initial value when deserialization fails
@@ -133,8 +129,7 @@ describe('Storage Linked Cells', () => {
           return { count, publish }
         },
         {
-          initialProps: undefined,
-          wrapper: EngineProvider,
+          wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider>,
         }
       )
 
@@ -166,8 +161,7 @@ describe('Storage Linked Cells', () => {
           return { publish, value }
         },
         {
-          initialProps: undefined,
-          wrapper: EngineProvider, // No id provided
+          wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider>, // No id provided
         }
       )
 
@@ -194,8 +188,7 @@ describe('Storage Linked Cells', () => {
           return { publish, value }
         },
         {
-          initialProps: undefined,
-          wrapper: ({ children }: { children: React.ReactNode }) => <EngineProvider engineId="my-app">{children}</EngineProvider>,
+          wrapper: ({ children }) => <EngineProvider engineId="my-app">{children}</EngineProvider>,
         }
       )
 
@@ -218,8 +211,7 @@ describe('Storage Linked Cells', () => {
       })
 
       const { result } = await renderHook(() => useCellValue(counter$), {
-        initialProps: undefined,
-        wrapper: ({ children }: { children: React.ReactNode }) => <EngineProvider engineId="my-app">{children}</EngineProvider>,
+        wrapper: ({ children }) => <EngineProvider engineId="my-app">{children}</EngineProvider>,
       })
 
       // Should restore value from storage despite new engine instance
@@ -237,8 +229,7 @@ describe('Storage Linked Cells', () => {
       })
 
       const { result } = await renderHook(() => useCellValue(counter$), {
-        initialProps: undefined,
-        wrapper: EngineProvider, // No id
+        wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider>, // No id
       })
 
       // Should restore from clean key
@@ -262,8 +253,7 @@ describe('Storage Linked Cells', () => {
           return { publish, value }
         },
         {
-          initialProps: undefined,
-          wrapper: EngineProvider,
+          wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider>,
         }
       )
 
@@ -290,8 +280,7 @@ describe('Storage Linked Cells', () => {
           return { publish, value }
         },
         {
-          initialProps: undefined,
-          wrapper: EngineProvider,
+          wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider>,
         }
       )
 
@@ -319,8 +308,7 @@ describe('Storage Linked Cells', () => {
           return { publish, value }
         },
         {
-          initialProps: undefined,
-          wrapper: EngineProvider,
+          wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider>,
         }
       )
 
@@ -350,8 +338,7 @@ describe('Storage Linked Cells', () => {
           return { publish, value }
         },
         {
-          initialProps: undefined,
-          wrapper: EngineProvider,
+          wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider>,
         }
       )
 
@@ -380,8 +367,7 @@ describe('Storage Linked Cells', () => {
           return { publish, value }
         },
         {
-          initialProps: undefined,
-          wrapper: ({ children }: { children: React.ReactNode }) => <EngineProvider engineId="my-app">{children}</EngineProvider>,
+          wrapper: ({ children }) => <EngineProvider engineId="my-app">{children}</EngineProvider>,
         }
       )
 
@@ -411,16 +397,15 @@ describe('Storage Linked Cells', () => {
   })
 
   describe('cleanup', () => {
-    it('storage link is registered correctly', () => {
+    it('storage link is registered correctly', async () => {
       const cell$ = Cell('value')
       linkCellToStorage(cell$, {
         key: 'cleanup-test',
         storageType: 'localStorage',
       })
 
-      void renderHook(() => useCellValue(cell$), {
-        initialProps: undefined,
-        wrapper: EngineProvider,
+      await renderHook(() => useCellValue(cell$), {
+        wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider>,
       })
 
       // Verify storage link is set up (listeners are cleaned up via engine.onDispose)

@@ -6,5 +6,5 @@ import { TodoApp } from './App'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <TodoApp />
-  </StrictMode>,
+  </StrictMode>
 )

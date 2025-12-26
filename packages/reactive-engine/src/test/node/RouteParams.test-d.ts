@@ -4,8 +4,7 @@ import type { RouteParams } from '../../router/types'
 
 describe('RouteParams', () => {
   it('has no params by default', () => {
-    // biome-ignore lint/complexity/noBannedTypes: empty object is correct here
-    expectTypeOf<RouteParams<'/'>>().toEqualTypeOf<{}>()
+    expectTypeOf<RouteParams<'/'>>().toEqualTypeOf<Record<string, never>>()
   })
 
   it('parses a parameter to string', () => {
@@ -45,21 +44,21 @@ describe('RouteParams', () => {
 
   it('parses search params', () => {
     type Result = RouteParams<'/users/{userId:number}/?orgId={orgId}'>
-    expectTypeOf<Result>().toMatchTypeOf<{ $search: { orgId: string }; userId: number }>()
+    expectTypeOf<Result>().toExtend<{ $search: { orgId: string }; userId: number }>()
   })
 
   it('supports optional search params', () => {
     type Result = RouteParams<'/users/{userId:number}/?orgId={orgId?}'>
-    expectTypeOf<Result>().toMatchTypeOf<{ $search: { orgId?: string }; userId: number }>()
+    expectTypeOf<Result>().toExtend<{ $search?: { orgId?: string }; userId: number }>()
   })
 
   it('supports array params', () => {
     type Result = RouteParams<'/users/{userId:number}/?orgIds={orgIds:number[]}'>
-    expectTypeOf<Result>().toMatchTypeOf<{ $search: { orgIds?: number[] }; userId: number }>()
+    expectTypeOf<Result>().toExtend<{ $search?: { orgIds?: number[] }; userId: number }>()
   })
 
   it('supports optional explicitly typed params', () => {
     type Result = RouteParams<'/users/{userId:number}/?orgId={orgId?:number}'>
-    expectTypeOf<Result>().toMatchTypeOf<{ $search: { orgId?: number }; userId: number }>()
+    expectTypeOf<Result>().toExtend<{ $search?: { orgId?: number }; userId: number }>()
   })
 })

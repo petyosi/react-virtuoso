@@ -13,7 +13,7 @@ describe('filter operator type narrowing', () => {
     )
 
     // Type should be narrowed to string
-    expectTypeOf(filtered$).toMatchTypeOf<NodeRef<string>>()
+    expectTypeOf(filtered$).toExtend<NodeRef<string>>()
   })
 
   it('preserves type without type predicate', () => {
@@ -24,7 +24,7 @@ describe('filter operator type narrowing', () => {
     )
 
     // Type should remain string | null
-    expectTypeOf(filtered$).toMatchTypeOf<NodeRef<null | string>>()
+    expectTypeOf(filtered$).toExtend<NodeRef<null | string>>()
   })
 
   it('narrows union types with type predicate', () => {
@@ -35,7 +35,7 @@ describe('filter operator type narrowing', () => {
     )
 
     // Type should be narrowed to string
-    expectTypeOf(filtered$).toMatchTypeOf<NodeRef<string>>()
+    expectTypeOf(filtered$).toExtend<NodeRef<string>>()
   })
 
   it('narrows to specific object types', () => {
@@ -56,7 +56,7 @@ describe('filter operator type narrowing', () => {
     )
 
     // Type should be narrowed to Admin
-    expectTypeOf(filtered$).toMatchTypeOf<NodeRef<Admin>>()
+    expectTypeOf(filtered$).toExtend<NodeRef<Admin>>()
   })
 
   it('works with multiple type predicates in chain', () => {
@@ -68,7 +68,7 @@ describe('filter operator type narrowing', () => {
     )
 
     // Type should be narrowed to string
-    expectTypeOf(filtered$).toMatchTypeOf<NodeRef<string>>()
+    expectTypeOf(filtered$).toExtend<NodeRef<string>>()
   })
 
   it('preserves original type when boolean predicate is used', () => {
@@ -79,6 +79,6 @@ describe('filter operator type narrowing', () => {
     )
 
     // Type should remain number
-    expectTypeOf(filtered$).toMatchTypeOf<NodeRef<number>>()
+    expectTypeOf(filtered$).toExtend<NodeRef<number>>()
   })
 })

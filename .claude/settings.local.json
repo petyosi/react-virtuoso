@@ -87,7 +87,10 @@
       "Bash(gh run list:*)",
       "Bash(git fetch:*)",
       "Bash(pnpm --filter @virtuoso.dev/reactive-engine run typecheck:*)",
-      "Bash(pnpm --filter @virtuoso.dev/reactive-engine run lint:*)"
+      "Bash(pnpm --filter @virtuoso.dev/reactive-engine run lint:*)",
+      "Bash(pnpm run test:typecheck:*)",
+      "Bash(pnpm vitest:*)",
+      "Bash(pnpm run prettier:check:*)"
     ],
     "deny": [],
     "ask": []

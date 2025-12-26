@@ -1,20 +1,6 @@
 import type { NodeInit, NodeRef } from './types'
 
-import { getCurrentEngine, nodeInits$$, nodeInitSubscriptions$$, nodeLabels$$ } from './globals'
-
-/**
- * @category Logging
- */
-export function getNodeLabel(node: symbol): string {
-  return nodeLabels$$.get(node) ?? '<anonymous>'
-}
-
-/**
- * @category Logging
- */
-export function setNodeLabel(node: NodeRef, label: string) {
-  nodeLabels$$.set(node, label)
-}
+import { getCurrentEngine, nodeDebugLabels$$, nodeInits$$, nodeInitSubscriptions$$ } from './globals'
 
 /**
  * Registers an initialization function to be called when any of the specified nodes are initialized in an engine.
@@ -74,4 +60,92 @@ export function pubIn(values: Record<symbol, unknown>) {
     throw new Error('No active engine found. You can use pub only in the context of node subscription callbacks.')
   }
   engine.pubIn(values)
+}
+
+/**
+ * Extracts the caller location from an Error stack trace.
+ * Parses file:line from various browser stack formats (V8, Firefox, Safari).
+ * This is a best-effort implementation.
+ *
+ * @param stack - The stack trace string
+ * @returns File:line string (e.g., "App.tsx:42") or null if parsing fails
+ */
+function extractCallerLocation(stack: string): null | string {
+  const lines = stack.split('\n')
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i]
+
+    if (!line) {
+      continue
+    }
+
+    // Skip our own debug function and nodeUtils
+    if (line.includes('debug') || line.includes('nodeUtils')) {
+      continue
+    }
+
+    // Try to extract file:line from various formats
+    // V8:      "    at file.ts:42:3" or "    at Object.<anonymous> (file.ts:42:3)"
+    // Firefox: "@file.ts:42:3" or "functionName@file.ts:42:3"
+    // Safari:  "file.ts:42:3"
+
+    // Match patterns like: file.ts:42 or file.tsx:42
+    const match = /([^/\\s()]+\.tsx?):(\\d+):\\d+/.exec(line)
+    if (match) {
+      return `${match[1]}:${match[2]}`
+    }
+  }
+
+  return null
+}
+
+/**
+ * Marks a node for debug logging. When the node emits in development mode,
+ * its value will be logged to console.
+ *
+ * @param node$ - The node to debug
+ * @param label - Optional custom label. If not provided, attempts to extract
+ *                file:line from stack trace (best effort). Falls back to '<anonymous>'.
+ * @returns Cleanup function to stop logging
+ *
+ * @example
+ * ```ts
+ * // Automatic labeling from call site
+ * const count$ = Cell(0)
+ * const stop = debug(count$)  // Auto-labeled as "App.tsx:42"
+ *
+ * // Manual label
+ * const user$ = Stream<User>()
+ * debug(user$, 'User Stream')
+ *
+ * // Later: stop() to disable logging
+ * stop()
+ * ```
+ *
+ * @category Logging
+ */
+export function debug<T>(node$: NodeRef<T>, label?: string): () => void {
+  let nodeLabel = label
+
+  // Try to extract location from stack trace if no label provided
+  if (!nodeLabel) {
+    try {
+      const stack = new Error().stack
+      if (stack) {
+        nodeLabel = extractCallerLocation(stack) ?? undefined
+      }
+    } catch {
+      // Stack capture failed, use fallback
+    }
+  }
+
+  // Final fallback
+  nodeLabel = nodeLabel ?? '<anonymous>'
+
+  nodeDebugLabels$$.set(node$, nodeLabel)
+
+  return () => {
+    nodeDebugLabels$$.delete(node$)
+  }
 }

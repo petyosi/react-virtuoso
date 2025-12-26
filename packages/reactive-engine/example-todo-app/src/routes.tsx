@@ -17,7 +17,7 @@ e.link(
       // biome-ignore lint/style/noNonNullAssertion: for now :(
       const pathParams = Array.isArray(params) ? params[0] : params!
       return { listId: pathParams.id }
-    }),
+    })
   ),
-  tasksQuery.params$,
+  tasksQuery.params$
 )

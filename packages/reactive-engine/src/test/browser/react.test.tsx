@@ -18,7 +18,7 @@ describe('Reactive Engine in React', () => {
 
   it('has working setters', async () => {
     const { rerender, result } = await renderHook(() => useCell(cell$), {
-      wrapper: EngineProvider,
+      wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider>,
     })
     expect(result.current[0]).toEqual('hello')
     result.current[1]('world')
@@ -39,7 +39,7 @@ describe('Reactive Engine in React', () => {
         const value = useCellValue(cell$)
         return [value, proc] as const
       },
-      { initialProps: undefined, wrapper: EngineProvider }
+      { initialProps: undefined, wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider> }
     )
     expect(result.current[0]).toEqual('hello')
     result.current[1]()
@@ -52,7 +52,7 @@ describe('Reactive Engine in React', () => {
     const b$ = Cell('b')
     const { result } = await renderHook(() => useCellValues(a$, b$), {
       initialProps: undefined,
-      wrapper: EngineProvider,
+      wrapper: ({ children }) => <EngineProvider>{children}</EngineProvider>,
     })
 
     expect(result.current).toEqual(['a', 'b'])
@@ -79,15 +79,17 @@ describe('Reactive Engine in React', () => {
         </EngineProvider>
       )
 
-      await expect.element(screen.getByTestId('cell-value')).toHaveTextContent('1')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await expect.element(screen.getByTestId('cell-value') as any).toHaveTextContent('1')
 
-      await screen.rerender(
+      void screen.rerender(
         <EngineProvider updateWith={{ [cell$]: '2' }}>
           <Child />
         </EngineProvider>
       )
 
-      await expect.element(screen.getByTestId('cell-value')).toHaveTextContent('2')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await expect.element(screen.getByTestId('cell-value') as any).toHaveTextContent('2')
     })
   })
 })

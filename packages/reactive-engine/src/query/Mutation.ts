@@ -76,7 +76,7 @@ export function Mutation<TParams, TData>(options: MutationOptions<TParams, TData
   })
 
   const mutate$ = Stream<TParams>()
-  const reset$ = Stream<void>()
+  const reset$ = Stream()
 
   function executeMutation(params: TParams, engine: Engine) {
     // Set pending state

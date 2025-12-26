@@ -86,16 +86,16 @@ e.link(
   e.pipe(
     e.merge(createListMutation.data$, updateListMutation.data$, deleteListMutation.data$),
     e.filter((data) => data.type === 'success'),
-    e.map(() => undefined, false),
+    e.map(() => undefined, false)
   ),
-  listsQuery.refetch$,
+  listsQuery.refetch$
 )
 
 e.link(
   e.pipe(
     e.merge(createTaskMutation.data$, updateTaskMutation.data$, deleteTaskMutation.data$),
     e.filter((data) => data.type === 'success'),
-    e.map(() => undefined, false),
+    e.map(() => undefined, false)
   ),
-  tasksQuery.refetch$,
+  tasksQuery.refetch$
 )

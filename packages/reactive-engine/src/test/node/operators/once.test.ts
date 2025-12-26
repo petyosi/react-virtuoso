@@ -320,6 +320,6 @@ describe('once operator', () => {
     eng.pub(source, { id: 2, value: 'ignored' })
 
     expect(history).toEqual([testValue])
-    expect(history[0]!.value).toBe('test')
+    expect(history[0]?.value).toBe('test')
   })
 })

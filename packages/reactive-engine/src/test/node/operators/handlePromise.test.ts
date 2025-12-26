@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { e, Engine, Stream } from '../../..'

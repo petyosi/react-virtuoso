@@ -689,8 +689,8 @@ describe('multi-node addNodeInit', () => {
   it('supports single node (backward compatibility)', () => {
     const a$ = Cell(0)
     const result$ = Cell(0)
-    const initFn = vi.fn((r) => {
-      r.pub(result$, 42)
+    const initFn = vi.fn((e: Engine) => {
+      e.pub(result$, 42)
     })
 
     e.addNodeInit(initFn, a$)
@@ -705,7 +705,7 @@ describe('multi-node addNodeInit', () => {
     const b$ = Cell(0)
     const c$ = Cell(0)
     const result$ = Cell(0)
-    const initFn = vi.fn((r) => {
+    const initFn = vi.fn((r: Engine) => {
       r.pub(result$, 100)
     })
 
@@ -722,7 +722,7 @@ describe('multi-node addNodeInit', () => {
     const b$ = Cell(0)
     const c$ = Cell(0)
     const result$ = Cell(0)
-    const initFn = vi.fn((r) => {
+    const initFn = vi.fn((r: Engine) => {
       r.pub(result$, 200)
     })
 
@@ -739,7 +739,7 @@ describe('multi-node addNodeInit', () => {
     const b$ = Cell(0)
     const c$ = Cell(0)
     const result$ = Cell(0)
-    const initFn = vi.fn((r) => {
+    const initFn = vi.fn((r: Engine) => {
       r.pub(result$, 300)
     })
 
@@ -756,7 +756,7 @@ describe('multi-node addNodeInit', () => {
     const b$ = Cell(0)
     const c$ = Cell(0)
     const result$ = Cell(0)
-    const initFn = vi.fn((r) => {
+    const initFn = vi.fn((r: Engine) => {
       r.pub(result$, r.getValue(result$) + 1)
     })
 
@@ -781,7 +781,7 @@ describe('multi-node addNodeInit', () => {
     // Initialize first node before adding init
     eng.pub(a$, 1)
 
-    const initFn = vi.fn((r) => {
+    const initFn = vi.fn((r: Engine) => {
       r.pub(result$, 99)
     })
 
@@ -802,12 +802,12 @@ describe('multi-node addNodeInit', () => {
     const result1$ = Cell(0)
     const result2$ = Cell(0)
 
-    const init1 = vi.fn((r) => {
-      r.pub(result1$, 10)
+    const init1 = vi.fn((e: Engine) => {
+      e.pub(result1$, 10)
     })
 
-    const init2 = vi.fn((r) => {
-      r.pub(result2$, 20)
+    const init2 = vi.fn((e: Engine) => {
+      e.pub(result2$, 20)
     })
 
     e.addNodeInit(init1, a$, b$)
@@ -826,12 +826,12 @@ describe('multi-node addNodeInit', () => {
     const b$ = Cell(0)
     const counter$ = Cell(0)
 
-    const init1 = vi.fn((r) => {
-      r.pub(counter$, r.getValue(counter$) + 1)
+    const init1 = vi.fn((e: Engine) => {
+      e.pub(counter$, e.getValue(counter$) + 1)
     })
 
-    const init2 = vi.fn((r) => {
-      r.pub(counter$, r.getValue(counter$) + 10)
+    const init2 = vi.fn((e: Engine) => {
+      e.pub(counter$, e.getValue(counter$) + 10)
     })
 
     e.addNodeInit(init1, a$, b$)
@@ -856,8 +856,8 @@ describe('multi-node addNodeInit', () => {
     const a$ = Cell(0)
     const b$ = Cell(0)
     const result$ = Cell(0)
-    const initFn = vi.fn((r) => {
-      r.pub(result$, r.getValue(result$) + 1)
+    const initFn = vi.fn((e: Engine) => {
+      e.pub(result$, e.getValue(result$) + 1)
     })
 
     e.addNodeInit(initFn, a$, b$)

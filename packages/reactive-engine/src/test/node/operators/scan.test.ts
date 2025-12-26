@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /** biome-ignore-all lint/style/noNonNullAssertion: tests */
 import { beforeEach, describe, expect, it } from 'vitest'
 

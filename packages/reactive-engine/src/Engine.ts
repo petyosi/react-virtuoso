@@ -11,16 +11,12 @@ import type {
   Out,
   ProjectionFunc,
   Subscription,
-  TracerConsole,
   UnsubscribeHandle,
 } from './types'
 
-import { CC } from './CC'
-import { CELL_TYPE, inEngineContext, nodeDefs$$, nodeInits$$, nodeInitSubscriptions$$ } from './globals'
-import { getNodeLabel } from './nodeUtils'
+import { CELL_TYPE, inEngineContext, nodeDebugLabels$$, nodeDefs$$, nodeInits$$, nodeInitSubscriptions$$ } from './globals'
 import { RefCount } from './RefCount'
 import { SetMap } from './SetMap'
-import { Tracer } from './Tracer'
 import { combinedCellProjection, defaultComparator, tap } from './utils'
 
 // use this so that streams don't skip undefined values
@@ -32,7 +28,6 @@ const emptyStreamValue = Symbol('empty stream')
  */
 export class Engine {
   public readonly id?: string
-  public readonly tracer = new Tracer()
   private readonly calledInits = new Set<NodeInit<unknown>>()
   private readonly combinedCells: CombinedCellRecord[] = []
   private readonly definitionRegistry = new Set<symbol>()
@@ -183,8 +178,9 @@ export class Engine {
   }
 
   copyDistinctValue(source$: NodeRef, target$: NodeRef) {
-    if (this.distinctNodes.has(source$)) {
-      this.distinctNodes.set(target$, this.distinctNodes.get(source$)!)
+    const comparator = this.distinctNodes.get(source$)
+    if (comparator !== undefined) {
+      this.distinctNodes.set(target$, comparator)
     } else {
       // delete
       this.distinctNodes.delete(target$)
@@ -284,6 +280,7 @@ export class Engine {
    * r.pub(foo$, 'bar')
    * ```
    */
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
   pub<T>(node: Inp<T>, value: T): void
   pub<T>(node: Inp<T>, value?: T) {
     this.pubIn({ [node]: value })
@@ -304,14 +301,6 @@ export class Engine {
    */
   pubIn(values: Record<symbol, unknown>) {
     const ids = Reflect.ownKeys(values) as symbol[]
-
-    const tracePayload = Reflect.ownKeys(values).map((key) => {
-      return { [getNodeLabel(key as symbol)]: values[key as symbol] }
-    })
-
-    // biome-ignore lint/suspicious/noExplicitAny: any is ok here
-    this.tracer.log(CC.blue('Engine pub '), tracePayload as any)
-    this.tracer.groupCollapsed('pub:')
 
     const map = this.getExecutionMap(ids)
     const refCount = map.refCount.clone()
@@ -337,50 +326,47 @@ export class Engine {
         break
       }
       const id = nextId
-      this.tracer.groupCollapsed(`${getNodeLabel(id)}:`)
       let resolved = false
       const done = (value: unknown) => {
         const dnRef = this.distinctNodes.get(id)
         if (transientState.has(id) && dnRef?.(transientState.get(id), value)) {
-          this.tracer.log(`Skipping ${getNodeLabel(id)}, value is already`, value)
           resolved = false
           return
         }
         resolved = true
         transientState.set(id, value)
 
-        this.tracer.log(CC.blue('Transient state: '), value)
         if (this.state.has(id)) {
-          this.tracer.log(CC.blue('Persisting state: '), value)
           this.state.set(id, value)
         } else if (this.streamState.has(id)) {
-          this.tracer.log(CC.blue('Remembering last stream state: '), value)
           this.streamState.set(id, value)
         }
       }
       if (Object.hasOwn(values, id)) {
-        this.tracer.log(CC.blue(`${getNodeLabel(id)}: `), 'value found in direct payload')
         done(values[id])
       } else {
         map.projections.use(id, (nodeProjections) => {
           for (const projection of nodeProjections) {
             const args = [...Array.from(projection.sources), ...Array.from(projection.pulls)].map((id) => transientState.get(id))
-            this.tracer.log(CC.blue(`Start projection `), getNodeLabel(id), ' args: ', args)
-            this.tracer.groupCollapsed(getNodeLabel(id))
             projection.map(done)(...args)
-            this.tracer.groupEnd()
           }
         })
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (resolved) {
         const value = transientState.get(id)
 
-        this.tracer.log(CC.blue('Value resolved: '), value)
+        const debugLabel = nodeDebugLabels$$.get(id)
+        if (debugLabel) {
+          const displayValue = value === undefined ? '[triggered]' : value
+          // eslint-disable-next-line no-console
+          console.log(`[reactive-engine] ${debugLabel}:`, displayValue)
+        }
+
         inEngineContext(this, () => {
           this.subscriptions.use(id, (nodeSubscriptions) => {
             for (const subscription of nodeSubscriptions) {
-              this.tracer.log(CC.blue('Calling subscription: '), subscription.name || '<anonymous>', value)
               subscription(value, this)
             }
           })
@@ -389,9 +375,7 @@ export class Engine {
       } else {
         nodeWillNotEmit(id)
       }
-      this.tracer.groupEnd()
     }
-    this.tracer.groupEnd()
   }
 
   /**
@@ -409,7 +393,6 @@ export class Engine {
 
     if (!this.definitionRegistry.has(node$)) {
       this.definitionRegistry.add(node$)
-      this.tracer.log(CC.blue(`Registration `), getNodeLabel(node$))
 
       const instance$ =
         definition.type === CELL_TYPE
@@ -438,17 +421,6 @@ export class Engine {
    */
   resetSingletonSubs() {
     this.singletonSubscriptions.clear()
-  }
-
-  setLabel(label: string) {
-    this.tracer.setInstanceLabel(label)
-  }
-
-  /**
-   * Sets the console instance used by the engine tracing.
-   */
-  setTracerConsole(console: TracerConsole | undefined) {
-    this.tracer.setConsole(console)
   }
 
   /**
@@ -490,6 +462,7 @@ export class Engine {
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: any is god
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   subMultiple(nodes: Out[], subscription: Subscription<any>): UnsubscribeHandle {
     const sink = this.streamInstance()
     this.connect({
@@ -573,7 +546,7 @@ export class Engine {
   private getExecutionMap(nodes: symbol[]) {
     let key: symbol | symbol[] = nodes
     if (nodes.length === 1) {
-      // biome-ignore lint/style/noNonNullAssertion: we know we have a node :(
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       key = nodes[0]!
       const existingMap = this.executionMaps.get(key)
       if (existingMap !== undefined) {

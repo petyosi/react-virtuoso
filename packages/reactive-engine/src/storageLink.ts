@@ -92,7 +92,6 @@ export function linkCellToStorage<T>(cell$: NodeRef<T>, options: StorageLinkOpti
     ((engine: Engine, node$: NodeRef<T>) => {
       // Skip in non-browser environments
       if (typeof window === 'undefined' || !isStorageAvailable(options.storageType)) {
-        engine.tracer.log('Storage linking skipped (not in browser environment)')
         return
       }
 
@@ -106,6 +105,7 @@ export function linkCellToStorage<T>(cell$: NodeRef<T>, options: StorageLinkOpti
       }
 
       // biome-ignore lint/style/noNonNullAssertion: we just checked and set the value above
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const state = engineStorageState$$.get(engine)!
       const storageKey = getStorageKey(engine, options)
 
@@ -119,10 +119,9 @@ export function linkCellToStorage<T>(cell$: NodeRef<T>, options: StorageLinkOpti
           const deserialized = deserialize(storedValue)
           engine.pub(node$, deserialized)
           state.lastWrittenValues.set(storageKey, storedValue)
-          engine.tracer.log(`Initialized ${options.key} from storage:`, deserialized)
         }
-      } catch (error) {
-        engine.tracer.log(`Failed to deserialize ${options.key}:`, error)
+      } catch (_error) {
+        // Failed to deserialize
       }
 
       // Subscribe to cell changes → write to storage (debounced)
@@ -143,9 +142,8 @@ export function linkCellToStorage<T>(cell$: NodeRef<T>, options: StorageLinkOpti
             const serialized = serialize(value)
             writeToStorage(storageKey, serialized, options)
             state.lastWrittenValues.set(storageKey, serialized)
-            engine.tracer.log(`Wrote ${options.key} to storage:`, value)
-          } catch (error) {
-            engine.tracer.log(`Failed to serialize ${options.key}:`, error)
+          } catch (_error) {
+            // Failed to serialize
           }
         }, debounceMs)
 
@@ -180,13 +178,12 @@ export function linkCellToStorage<T>(cell$: NodeRef<T>, options: StorageLinkOpti
           // Update cell with new value from storage
           if (event.newValue !== null) {
             try {
-              const des = (metadata.options.deserialize ?? ((s: string) => JSON.parse(s))) as (s: string) => T
+              const des = (metadata.options.deserialize ?? ((s: string) => JSON.parse(s) as unknown)) as (s: string) => T
               const deserialized = des(event.newValue)
               engine.pub(node$, deserialized)
               state.lastWrittenValues.set(ourStorageKey, event.newValue)
-              engine.tracer.log(`Cross-tab sync: ${metadata.options.key}`, deserialized)
-            } catch (error) {
-              engine.tracer.log(`Failed to deserialize cross-tab update for ${metadata.options.key}:`, error)
+            } catch (_error) {
+              // Failed to deserialize cross-tab update
             }
           }
         }

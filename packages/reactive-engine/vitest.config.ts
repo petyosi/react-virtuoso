@@ -22,6 +22,12 @@ export default defineConfig({
           name: 'browser',
         },
       },
+      {
+        test: {
+          include: ['src/test/**/*.test-d.ts'],
+          name: 'typecheck',
+        },
+      },
     ],
   },
 })

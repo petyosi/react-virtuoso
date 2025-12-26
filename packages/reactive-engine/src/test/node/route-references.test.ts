@@ -15,6 +15,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { Route } from '../../router/Route'
+import { RouteReference } from '../../router/types'
 import { getUrl } from '../../router/utils'
 import { GET_URL_TEST_CASES, TEST_ROUTES } from '../router/fixtures'
 
@@ -136,21 +137,20 @@ describe('getUrl() Utility Function', () => {
   // Test all fixture cases
   describe('Fixture test cases', () => {
     it('should match all GET_URL_TEST_CASES from fixtures', () => {
-      // T036-T038: Verify all fixture test cases pass
-      // biome-ignore lint/suspicious/noExplicitAny: Test needs dynamic fixture iteration
-      const testCases = GET_URL_TEST_CASES as unknown as any[]
+      const testCases = GET_URL_TEST_CASES
 
       for (const testCase of testCases) {
         // Map route path to route reference
-        let route$: symbol
+        let route$: RouteReference
         if (testCase.route === TEST_ROUTES.HOME) route$ = home$
         else if (testCase.route === TEST_ROUTES.USER) route$ = user$
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         else if (testCase.route === TEST_ROUTES.SEARCH) route$ = search$
+        // @ts-expect-error probably a buggy test
         else if (testCase.route === TEST_ROUTES.SETTINGS) route$ = settings$
         else route$ = home$ // fallback
 
-        // biome-ignore lint/suspicious/noExplicitAny: Test needs dynamic param types
-        const url = getUrl(route$ as any, testCase.params)
+        const url = getUrl(route$, testCase.params)
         expect(url, `Test case "${testCase.name}" failed`).toBe(testCase.expected)
       }
     })

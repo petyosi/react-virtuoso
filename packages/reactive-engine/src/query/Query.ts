@@ -135,7 +135,7 @@ export function Query<TParams, TData>(options: QueryOptions<TParams, TData>) {
 
     // Get current state to determine if this is initial load
     const currentState = engine.getValue(data$)
-    const isInitialLoad = currentState.type === 'pending' && currentState.data === null
+    const isInitialLoad = currentState.type === 'pending'
 
     // Set loading/fetching state
     if (isInitialLoad) {
