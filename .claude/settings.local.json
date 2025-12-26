@@ -78,7 +78,12 @@
       "Bash(pnpm --filter react-virtuoso build:*)",
       "Bash(pnpm --filter @virtuoso.dev/virtuoso.dev typecheck:*)",
       "Bash(pnpm --filter examples lint:*)",
-      "Bash(pnpm --filter @virtuoso.dev/gurx test)"
+      "Bash(pnpm --filter @virtuoso.dev/gurx test)",
+      "Bash(LADLE=true pnpm ladle:*)",
+      "Bash(timeout 10 pnpm run ladle:*)",
+      "Bash(pnpm view:*)",
+      "Bash(pnpm build:*)",
+      "Bash(timeout 10 pnpm:*)"
     ],
     "deny": [],
     "ask": []

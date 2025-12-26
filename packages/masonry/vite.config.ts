@@ -22,7 +22,7 @@ export default inLadle
           name: 'Virtuoso',
         },
         minify: true,
-        rolldownOptions: {
+        rollupOptions: {
           external: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', '@virtuoso.dev/gurx', '@ladle/react'],
           output: {
             exports: 'named',
@@ -33,8 +33,8 @@ export default inLadle
       plugins: [
         react(),
         dts({
-          bundleTypes: true,
           compilerOptions: { skipLibCheck: true },
+          rollupTypes: true,
           staticImport: true,
         }),
       ],

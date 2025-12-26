@@ -11,16 +11,16 @@ export default defineConfig({
       fileName: 'index',
       formats: ['es'],
     },
-    rolldownOptions: {
+    rollupOptions: {
       external: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
       output: { exports: 'named' },
     },
   },
   plugins: [
-    ...react(),
+    react(),
     dts({
-      bundleTypes: true,
       compilerOptions: { skipLibCheck: true },
+      rollupTypes: true,
       staticImport: true,
     }),
   ],
