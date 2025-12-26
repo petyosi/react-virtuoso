@@ -83,7 +83,9 @@
       "Bash(timeout 10 pnpm run ladle:*)",
       "Bash(pnpm view:*)",
       "Bash(pnpm build:*)",
-      "Bash(timeout 10 pnpm:*)"
+      "Bash(timeout 10 pnpm:*)",
+      "Bash(gh run list:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []

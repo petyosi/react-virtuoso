@@ -63,7 +63,7 @@ jobs:
       - name: Auto-merge non-major version PR
         if: steps.changesets.outputs.hasChangesets == 'true' && steps.changesets.outputs.pullRequestNumber != '' && steps.major.outputs.found == 'false'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           gh pr merge --squash --auto "${{ steps.changesets.outputs.pullRequestNumber }}"
 
