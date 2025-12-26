@@ -4,6 +4,7 @@ import Search from '@astrojs/starlight/components/Search.astro'
 import { GitHubLogoIcon } from '@radix-ui/react-icons'
 import config from 'virtual:starlight/user-config'
 
+import MobileMenu from './MobileMenu.astro'
 import SiteTitle from './SiteTitle.astro'
 import ThemeSelect from './ThemeSelect.astro'
 
@@ -14,17 +15,20 @@ const shouldRenderSearch = config.pagefind || config.components.Search !== '@ast
 
 const currentPath = Astro.url.pathname
 
-function isActive(path: string) {
+/**
+ * @param path string
+ */
+function isActive(path) {
   if (path === '/') return currentPath === '/'
   return currentPath.startsWith(path)
 }
 ---
 
 <div class="flex h-full items-center justify-between gap-(--sl-nav-gap) md:grid md:grid-cols-[auto_1fr_auto] md:content-center">
-  <div class="sl-flex -m-1 min-w-0 overflow-clip p-1">
+  <div class="sl-flex -m-1 min-w-36 overflow-clip p-1">
     <SiteTitle />
   </div>
-  <div class="header-center sl-flex items-center gap-(--sl-nav-gap) md:justify-center print:hidden">
+  <div class="header-center sl-flex items-center justify-start gap-(--sl-nav-gap) md:justify-center print:hidden">
     <nav class="sl-hidden md:sl-flex items-center gap-6">
       <a
         class:list={[
@@ -67,15 +71,18 @@ function isActive(path: string) {
       {shouldRenderSearch && <Search />}
     </div>
   </div>
-  <div class="sl-hidden md:sl-flex items-center gap-4 print:hidden">
-    <div class="sl-flex items-center gap-4 after:h-8 after:border-r after:border-(--sl-color-gray-5) after:content-['']">
-      <a class="sl-flex text-text-primary active:text-text-link" href="https://github.com/petyosi/react-virtuoso" rel="me">
-        <span class="sr-only">React Virtuoso in Github</span>
-        <GitHubLogoIcon className="size-radix-icon" />
-      </a>
+  <div class="sl-flex items-center gap-4 print:hidden">
+    <MobileMenu />
+    <div class="sl-hidden md:sl-flex items-center gap-4">
+      <div class="sl-flex items-center gap-4 after:h-8 after:border-r after:border-(--sl-color-gray-5) after:content-['']">
+        <a class="sl-flex text-text-primary active:text-text-link" href="https://github.com/petyosi/react-virtuoso" rel="me">
+          <span class="sr-only">React Virtuoso in Github</span>
+          <GitHubLogoIcon className="size-radix-icon" />
+        </a>
+      </div>
+      <ThemeSelect />
+      <LanguageSelect />
     </div>
-    <ThemeSelect />
-    <LanguageSelect />
   </div>
 </div>
 
