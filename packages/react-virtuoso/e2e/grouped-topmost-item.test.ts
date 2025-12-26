@@ -6,7 +6,8 @@ import { navigateToExample } from './utils.ts'
 test.describe('jagged grouped list', () => {
   test.beforeEach(async ({ baseURL, page }) => {
     await navigateToExample(page, baseURL, 'grouped-topmost-item')
-    await page.waitForTimeout(100)
+    await page.waitForSelector('[data-testid=virtuoso-scroller]')
+    await page.waitForTimeout(300)
   })
 
   test('puts the specified item below the group', async ({ page }) => {
