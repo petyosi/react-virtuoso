@@ -53,6 +53,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build gurx
+        run: pnpm --filter @virtuoso.dev/gurx build
+
       - name: Type check
         run: pnpm typecheck
 
@@ -76,6 +79,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build react-virtuoso
+        run: pnpm --filter @virtuoso.dev/react-virtuoso build
+
       - name: Lint
         run: pnpm lint
 
@@ -98,6 +104,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm --filter '!@virtuoso.dev/virtuoso.dev' build
 
       - name: Run tests
         run: pnpm test
@@ -124,6 +133,11 @@ jobs:
 
       - name: Build
         run: pnpm build
+        env:
+          PADDLE_ENVIRONMENT: sandbox
+          PADDLE_TOKEN: test_5
+          PADDLE_STANDARD_PRICE_ID: pri_01
+          PADDLE_PRO_PRICE_ID: pri_01
 
   e2e:
     name: E2E Tests
@@ -146,7 +160,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm --filter react-virtuoso exec playwright install --with-deps chromium
 
       - name: Run E2E tests
         run: pnpm e2e

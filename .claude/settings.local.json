@@ -70,7 +70,8 @@
       "Bash(lsof:*)",
       "Bash(pnpm --filter @virtuoso.dev/virtuoso.dev run typecheck:*)",
       "Bash(pnpm run lint:md:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(gh run view:*)"
     ],
     "deny": [],
     "ask": []
