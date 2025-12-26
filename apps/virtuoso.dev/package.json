@@ -2,7 +2,7 @@
   "name": "@virtuoso.dev/virtuoso.dev",
   "private": true,
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "publishConfig": {
     "access": "restricted"
   },
@@ -49,7 +49,7 @@
     "react-error-boundary": "^6.0.0",
     "react-live": "^4.1.8",
     "react-shiki": "^0.9.0",
-    "react-virtuoso": "^4.15.0",
+    "react-virtuoso": "^4.18.0",
     "sharp": "^0.34.2",
     "shiki": "^3.19.0",
     "tailwind-merge": "^3.4.0",
