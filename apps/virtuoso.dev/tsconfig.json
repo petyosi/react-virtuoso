@@ -1,18 +1,11 @@
 {
-  "extends": [
-    "@virtuoso.dev/tooling/tsconfig.base.json",
-    "astro/tsconfigs/strict"
-  ],
+  "extends": ["@virtuoso.dev/tooling/tsconfig.base.json", "astro/tsconfigs/strict"],
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "types": ["vite/client"]
   },
-  "include": [
-    ".astro/types.d.ts",
-    "**/*",
-    "eslint.config.mjs",
-    "prettier.config.mjs"
-  ],
+  "include": [".astro/types.d.ts", "**/*", "eslint.config.mjs", "prettier.config.mjs"],
   "exclude": ["dist"]
 }

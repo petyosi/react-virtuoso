@@ -46,7 +46,7 @@
     "vite": "^8.0.0-beta.0",
     "vite-plugin-dts": "^5.0.0-beta.6",
     "vitest": "^4.0.16",
-    "vitest-browser-react": "^0.1.1"
+    "vitest-browser-react": "^2.0.2"
   },
   "files": [
     "dist",

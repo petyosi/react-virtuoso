@@ -72,7 +72,13 @@
       "Bash(pnpm run lint:md:*)",
       "mcp__ide__getDiagnostics",
       "Bash(gh run view:*)",
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh run download:*)",
+      "Bash(pnpm --filter react-virtuoso build:*)",
+      "Bash(pnpm --filter @virtuoso.dev/virtuoso.dev typecheck:*)",
+      "Bash(pnpm --filter examples lint:*)",
+      "Bash(pnpm --filter @virtuoso.dev/gurx test)"
     ],
     "deny": [],
     "ask": []
