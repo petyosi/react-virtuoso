@@ -18,7 +18,7 @@ const currentPath = Astro.url.pathname
 /**
  * @param path string
  */
-function isActive(path) {
+function isActive(path: string) {
   if (path === '/') return currentPath === '/'
   return currentPath.startsWith(path)
 }

@@ -12,11 +12,12 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "astro check",
     "lint": "eslint",
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.6",
     "@astrojs/mdx": "^4.3.12",
     "@astrojs/react": "^4.4.2",
     "@astrojs/starlight": "^0.37.0",
