@@ -53,7 +53,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build gurx and masonry
+      - name: Build prerequisites
         run: pnpm --filter @virtuoso.dev/gurx --filter @virtuoso.dev/masonry build
 
       - name: Type check
@@ -79,8 +79,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build react-virtuoso
-        run: pnpm --filter react-virtuoso build
+      - name: Build prerequisites
+        run: pnpm --filter react-virtuoso --filter @virtuoso.dev/gurx build
 
       - name: Lint
         run: pnpm lint
