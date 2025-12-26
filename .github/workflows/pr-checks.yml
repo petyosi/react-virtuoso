@@ -80,7 +80,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build prerequisites
-        run: pnpm --filter react-virtuoso --filter @virtuoso.dev/gurx build
+        run: |
+          pnpm --filter react-virtuoso --filter @virtuoso.dev/gurx build
+          pnpm --filter @virtuoso.dev/virtuoso.dev astro sync
 
       - name: Lint
         run: pnpm lint
