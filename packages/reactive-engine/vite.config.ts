@@ -12,7 +12,7 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
+      external: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'tiny-invariant'],
       output: { exports: 'named' },
     },
   },
