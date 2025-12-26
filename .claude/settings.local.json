@@ -85,7 +85,9 @@
       "Bash(pnpm build:*)",
       "Bash(timeout 10 pnpm:*)",
       "Bash(gh run list:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(pnpm --filter @virtuoso.dev/reactive-engine run typecheck:*)",
+      "Bash(pnpm --filter @virtuoso.dev/reactive-engine run lint:*)"
     ],
     "deny": [],
     "ask": []
