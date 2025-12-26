@@ -1,0 +1,38 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreWorkspaces": ["apps/*", "examples"],
+  "ignoreExportsUsedInFile": {
+    "interface": true,
+    "type": true
+  },
+  "tags": ["-lintignore"],
+  "workspaces": {
+    ".": {},
+    "packages/react-virtuoso": {
+      "entry": ["src/index.{ts,tsx}"],
+      "project": "**/*.{ts,tsx}",
+      "vitest": {
+        "entry": ["test/**/*.test.{ts,tsx}", "vitest.config.{ts,mts}"]
+      }
+    },
+    "packages/masonry": {
+      "entry": ["src/index.ts"],
+      "project": "**/*.{ts,tsx}",
+      "vitest": {
+        "entry": ["src/test/**/*.test.{ts,tsx}", "vitest.workspace.ts"]
+      },
+      "ignoreDependencies": ["playwright"]
+    },
+    "packages/gurx": {
+      "entry": ["src/index.ts"],
+      "project": "**/*.{ts,tsx}",
+      "vitest": {
+        "entry": ["src/**/*.test.{ts,tsx}", "vitest.config.ts"]
+      }
+    },
+    "packages/tooling": {
+      "entry": ["eslint.config.mjs", "prettier.config.mjs"],
+      "project": "**/*.{ts,tsx,mjs}"
+    }
+  }
+}

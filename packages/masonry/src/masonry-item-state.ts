@@ -3,7 +3,7 @@ import { Cell, combine, filter, link, pipe, pub, scan, sub } from '@virtuoso.dev
 import type { Data, OffsetPoint } from './interfaces'
 
 import { data$, totalCount$ } from './data'
-import { listOffset$, listScrollTop$, useWindowScroll$, visibleListHeight$ } from './dom'
+import { listOffset$, scrollTop$, useWindowScroll$, visibleListHeight$ } from './dom'
 import { columnCount$, indexesInColumns$, initialItemCount$, offsetTrees$, sizeTrees$, totalHeights$ } from './masonry-sizes'
 import { empty, newTree } from './sizing/AATree'
 import { rangesWithinOffsets } from './sizing/rangesWithinOffsets'
@@ -39,7 +39,7 @@ export const masonryItemsState$ = Cell<MasonryItemsState<unknown>>({ columns: []
     pipe(
       combine(
         columnCount$,
-        listScrollTop$,
+        scrollTop$,
         visibleListHeight$,
         sizeTrees$,
         offsetTrees$,
@@ -56,7 +56,7 @@ export const masonryItemsState$ = Cell<MasonryItemsState<unknown>>({ columns: []
           current,
           [
             columnCount,
-            listScrollTop,
+            scrollTop,
             visibleListHeight,
             sizeTrees,
             offsetTrees,
@@ -73,8 +73,8 @@ export const masonryItemsState$ = Cell<MasonryItemsState<unknown>>({ columns: []
             return current
           }
 
-          const listOffsetTop = useWindowScroll ? listOffset + listScrollTop : 0
-          const viewportTop = Math.min(Math.max(listScrollTop - listOffsetTop, 0), Math.max(...totalHeights) - visibleListHeight)
+          const listOffsetTop = useWindowScroll ? listOffset + scrollTop : 0
+          const viewportTop = Math.min(Math.max(scrollTop - listOffsetTop, 0), Math.max(...totalHeights) - visibleListHeight)
           const viewportBottom = viewportTop + visibleListHeight
 
           const itemsToRenderInitially = initialItemCount === 0 ? Math.min(columnCount, totalCount) : initialItemCount
@@ -116,8 +116,7 @@ export const masonryItemsState$ = Cell<MasonryItemsState<unknown>>({ columns: []
 
               if (
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                currentColumnState &&
-                currentColumnState.offsetTree === offsetTree &&
+                currentColumnState?.offsetTree === offsetTree &&
                 current.totalCount === totalCount &&
                 current.data === data &&
                 current.indexesInColumns === indexesInColumns

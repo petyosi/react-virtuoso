@@ -40,7 +40,7 @@ export function Example() {
     }
   }, [])
 
-  const intervalRef = React.useRef<ReturnType<typeof setInterval>>()
+  const intervalRef = React.useRef<ReturnType<typeof setInterval>>(null)
 
   React.useEffect(() => {
     intervalRef.current = setInterval(() => {

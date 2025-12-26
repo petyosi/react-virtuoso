@@ -1,0 +1,23 @@
+{
+  "pre-commit": {
+    "parallel": true,
+    "commands": {
+      "markdown-lint": {
+        "glob": "**/*.md",
+        "run": "pnpm exec markdownlint --ignore-path .markdownlintignore {staged_files}",
+        "stage_fixed": true,
+        "skip": ["merge", "rebase"]
+      },
+      "eslint": {
+        "glob": "*.{js,mjs,cjs,ts,jsx,tsx}",
+        "run": "pnpm lint",
+        "skip": ["merge", "rebase"]
+      },
+      "type-check": {
+        "glob": "*.{ts,tsx,astro}",
+        "run": "pnpm typecheck",
+        "skip": ["merge", "rebase"]
+      }
+    }
+  }
+}

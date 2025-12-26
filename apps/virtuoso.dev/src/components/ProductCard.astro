@@ -1,0 +1,26 @@
+---
+import { ArrowRightIcon } from '@radix-ui/react-icons'
+
+interface Props {
+  description: string
+  href: string
+  title: string
+}
+
+const { description, href, title } = Astro.props
+---
+
+<a
+  class="group flex flex-col justify-between rounded-xl border border-(--sl-color-gray-5) bg-(--sl-color-gray-6) p-6 transition-all duration-200 hover:border-(--sl-color-accent) hover:bg-(--sl-color-gray-5)"
+  href={href}
+>
+  <div>
+    <div class="mb-3 flex items-center justify-between">
+      <h3 class="text-lg font-semibold text-(--sl-color-white)">{title}</h3>
+      <ArrowRightIcon
+        className="size-5 text-(--sl-color-gray-3) transition-transform duration-200 group-hover:translate-x-1 group-hover:text-(--sl-color-accent)"
+      />
+    </div>
+    <p class="text-[0.9375rem] leading-relaxed text-(--sl-color-gray-2)">{description}</p>
+  </div>
+</a>

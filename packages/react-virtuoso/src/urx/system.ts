@@ -119,8 +119,6 @@ export type SystemSpecs = AnySystemSpec[]
  * When called, system returns a [[SystemSpec]], which is then initialized along with its dependencies by passing it to [[init]].
  *
  * ```ts
- * @import { subscribe, publish, system, init, tup, connect, map, pipe } from 'urx'
- *
  * // a simple system with two streams
  * const sys1 = system(() => {
  *  const a = stream<number>()

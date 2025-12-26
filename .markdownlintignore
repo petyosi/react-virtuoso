@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.cache/
+test-results/
+
+# Documentation that shouldn't be linted
+apps/virtuoso.dev/docs/
+
+# Changeset files (except README)
+.changeset/*.md
+!.changeset/README.md
+
+# Specs (internal planning docs)
+specs/

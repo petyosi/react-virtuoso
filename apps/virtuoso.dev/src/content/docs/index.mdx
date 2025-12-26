@@ -1,0 +1,64 @@
+---
+title: React Virtuoso
+description: The most complete React virtualization library for lists, grids, tables, and chat interfaces.
+template: splash
+head:
+  - tag: title
+    content: React Virtuoso
+---
+
+import Hero from '@components/Hero.astro'
+import MessageListHero from '@components/MessageListHero.astro'
+import FeatureCard from '@components/FeatureCard.astro'
+import FeatureGrid from '@components/FeatureGrid.astro'
+import ProductCard from '@components/ProductCard.astro'
+
+<Hero />
+
+<MessageListHero />
+
+## Why Virtuoso?
+
+<FeatureGrid>
+  <FeatureCard title="Zero Configuration" icon="gear" href="/react-virtuoso/virtuoso/auto-resizing/">
+    Variable-sized items work automatically without manual measurements or hard-coded heights.
+  </FeatureCard>
+
+<FeatureCard title="Complete Component Family" icon="stack" href="/react-virtuoso/">
+  Lists, grids, tables, chat interfaces, and masonry layouts in one library.
+</FeatureCard>
+
+<FeatureCard title="Performance at Scale" icon="rocket" href="/react-virtuoso/virtuoso/basic-usage/">
+  Smooth scrolling with thousands of items through virtualized rendering.
+</FeatureCard>
+
+<FeatureCard title="Bi-directional Loading" icon="double-arrow" href="/react-virtuoso/virtuoso/endless-scrolling/">
+  Built-in support for endless scrolling, load on demand, and initial scroll location.
+</FeatureCard>
+
+  <FeatureCard title="Chat-Optimized" icon="chat" href="/message-list/">
+    Commercial VirtuosoMessageList component built specifically for human/AI conversations.
+  </FeatureCard>
+</FeatureGrid>
+
+## Explore The Virtuoso Components
+
+<FeatureGrid>
+  <ProductCard
+    title="react-virtuoso"
+    description="Core virtualization components for lists, grids, and tables. MIT Licensed."
+    href="/react-virtuoso/"
+  />
+
+<ProductCard
+  title="Masonry"
+  description="Virtualized masonry layout for product listings and image galleries. MIT Licensed."
+  href="/masonry/"
+/>
+
+  <ProductCard
+    title="Message List"
+    description="Chat interface component for human/AI conversations. Commercial License."
+    href="/message-list/"
+  />
+</FeatureGrid>

@@ -4,7 +4,7 @@ import { Virtuoso } from '../src'
 
 export function Example() {
   const [count, setCount] = useState(100)
-  const appendInterval = useRef<NodeJS.Timeout>()
+  const appendInterval = useRef<NodeJS.Timeout | null>(null)
   const [listHeight, setListHeight] = useState(300)
   const [itemHeights, setItemHeights] = useState<Record<number, number>>({})
   const itemContent = useCallback(
@@ -60,7 +60,7 @@ export function Example() {
       </div>
       <Virtuoso
         atBottomStateChange={(atBottom) => {
-          clearInterval(appendInterval.current)
+          appendInterval.current && clearInterval(appendInterval.current)
           if (atBottom) {
             appendInterval.current = setInterval(() => {
               // setCount((count) => count + 3)

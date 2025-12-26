@@ -1,0 +1,100 @@
+---
+import LanguageSelect from '@astrojs/starlight/components/LanguageSelect.astro'
+import Search from '@astrojs/starlight/components/Search.astro'
+import { GitHubLogoIcon } from '@radix-ui/react-icons'
+import config from 'virtual:starlight/user-config'
+
+import MobileMenu from './MobileMenu.astro'
+import SiteTitle from './SiteTitle.astro'
+import ThemeSelect from './ThemeSelect.astro'
+
+/**
+ * Render the `Search` component if Pagefind is enabled or the default search component has been overridden.
+ */
+const shouldRenderSearch = config.pagefind || config.components.Search !== '@astrojs/starlight/components/Search.astro'
+
+const currentPath = Astro.url.pathname
+
+/**
+ * @param path string
+ */
+function isActive(path: string) {
+  if (path === '/') return currentPath === '/'
+  return currentPath.startsWith(path)
+}
+---
+
+<div class="flex h-full items-center justify-between gap-(--sl-nav-gap) md:grid md:grid-cols-[auto_1fr_auto] md:content-center">
+  <div class="sl-flex -m-1 min-w-36 overflow-clip p-1">
+    <SiteTitle />
+  </div>
+  <div class="header-center sl-flex items-center justify-start gap-(--sl-nav-gap) md:justify-center print:hidden">
+    <nav class="sl-hidden md:sl-flex items-center gap-6">
+      <a
+        class:list={[
+          'text-sm font-medium no-underline transition-colors duration-200',
+          isActive('/react-virtuoso/') ? 'text-(--sl-color-text-accent)' : 'text-(--sl-color-white) hover:text-(--sl-color-text-accent)',
+        ]}
+        href="/react-virtuoso/"
+      >
+        React Virtuoso
+      </a>
+      <a
+        class:list={[
+          'text-sm font-medium no-underline transition-colors duration-200',
+          isActive('/message-list/') ? 'text-(--sl-color-text-accent)' : 'text-(--sl-color-white) hover:text-(--sl-color-text-accent)',
+        ]}
+        href="/message-list/"
+      >
+        Message List
+      </a>
+      <a
+        class:list={[
+          'text-sm font-medium no-underline transition-colors duration-200',
+          isActive('/masonry/') ? 'text-(--sl-color-text-accent)' : 'text-(--sl-color-white) hover:text-(--sl-color-text-accent)',
+        ]}
+        href="/masonry/"
+      >
+        Virtuoso Masonry
+      </a>
+      <a
+        class:list={[
+          'text-sm font-medium no-underline transition-colors duration-200',
+          isActive('/pricing/') ? 'text-(--sl-color-text-accent)' : 'text-(--sl-color-white) hover:text-(--sl-color-text-accent)',
+        ]}
+        href="/pricing/"
+      >
+        Pricing
+      </a>
+    </nav>
+    <div class="sl-flex w-full md:w-96">
+      {shouldRenderSearch && <Search />}
+    </div>
+  </div>
+  <div class="sl-flex items-center gap-4 print:hidden">
+    <MobileMenu />
+    <div class="sl-hidden md:sl-flex items-center gap-4">
+      <div class="sl-flex items-center gap-4 after:h-8 after:border-r after:border-(--sl-color-gray-5) after:content-['']">
+        <a class="sl-flex text-text-primary active:text-text-link" href="https://github.com/petyosi/react-virtuoso" rel="me">
+          <span class="sr-only">React Virtuoso in Github</span>
+          <GitHubLogoIcon className="size-radix-icon" />
+        </a>
+      </div>
+      <ThemeSelect />
+      <LanguageSelect />
+    </div>
+  </div>
+</div>
+
+<style>
+  @layer starlight.core {
+    @media (min-width: 50rem) {
+      :global(:root[data-has-sidebar]) {
+        --__sidebar-pad: calc(2 * var(--sl-nav-pad-x));
+      }
+      :global(:root:not([data-has-toc])) {
+        --__toc-width: 0rem;
+      }
+    }
+  }
+</style>

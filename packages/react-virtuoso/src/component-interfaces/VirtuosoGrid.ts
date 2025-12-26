@@ -10,30 +10,86 @@ import type {
 
 import { LogLevel } from '../loggerSystem'
 
+/**
+ * Dimensions of an element in pixels.
+ *
+ * @group VirtuosoGrid
+ */
 export interface ElementDimensions {
+  /** Height in pixels */
   height: number
+  /** Width in pixels */
   width: number
 }
 
+/**
+ * Gap between grid items in pixels.
+ *
+ * @group VirtuosoGrid
+ */
 export interface Gap {
+  /** Horizontal gap between columns */
   column: number
+  /** Vertical gap between rows */
   row: number
 }
 
+/**
+ * A snapshot of the VirtuosoGrid state that can be saved and restored.
+ * Use this to persist scroll position and layout across page reloads.
+ *
+ * @see {@link VirtuosoGridProps.restoreStateFrom} for restoring state
+ * @see {@link VirtuosoGridProps.stateChanged} for capturing state
+ * @group VirtuosoGrid
+ */
 export interface GridStateSnapshot {
+  /** Gap between items */
   gap: Gap
+  /** Item dimensions */
   item: ElementDimensions
+  /** Scroll position in pixels */
   scrollTop: number
+  /** Viewport dimensions */
   viewport: ElementDimensions
 }
 
+/**
+ * Exposes the VirtuosoGrid component methods for imperative control.
+ * Access via ref on the VirtuosoGrid component.
+ *
+ * @see {@link VirtuosoGrid} for the component
+ * @see {@link VirtuosoGridProps} for available props
+ * @group VirtuosoGrid
+ */
 export interface VirtuosoGridHandle {
+  /**
+   * Scrolls the component by the specified amount.
+   * @param location - The scroll offset options
+   */
   scrollBy(location: ScrollToOptions): void
+  /**
+   * Scrolls the component to the specified position.
+   * @param location - The scroll position options
+   */
   scrollTo(location: ScrollToOptions): void
+  /**
+   * Scrolls the component to the specified item index.
+   * @param location - The item index or location with alignment options
+   */
   scrollToIndex(location: GridIndexLocation): void
 }
 
-export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
+/**
+ * The props for the VirtuosoGrid component.
+ *
+ * @typeParam Data - The type of data items in the grid
+ * @typeParam Context - The type of additional context passed to callbacks
+ *
+ * @see {@link VirtuosoGrid} for the component
+ * @see {@link VirtuosoGridHandle} for imperative methods
+ * @group VirtuosoGrid
+ */
+export interface VirtuosoGridProps<Data, Context = unknown> extends GridRootProps {
   /**
    * Called with true / false when the list has reached the bottom / gets scrolled up.
    * Can be used to load newer items, like `tail -f`.
@@ -48,17 +104,17 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
   /**
    * Use the `components` property for advanced customization of the elements rendered by the list.
    */
-  components?: GridComponents<C>
+  components?: GridComponents<Context>
 
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.
    */
-  computeItemKey?: GridComputeItemKey<D, C>
+  computeItemKey?: GridComputeItemKey<Data, Context>
 
   /**
    * Additional context available in the custom components and content callbacks
    */
-  context?: C
+  context?: Context
 
   /**
    * Pass a reference to a scrollable parent element, so that the grid won't wrap in its own.
@@ -68,7 +124,7 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
   /**
    * The data items to be rendered. If data is set, the total count will be inferred from the length of the array.
    */
-  data?: readonly D[]
+  data?: readonly Data[]
 
   /**
    * Gets called when the user scrolls to the end of the list.
@@ -93,7 +149,7 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
    */
   initialItemCount?: number
 
-  /*
+  /**
    * Set to a value between 0 and totalCount - 1 to make the grid start scrolled to that item.
    * Pass in an object to achieve additional effects similar to `scrollToIndex`.
    */
@@ -112,7 +168,7 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
   /**
    * Set the callback to specify the contents of the item.
    */
-  itemContent?: GridItemContent<D, C>
+  itemContent?: GridItemContent<Data, Context>
 
   /**
    * Sets the className for the list DOM element
@@ -143,6 +199,10 @@ export interface VirtuosoGridProps<D, C = unknown> extends GridRootProps {
    */
   readyStateChanged?: (ready: boolean) => void
 
+  /**
+   * Pass a state obtained from the `stateChanged` callback to restore the grid state.
+   * This includes scroll position and item measurements.
+   */
   restoreStateFrom?: GridStateSnapshot | null | undefined
 
   /**

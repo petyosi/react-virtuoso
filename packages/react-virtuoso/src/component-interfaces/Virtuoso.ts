@@ -20,20 +20,57 @@ import type {
 
 import { LogLevel } from '../loggerSystem'
 
+/**
+ * Exposes the GroupedVirtuoso component methods for imperative control.
+ * Access via ref on the GroupedVirtuoso component.
+ *
+ * @see {@link GroupedVirtuoso} for the component
+ * @see {@link GroupedVirtuosoProps} for available props
+ * @group GroupedVirtuoso
+ */
 export interface GroupedVirtuosoHandle {
+  /**
+   * Scrolls to the bottom of the list if follow output is active. Useful when images load in the list.
+   */
   autoscrollToBottom(): void
   /**
    * Obtains the internal size state of the component, so that it can be restored later. This does not include the data items.
+   * @param stateCb - Callback that receives the state snapshot
    */
   getState(stateCb: StateCallback): void
+  /**
+   * Scrolls the component by the specified amount.
+   * @param location - The scroll offset options
+   */
   scrollBy(location: ScrollToOptions): void
+  /**
+   * Scrolls the specified item into view if it's not already visible.
+   * @param location - The item index or scroll location options
+   */
   scrollIntoView(location: number | ScrollIntoViewLocation): void
+  /**
+   * Scrolls the component to the specified position.
+   * @param location - The scroll position options
+   */
   scrollTo(location: ScrollToOptions): void
-
+  /**
+   * Scrolls the component to the specified item index.
+   * @param location - The item index or location with alignment options
+   */
   scrollToIndex(location: IndexLocationWithAlign | number): void
 }
 
-export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'itemContent' | 'totalCount'> {
+/**
+ * The props for the GroupedVirtuoso component.
+ *
+ * @typeParam Data - The type of data items in the list
+ * @typeParam Context - The type of additional context passed to callbacks
+ *
+ * @see {@link GroupedVirtuoso} for the component
+ * @see {@link GroupedVirtuosoHandle} for imperative methods
+ * @group GroupedVirtuoso
+ */
+export interface GroupedVirtuosoProps<Data, Context> extends Omit<VirtuosoProps<Data, Context>, 'itemContent' | 'totalCount'> {
   /**
    * Use when implementing inverse infinite scrolling, decrease the value this property
    * in combination with a change in `groupCounts` to prepend groups items to the top of the list.
@@ -52,7 +89,7 @@ export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'i
   /**
    * Specifies how each each group header gets rendered. The callback receives the zero-based index of the group.
    */
-  groupContent?: GroupContent<C>
+  groupContent?: GroupContent<Context>
 
   /**
    * Specifies the amount of items in each group (and, actually, how many groups are there).
@@ -63,9 +100,17 @@ export interface GroupedVirtuosoProps<D, C> extends Omit<VirtuosoProps<D, C>, 'i
   /**
    * Specifies how each each item gets rendered.
    */
-  itemContent?: GroupItemContent<D, C>
+  itemContent?: GroupItemContent<Data, Context>
 }
 
+/**
+ * Exposes the Virtuoso component methods for imperative control.
+ * Access via ref on the Virtuoso component.
+ *
+ * @see {@link Virtuoso} for the component
+ * @see {@link VirtuosoProps} for available props
+ * @group Virtuoso
+ */
 export interface VirtuosoHandle {
   /**
    * Use this with combination with follow output if you have images loading in the list. Listen to the image loading and call the method.
@@ -73,28 +118,43 @@ export interface VirtuosoHandle {
   autoscrollToBottom(): void
   /**
    * Obtains the internal size state of the component, so that it can be restored later. This does not include the data items.
+   * @param stateCb - Callback that receives the state snapshot
    */
   getState(stateCb: StateCallback): void
   /**
    * Scrolls the component with the specified amount. See [ScrollToOptions (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/ScrollToOptions)
+   * @param location - The scroll offset options
    */
   scrollBy(location: ScrollToOptions): void
   /**
    * Scrolls the item into view if necessary. See [the website example](http://virtuoso.dev/keyboard-navigation/) for an implementation.
+   * @param location - The scroll into view location options
    */
   scrollIntoView(location: FlatScrollIntoViewLocation): void
   /**
    * Scrolls the component to the specified location. See [ScrollToOptions (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/ScrollToOptions)
+   * @param location - The scroll position options
    */
   scrollTo(location: ScrollToOptions): void
 
   /**
    * Scrolls the component to the specified item index. See {@link IndexLocationWithAlign} for more options.
+   * @param location - The item index or location with alignment options
    */
   scrollToIndex(location: FlatIndexLocationWithAlign | number): void
 }
 
-export interface VirtuosoProps<D, C> extends ListRootProps {
+/**
+ * The props for the Virtuoso component.
+ *
+ * @typeParam Data - The type of data items in the list
+ * @typeParam Context - The type of additional context passed to callbacks
+ *
+ * @see {@link Virtuoso} for the component
+ * @see {@link VirtuosoHandle} for imperative methods
+ * @group Virtuoso
+ */
+export interface VirtuosoProps<Data, Context> extends ListRootProps {
   /**
    * Setting `alignToBottom` to `true` aligns the items to the bottom of the list if the list is shorter than the viewport.
    * Use `followOutput` property to keep the list aligned when new items are appended.
@@ -129,17 +189,17 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   /**
    * Use the `components` property for advanced customization of the elements rendered by the list.
    */
-  components?: Components<D, C>
+  components?: Components<Data, Context>
 
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.
    */
-  computeItemKey?: ComputeItemKey<D, C>
+  computeItemKey?: ComputeItemKey<Data, Context>
 
   /**
    * Additional context available in the custom components and content callbacks
    */
-  context?: C
+  context?: Context
 
   /**
    * Pass a reference to a scrollable parent element, so that the list won't wrap in its own.
@@ -149,7 +209,7 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   /**
    * The data items to be rendered. If data is set, the total count will be inferred from the length of the array.
    */
-  data?: readonly D[]
+  data?: readonly Data[]
 
   /**
    * By default, the component assumes the default item height from the first rendered item (rendering it as a "probe").
@@ -235,11 +295,10 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
    * Use the context contents if you need to implement custom logic based on the current state of the list.
    */
   scrollIntoViewOnChange?: (params: {
-    context: C
+    context: Context
     totalCount: number
     scrollingInProgress: boolean
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-  }) => ScrollIntoViewLocation | null | undefined | false | void
+  }) => ScrollIntoViewLocation | null | undefined | false
 
   /**
    * Set to customize the wrapper tag for the header and footer components (default is `div`).
@@ -297,7 +356,7 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   /**
    * Set the callback to specify the contents of the item.
    */
-  itemContent?: ItemContent<D, C>
+  itemContent?: ItemContent<Data, Context>
 
   /**
    * Allows customizing the height/width calculation of `Item` elements.
@@ -309,7 +368,7 @@ export interface VirtuosoProps<D, C> extends ListRootProps {
   /**
    * Called with the new set of items each time the list items are rendered due to scrolling.
    */
-  itemsRendered?: (items: ListItem<D>[]) => void
+  itemsRendered?: (items: ListItem<Data>[]) => void
 
   /**
    * set to LogLevel.DEBUG to enable various diagnostics in the console, the most useful being the item measurement reports.

@@ -66,7 +66,7 @@ export const scrollIntoViewSystem = u.system(
                 done
               )
           } else {
-            done && done()
+            done?.()
           }
 
           return location

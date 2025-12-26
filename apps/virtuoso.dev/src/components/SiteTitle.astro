@@ -1,0 +1,33 @@
+---
+const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute
+import Logo from '../assets/logo.svg'
+---
+
+<a class="site-title sl-flex" href={siteTitleHref}>
+  <Logo class="fill-accent-900 dark:fill-accent-700" />
+  <span class:list={{ 'sr-only': true }} translate="no">
+    {siteTitle}
+  </span>
+</a>
+
+<style>
+  @layer starlight.core {
+    .site-title {
+      align-items: center;
+      gap: var(--sl-nav-gap);
+      font-size: var(--sl-text-h4);
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+      min-width: 0;
+    }
+    span {
+      overflow: hidden;
+    }
+    .logo {
+      height: calc(var(--sl-nav-height) - 2 * var(--sl-nav-pad-y));
+      width: auto;
+      max-width: 100%;
+    }
+  }
+</style>

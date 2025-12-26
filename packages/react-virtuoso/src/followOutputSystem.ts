@@ -137,8 +137,7 @@ export const followOutputSystem = u.system(
           context: unknown
           totalCount: number
           scrollingInProgress: boolean
-          // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-        }) => ScrollIntoViewLocation | null | undefined | false | void)
+        }) => ScrollIntoViewLocation | null | undefined | false)
     >(null)
 
     const tcOrDataChange = u.stream<number>()

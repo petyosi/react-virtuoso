@@ -204,7 +204,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
   )
 })
 
-export const scrollerStyle: React.CSSProperties = {
+const scrollerStyle: React.CSSProperties = {
   height: '100%',
   outline: 'none',
   overflowY: 'auto',
@@ -536,10 +536,57 @@ export const {
 const Scroller = /*#__PURE__*/ buildScroller({ useEmitter, useEmitterValue, usePublisher })
 const WindowScroller = /*#__PURE__*/ buildWindowScroller({ useEmitter, useEmitterValue, usePublisher })
 
+/**
+ * A virtualized list component for efficiently rendering large datasets.
+ * Automatically measures and handles variable-sized items without configuration.
+ *
+ * @typeParam ItemData - The type of data items in the list
+ * @typeParam Context - The type of additional context passed to callbacks
+ *
+ * @param props - {@link VirtuosoProps}
+ *
+ * @function
+ * @group Virtuoso
+ *
+ * @example
+ * ```tsx
+ * <Virtuoso
+ *   totalCount={1000}
+ *   itemContent={(index) => <div>Item {index}</div>}
+ * />
+ * ```
+ *
+ * @see {@link VirtuosoProps} for available props
+ * @see {@link VirtuosoHandle} for imperative methods
+ */
 export const Virtuoso = List as <ItemData = any, Context = any>(
   props: VirtuosoProps<ItemData, Context> & { ref?: React.Ref<VirtuosoHandle> }
 ) => React.ReactElement
 
+/**
+ * A virtualized list component for rendering grouped data with sticky group headers.
+ * Extends Virtuoso with support for collapsible groups and group-level navigation.
+ *
+ * @typeParam ItemData - The type of data items in the list
+ * @typeParam Context - The type of additional context passed to callbacks
+ *
+ * @param props - {@link GroupedVirtuosoProps}
+ *
+ * @function
+ * @group GroupedVirtuoso
+ *
+ * @example
+ * ```tsx
+ * <GroupedVirtuoso
+ *   groupCounts={[10, 20, 15]}
+ *   groupContent={(index) => <div>Group {index}</div>}
+ *   itemContent={(index, groupIndex) => <div>Item {index} in group {groupIndex}</div>}
+ * />
+ * ```
+ *
+ * @see {@link GroupedVirtuosoProps} for available props
+ * @see {@link GroupedVirtuosoHandle} for imperative methods
+ */
 export const GroupedVirtuoso = List as <ItemData = any, Context = any>(
   props: GroupedVirtuosoProps<ItemData, Context> & { ref?: React.Ref<GroupedVirtuosoHandle> }
 ) => React.ReactElement

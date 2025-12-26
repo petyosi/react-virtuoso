@@ -25,11 +25,6 @@ export interface ListState {
   totalCount: number
 }
 
-export interface TopListState {
-  items: ListItems
-  listHeight: number
-}
-
 export type MinOverscanItemCount = number | { bottom: number; top: number }
 
 function probeItemSet(index: number, sizes: SizeState, data: Data) {
@@ -57,7 +52,7 @@ const EMPTY_LIST_STATE: ListState = {
   totalCount: 0,
 }
 
-export function buildListState(
+function buildListState(
   items: Item<any>[],
   topItems: Item<any>[],
   totalCount: number,

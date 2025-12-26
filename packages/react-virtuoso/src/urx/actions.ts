@@ -25,11 +25,6 @@ export interface Emitter<T> {
   (action: RESET): void
 }
 
-export interface Cell<T> {
-  /** @internal */
-  (action: VALUE): T
-}
-
 /**
  * Subscriptions are bound to Emitters with the [[subscribe]] action, and get called with the new values.
  * @typeParam T the Emitter value type.
@@ -44,8 +39,6 @@ export interface Subscription<T> {
 export interface Unsubscribe {
   (): void
 }
-
-export type StreamArgs<T> = [PUBLISH] | [SUBSCRIBE, Subscription<T>] | [RESET]
 
 /**
  * Streams present both the input and the output ends of a stream.

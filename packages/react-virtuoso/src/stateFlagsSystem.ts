@@ -4,7 +4,7 @@ import { approximatelyEqual } from './utils/approximatelyEqual'
 
 export const UP = 'up'
 export const DOWN = 'down'
-export const NONE = 'none'
+const NONE = 'none'
 export interface AtBottomParams {
   offsetBottom: number
   scrollHeight: number
@@ -26,11 +26,6 @@ export type AtBottomState =
       scrollTopDelta: number
       state: AtBottomParams
     }
-
-export interface ListBottomInfo {
-  bottom: number
-  offsetBottom: number
-}
 
 export type NotAtBottomReason =
   | 'NOT_FULLY_SCROLLED_TO_LAST_ITEM_BOTTOM'
@@ -238,7 +233,7 @@ export const stateFlagsSystem = u.system(([{ footerHeight, headerHeight, scrollB
       scrollTop,
       u.throttleTime(100),
       u.withLatestFrom(isScrolling),
-      u.filter(([_, isScrolling]) => !!isScrolling),
+      u.filter(([_, isScrolling]) => isScrolling),
       u.scan(([_, prev], [next]) => [prev, next], [0, 0]),
       u.map(([prev, next]) => next - prev)
     ),

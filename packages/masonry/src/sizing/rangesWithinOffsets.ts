@@ -7,7 +7,7 @@ export function indexComparator({ index: itemIndex }: OffsetPoint, index: number
   return index === itemIndex ? 0 : index < itemIndex ? -1 : 1
 }
 
-export function offsetComparator({ offset: itemOffset }: OffsetPoint, offset: number) {
+function offsetComparator({ offset: itemOffset }: OffsetPoint, offset: number) {
   return offset === itemOffset ? 0 : offset < itemOffset ? -1 : 1
 }
 
