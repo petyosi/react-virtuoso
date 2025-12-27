@@ -91,7 +91,8 @@
       "Bash(pnpm run test:typecheck:*)",
       "Bash(pnpm vitest:*)",
       "Bash(pnpm run prettier:check:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(pnpm --filter @virtuoso.dev/reactive-engine run build:*)"
     ],
     "deny": [],
     "ask": []
