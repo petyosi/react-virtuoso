@@ -2,7 +2,7 @@ name: Deploy Docs Site
 
 on:
   push:
-    branches: ["master"]
+    branches: ['master']
 
   workflow_dispatch:
 
@@ -12,7 +12,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: 'pages'
   cancel-in-progress: false
 
 jobs:

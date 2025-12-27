@@ -262,4 +262,3 @@ LEFTHOOK=0 git commit -m "WIP: work in progress"
 - Install hooks: `pnpm exec lefthook install`
 - Uninstall hooks: `pnpm exec lefthook uninstall`
 - Run manually: `pnpm exec lefthook run pre-commit`
-

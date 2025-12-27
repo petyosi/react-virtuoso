@@ -1,0 +1,28 @@
+{
+  "name": "@virtuoso.dev/reactive-engine-examples",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev:basic": "vite serve basic",
+    "dev:todo": "vite serve todo-app",
+    "build:basic": "vite build basic",
+    "build:todo": "vite build todo-app"
+  },
+  "dependencies": {
+    "@virtuoso.dev/reactive-engine-core": "workspace:*",
+    "@virtuoso.dev/reactive-engine-query": "workspace:*",
+    "@virtuoso.dev/reactive-engine-react": "workspace:*",
+    "@virtuoso.dev/reactive-engine-router": "workspace:*",
+    "@virtuoso.dev/reactive-engine-storage": "workspace:*",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.5.0",
+    "typescript": "~5.9.3",
+    "vite": "^6.4.1"
+  }
+}

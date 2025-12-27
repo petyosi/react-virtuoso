@@ -9,19 +9,19 @@ sidebar:
 This example re-creates the UI of the iOS contacts listview.
 
 ```tsx live
-import {GroupedVirtuoso} from 'react-virtuoso'
+import { GroupedVirtuoso } from 'react-virtuoso'
 import { useMemo, useRef } from 'react'
 export default function App() {
   const { users, groups, groupCounts } = useMemo(() => {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
-    
+
     const users = letters.flatMap((letter) => {
       return Array.from({ length: 20 }, (_, index) => ({
         name: `${letter} User ${index}`,
         initials: `${letter}${index}`,
         description: `Description for user ${index}`,
       }))
-    })    
+    })
 
     const groups = letters.slice(0, 15)
 
@@ -38,18 +38,26 @@ export default function App() {
         <GroupedVirtuoso
           ref={virtuoso}
           groupCounts={groupCounts}
-          groupContent={index => {
-          return <div style={{ 
-            backgroundColor: 'var(--background)', 
-            padding: '0.3rem 1rem'
-          }}>{groups[index]}</div>
+          groupContent={(index) => {
+            return (
+              <div
+                style={{
+                  backgroundColor: 'var(--background)',
+                  padding: '0.3rem 1rem',
+                }}
+              >
+                {groups[index]}
+              </div>
+            )
           }}
-          itemContent={index => {
-            return <div style={{ padding: '0.5rem 1rem' }}>
-            <h4>{users[index].name}</h4>
+          itemContent={(index) => {
+            return (
+              <div style={{ padding: '0.5rem 1rem' }}>
+                <h4>{users[index].name}</h4>
 
-            <p style={{ marginBottom: 0 }}>{users[index].description}</p>
-            </div>
+                <p style={{ marginBottom: 0 }}>{users[index].description}</p>
+              </div>
+            )
           }}
         />
       </div>
@@ -76,8 +84,8 @@ export default function App() {
             <li key={index}>
               <a
                 href="#"
-                style={{color: 'var(--foreground)', padding: '0.5rem'}}
-                onClick={e => {
+                style={{ color: 'var(--foreground)', padding: '0.5rem' }}
+                onClick={(e) => {
                   e.preventDefault()
                   virtuoso.current.scrollToIndex({
                     index: itemIndex,

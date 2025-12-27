@@ -21,22 +21,21 @@ export default function App() {
         .fill(true)
         .map(() => Math.round(Math.random() * 14) + 1),
     []
-  );
-
+  )
 
   // use the visible range to provide information
   // about the list current position.
-  const [visibleRange, setVisibleRange] = useState(["-", "-"]);
+  const [visibleRange, setVisibleRange] = useState(['-', '-'])
 
   return (
-    <div style={{ display: "flex", flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div>
-        Current visible range:{" "}
+        Current visible range:{' '}
         <div>
           <strong>
             {visibleRange[0]} - {visibleRange[1]}
           </strong>
-        </div>{" "}
+        </div>{' '}
       </div>
 
       <div style={{ flex: 1 }}>
@@ -44,16 +43,16 @@ export default function App() {
           context={{ randomHeights }}
           style={{ height: '100%' }}
           totalCount={1000}
-          itemContent={(index ) => <div>Item {index}</div>}
+          itemContent={(index) => <div>Item {index}</div>}
           components={{ ScrollSeekPlaceholder }}
           scrollSeekConfiguration={{
             enter: (velocity) => Math.abs(velocity) > 50,
             exit: (velocity) => {
-              const shouldExit = Math.abs(velocity) < 10;
+              const shouldExit = Math.abs(velocity) < 10
               if (shouldExit) {
-                setVisibleRange(["-", "-"]);
+                setVisibleRange(['-', '-'])
               }
-              return shouldExit;
+              return shouldExit
             },
             change: (_velocity, { startIndex, endIndex }) => setVisibleRange([startIndex.toString(), endIndex.toString()]),
           }}
@@ -67,23 +66,21 @@ export default function App() {
 // and make the placeholder list more organic.
 // the height passed is the one measured for the real item.
 // the placeholder should be the same size.
-const ScrollSeekPlaceholder =  ({ height, index, context: { randomHeights }}) => (
+const ScrollSeekPlaceholder = ({ height, index, context: { randomHeights } }) => (
   <div
     style={{
       height,
-      padding: "8px",
-      boxSizing: "border-box",
-      overflow: "hidden",
+      padding: '8px',
+      boxSizing: 'border-box',
+      overflow: 'hidden',
     }}
   >
     <div
       style={{
-        background: index % 2 ? "#ccc": "#eee",
+        background: index % 2 ? '#ccc' : '#eee',
         height: randomHeights[index % 10],
       }}
     ></div>
   </div>
 )
-
-
 ```

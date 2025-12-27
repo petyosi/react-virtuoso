@@ -92,7 +92,18 @@
       "Bash(pnpm vitest:*)",
       "Bash(pnpm run prettier:check:*)",
       "Bash(xargs:*)",
-      "Bash(pnpm --filter @virtuoso.dev/reactive-engine run build:*)"
+      "Bash(pnpm --filter @virtuoso.dev/reactive-engine run build:*)",
+      "mcp__serena__write_memory",
+      "mcp__serena__list_memories",
+      "mcp__serena__read_memory",
+      "mcp__serena__check_onboarding_performed",
+      "Bash(pnpm:*)",
+      "Bash(for:*)",
+      "Bash(do echo:*)",
+      "Bash(exit:*)",
+      "Bash(done:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git ls-tree:*)"
     ],
     "deny": [],
     "ask": []

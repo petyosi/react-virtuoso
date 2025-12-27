@@ -28,7 +28,7 @@ Instead, move the components to the module level. If you need to control the com
 import { Virtuoso } from 'react-virtuoso'
 
 function Footer() {
-  return (<div style={{ padding: '1rem', textAlign: 'center', }} > end reached </div>)
+  return <div style={{ padding: '1rem', textAlign: 'center' }}> end reached </div>
 }
 
 export default function App() {
@@ -37,10 +37,8 @@ export default function App() {
       style={{ height: '100%' }}
       totalCount={100}
       components={{ Footer: Footer }}
-      itemContent={(index) => ( <div>Item {index}</div>)}
+      itemContent={(index) => <div>Item {index}</div>}
     />
   )
 }
-
- 
 ```

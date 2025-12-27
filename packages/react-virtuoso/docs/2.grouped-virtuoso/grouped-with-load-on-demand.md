@@ -23,16 +23,18 @@ import { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 export default function App() {
   const { users, groups, groupCounts } = useMemo(() => {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
-    
+
     const users = letters.flatMap((letter) => {
       return Array.from({ length: 20 }, (_, index) => ({
         name: `${letter} User ${index}`,
         initials: `${letter}${index}`,
         description: `Description for user ${index}`,
       }))
-    })    
+    })
 
-    const groups = Array.from({ length: 10 }, (_, index) => { return letters[index] })
+    const groups = Array.from({ length: 10 }, (_, index) => {
+      return letters[index]
+    })
 
     const groupCounts = groups.map((letter, index) => {
       return users.filter((user, userIndex) => user.name.startsWith(letter)).length
@@ -61,9 +63,7 @@ export default function App() {
     return setTimeout(() => {
       loadedItems.current += 50
       setLoading(false)
-      setCurrentGroupCounts(
-        calculateGroupsSoFar(groupCounts, loadedItems.current)
-      )
+      setCurrentGroupCounts(calculateGroupsSoFar(groupCounts, loadedItems.current))
     }, 500)
   }, [])
 
@@ -76,12 +76,8 @@ export default function App() {
     <GroupedVirtuoso
       style={{ height: '100%' }}
       groupCounts={currentGroupCounts}
-      groupContent={index => (
-        <div style={{ backgroundColor: 'var(--background)', paddingTop: '1rem' }}>Group {groups[index]}</div>
-      )}
-      itemContent={index => (
-        <div>{users[index].name}</div>
-      )}
+      groupContent={(index) => <div style={{ backgroundColor: 'var(--background)', paddingTop: '1rem' }}>Group {groups[index]}</div>}
+      itemContent={(index) => <div>{users[index].name}</div>}
       components={{
         Footer: () => {
           return (

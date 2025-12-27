@@ -13,3 +13,4 @@ docs/virtuoso-message-list-api/*
 docs/virtuoso-masonry-api/*
 apps/virtuoso.dev/docs/virtuoso-masonry-api/*
 .vscode
+.serena

@@ -1,6 +1,6 @@
 packages:
-  - "packages/*"
-  - "apps/*"
-  - "examples"
+  - 'packages/*'
+  - 'apps/*'
+  - 'examples'
 
 strictPeerDependencies: false

@@ -10,14 +10,14 @@ Setting sticky columns is done entirely through styling.
 ## Table with fixed first column
 
 ```tsx live
-import {TableVirtuoso} from 'react-virtuoso'
-import {useMemo} from 'react'
+import { TableVirtuoso } from 'react-virtuoso'
+import { useMemo } from 'react'
 
 export default function App() {
   const users = useMemo(() => {
     return Array.from({ length: 1000 }, (_, index) => ({
       name: `User ${index}`,
-      description: `Description for user ${index}`
+      description: `Description for user ${index}`,
     }))
   }, [])
 

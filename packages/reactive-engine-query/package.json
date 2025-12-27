@@ -1,0 +1,45 @@
+{
+  "name": "@virtuoso.dev/reactive-engine-query",
+  "private": false,
+  "sideEffects": false,
+  "type": "module",
+  "version": "0.0.1",
+  "module": "dist/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc && vite build",
+    "test": "vitest --run --passWithNoTests",
+    "lint": "eslint",
+    "typecheck": "tsgo --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/petyosi/react-virtuoso.git",
+    "directory": "packages/reactive-engine-query"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "@virtuoso.dev/reactive-engine-core": ">=0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@virtuoso.dev/reactive-engine-core": "workspace:*",
+    "@virtuoso.dev/tooling": "workspace:*",
+    "eslint": "^9.24.0",
+    "prettier": "^3.5.3",
+    "typescript": "~5.9.3",
+    "vite": "^6.4.1",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.0.16"
+  },
+  "files": [
+    "dist"
+  ]
+}

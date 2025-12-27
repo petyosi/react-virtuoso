@@ -62,7 +62,4 @@ function generateUsers(count: number, start: number) {
     name: `User ${start + i}`,
   }))
 }
-
-
-
 ```

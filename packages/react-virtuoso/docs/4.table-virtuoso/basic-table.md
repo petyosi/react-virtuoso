@@ -23,7 +23,7 @@ The component renders an HTML table structure. Few CSS settings can affect its l
 ## Table with `data`
 
 ```tsx live
-import {TableVirtuoso} from 'react-virtuoso'
+import { TableVirtuoso } from 'react-virtuoso'
 
 export default function App() {
   return (
@@ -31,7 +31,7 @@ export default function App() {
       style={{ height: '100%' }}
       data={Array.from({ length: 100 }, (_, index) => ({
         name: `User ${index}`,
-        description: `${index} description`
+        description: `${index} description`,
       }))}
       itemContent={(index, user) => (
         <>
@@ -47,14 +47,18 @@ export default function App() {
 ## Table with `totalCount`
 
 ```tsx live
-import {TableVirtuoso} from 'react-virtuoso'
-import {useMemo} from 'react'
+import { TableVirtuoso } from 'react-virtuoso'
+import { useMemo } from 'react'
 
 export default function App() {
-  const users = useMemo(() => Array.from({ length: 100 }, (_, index) => ({
+  const users = useMemo(
+    () =>
+      Array.from({ length: 100 }, (_, index) => ({
         name: `User ${index}`,
-        description: `${index} description`
-      })), [])
+        description: `${index} description`,
+      })),
+    []
+  )
 
   return (
     <TableVirtuoso
@@ -75,7 +79,6 @@ export default function App() {
 ```
 
 ## Table with `useWindowScroll`
-
 
 ```tsx live
 import { TableVirtuoso } from 'react-virtuoso'
@@ -100,5 +103,4 @@ export default function App() {
     />
   )
 }
- 
 ```

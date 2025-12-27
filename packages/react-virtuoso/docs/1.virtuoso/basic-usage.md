@@ -24,7 +24,7 @@ export default function App() {
       name: `User ${index}`,
       // random-sized items
       size: Math.floor(Math.random() * 40) + 70,
-      description: `Description for user ${index}`
+      description: `Description for user ${index}`,
     }))
   }, [])
 
@@ -37,10 +37,12 @@ export default function App() {
           style={{
             padding: '0.5rem',
             height: `${user.size}px`,
-            borderBottom: `1px solid var(--border)`
+            borderBottom: `1px solid var(--border)`,
           }}
         >
-          <p><strong>{user.name}</strong></p>
+          <p>
+            <strong>{user.name}</strong>
+          </p>
           <div>{user.description}</div>
         </div>
       )}
@@ -60,7 +62,7 @@ export default function App() {
     return Array.from({ length: 100000 }, (_, index) => ({
       name: `User ${index}`,
       size: Math.floor(Math.random() * 40) + 70,
-      description: `Description for user ${index}`
+      description: `Description for user ${index}`,
     }))
   }, [])
 
@@ -71,17 +73,20 @@ export default function App() {
       itemContent={(index) => {
         const user = users[index]
         return (
-        <div
-          style={{
-            padding: '0.5rem',
-            height: `${user.size}px`,
-            borderBottom: `1px solid var(--border)`
-          }}
-        >
-          <p><strong>{user.name}</strong></p>
-          <div>{user.description}</div>
-        </div>
-      )}}
+          <div
+            style={{
+              padding: '0.5rem',
+              height: `${user.size}px`,
+              borderBottom: `1px solid var(--border)`,
+            }}
+          >
+            <p>
+              <strong>{user.name}</strong>
+            </p>
+            <div>{user.description}</div>
+          </div>
+        )
+      }}
     />
   )
 }

@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/DavidAnson/markdownlint/main/schema/markdownlint-config-schema.json",
   "default": true,
   "MD003": {
-      "style": "atx"
+    "style": "atx"
   },
   "MD010": {
     "code_blocks": true

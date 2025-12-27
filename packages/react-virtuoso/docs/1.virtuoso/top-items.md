@@ -19,7 +19,7 @@ export default function App() {
       style={{ height: '100%' }}
       totalCount={1000}
       topItemCount={2}
-      itemContent={(index) => (<div style={{ height: 30, backgroundColor: 'var(--background)' }}>Item {index + 1}</div>)}
+      itemContent={(index) => <div style={{ height: 30, backgroundColor: 'var(--background)' }}>Item {index + 1}</div>}
     />
   )
 }

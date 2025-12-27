@@ -2,7 +2,7 @@
 title: Table Virtuoso integrated with @tanstack/table
 description: Combine TanStack Table's sorting and filtering with TableVirtuoso's virtualization for large datasets.
 sidebar:
-  label: "@tanstack/table"
+  label: '@tanstack/table'
 ---
 
 This example takes the [virtualized rows example of @tanstack/table](https://tanstack.com/table/v8/docs/examples/react/virtualized-rows) and uses Table Virtuoso instead of @tanstack/virtual.

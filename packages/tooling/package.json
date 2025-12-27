@@ -5,10 +5,12 @@
   "type": "module",
   "files": [
     "eslint.config.mjs",
+    "eslint-base.config.mjs",
     "tsconfig.json"
   ],
   "exports": {
     "./eslint.config": "./eslint.config.mjs",
+    "./eslint-base.config": "./eslint-base.config.mjs",
     "./prettier.config": "./prettier.config.mjs",
     "./tsconfig.base.json": "./tsconfig.base.json"
   },
