@@ -20,9 +20,6 @@ import type {
 } from '../interfaces'
 import type { VirtuosoProps } from './Virtuoso'
 
-/**
- * @internal
- */
 interface BaseTableVirtuosoHandle {
   /**
    * Obtains the internal size state of the component, so that it can be restored later. This does not include the data items.
