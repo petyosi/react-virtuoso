@@ -21,11 +21,11 @@
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.2",
     "@changesets/cli": "^2.29.8",
-    "@types/node": "^22.19.1",
-    "@typescript/native-preview": "7.0.0-dev.20251221.1",
-    "knip": "^5.70.2",
-    "lefthook": "^2.0.8",
-    "markdownlint-cli": "^0.46.0",
+    "@types/node": "^25.0.3",
+    "@typescript/native-preview": "7.0.0-dev.20251229.1",
+    "knip": "^5.78.0",
+    "lefthook": "^2.0.13",
+    "markdownlint-cli": "^0.47.0",
     "typescript": "^5.9.3"
   },
   "packageManager": "pnpm@10.24.0",
