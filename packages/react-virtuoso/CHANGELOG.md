@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.18.1
+
+### Patch Changes
+
+- [#1328](https://github.com/petyosi/react-virtuoso/pull/1328) [`2d2c1c5`](https://github.com/petyosi/react-virtuoso/commit/2d2c1c56d72ae0c05e54d8e393a42b96d9603175) Thanks [@petyosi](https://github.com/petyosi)! - Fix missing type for table
+
 ## 4.18.0
 
 ### Minor Changes
