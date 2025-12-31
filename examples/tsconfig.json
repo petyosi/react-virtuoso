@@ -2,6 +2,7 @@
   "extends": ["@virtuoso.dev/tooling/tsconfig.base.json"],
   "compilerOptions": {
     "baseUrl": ".",
+    "noUncheckedIndexedAccess": true,
     "paths": {
       "@/*": ["./src/*"]
     }
