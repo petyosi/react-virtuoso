@@ -54,7 +54,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build prerequisites
-        run: pnpm --filter @virtuoso.dev/gurx --filter @virtuoso.dev/masonry --filter react-virtuoso build
+        run: pnpm --filter '!@virtuoso.dev/virtuoso.dev' build
 
       - name: Type check
         run: pnpm typecheck
@@ -81,7 +81,7 @@ jobs:
 
       - name: Build prerequisites
         run: |
-          pnpm --filter react-virtuoso --filter @virtuoso.dev/gurx --filter @virtuoso.dev/masonry build
+          pnpm --filter '!@virtuoso.dev/virtuoso.dev' build
           pnpm --filter @virtuoso.dev/virtuoso.dev astro sync
 
       - name: Lint

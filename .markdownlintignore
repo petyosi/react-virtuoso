@@ -16,3 +16,5 @@ apps/virtuoso.dev/docs/
 
 # Specs (internal planning docs)
 specs/
+
+.github/

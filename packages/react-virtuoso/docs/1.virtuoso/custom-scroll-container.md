@@ -23,7 +23,7 @@ export default function App() {
       style={{
         border: '5px dashed gray',
         borderRadius: '4px',
-        height: '100%'
+        height: '100%',
       }}
     />
   )
@@ -57,6 +57,4 @@ export default function App() {
     />
   )
 }
-
-
 ```

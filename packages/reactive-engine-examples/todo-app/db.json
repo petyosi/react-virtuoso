@@ -1,0 +1,11 @@
+{
+  "lists": [
+    { "id": "1", "name": "Personal" },
+    { "id": "2", "name": "Work" }
+  ],
+  "tasks": [
+    { "id": 1, "listId": "1", "description": "Buy groceries", "done": false },
+    { "id": 2, "listId": "1", "description": "Walk the dog", "done": true },
+    { "id": 3, "listId": "2", "description": "Finish report", "done": false }
+  ]
+}

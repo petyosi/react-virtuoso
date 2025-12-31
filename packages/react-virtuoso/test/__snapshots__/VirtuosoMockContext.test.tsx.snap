@@ -14,7 +14,7 @@ exports[`VirtuosoMockContext > Grid > correctly renders items 1`] = `
       <div
         class="virtuoso-grid-list"
         data-testid="virtuoso-item-list"
-        style="padding-bottom: 100px; padding-top: 0px;"
+        style="padding-top: 0px; padding-bottom: 100px;"
       >
         <div
           class="virtuoso-grid-item"
@@ -70,7 +70,7 @@ exports[`VirtuosoMockContext > Grid > correctly renders items with useWindowScro
       <div
         class="virtuoso-grid-list"
         data-testid="virtuoso-item-list"
-        style="padding-bottom: 100px; padding-top: 0px;"
+        style="padding-top: 0px; padding-bottom: 100px;"
       >
         <div
           class="virtuoso-grid-item"
@@ -128,7 +128,7 @@ exports[`VirtuosoMockContext > List > correctly renders items 1`] = `
     >
       <div
         data-testid="virtuoso-item-list"
-        style="box-sizing: border-box; margin-top: 0px; padding-bottom: 500px; padding-top: 0px;"
+        style="box-sizing: border-box; margin-top: 0px; padding-top: 0px; padding-bottom: 500px;"
       >
         <div
           data-index="0"
@@ -172,7 +172,7 @@ exports[`VirtuosoMockContext > List > correctly renders items with useWindowScro
     >
       <div
         data-testid="virtuoso-item-list"
-        style="box-sizing: border-box; margin-top: 0px; padding-bottom: 500px; padding-top: 0px;"
+        style="box-sizing: border-box; margin-top: 0px; padding-top: 0px; padding-bottom: 500px;"
       >
         <div
           data-index="0"

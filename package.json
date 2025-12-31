@@ -8,6 +8,8 @@
     "lint": "pnpm run --if-present --parallel lint",
     "lint:md": "markdownlint '**/*.md' --ignore-path .markdownlintignore",
     "lint:md:fix": "markdownlint '**/*.md' --ignore-path .markdownlintignore --fix",
+    "format": "prettier --write . --ignore-path .prettierignore",
+    "format:check": "prettier --check . --ignore-path .prettierignore",
     "test": "pnpm run --if-present --parallel test",
     "e2e": "pnpm run  --if-present --parallel e2e",
     "build": "pnpm --if-present --recursive run build",
@@ -26,6 +28,8 @@
     "knip": "^5.70.2",
     "lefthook": "^2.0.8",
     "markdownlint-cli": "^0.46.0",
+    "prettier": "^3.4.2",
+    "prettier-plugin-astro": "^0.14.1",
     "typescript": "^5.9.3"
   },
   "packageManager": "pnpm@10.24.0",

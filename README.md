@@ -24,19 +24,13 @@ npm install react-virtuoso
 ```
 
 ```jsx import * as React from 'react' import * as ReactDOM from 'react-dom'
-import { Virtuoso } from "react-virtuoso";
+import { Virtuoso } from 'react-virtuoso'
 
 const App = () => {
-  return (
-    <Virtuoso
-      style={{ height: "400px" }}
-      totalCount={200}
-      itemContent={(index) => <div>Item {index}</div>}
-    />
-  );
-};
+  return <Virtuoso style={{ height: '400px' }} totalCount={200} itemContent={(index) => <div>Item {index}</div>} />
+}
 
-ReactDOM.render(<App />, document.getElementById("root"));
+ReactDOM.render(<App />, document.getElementById('root'))
 ```
 
 ## Documentation
