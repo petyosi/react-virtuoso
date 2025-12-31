@@ -54,7 +54,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build prerequisites
-        run: pnpm run build
+        run: pnpm --filter '!@virtuoso.dev/virtuoso.dev' build
 
       - name: Type check
         run: pnpm typecheck
@@ -81,7 +81,7 @@ jobs:
 
       - name: Build prerequisites
         run: |
-          pnpm run build
+          pnpm --filter '!@virtuoso.dev/virtuoso.dev' build
           pnpm --filter @virtuoso.dev/virtuoso.dev astro sync
 
       - name: Lint
