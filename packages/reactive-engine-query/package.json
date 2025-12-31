@@ -3,7 +3,7 @@
   "private": false,
   "sideEffects": false,
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "module": "dist/index.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,7 +26,7 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@virtuoso.dev/reactive-engine-core": ">=0.0.1"
+    "@virtuoso.dev/reactive-engine-core": ">=0.0.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.1",
