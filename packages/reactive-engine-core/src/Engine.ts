@@ -578,18 +578,14 @@ export class Engine {
     return { participatingNodes, pendingPulls, projections, refCount }
   }
 
-  private combineOperators<T>(...o: []): (s: Out<T>) => NodeRef<T> // biome-ignore format: keep-one-liner
-  private combineOperators<T, O1>(...o: [O<T, O1>]): (s: Out<T>) => NodeRef<O1> // biome-ignore format: keep-one-liner
-  private combineOperators<T, O1, O2>(...o: [O<T, O1>, O<O1, O2>]): (s: Out<T>) => NodeRef<O2> // biome-ignore format: keep-one-liner
-  private combineOperators<T, O1, O2, O3>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>]): (s: Out<T>) => NodeRef<O3> // biome-ignore format: keep-one-liner
-  private combineOperators<T, O1, O2, O3, O4>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>]): (s: Out<T>) => NodeRef<O4> // biome-ignore format: keep-one-liner
-  private combineOperators<T, O1, O2, O3, O4, O5>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>]): (s: Out<T>) => NodeRef<O5> // biome-ignore format: keep-one-liner
-  private combineOperators<T, O1, O2, O3, O4, O5, O6>(
-    ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>]
-  ): (s: Out<T>) => NodeRef<O6> // biome-ignore format: keep-one-liner
-  private combineOperators<T, O1, O2, O3, O4, O5, O6, O7>(
-    ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>]
-  ): (s: Out<T>) => NodeRef<O7> // biome-ignore format: keep-one-liner
+  private combineOperators<T>(...o: []): (s: Out<T>) => NodeRef<T> // prettier-ignore
+  private combineOperators<T, O1>(...o: [O<T, O1>]): (s: Out<T>) => NodeRef<O1> // prettier-ignore
+  private combineOperators<T, O1, O2>(...o: [O<T, O1>, O<O1, O2>]): (s: Out<T>) => NodeRef<O2> // prettier-ignore
+  private combineOperators<T, O1, O2, O3>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>]): (s: Out<T>) => NodeRef<O3> // prettier-ignore
+  private combineOperators<T, O1, O2, O3, O4>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>]): (s: Out<T>) => NodeRef<O4> // prettier-ignore
+  private combineOperators<T, O1, O2, O3, O4, O5>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>]): (s: Out<T>) => NodeRef<O5> // prettier-ignore
+  private combineOperators<T, O1, O2, O3, O4, O5, O6>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>]): (s: Out<T>) => NodeRef<O6> // prettier-ignore
+  private combineOperators<T, O1, O2, O3, O4, O5, O6, O7>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>]): (s: Out<T>) => NodeRef<O7> // prettier-ignore
   private combineOperators<T>(...o: O<unknown, unknown>[]): (s: Out<T>) => NodeRef
   private combineOperators<T>(...o: O<unknown, unknown>[]): (s: Out<T>) => NodeRef {
     return (source: Out) => {

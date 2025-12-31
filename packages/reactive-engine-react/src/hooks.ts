@@ -100,47 +100,31 @@ export const useCellValue = 'useSyncExternalStore' in React ? useCellValueWithSt
  */
 export function useCellValues(...cells: Out[]): unknown[]
 /** @hidden */
-export function useCellValues<T1>(...cells: [Out<T1>]): [T1] // biome-ignore format: keep-one-liner
+export function useCellValues<T1>(...cells: [Out<T1>]): [T1] // prettier-ignore
 /** @hidden */
-export function useCellValues<T1, T2>(...cells: [Out<T1>, Out<T2>]): [T1, T2] // biome-ignore format: keep-one-liner
+export function useCellValues<T1, T2>(...cells: [Out<T1>, Out<T2>]): [T1, T2] // prettier-ignore
 /** @hidden */
-export function useCellValues<T1, T2, T3>(...cells: [Out<T1>, Out<T2>, Out<T3>]): [T1, T2, T3] // biome-ignore format: keep-one-liner
+export function useCellValues<T1, T2, T3>(...cells: [Out<T1>, Out<T2>, Out<T3>]): [T1, T2, T3] // prettier-ignore
 /** @hidden */
-export function useCellValues<T1, T2, T3, T4>(...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>]): [T1, T2, T3, T4] // biome-ignore format: keep-one-liner
+export function useCellValues<T1, T2, T3, T4>(...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>]): [T1, T2, T3, T4] // prettier-ignore
 /** @hidden */
-export function useCellValues<T1, T2, T3, T4, T5>(...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>]): [T1, T2, T3, T4, T5] // biome-ignore format: keep-one-liner
+export function useCellValues<T1, T2, T3, T4, T5>(...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>]): [T1, T2, T3, T4, T5] // prettier-ignore
 /** @hidden */
-export function useCellValues<T1, T2, T3, T4, T5, T6>(
-  ...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>]
-): [T1, T2, T3, T4, T5, T6] // biome-ignore format: keep-one-liner
+export function useCellValues<T1, T2, T3, T4, T5, T6>(...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>]): [T1, T2, T3, T4, T5, T6] // prettier-ignore
 /** @hidden */
-export function useCellValues<T1, T2, T3, T4, T5, T6, T7>(
-  ...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>]
-): [T1, T2, T3, T4, T5, T6, T7] // biome-ignore format: keep-one-liner
+export function useCellValues<T1, T2, T3, T4, T5, T6, T7>(...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>]): [T1, T2, T3, T4, T5, T6, T7] // prettier-ignore
 /** @hidden */
-export function useCellValues<T1, T2, T3, T4, T5, T6, T7, T8>(
-  ...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>]
-): [T1, T2, T3, T4, T5, T6, T7, T8] // biome-ignore format: keep-one-liner
+export function useCellValues<T1, T2, T3, T4, T5, T6, T7, T8>(...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>]): [T1, T2, T3, T4, T5, T6, T7, T8] // prettier-ignore
 /** @hidden */
-export function useCellValues<T1, T2, T3, T4, T5, T6, T7, T8, T9>(
-  ...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>]
-): [T1, T2, T3, T4, T5, T6, T7, T8, T9] // biome-ignore format: keep-one-liner
+export function useCellValues<T1, T2, T3, T4, T5, T6, T7, T8, T9>(...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>]): [T1, T2, T3, T4, T5, T6, T7, T8, T9] // prettier-ignore
 /** @hidden */
-export function useCellValues<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
-  ...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>]
-): [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10] // biome-ignore format: keep-one-liner
+export function useCellValues<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>]): [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10] // prettier-ignore
 /** @hidden */
-export function useCellValues<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(
-  ...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>]
-): [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11] // biome-ignore format: keep-one-liner
+export function useCellValues<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>]): [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11] // prettier-ignore
 /** @hidden */
-export function useCellValues<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(
-  ...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>]
-): [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12] // biome-ignore format: keep-one-liner
+export function useCellValues<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>]): [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12] // prettier-ignore
 /** @hidden */
-export function useCellValues<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(
-  ...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>]
-): [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13] // biome-ignore format: keep-one-liner
+export function useCellValues<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(...cells: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>, Out<T9>, Out<T10>, Out<T11>, Out<T12>, Out<T13>]): [T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13] // prettier-ignore
 export function useCellValues(...cells: Out[]): unknown[] {
   const engine = useEngine()
 

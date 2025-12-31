@@ -185,29 +185,23 @@ export function DerivedCell<T>(value: T, source$: NodeRef<T>, distinct: Distinct
  */
 export function Pipe<T>(...operators: O<unknown, unknown>[]): [Inp<T>, Out]
 /** @hidden */
-export function Pipe<T, O1>(o1: O<T, O1>): [Inp<T>, Out<O1>] // biome-ignore format: keep-one-liner
+export function Pipe<T, O1>(o1: O<T, O1>): [Inp<T>, Out<O1>] // prettier-ignore
 /** @hidden */
-export function Pipe<T, O1, O2>(...o: [O<T, O1>, O<O1, O2>]): [Inp<T>, Out<O2>] // biome-ignore format: keep-one-liner
+export function Pipe<T, O1, O2>(...o: [O<T, O1>, O<O1, O2>]): [Inp<T>, Out<O2>] // prettier-ignore
 /** @hidden */
-export function Pipe<T, O1, O2, O3>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>]): [Inp<T>, Out<O3>] // biome-ignore format: keep-one-liner
+export function Pipe<T, O1, O2, O3>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>]): [Inp<T>, Out<O3>] // prettier-ignore
 /** @hidden */
-export function Pipe<T, O1, O2, O3, O4>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>]): [Inp<T>, Out<O4>] // biome-ignore format: keep-one-liner
+export function Pipe<T, O1, O2, O3, O4>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>]): [Inp<T>, Out<O4>] // prettier-ignore
 /** @hidden */
-export function Pipe<T, O1, O2, O3, O4, O5>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>]): [Inp<T>, Out<O5>] // biome-ignore format: keep-one-liner
+export function Pipe<T, O1, O2, O3, O4, O5>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>]): [Inp<T>, Out<O5>] // prettier-ignore
 /** @hidden */
-export function Pipe<T, O1, O2, O3, O4, O5, O6>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>]): [Inp<T>, Out<O6>] // biome-ignore format: keep-one-liner
+export function Pipe<T, O1, O2, O3, O4, O5, O6>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>]): [Inp<T>, Out<O6>] // prettier-ignore
 /** @hidden */
-export function Pipe<T, O1, O2, O3, O4, O5, O6, O7>(
-  ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>]
-): [Inp<T>, Out<O7>] // biome-ignore format: keep-one-liner
+export function Pipe<T, O1, O2, O3, O4, O5, O6, O7>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>]): [Inp<T>, Out<O7>] // prettier-ignore
 /** @hidden */
-export function Pipe<T, O1, O2, O3, O4, O5, O6, O7, O8>(
-  ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>, O<O7, O8>]
-): [Inp<T>, Out<O8>] // biome-ignore format: keep-one-liner
+export function Pipe<T, O1, O2, O3, O4, O5, O6, O7, O8>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>, O<O7, O8>]): [Inp<T>, Out<O8>] // prettier-ignore
 /** @hidden */
-export function Pipe<T, O1, O2, O3, O4, O5, O6, O7, O8, O9>(
-  ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>, O<O7, O8>, O<O8, O9>]
-): [Inp<T>, Out<O9>] // biome-ignore format: keep-one-liner
+export function Pipe<T, O1, O2, O3, O4, O5, O6, O7, O8, O9>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>, O<O7, O8>, O<O8, O9>]): [Inp<T>, Out<O9>] // prettier-ignore
 export function Pipe<T>(...operators: O<unknown, unknown>[]): [Inp<T>, Out] {
   const input$ = Stream<T>()
   const output$ = Stream<unknown>()
