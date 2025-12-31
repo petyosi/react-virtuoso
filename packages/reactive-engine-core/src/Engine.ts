@@ -31,12 +31,16 @@ const emptyStreamValue = Symbol('empty stream')
 export class Engine {
   public readonly id?: string
   private readonly calledInits = new Set<NodeInit<unknown>>()
+  private childEngines: Engine[] = []
   private readonly combinedCells: CombinedCellRecord[] = []
   private readonly definitionRegistry = new Set<symbol>()
   private readonly disposeCallbacks = new Set<() => void>()
   private readonly distinctNodes = new Map<symbol, Comparator<unknown>>()
   private readonly executionMaps = new Map<symbol | symbol[], ExecutionMap>()
   private readonly graph = new SetMap<NodeProjection>()
+  private parentEngine: Engine | undefined = undefined
+  private readonly parentEngineSingletonSubscriptions = new Map<symbol, Subscription<unknown>>()
+  private readonly parentEngineSubscriptions = new SetMap<Subscription<unknown>>()
   private readonly singletonSubscriptions = new Map<symbol, Subscription<unknown>>()
   private readonly state = new Map<symbol, unknown>()
   private readonly streamState = new Map<symbol, unknown>()
@@ -46,12 +50,15 @@ export class Engine {
    * @param initialValues - the initial cell values that will populate the engine.
    * Those values will not trigger a recomputation cycle, and will overwrite the initial values specified for each cell.
    * @param id - optional stable ID for storage namespacing. Use this for multi-engine apps to prevent storage key conflicts.
+   * @param parentEngine - optional parent engine for child engine functionality.
    */
-  constructor(initialValues: Record<symbol, unknown> = {}, id?: string) {
+  constructor(initialValues: Record<symbol, unknown> = {}, id?: string, parentEngine?: Engine) {
     this.id = id
     for (const id of Object.getOwnPropertySymbols(initialValues)) {
       this.state.set(id, initialValues[id])
     }
+    this.parentEngine = parentEngine
+    parentEngine?.childEngines.push(this)
     nodeInitSubscriptions$$.add(this.nodeInitSubscription)
   }
 
@@ -190,6 +197,15 @@ export class Engine {
   }
 
   dispose() {
+    // Remove self from parent's childEngines array
+    if (this.parentEngine) {
+      const index = this.parentEngine.childEngines.indexOf(this)
+      if (index !== -1) {
+        this.parentEngine.childEngines.splice(index, 1)
+      }
+      this.parentEngine = undefined
+    }
+
     // Call all disposal callbacks
     for (const callback of this.disposeCallbacks) {
       callback()
@@ -202,16 +218,25 @@ export class Engine {
     this.executionMaps.clear()
     this.graph.clear()
     this.singletonSubscriptions.clear()
+    this.parentEngineSingletonSubscriptions.clear()
+    this.parentEngineSubscriptions.clear()
     this.state.clear()
     this.subscriptions.clear()
     this.calledInits.clear()
     nodeInitSubscriptions$$.delete(this.nodeInitSubscription)
+
+    for (const child of this.childEngines) {
+      child.parentEngine = undefined
+    }
   }
 
   /**
    * @typeParam T - The type of values that the node emits.
    */
   getValue<T>(node: Out<T>): T {
+    if (this.parentEngine?.hasOwnOrParentHasRef(node)) {
+      return this.parentEngine.getValue(node)
+    }
     this.register(node)
     return this.state.get(node) as T
   }
@@ -301,13 +326,33 @@ export class Engine {
    * r.pubIn({[foo$]: 'foo1', [bar$]: 'bar1'})
    * ```
    */
-  pubIn(values: Record<symbol, unknown>) {
-    const ids = Reflect.ownKeys(values) as symbol[]
+  pubIn(values: Record<symbol, unknown>, skipParent = false) {
+    const parentValues: Record<symbol, unknown> = {}
+    let ownValues: Record<symbol, unknown> = {}
+
+    if (this.parentEngine && !skipParent) {
+      for (const k of Reflect.ownKeys(values)) {
+        const key = k as NodeRef
+        const val = values[key]
+        if (this.parentEngine.hasOwnOrParentHasRef(key)) {
+          parentValues[key] = val
+        } else {
+          ownValues[key] = val
+        }
+      }
+      this.parentEngine.pubIn(parentValues)
+    } else {
+      ownValues = values
+    }
+
+    const ids = Reflect.ownKeys(ownValues) as symbol[]
 
     const map = this.getExecutionMap(ids)
     const refCount = map.refCount.clone()
     const participatingNodeKeys = map.participatingNodes.slice()
     const transientState = new Map<symbol, unknown>([...this.state, ...this.streamState])
+
+    const childChangePayload: Record<symbol, unknown> = {}
 
     const nodeWillNotEmit = (key: symbol) => {
       this.graph.use(key, (projections) => {
@@ -337,6 +382,7 @@ export class Engine {
         }
         resolved = true
         transientState.set(id, value)
+        childChangePayload[id] = value
 
         if (this.state.has(id)) {
           this.state.set(id, value)
@@ -344,8 +390,8 @@ export class Engine {
           this.streamState.set(id, value)
         }
       }
-      if (Object.hasOwn(values, id)) {
-        done(values[id])
+      if (Object.hasOwn(ownValues, id)) {
+        done(ownValues[id])
       } else {
         map.projections.use(id, (nodeProjections) => {
           for (const projection of nodeProjections) {
@@ -378,6 +424,11 @@ export class Engine {
         nodeWillNotEmit(id)
       }
     }
+
+    for (const childEngine of this.childEngines) {
+      // the pubIn will clone the passed payload, so the engines won't overlap with each other
+      childEngine.pubIn(childChangePayload, true)
+    }
   }
 
   /**
@@ -387,35 +438,31 @@ export class Engine {
    */
   register(node$: NodeRef) {
     const definition = nodeDefs$$.get(node$)
-    // node that's within the instance
-    if (definition === undefined) {
-      // console.log('skipping registration of unknown node', getNodeLabel(node$))
+    // node that's within the instance or registered in parent
+    if (definition === undefined || this.definitionRegistry.has(node$) || this.parentEngine?.hasOwnOrParentHasRef(node$)) {
       return node$
     }
 
-    if (!this.definitionRegistry.has(node$)) {
-      this.definitionRegistry.add(node$)
+    this.definitionRegistry.add(node$)
 
-      const instance$ =
-        definition.type === CELL_TYPE
-          ? this.cellInstance(definition.initial, definition.distinct, node$)
-          : this.streamInstance(definition.distinct, node$)
+    const instance$ =
+      definition.type === CELL_TYPE
+        ? this.cellInstance(definition.initial, definition.distinct, node$)
+        : this.streamInstance(definition.distinct, node$)
 
-      inEngineContext(this, () => {
-        nodeInits$$.use(instance$, (inits) => {
-          for (const init of inits) {
-            // Skip if this init has already been called in this engine
-            if (!this.calledInits.has(init)) {
-              this.calledInits.add(init)
-              init(this, node$)
-            }
+    inEngineContext(this, () => {
+      nodeInits$$.use(instance$, (inits) => {
+        for (const init of inits) {
+          // Skip if this init has already been called in this engine
+          if (!this.calledInits.has(init)) {
+            this.calledInits.add(init)
+            init(this, node$)
           }
-        })
+        }
       })
+    })
 
-      return instance$
-    }
-    return node$
+    return instance$
   }
 
   /**
@@ -429,6 +476,10 @@ export class Engine {
    * @typeParam T - The type of values that the node will emit.
    */
   singletonSub<T>(node: Out<T>, subscription: Subscription<T> | undefined): UnsubscribeHandle {
+    if (this.parentEngine?.hasOwnOrParentHasRef(node)) {
+      // Delegate to parent's singletonSub
+      return this.parentEngine.singletonSub(node, subscription)
+    }
     this.register(node)
     if (subscription === undefined) {
       this.singletonSubscriptions.delete(node)
@@ -457,6 +508,10 @@ export class Engine {
    * @typeParam T - The type of values that the node will emit.
    */
   sub<T>(node: Out<T>, subscription: Subscription<T>): UnsubscribeHandle {
+    if (this.parentEngine?.hasOwnOrParentHasRef(node)) {
+      // Delegate to parent's sub
+      return this.parentEngine.sub(node, subscription)
+    }
     this.register(node)
     const nodeSubscriptions = this.subscriptions.getOrCreate(node)
     nodeSubscriptions.add(subscription as Subscription<unknown>)
@@ -566,6 +621,10 @@ export class Engine {
     const map = this.calculateExecutionMap(nodes)
     this.executionMaps.set(key, map)
     return map
+  }
+
+  private hasOwnOrParentHasRef(node: NodeRef): boolean {
+    return Boolean(this.parentEngine?.hasOwnOrParentHasRef(node)) || this.definitionRegistry.has(node)
   }
 
   private readonly nodeInitSubscription = <T>(nodes$: NodeRef<T>[], init: NodeInit<T>) => {

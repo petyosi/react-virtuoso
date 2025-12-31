@@ -877,3 +877,73 @@ describe('multi-node addNodeInit', () => {
     expect(eng2.getValue(result$)).toEqual(1)
   })
 })
+
+describe('child engine', () => {
+  it('reads values from its parent engine', () => {
+    const foo$ = Cell('foo')
+    const parentEngine = new Engine()
+    parentEngine.register(foo$)
+    parentEngine.pub(foo$, 'bar')
+
+    const childEngine = new Engine({}, undefined, parentEngine)
+    expect(childEngine.getValue(foo$)).toEqual('bar')
+  })
+
+  it('subscribes to the parent engine updates', () => {
+    const foo$ = Stream<number>()
+    const parent = new Engine()
+    parent.register(foo$)
+
+    const bar$ = Stream<number>()
+    e.link(
+      e.pipe(
+        foo$,
+        map((val) => val + 1)
+      ),
+      bar$
+    )
+
+    // Register bar$ in parent by using it, so child can subscribe to it
+    parent.register(bar$)
+
+    const child = new Engine({}, undefined, parent)
+    const spy = vi.fn()
+    child.sub(bar$, spy)
+    parent.pub(foo$, 1)
+    expect(spy).toHaveBeenCalledWith(2, parent)
+  })
+
+  it('publishes into parent engine cells if present', () => {
+    const foo$ = Stream<number>()
+    const parent = new Engine()
+    parent.register(foo$)
+
+    const bar$ = Stream<number>()
+    e.link(
+      e.pipe(
+        foo$,
+        map((val) => val + 1)
+      ),
+      bar$
+    )
+
+    // Register bar$ in parent by using it, so child can subscribe to it
+    parent.register(bar$)
+
+    const child = new Engine({}, undefined, parent)
+    const spy = vi.fn()
+    parent.sub(bar$, spy)
+    child.pub(foo$, 1)
+    expect(spy).toHaveBeenCalledWith(2, parent)
+  })
+
+  it('disposes the engine', () => {
+    {
+      const foo$ = Stream<number>()
+      using engine = new Engine()
+      engine.sub(foo$, () => {
+        void 0
+      })
+    }
+  })
+})
