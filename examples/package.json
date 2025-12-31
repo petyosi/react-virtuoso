@@ -21,6 +21,8 @@
     "@mui/material": "^7.3.6",
     "@tanstack/react-table": "^8.21.3",
     "@virtuoso.dev/tooling": "workspace:*",
+    "@virtuoso.dev/reactive-engine-core": "workspace:*",
+    "@virtuoso.dev/reactive-engine-react": "workspace:*",
     "eslint": "^9.23.0",
     "prettier": "^3.4.2",
     "react": "^19.2.3",

@@ -1,11 +1,14 @@
+import type { HighlighterCore } from 'shiki/core'
+
 import { CheckIcon, ClipboardCopyIcon } from '@radix-ui/react-icons'
 import copy from 'copy-text-to-clipboard'
-import { type ComponentProps, useState } from 'react'
-import ShikiHighlighter from 'react-shiki/web'
+import { type ComponentProps, useEffect, useState } from 'react'
+import ShikiHighlighter from 'react-shiki/core'
 
 import { useStarlightTheme } from '@/components/theme-utils'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { getShikiHighlighter } from '@/utils/shikiHighlighter'
 
 interface StaticCodeBlockProps {
   code: string
@@ -16,6 +19,11 @@ interface StaticCodeBlockProps {
 export default function StaticCodeBlock({ code, lang }: StaticCodeBlockProps) {
   const theme = useStarlightTheme()
   const [CopyButtonIcon, setCopyButtonIcon] = useState<React.ComponentType<ComponentProps<typeof ClipboardCopyIcon>>>(ClipboardCopyIcon)
+  const [highlighter, setHighlighter] = useState<HighlighterCore | null>(null)
+
+  useEffect(() => {
+    void getShikiHighlighter().then(setHighlighter)
+  }, [])
 
   const shikiTheme = theme === 'light' ? 'github-light' : 'github-dark'
 
@@ -26,9 +34,22 @@ export default function StaticCodeBlock({ code, lang }: StaticCodeBlockProps) {
         bg-surface-codeblock
       `}
     >
-      <ShikiHighlighter addDefaultStyles={false} className="static-code-block" langStyle={{}} language={lang} theme={shikiTheme}>
-        {code}
-      </ShikiHighlighter>
+      {highlighter ? (
+        <ShikiHighlighter
+          addDefaultStyles={false}
+          className="static-code-block"
+          highlighter={highlighter}
+          langStyle={{}}
+          language={lang}
+          theme={shikiTheme}
+        >
+          {code}
+        </ShikiHighlighter>
+      ) : (
+        <pre className="static-code-block">
+          <code>{code}</code>
+        </pre>
+      )}
 
       <div className="absolute right-1 bottom-1">
         <TooltipProvider delayDuration={0}>

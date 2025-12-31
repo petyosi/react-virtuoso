@@ -1,4 +1,9 @@
-import { createHighlighter, type Highlighter } from 'shiki'
+import githubDark from '@shikijs/themes/github-dark'
+import githubLight from '@shikijs/themes/github-light'
+import { createHighlighterCore, type HighlighterCore } from 'shiki/core'
+import { createOnigurumaEngine } from 'shiki/engine/oniguruma'
+
+type Highlighter = HighlighterCore
 
 let highlighterInstance: Highlighter | null = null
 let highlighterPromise: null | Promise<Highlighter> = null
@@ -8,9 +13,17 @@ export async function getShikiHighlighter(): Promise<Highlighter> {
     return highlighterInstance
   }
 
-  highlighterPromise ??= createHighlighter({
-    langs: ['typescript', 'javascript', 'tsx', 'jsx', 'json', 'bash'],
-    themes: ['github-dark', 'github-light'],
+  highlighterPromise ??= createHighlighterCore({
+    engine: createOnigurumaEngine(import('shiki/wasm')),
+    langs: [
+      import('@shikijs/langs/typescript'),
+      import('@shikijs/langs/javascript'),
+      import('@shikijs/langs/tsx'),
+      import('@shikijs/langs/jsx'),
+      import('@shikijs/langs/json'),
+      import('@shikijs/langs/bash'),
+    ],
+    themes: [githubDark, githubLight],
   }).then((highlighter) => {
     highlighterInstance = highlighter
     return highlighter
