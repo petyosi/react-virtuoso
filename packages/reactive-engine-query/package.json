@@ -29,7 +29,7 @@
     "@virtuoso.dev/reactive-engine-core": ">=0.0.2"
   },
   "devDependencies": {
-    "@types/node": "^22.10.1",
+    "@types/node": "^25.0.3",
     "@virtuoso.dev/reactive-engine-core": "workspace:*",
     "@virtuoso.dev/tooling": "workspace:*",
     "eslint": "^9.24.0",
