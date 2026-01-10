@@ -27,7 +27,7 @@ export interface EngineProviderProps {
   /**
    * The dependency array for the update effect. When any of these values change, `updateFn` is called.
    */
-  updateDeps: unknown[]
+  updateDeps?: unknown[]
   /**
    * A callback invoked when any value in `updateDeps` changes. Use this to publish new values to the engine.
    */
@@ -81,7 +81,7 @@ export const EngineProvider: React.FC<EngineProviderProps> = ({ children, engine
     if (engine) {
       updateFn?.(engine)
     }
-  }, [engine, ...updateDeps])
+  }, [engine, ...(updateDeps ?? [])])
 
   return engine && <EngineContext.Provider value={engine}>{children}</EngineContext.Provider>
 }
