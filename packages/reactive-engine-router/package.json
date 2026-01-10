@@ -29,7 +29,7 @@
     "tiny-invariant": "^1.3.3"
   },
   "peerDependencies": {
-    "@virtuoso.dev/reactive-engine-core": ">=0.0.2",
+    "@virtuoso.dev/reactive-engine-core": ">=0.0.3",
     "react": ">= 18"
   },
   "devDependencies": {

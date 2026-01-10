@@ -1,5 +1,13 @@
 # @virtuoso.dev/examples
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies [[`259eaf6`](https://github.com/petyosi/react-virtuoso/commit/259eaf6c057863c12c457ea6de2a16b91ab6ffbe), [`259eaf6`](https://github.com/petyosi/react-virtuoso/commit/259eaf6c057863c12c457ea6de2a16b91ab6ffbe)]:
+  - @virtuoso.dev/reactive-engine-react@0.0.3
+  - @virtuoso.dev/reactive-engine-core@0.0.3
+
 ## 0.0.2
 
 ### Patch Changes
