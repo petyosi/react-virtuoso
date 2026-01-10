@@ -17,13 +17,21 @@ export interface EngineProviderProps {
    */
   engineId?: string
   /**
+   * A callback invoked once when the engine is created. Use this to register nodes and set up subscriptions.
+   */
+  initFn?: (engine: Engine) => void
+  /**
    * The initial values to set in the engine.
    */
   initWith?: Record<symbol, unknown>
   /**
-   * The values to update in the engine on each render.
+   * The dependency array for the update effect. When any of these values change, `updateFn` is called.
    */
-  updateWith?: Record<symbol, unknown>
+  updateDeps: unknown[]
+  /**
+   * A callback invoked when any value in `updateDeps` changes. Use this to publish new values to the engine.
+   */
+  updateFn?: (engine: Engine) => void
 }
 
 /**
@@ -31,7 +39,8 @@ export interface EngineProviderProps {
  *
  * @example
  * ```tsx
- * import { Cell, useCellValue, e, EngineProvider } from '@virtuoso.dev/reactive-engine'
+ * import { Cell, useCellValue, EngineProvider } from '@virtuoso.dev/reactive-engine-react'
+ *
  * const cell$ = Cell(0)
  *
  * function MyComponent() {
@@ -40,27 +49,39 @@ export interface EngineProviderProps {
  * }
  *
  * export default function App() {
- *   return <EngineProvider><MyComponent /></EngineProvider>
+ *   const [count, setCount] = useState(0)
+ *   return (
+ *     <EngineProvider
+ *       initFn={(engine) => engine.register(cell$)}
+ *       updateFn={(engine) => engine.pub(cell$, count)}
+ *       updateDeps={[count]}
+ *     >
+ *       <MyComponent />
+ *     </EngineProvider>
+ *   )
  * }
  * ```
  *
  * @category React Hooks and Components
  * @function
  */
-export const EngineProvider: React.FC<EngineProviderProps> = ({ children, engineId: id, initWith, updateWith = {} }) => {
+export const EngineProvider: React.FC<EngineProviderProps> = ({ children, engineId: id, initFn, initWith, updateDeps, updateFn }) => {
   const [engine, setEngine] = React.useState<Engine | null>(null)
 
   useIsomorphicLayoutEffect(() => {
     const instance = new Engine(initWith, id)
     setEngine(instance)
+    initFn?.(instance)
     return () => {
       instance.dispose()
     }
   }, [initWith, id])
 
   useIsomorphicLayoutEffect(() => {
-    engine?.pubIn(updateWith)
-  }, [updateWith, engine])
+    if (engine) {
+      updateFn?.(engine)
+    }
+  }, [engine, ...updateDeps])
 
   return engine && <EngineContext.Provider value={engine}>{children}</EngineContext.Provider>
 }

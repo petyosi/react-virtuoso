@@ -145,7 +145,7 @@ export function useCellValues(...cells: Out[]): unknown[] {
  *
  * @example
  * ```tsx
- * import {Stream, e, usePublisher} from '@virtuoso.dev/reactive-engine'
+ * import {Stream, e, usePublisher} from '@virtuoso.dev/reactive-engine-react'
  *
  * const stream$ = Stream<number>()
  * e.sub(stream, (value) => console.log(`${value} was published in the stream`))
