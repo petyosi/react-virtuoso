@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__serena__get_symbols_overview",
+      "mcp__serena__find_symbol",
+      "mcp__serena__insert_after_symbol",
+      "mcp__serena__replace_symbol_body",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm format:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm build:*)"
+    ]
+  }
+}

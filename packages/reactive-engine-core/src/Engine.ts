@@ -16,7 +16,7 @@ import type {
   UnsubscribeHandle,
 } from './types'
 
-import { CELL_TYPE, inEngineContext, nodeDebugLabels$$, nodeDefs$$, nodeInits$$, nodeInitSubscriptions$$ } from './globals'
+import { CELL_TYPE, inEngineContext, nodeDebugLabels$$, nodeDefs$$, nodeInits$$, nodeInitSubscriptions$$, resourceDefs$$ } from './globals'
 import { RefCount } from './RefCount'
 import { SetMap } from './SetMap'
 import { combinedCellProjection, defaultComparator, tap } from './utils'
@@ -41,6 +41,7 @@ export class Engine {
   private parentEngine: Engine | undefined = undefined
   private readonly parentEngineSingletonSubscriptions = new Map<symbol, Subscription<unknown>>()
   private readonly parentEngineSubscriptions = new SetMap<Subscription<unknown>>()
+  private readonly resources = new Map<symbol, unknown>()
   private readonly singletonSubscriptions = new Map<symbol, Subscription<unknown>>()
   private readonly state = new Map<symbol, unknown>()
   private readonly streamState = new Map<symbol, unknown>()
@@ -211,6 +212,18 @@ export class Engine {
       callback()
     }
     this.disposeCallbacks.clear()
+
+    // Dispose resources - check Symbol.dispose first, then fall back to dispose()
+    for (const resource of this.resources.values()) {
+      if (resource && typeof resource === 'object') {
+        if (Symbol.dispose in resource) {
+          ;(resource as { [Symbol.dispose]: () => void })[Symbol.dispose]()
+        } else if ('dispose' in resource && typeof (resource as { dispose?: unknown }).dispose === 'function') {
+          ;(resource as { dispose: () => void }).dispose()
+        }
+      }
+    }
+    this.resources.clear()
 
     this.combinedCells.length = 0
     this.definitionRegistry.clear()
@@ -437,9 +450,24 @@ export class Engine {
    * The only exception of that rule should be when the interaction is conditional, and the node definition includes an init function that needs to be eagerly evaluated.
    */
   register(node$: NodeRef) {
+    // Check if already registered in this engine or parent
+    if (this.definitionRegistry.has(node$) || this.parentEngine?.hasOwnOrParentHasRef(node$)) {
+      return node$
+    }
+
+    // Check for resource definition first
+    const resourceDef = resourceDefs$$.get(node$)
+    if (resourceDef !== undefined) {
+      this.definitionRegistry.add(node$)
+      const instance = resourceDef.factory(this) as unknown
+      this.resources.set(node$, instance)
+      this.state.set(node$, instance)
+      return node$
+    }
+
+    // Check for node definition
     const definition = nodeDefs$$.get(node$)
-    // node that's within the instance or registered in parent
-    if (definition === undefined || this.definitionRegistry.has(node$) || this.parentEngine?.hasOwnOrParentHasRef(node$)) {
+    if (definition === undefined) {
       return node$
     }
 

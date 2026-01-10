@@ -1,7 +1,7 @@
-export { changeWith, combine, link, merge, pipe, singletonSub, sub, subMultiple } from './combinators'
+export { changeWith, combine, link, merge, pipe, singletonSub, sub, subMultiple, withResource } from './combinators'
 export { e } from './e'
 export { Engine } from './Engine'
-export { Cell, DerivedCell, Pipe, Stream, Trigger } from './nodes'
+export { Cell, DerivedCell, Pipe, Resource, Stream, Trigger } from './nodes'
 export { addNodeInit, debug, getValue, pub, pubIn } from './nodeUtils'
 export {
   debounceTime,
@@ -25,6 +25,8 @@ export type {
   NodeInit,
   NodeRef,
   Out,
+  ResourceFactory,
+  ResourceRef,
   StreamDefinition,
   Subscription,
   UnsubscribeHandle,

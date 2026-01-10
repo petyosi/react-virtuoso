@@ -4,10 +4,10 @@
  */
 
 import type { O } from './operators'
-import type { Distinct, Inp, NodeRef, Out } from './types'
+import type { Distinct, Inp, NodeRef, Out, ResourceFactory, ResourceRef } from './types'
 
 import { link, pipe } from './combinators'
-import { CELL_TYPE, nodeDefs$$ } from './globals'
+import { CELL_TYPE, nodeDefs$$, RESOURCE_TYPE, resourceDefs$$ } from './globals'
 import { addNodeInit } from './nodeUtils'
 import { tap } from './utils'
 
@@ -127,6 +127,47 @@ export function Trigger(): NodeRef<void> {
   return tap(Symbol(), (id) => {
     nodeDefs$$.set(id, { distinct: false, type: 'stream' })
   }) as NodeRef<void>
+}
+
+/**
+ * Defines a new **resource node** and returns a reference to it.
+ * Resources are like Cells but with factory initialization and automatic disposal.
+ *
+ * @param factory - A factory function that creates the resource instance. Receives the engine as argument.
+ *
+ * @typeParam T - The type of value that the resource holds.
+ *
+ * @returns A resource reference that can be used with `getValue`, `pub`, `sub`, and combinators.
+ *
+ * @example
+ * ```ts
+ * import { Engine, Resource } from '@virtuoso.dev/reactive-engine'
+ *
+ * // Define a resource with a factory function
+ * const cache$ = Resource((engine) => ({
+ *   data: new Map(),
+ *   dispose() { this.data.clear() }
+ * }))
+ *
+ * const engine = new Engine()
+ * const cache = engine.getValue(cache$) // Factory is called here
+ * cache.data.set('key', 'value')
+ *
+ * engine.dispose() // cache.dispose() is called automatically
+ * ```
+ *
+ * @remarks Resources are reactive - you can `pub()` new values, subscribe to them,
+ * and use them with combinators like `changeWith` and `combine`.
+ * The key differences from Cells:
+ * - Factory initialization on first engine access
+ * - Automatic disposal when engine disposes (calls `[Symbol.dispose]()` or `dispose()`)
+ *
+ * @category Resources
+ */
+export function Resource<T>(factory: ResourceFactory<T>): ResourceRef<T> {
+  return tap(Symbol(), (id) => {
+    resourceDefs$$.set(id, { factory, type: RESOURCE_TYPE })
+  }) as ResourceRef<T>
 }
 
 /**

@@ -97,3 +97,25 @@ export interface CombinedCellRecord {
   cell: NodeRef
   sources: symbol[]
 }
+
+/**
+ * A factory function that creates a resource instance.
+ * @param engine - The engine instance creating the resource.
+ * @typeParam T - The type of value the factory returns.
+ * @category Resources
+ */
+export type ResourceFactory<T> = (engine: Engine) => T
+
+/** @hidden */
+export interface ResourceDefinition<T> {
+  factory: ResourceFactory<T>
+  type: 'resource'
+}
+
+/**
+ * A typed reference to a resource.
+ * Resources are like Cells but with factory initialization and auto-disposal.
+ * @typeParam T - The type of values that the resource holds.
+ * @category Resources
+ */
+export type ResourceRef<T = unknown> = symbol & { resourceType: true; valType: T }

@@ -6,6 +6,7 @@ dist
 build
 .turbo
 test-results
+__screenshots__
 
 # generated docs
 docs/virtuoso-api/*
