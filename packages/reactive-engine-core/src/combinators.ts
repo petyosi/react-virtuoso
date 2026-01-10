@@ -441,3 +441,46 @@ export function singletonSub<T>(node$: Out<T>, subscription: Subscription<T>) {
     eng.singletonSub(node$, subscription)
   }, node$)
 }
+
+/**
+ * Subscribes to a source node and invokes an action with both the emitted value and
+ * a resource instance. This enables streams to perform side effects on resources.
+ *
+ * @param source$ - The output node to subscribe to.
+ * @param resource$ - The resource node whose instance will be passed to the action.
+ * @param action - Callback that receives the stream value and resource instance for side effects.
+ *
+ * @typeParam K - The type of values that the source node emits.
+ * @typeParam R - The type of the resource instance.
+ *
+ * @example
+ * ```ts
+ * import { Engine, Stream, Resource, withResource } from '@virtuoso.dev/reactive-engine'
+ *
+ * const cache$ = Resource<Map<string, number>>(() => new Map())
+ * const input$ = Stream<[string, number]>()
+ *
+ * // Stream acts on resource (side effect)
+ * withResource(input$, cache$, ([key, value], cache) => {
+ *   cache.set(key, value)
+ * })
+ *
+ * const engine = new Engine()
+ * engine.pub(input$, ['a', 1])
+ * engine.getValue(cache$).get('a') // 1
+ * ```
+ *
+ * @remarks Use this when you need a stream to trigger side effects on a resource
+ * without changing the resource reference itself. For changing the resource value,
+ * use `changeWith` instead.
+ *
+ * @category Combinators
+ */
+export function withResource<K, R>(source$: Out<K>, resource$: Out<R>, action: (sourceValue: K, resource: R) => void) {
+  addNodeInit((eng) => {
+    eng.sub(source$, (value) => {
+      const resource = eng.getValue(resource$)
+      action(value, resource)
+    })
+  }, source$)
+}
