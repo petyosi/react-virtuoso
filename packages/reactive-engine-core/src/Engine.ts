@@ -406,11 +406,13 @@ export class Engine {
       if (Object.hasOwn(ownValues, id)) {
         done(ownValues[id])
       } else {
-        map.projections.use(id, (nodeProjections) => {
-          for (const projection of nodeProjections) {
-            const args = [...Array.from(projection.sources), ...Array.from(projection.pulls)].map((id) => transientState.get(id))
-            projection.map(done)(...args)
-          }
+        inEngineContext(this, () => {
+          map.projections.use(id, (nodeProjections) => {
+            for (const projection of nodeProjections) {
+              const args = [...Array.from(projection.sources), ...Array.from(projection.pulls)].map((id) => transientState.get(id))
+              projection.map(done)(...args)
+            }
+          })
         })
       }
 
