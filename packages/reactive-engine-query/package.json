@@ -29,7 +29,7 @@
     "@virtuoso.dev/reactive-engine-core": ">=0.0.4"
   },
   "devDependencies": {
-    "@types/node": "^22.10.1",
+    "@types/node": "^25.0.6",
     "@virtuoso.dev/reactive-engine-core": "workspace:*",
     "@virtuoso.dev/tooling": "workspace:*",
     "eslint": "^9.24.0",
@@ -37,7 +37,7 @@
     "typescript": "~5.9.3",
     "vite": "^6.4.1",
     "vite-plugin-dts": "^4.5.4",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.17"
   },
   "files": [
     "dist"
