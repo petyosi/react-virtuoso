@@ -1,5 +1,11 @@
 # @virtuoso.dev/reactive-engine-react
 
+## 0.0.4
+
+### Patch Changes
+
+- [#1341](https://github.com/petyosi/react-virtuoso/pull/1341) [`93f476c`](https://github.com/petyosi/react-virtuoso/commit/93f476ccd43381d314f9d19035f69633f5eec013) Thanks [@petyosi](https://github.com/petyosi)! - Fix typing for useCellValues
+
 ## 0.0.3
 
 ### Patch Changes
