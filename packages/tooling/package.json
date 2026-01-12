@@ -15,14 +15,14 @@
     "./tsconfig.base.json": "./tsconfig.base.json"
   },
   "dependencies": {
-    "@eslint/js": "^9.23.0",
-    "typescript-eslint": "^8.22.0",
+    "@eslint/js": "^9.39.2",
+    "typescript-eslint": "^8.52.0",
     "eslint-plugin-prettier": "^5.2.3",
     "eslint-plugin-react": "^7.37.4",
-    "eslint-plugin-perfectionist": "^4.7.0",
-    "eslint-plugin-react-hooks": "^5.1.0",
-    "prettier": "^3.4.2",
-    "globals": "^14.0.0"
+    "eslint-plugin-perfectionist": "^5.3.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "prettier": "^3.7.4",
+    "globals": "^17.0.0"
   },
   "peerDependencies": {
     "typescript": ">=5.9.3",

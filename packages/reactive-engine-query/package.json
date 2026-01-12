@@ -32,10 +32,10 @@
     "@types/node": "^22.10.1",
     "@virtuoso.dev/reactive-engine-core": "workspace:*",
     "@virtuoso.dev/tooling": "workspace:*",
-    "eslint": "^9.24.0",
-    "prettier": "^3.5.3",
+    "eslint": "^9.39.2",
+    "prettier": "^3.7.4",
     "typescript": "~5.9.3",
-    "vite": "^6.4.1",
+    "vite": "^7.3.1",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.0.16"
   },
