@@ -72,7 +72,7 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "globals": "^15.14.0",
     "jsdom": "^27.4.0",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "playwright": "^1.33.0",
     "prettier": "^3.4.2",
     "react": "^19.2.3",
