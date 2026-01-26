@@ -35,14 +35,14 @@
     "react-dom": ">= 18"
   },
   "devDependencies": {
-    "@testing-library/react": "^16.3.0",
-    "@types/node": "^22.10.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^25.0.10",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@virtuoso.dev/reactive-engine-core": "workspace:*",
     "@virtuoso.dev/reactive-engine-react": "workspace:*",
     "@virtuoso.dev/tooling": "workspace:*",
-    "@vitejs/plugin-react": "^4.5.0",
+    "@vitejs/plugin-react": "^5.1.2",
     "eslint": "^9.24.0",
     "jsdom": "^27.4.0",
     "prettier": "^3.5.3",
@@ -51,7 +51,7 @@
     "typescript": "~5.9.3",
     "vite": "^6.4.1",
     "vite-plugin-dts": "^4.5.4",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.18"
   },
   "files": [
     "dist"
