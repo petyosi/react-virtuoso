@@ -1,7 +1,7 @@
 import { Engine } from '@virtuoso.dev/reactive-engine-core'
 import * as React from 'react'
 
-import { EngineContext, useIsomorphicLayoutEffect } from './hooks'
+import { EngineContext, setRegistryEngine, useIsomorphicLayoutEffect } from './hooks'
 
 /**
  * @inline
@@ -72,7 +72,13 @@ export const EngineProvider: React.FC<EngineProviderProps> = ({ children, engine
     const instance = new Engine(initWith, id)
     setEngine(instance)
     initFn?.(instance)
+    if (id) {
+      setRegistryEngine(id, instance)
+    }
     return () => {
+      if (id) {
+        setRegistryEngine(id, null)
+      }
       instance.dispose()
     }
   }, [initWith, id])
