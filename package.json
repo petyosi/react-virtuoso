@@ -28,7 +28,7 @@
     "knip": "^5.70.2",
     "lefthook": "^2.0.8",
     "markdownlint-cli": "^0.46.0",
-    "prettier": "^3.4.2",
+    "prettier": "^3.8.1",
     "prettier-plugin-astro": "^0.14.1",
     "typescript": "^5.9.3"
   },
