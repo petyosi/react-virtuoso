@@ -1,5 +1,18 @@
 # @virtuoso.dev/reactive-engine-react
 
+## 0.1.0
+
+### Minor Changes
+
+- [`34097be`](https://github.com/petyosi/react-virtuoso/commit/34097bec6b2d69642ac6ff4c942ae457bbecce2d) Thanks [@petyosi](https://github.com/petyosi)! - Add remote hooks for accessing engine state from anywhere in the app
+  - Add `engineId` prop to `EngineProvider` to register engine in global registry
+  - Add `useRemoteCellValue(cell$, engineId)` - returns cell value or `undefined` if engine not available
+  - Add `useRemotePublisher(node$, engineId)` - returns publisher function (noop if no engine)
+  - Add `useRemoteCell(cell$, engineId)` - combines value and publisher
+  - Add `useRemoteCellValues({ cells, engineId })` - multi-cell variant with options object form
+
+  These hooks enable components anywhere in the app to access engine state without being inside an `EngineProvider`, useful for sibling components or components in different parts of the tree.
+
 ## 0.0.4
 
 ### Patch Changes
