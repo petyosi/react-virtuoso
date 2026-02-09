@@ -18,20 +18,20 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@ladle/react": "^5.1.1",
-    "@mui/material": "^7.3.6",
+    "@mui/material": "^7.3.7",
     "@tanstack/react-table": "^8.21.3",
     "@virtuoso.dev/tooling": "workspace:*",
     "@virtuoso.dev/reactive-engine-core": "workspace:*",
     "@virtuoso.dev/reactive-engine-react": "workspace:*",
-    "eslint": "^9.23.0",
-    "prettier": "^3.4.2",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
+    "eslint": "^10.0.0",
+    "prettier": "^3.8.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "react-virtuoso": "workspace:*",
     "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@types/react": "^19.2.7",
+    "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3"
   }
 }
