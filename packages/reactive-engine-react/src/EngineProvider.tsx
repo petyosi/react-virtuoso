@@ -1,7 +1,7 @@
 import { Engine } from '@virtuoso.dev/reactive-engine-core'
 import * as React from 'react'
 
-import { EngineContext, setRegistryEngine, useIsomorphicLayoutEffect } from './hooks'
+import { EngineContext, type EngineRef, getRefInternal, setRegistryEngine, useIsomorphicLayoutEffect } from './hooks'
 
 /**
  * @inline
@@ -14,8 +14,16 @@ export interface EngineProviderProps {
   children: React.ReactNode
   /**
    * Optional stable ID for storage namespacing. Use this for multi-engine apps to prevent storage key conflicts.
+   * Also registers the engine in the global registry for access via `useRemote*` hooks with a string ID.
    */
   engineId?: string
+  /**
+   * Optional reactive ref to expose the engine instance. Created by {@link useEngineRef}.
+   * Pass to `useRemote*` hooks to access the engine from sibling or ancestor components.
+   *
+   * @remarks An `EngineRef` should only be used with a single `EngineProvider`.
+   */
+  engineRef?: EngineRef
   /**
    * A callback invoked once when the engine is created. Use this to register nodes and set up subscriptions.
    */
@@ -65,7 +73,15 @@ export interface EngineProviderProps {
  * @category React Hooks and Components
  * @function
  */
-export const EngineProvider: React.FC<EngineProviderProps> = ({ children, engineId: id, initFn, initWith, updateDeps, updateFn }) => {
+export const EngineProvider: React.FC<EngineProviderProps> = ({
+  children,
+  engineId: id,
+  engineRef,
+  initFn,
+  initWith,
+  updateDeps,
+  updateFn,
+}) => {
   const [engine, setEngine] = React.useState<Engine | null>(null)
 
   useIsomorphicLayoutEffect(() => {
@@ -75,13 +91,19 @@ export const EngineProvider: React.FC<EngineProviderProps> = ({ children, engine
     if (id) {
       setRegistryEngine(id, instance)
     }
+    if (engineRef) {
+      getRefInternal(engineRef).set(instance)
+    }
     return () => {
       if (id) {
         setRegistryEngine(id, null)
       }
+      if (engineRef) {
+        getRefInternal(engineRef).set(null)
+      }
       instance.dispose()
     }
-  }, [initWith, id])
+  }, [initWith, id, engineRef])
 
   useIsomorphicLayoutEffect(() => {
     if (engine) {

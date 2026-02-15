@@ -9,6 +9,7 @@ import {
   useCell,
   useCellValue,
   useCellValues,
+  useEngineRef,
   usePublisher,
   useRemoteCell,
   useRemoteCellValue,
@@ -304,7 +305,7 @@ describe('Remote hooks', () => {
     it('returns undefined when no engine is available', async () => {
       const a$ = Cell('a')
       const b$ = Cell('b')
-      const { result } = await renderHook(() => useRemoteCellValues({ cells: [a$, b$], engineId: ENGINE_ID }), {
+      const { result } = await renderHook(() => useRemoteCellValues({ cells: [a$, b$], engineSource: ENGINE_ID }), {
         initialProps: undefined,
       })
       expect(result.current).toBeUndefined()
@@ -315,7 +316,7 @@ describe('Remote hooks', () => {
       const b$ = Cell('b')
 
       const RemoteComponent = () => {
-        const values = useRemoteCellValues({ cells: [a$, b$], engineId: ENGINE_ID })
+        const values = useRemoteCellValues({ cells: [a$, b$], engineSource: ENGINE_ID })
         return <div data-testid="remote-values">{values ? values.join('-') : 'loading'}</div>
       }
 
@@ -384,6 +385,299 @@ describe('Remote hooks', () => {
       )
 
       await expect.element(screen.getByTestId('remote-value')).toHaveTextContent('loading')
+    })
+  })
+})
+
+describe('Remote hooks with EngineRef', () => {
+  describe('useEngineRef', () => {
+    it('returns an object with null current', async () => {
+      const { result } = await renderHook(() => useEngineRef(), { initialProps: undefined })
+      expect(result.current.current).toBeNull()
+    })
+
+    it('returns the same ref across rerenders', async () => {
+      const { rerender, result } = await renderHook(() => useEngineRef(), { initialProps: undefined })
+      const firstRef = result.current
+      await rerender(undefined)
+      expect(result.current).toBe(firstRef)
+    })
+  })
+
+  describe('useRemoteCellValue with ref', () => {
+    it('returns undefined when no engine is available', async () => {
+      const remoteCell$ = Cell('remote-value')
+
+      const TestComponent = () => {
+        const ref = useEngineRef()
+        const value = useRemoteCellValue(remoteCell$, ref)
+        return <div data-testid="ref-value">{value ?? 'loading'}</div>
+      }
+
+      const screen = await render(<TestComponent />)
+      await expect.element(screen.getByTestId('ref-value')).toHaveTextContent('loading')
+    })
+
+    it('returns value after engine mounts', async () => {
+      const remoteCell$ = Cell('ref-value')
+
+      const App = () => {
+        const ref = useEngineRef()
+        return (
+          <>
+            <RemoteReader engineRef={ref} />
+            <EngineProvider engineRef={ref} initFn={noop}>
+              <div>Engine mounted</div>
+            </EngineProvider>
+          </>
+        )
+      }
+
+      const RemoteReader = ({ engineRef }: { engineRef: ReturnType<typeof useEngineRef> }) => {
+        const value = useRemoteCellValue(remoteCell$, engineRef)
+        return <div data-testid="ref-value">{value ?? 'loading'}</div>
+      }
+
+      const screen = await render(<App />)
+      await expect.element(screen.getByTestId('ref-value')).toHaveTextContent('ref-value')
+    })
+
+    it('returns undefined again after engine unmounts', async () => {
+      const remoteCell$ = Cell('ref-value')
+
+      const RemoteReader = ({ engineRef }: { engineRef: ReturnType<typeof useEngineRef> }) => {
+        const value = useRemoteCellValue(remoteCell$, engineRef)
+        return <div data-testid="ref-value">{value ?? 'loading'}</div>
+      }
+
+      const App = ({ showEngine }: { showEngine: boolean }) => {
+        const ref = useEngineRef()
+        return (
+          <>
+            <RemoteReader engineRef={ref} />
+            {showEngine && (
+              <EngineProvider engineRef={ref} initFn={noop}>
+                <div>Engine mounted</div>
+              </EngineProvider>
+            )}
+          </>
+        )
+      }
+
+      const screen = await render(<App showEngine={true} />)
+      await expect.element(screen.getByTestId('ref-value')).toHaveTextContent('ref-value')
+
+      void screen.rerender(<App showEngine={false} />)
+      await expect.element(screen.getByTestId('ref-value')).toHaveTextContent('loading')
+    })
+  })
+
+  describe('useRemotePublisher with ref', () => {
+    it('returns noop when no engine is available', async () => {
+      const trigger$ = Trigger()
+
+      const App = () => {
+        const ref = useEngineRef()
+        const publish = useRemotePublisher(trigger$, ref)
+        return (
+          <button
+            data-testid="trigger-btn"
+            onClick={() => {
+              publish()
+            }}
+          >
+            Trigger
+          </button>
+        )
+      }
+
+      const screen = await render(<App />)
+      expect(() => {
+        ;(screen.getByTestId('trigger-btn').element() as HTMLButtonElement).click()
+      }).not.toThrow()
+    })
+
+    it('returns working publisher after engine mounts', async () => {
+      const remoteCell$ = Cell('initial')
+      const trigger$ = Trigger()
+      e.link(e.pipe(trigger$, mapTo('triggered')), remoteCell$)
+
+      const App = () => {
+        const ref = useEngineRef()
+        return (
+          <>
+            <RemoteComponent engineRef={ref} />
+            <EngineProvider engineRef={ref} initFn={noop}>
+              <div>Engine mounted</div>
+            </EngineProvider>
+          </>
+        )
+      }
+
+      const RemoteComponent = ({ engineRef }: { engineRef: ReturnType<typeof useEngineRef> }) => {
+        const value = useRemoteCellValue(remoteCell$, engineRef)
+        const publish = useRemotePublisher(trigger$, engineRef)
+        return (
+          <div>
+            <span data-testid="ref-value">{value ?? 'loading'}</span>
+            <button
+              data-testid="trigger-btn"
+              onClick={() => {
+                publish()
+              }}
+            >
+              Trigger
+            </button>
+          </div>
+        )
+      }
+
+      const screen = await render(<App />)
+      await expect.element(screen.getByTestId('ref-value')).toHaveTextContent('initial')
+      ;(screen.getByTestId('trigger-btn').element() as HTMLButtonElement).click()
+      await expect.element(screen.getByTestId('ref-value')).toHaveTextContent('triggered')
+    })
+  })
+
+  describe('useRemoteCell with ref', () => {
+    it('returns [undefined, noop] when no engine is available', async () => {
+      const remoteCell$ = Cell('remote-value')
+
+      const App = () => {
+        const ref = useEngineRef()
+        const [value, setValue] = useRemoteCell(remoteCell$, ref)
+        return (
+          <div>
+            <span data-testid="ref-value">{value ?? 'loading'}</span>
+            <button
+              data-testid="set-btn"
+              onClick={() => {
+                setValue('test')
+              }}
+            >
+              Set
+            </button>
+          </div>
+        )
+      }
+
+      const screen = await render(<App />)
+      await expect.element(screen.getByTestId('ref-value')).toHaveTextContent('loading')
+      expect(() => {
+        ;(screen.getByTestId('set-btn').element() as HTMLButtonElement).click()
+      }).not.toThrow()
+    })
+
+    it('returns [value, setter] after engine mounts', async () => {
+      const remoteCell$ = Cell('initial')
+
+      const RemoteComponent = ({ engineRef }: { engineRef: ReturnType<typeof useEngineRef> }) => {
+        const [value, setValue] = useRemoteCell(remoteCell$, engineRef)
+        return (
+          <div>
+            <span data-testid="ref-value">{value ?? 'loading'}</span>
+            <button
+              data-testid="set-btn"
+              onClick={() => {
+                setValue('updated')
+              }}
+            >
+              Set
+            </button>
+          </div>
+        )
+      }
+
+      const App = () => {
+        const ref = useEngineRef()
+        return (
+          <>
+            <RemoteComponent engineRef={ref} />
+            <EngineProvider engineRef={ref} initFn={noop}>
+              <div>Engine mounted</div>
+            </EngineProvider>
+          </>
+        )
+      }
+
+      const screen = await render(<App />)
+      await expect.element(screen.getByTestId('ref-value')).toHaveTextContent('initial')
+      ;(screen.getByTestId('set-btn').element() as HTMLButtonElement).click()
+      await expect.element(screen.getByTestId('ref-value')).toHaveTextContent('updated')
+    })
+  })
+
+  describe('useRemoteCellValues with ref', () => {
+    it('returns undefined when no engine is available', async () => {
+      const a$ = Cell('a')
+      const b$ = Cell('b')
+
+      const App = () => {
+        const ref = useEngineRef()
+        const values = useRemoteCellValues({ cells: [a$, b$], engineSource: ref })
+        return <div data-testid="ref-values">{values ? values.join('-') : 'loading'}</div>
+      }
+
+      const screen = await render(<App />)
+      await expect.element(screen.getByTestId('ref-values')).toHaveTextContent('loading')
+    })
+
+    it('returns values array after engine mounts', async () => {
+      const a$ = Cell('a')
+      const b$ = Cell('b')
+
+      const RemoteComponent = ({ engineRef }: { engineRef: ReturnType<typeof useEngineRef> }) => {
+        const values = useRemoteCellValues({ cells: [a$, b$], engineSource: engineRef })
+        return <div data-testid="ref-values">{values ? values.join('-') : 'loading'}</div>
+      }
+
+      const App = () => {
+        const ref = useEngineRef()
+        return (
+          <>
+            <RemoteComponent engineRef={ref} />
+            <EngineProvider engineRef={ref} initFn={noop}>
+              <div>Engine mounted</div>
+            </EngineProvider>
+          </>
+        )
+      }
+
+      const screen = await render(<App />)
+      await expect.element(screen.getByTestId('ref-values')).toHaveTextContent('a-b')
+    })
+  })
+
+  describe('dual engineId and engineRef', () => {
+    it('EngineProvider with both engineId and engineRef registers both', async () => {
+      const remoteCell$ = Cell('dual-value')
+
+      const App = () => {
+        const ref = useEngineRef()
+        return (
+          <>
+            <RefReader engineRef={ref} />
+            <IdReader />
+            <EngineProvider engineId="dual-engine" engineRef={ref} initFn={noop}>
+              <div>Engine mounted</div>
+            </EngineProvider>
+          </>
+        )
+      }
+
+      const RefReader = ({ engineRef }: { engineRef: ReturnType<typeof useEngineRef> }) => {
+        const value = useRemoteCellValue(remoteCell$, engineRef)
+        return <div data-testid="ref-value">{value ?? 'loading'}</div>
+      }
+
+      const IdReader = () => {
+        const value = useRemoteCellValue(remoteCell$, 'dual-engine')
+        return <div data-testid="id-value">{value ?? 'loading'}</div>
+      }
+
+      const screen = await render(<App />)
+      await expect.element(screen.getByTestId('ref-value')).toHaveTextContent('dual-value')
+      await expect.element(screen.getByTestId('id-value')).toHaveTextContent('dual-value')
     })
   })
 })

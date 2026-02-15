@@ -5,6 +5,97 @@ import invariant from 'tiny-invariant'
 
 export const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? React.useLayoutEffect : React.useEffect
 
+// EngineRef: reactive ref for engine instances
+
+/**
+ * A reactive ref that holds an engine instance. Created by {@link useEngineRef}.
+ * Pass it to {@link EngineProvider} via the `engineRef` prop, then use it with
+ * the `useRemote*` hooks to access the engine from anywhere in the component tree.
+ *
+ * @remarks An `EngineRef` should only be used with a single `EngineProvider`.
+ * Using the same ref with multiple providers is unsupported.
+ *
+ * @category React Hooks and Components
+ */
+export interface EngineRef {
+  /** The current engine instance, or null if not yet available. */
+  readonly current: Engine | null
+}
+
+/**
+ * Union type for the engine source parameter accepted by `useRemote*` hooks.
+ * Can be either a string engine ID (for global registry lookup) or an {@link EngineRef}.
+ *
+ * @category React Hooks and Components
+ */
+export type EngineSource = EngineRef | string
+
+const ENGINE_REF_INTERNAL = Symbol('engineRefInternal')
+
+interface EngineRefInternal extends EngineRef {
+  [ENGINE_REF_INTERNAL]: {
+    set(engine: Engine | null): void
+    subscribe(callback: () => void): () => void
+  }
+}
+
+function createEngineRef(): EngineRef {
+  let current: Engine | null = null
+  const subscribers = new Set<() => void>()
+
+  const ref: EngineRefInternal = {
+    get current() {
+      return current
+    },
+    [ENGINE_REF_INTERNAL]: {
+      set(engine: Engine | null) {
+        current = engine
+        subscribers.forEach((cb) => {
+          cb()
+        })
+      },
+      subscribe(callback: () => void): () => void {
+        subscribers.add(callback)
+        return () => {
+          subscribers.delete(callback)
+        }
+      },
+    },
+  }
+
+  return ref
+}
+
+/**
+ * Creates a stable, memoized {@link EngineRef} for use inside a component.
+ * Pass the returned ref to an {@link EngineProvider} via the `engineRef` prop,
+ * and to `useRemote*` hooks to access the engine reactively.
+ *
+ * @example
+ * ```tsx
+ * function App() {
+ *   const engineRef = useEngineRef()
+ *   return (
+ *     <>
+ *       <SiblingComponent engineRef={engineRef} />
+ *       <EngineProvider engineRef={engineRef} initFn={initFn}>
+ *         <NestedComponent />
+ *       </EngineProvider>
+ *     </>
+ *   )
+ * }
+ * ```
+ * @category React Hooks and Components
+ */
+export function useEngineRef(): EngineRef {
+  const [ref] = React.useState(() => createEngineRef())
+  return ref
+}
+
+export function getRefInternal(ref: EngineRef): EngineRefInternal[typeof ENGINE_REF_INTERNAL] {
+  return (ref as EngineRefInternal)[ENGINE_REF_INTERNAL]
+}
+
 // Global registry for ID-based engine lookup (internal, not exported)
 interface EngineRegistryEntry {
   engine: Engine | null
@@ -229,27 +320,49 @@ export function useCell<T>(cell: NodeRef<T>): [T, (value: T) => void] {
   return [useCellValue<T>(cell), usePublisher<T>(cell)]
 }
 
-// Remote hooks - for accessing engines by ID from anywhere in the app
+// Remote hooks - for accessing engines by ID or ref from anywhere in the app
 
-function useRemoteEngine(engineId: string): Engine | null {
-  const [engine, setEngine] = React.useState<Engine | null>(() => getRegistryEngine(engineId))
+function useRemoteEngine(source: EngineSource): Engine | null {
+  const isRef = typeof source !== 'string'
+  const engineId = isRef ? null : source
+  const engineRef = isRef ? source : null
+
+  const [engineFromRegistry, setEngineFromRegistry] = React.useState<Engine | null>(() => (engineId ? getRegistryEngine(engineId) : null))
 
   useIsomorphicLayoutEffect(() => {
-    setEngine(getRegistryEngine(engineId))
+    if (!engineId) {
+      setEngineFromRegistry(null)
+      return
+    }
+    setEngineFromRegistry(getRegistryEngine(engineId))
     return subscribeToRegistry(engineId, () => {
-      setEngine(getRegistryEngine(engineId))
+      setEngineFromRegistry(getRegistryEngine(engineId))
     })
   }, [engineId])
 
-  return engine
+  const [engineFromRef, setEngineFromRef] = React.useState<Engine | null>(() => (engineRef ? engineRef.current : null))
+
+  useIsomorphicLayoutEffect(() => {
+    if (!engineRef) {
+      setEngineFromRef(null)
+      return
+    }
+    const internal = getRefInternal(engineRef)
+    setEngineFromRef(engineRef.current)
+    return internal.subscribe(() => {
+      setEngineFromRef(engineRef.current)
+    })
+  }, [engineRef])
+
+  return isRef ? engineFromRef : engineFromRegistry
 }
 
 /**
- * Gets the current value of the cell from an engine identified by `engineId`.
+ * Gets the current value of the cell from an engine identified by `engineSource`.
  * Returns `undefined` when the engine is not available yet.
  *
  * @param cell - The cell to read from.
- * @param engineId - The ID of the engine to read from (must match the `engineId` prop of an EngineProvider).
+ * @param engineSource - A string engine ID or an {@link EngineRef} to read from.
  * @returns The current value of the cell, or `undefined` if the engine is not available.
  * @typeParam T - The type of the value that the cell carries.
  *
@@ -257,16 +370,16 @@ function useRemoteEngine(engineId: string): Engine | null {
  * ```tsx
  * const cell$ = Cell(0)
  * // ...
- * function SiblingComponent() {
- *   const value = useRemoteCellValue(cell$, 'my-engine')
+ * function SiblingComponent({ engineRef }: { engineRef: EngineRef }) {
+ *   const value = useRemoteCellValue(cell$, engineRef)
  *   if (value === undefined) return <div>Loading...</div>
  *   return <div>{value}</div>
  * }
  * ```
  * @category React Hooks and Components
  */
-export function useRemoteCellValue<T>(cell: Out<T>, engineId: string): T | undefined {
-  const engine = useRemoteEngine(engineId)
+export function useRemoteCellValue<T>(cell: Out<T>, engineSource: EngineSource): T | undefined {
+  const engine = useRemoteEngine(engineSource)
   const [value, setValue] = React.useState<T | undefined>(() => (engine ? engine.getValue(cell) : undefined))
 
   useIsomorphicLayoutEffect(() => {
@@ -283,11 +396,11 @@ export function useRemoteCellValue<T>(cell: Out<T>, engineId: string): T | undef
 }
 
 /**
- * Returns a function that publishes values to a node in an engine identified by `engineId`.
+ * Returns a function that publishes values to a node in an engine identified by `engineSource`.
  * Returns a no-op function when the engine is not available yet.
  *
  * @param node$ - The node to publish to.
- * @param engineId - The ID of the engine to publish to (must match the `engineId` prop of an EngineProvider).
+ * @param engineSource - A string engine ID or an {@link EngineRef} to publish to.
  * @returns A publisher function that accepts values of type T.
  * @typeParam T - The type of values that the node accepts.
  *
@@ -295,15 +408,15 @@ export function useRemoteCellValue<T>(cell: Out<T>, engineId: string): T | undef
  * ```tsx
  * const trigger$ = Trigger()
  * // ...
- * function SiblingComponent() {
- *   const publish = useRemotePublisher(trigger$, 'my-engine')
+ * function SiblingComponent({ engineRef }: { engineRef: EngineRef }) {
+ *   const publish = useRemotePublisher(trigger$, engineRef)
  *   return <button onClick={() => publish()}>Trigger</button>
  * }
  * ```
  * @category React Hooks and Components
  */
-export function useRemotePublisher<T>(node$: Inp<T>, engineId: string): (value: T) => void {
-  const engine = useRemoteEngine(engineId)
+export function useRemotePublisher<T>(node$: Inp<T>, engineSource: EngineSource): (value: T) => void {
+  const engine = useRemoteEngine(engineSource)
 
   useIsomorphicLayoutEffect(() => {
     if (engine) {
@@ -322,11 +435,11 @@ export function useRemotePublisher<T>(node$: Inp<T>, engineId: string): (value: 
 }
 
 /**
- * Returns a tuple of the current value and a publisher function for a cell in an engine identified by `engineId`.
+ * Returns a tuple of the current value and a publisher function for a cell in an engine identified by `engineSource`.
  * Returns `[undefined, noop]` when the engine is not available yet.
  *
  * @param cell - The cell to use.
- * @param engineId - The ID of the engine (must match the `engineId` prop of an EngineProvider).
+ * @param engineSource - A string engine ID or an {@link EngineRef}.
  * @returns A tuple of the current value (or undefined) and a publisher function.
  * @typeParam T - The type of values that the cell emits/accepts.
  *
@@ -334,16 +447,16 @@ export function useRemotePublisher<T>(node$: Inp<T>, engineId: string): (value: 
  * ```tsx
  * const cell$ = Cell(0)
  * // ...
- * function SiblingComponent() {
- *   const [value, setValue] = useRemoteCell(cell$, 'my-engine')
+ * function SiblingComponent({ engineRef }: { engineRef: EngineRef }) {
+ *   const [value, setValue] = useRemoteCell(cell$, engineRef)
  *   if (value === undefined) return <div>Loading...</div>
  *   return <button onClick={() => setValue(value + 1)}>{value}</button>
  * }
  * ```
  * @category React Hooks and Components
  */
-export function useRemoteCell<T>(cell: NodeRef<T>, engineId: string): [T | undefined, (value: T) => void] {
-  return [useRemoteCellValue<T>(cell, engineId), useRemotePublisher<T>(cell, engineId)]
+export function useRemoteCell<T>(cell: NodeRef<T>, engineSource: EngineSource): [T | undefined, (value: T) => void] {
+  return [useRemoteCellValue<T>(cell, engineSource), useRemotePublisher<T>(cell, engineSource)]
 }
 
 /**
@@ -352,7 +465,7 @@ export function useRemoteCell<T>(cell: NodeRef<T>, engineId: string): [T | undef
  */
 export interface RemoteCellValuesOptions<T extends unknown[]> {
   cells: { [K in keyof T]: Out<T[K]> }
-  engineId: string
+  engineSource: EngineSource
 }
 
 /**
@@ -405,8 +518,8 @@ export function useRemoteCellValues<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11
 /** @hidden */
 export function useRemoteCellValues(options: RemoteCellValuesOptions<unknown[]>): undefined | unknown[]
 export function useRemoteCellValues(options: RemoteCellValuesOptions<unknown[]>): undefined | unknown[] {
-  const { cells, engineId } = options
-  const engine = useRemoteEngine(engineId)
+  const { cells, engineSource } = options
+  const engine = useRemoteEngine(engineSource)
 
   const combinedCell = React.useMemo(() => {
     return engine ? engine.combineCells(cells) : null

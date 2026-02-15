@@ -6,6 +6,7 @@ export {
   useCellValue,
   useCellValues,
   useEngine,
+  useEngineRef,
   useIsomorphicLayoutEffect,
   usePublisher,
   useRemoteCell,
@@ -13,4 +14,4 @@ export {
   useRemoteCellValues,
   useRemotePublisher,
 } from './hooks'
-export type { RemoteCellValuesOptions } from './hooks'
+export type { EngineRef, EngineSource, RemoteCellValuesOptions } from './hooks'
