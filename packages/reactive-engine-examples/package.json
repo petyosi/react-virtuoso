@@ -15,14 +15,14 @@
     "@virtuoso.dev/reactive-engine-react": "workspace:*",
     "@virtuoso.dev/reactive-engine-router": "workspace:*",
     "@virtuoso.dev/reactive-engine-storage": "workspace:*",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@types/react": "^19.2.7",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.5.0",
     "typescript": "~5.9.3",
-    "vite": "^6.4.1"
+    "vite": "^7.3.1"
   }
 }
