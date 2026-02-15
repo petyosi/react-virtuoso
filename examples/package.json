@@ -1,7 +1,7 @@
 {
   "name": "@virtuoso.dev/examples",
   "private": true,
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "",
   "main": "index.js",
   "scripts": {

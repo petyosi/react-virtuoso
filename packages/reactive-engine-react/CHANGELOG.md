@@ -1,5 +1,15 @@
 # @virtuoso.dev/reactive-engine-react
 
+## 0.2.0
+
+### Minor Changes
+
+- [`b2bcc42`](https://github.com/petyosi/react-virtuoso/commit/b2bcc426b78cd7d824977649a7f884041ef559b7) Thanks [@petyosi](https://github.com/petyosi)! - Add ref-based remote engine access via useEngineRef and EngineRef
+  - Add `useEngineRef()` hook that returns a reactive `EngineRef` object
+  - Add `engineRef` prop to `EngineProvider` for populating the ref
+  - Extend all `useRemote*` hooks to accept `string | EngineRef` as the engine source
+  - Rename `RemoteCellValuesOptions.engineId` to `engineSource` (breaking for `useRemoteCellValues` consumers)
+
 ## 0.1.0
 
 ### Minor Changes
