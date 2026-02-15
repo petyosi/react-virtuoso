@@ -3,7 +3,7 @@
   "private": false,
   "sideEffects": false,
   "type": "module",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "module": "dist/index.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -30,7 +30,7 @@
   },
   "peerDependencies": {
     "@virtuoso.dev/reactive-engine-core": ">=0.0.4",
-    "@virtuoso.dev/reactive-engine-react": ">=0.1.0",
+    "@virtuoso.dev/reactive-engine-react": ">=0.2.0",
     "react": ">= 18",
     "react-dom": ">= 18"
   },

@@ -1,5 +1,12 @@
 # @virtuoso.dev/reactive-engine-storage
 
+## 2.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`b2bcc42`](https://github.com/petyosi/react-virtuoso/commit/b2bcc426b78cd7d824977649a7f884041ef559b7)]:
+  - @virtuoso.dev/reactive-engine-react@0.2.0
+
 ## 1.0.0
 
 ### Patch Changes
