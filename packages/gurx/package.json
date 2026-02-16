@@ -34,24 +34,24 @@
     "react-dom": ">= 16 || >= 17 || >= 18 || >= 19"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.55.1",
-    "@types/node": "^22.10.1",
+    "@microsoft/api-extractor": "^7.56.3",
+    "@types/node": "^25.2.3",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@virtuoso.dev/tooling": "workspace:*",
-    "@vitejs/plugin-react": "^4.7.0",
-    "@vitest/browser": "^4.0.16",
-    "@vitest/browser-playwright": "^4.0.16",
+    "@vitejs/plugin-react": "^5.1.4",
+    "@vitest/browser": "^4.0.18",
+    "@vitest/browser-playwright": "^4.0.18",
     "eslint": "^9.24.0",
-    "playwright": "^1.49.0",
+    "playwright": "^1.58.2",
     "prettier": "^3.5.3",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "typescript": "~5.9.3",
     "vite": "^6.4.1",
     "vite-plugin-dts": "^4.5.4",
-    "vitest": "^4.0.16",
-    "vitest-browser-react": "^2.0.2"
+    "vitest": "^4.0.18",
+    "vitest-browser-react": "^2.0.5"
   },
   "files": [
     "dist",
