@@ -1,6 +1,6 @@
 {
   "name": "@virtuoso.dev/reactive-engine-router",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": false,
   "license": "MIT",
   "repository": {
@@ -58,7 +58,7 @@
     "vitest-browser-react": "^2.0.2"
   },
   "peerDependencies": {
-    "@virtuoso.dev/reactive-engine-core": ">=0.0.4",
+    "@virtuoso.dev/reactive-engine-core": ">=0.0.5",
     "react": ">= 18"
   }
 }

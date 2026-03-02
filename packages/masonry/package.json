@@ -1,6 +1,6 @@
 {
   "name": "@virtuoso.dev/masonry",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "private": false,
   "description": "Virtualized React component for rendering masonry layouts",
   "keywords": [

@@ -1,5 +1,12 @@
 # @virtuoso.dev/virtuoso.dev
 
+## 0.0.2
+
+### Patch Changes
+
+- Updated dependencies [[`7b38166`](https://github.com/petyosi/react-virtuoso/commit/7b3816607c2b8fa3eb8818bea6e291c93a91112d)]:
+  - @virtuoso.dev/masonry@1.4.1
+
 ## 0.0.1
 
 ### Patch Changes

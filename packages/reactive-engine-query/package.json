@@ -1,6 +1,6 @@
 {
   "name": "@virtuoso.dev/reactive-engine-query",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": false,
   "license": "MIT",
   "repository": {
@@ -43,6 +43,6 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@virtuoso.dev/reactive-engine-core": ">=0.0.4"
+    "@virtuoso.dev/reactive-engine-core": ">=0.0.5"
   }
 }

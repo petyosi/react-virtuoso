@@ -1,6 +1,6 @@
 {
   "name": "@virtuoso.dev/reactive-engine-storage",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": false,
   "license": "MIT",
   "repository": {
@@ -54,8 +54,8 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@virtuoso.dev/reactive-engine-core": ">=0.0.4",
-    "@virtuoso.dev/reactive-engine-react": ">=0.2.0",
+    "@virtuoso.dev/reactive-engine-core": ">=0.0.5",
+    "@virtuoso.dev/reactive-engine-react": ">=0.2.1",
     "react": ">= 18",
     "react-dom": ">= 18"
   }

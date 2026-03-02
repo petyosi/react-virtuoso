@@ -1,6 +1,6 @@
 {
   "name": "@virtuoso.dev/reactive-engine-react",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": false,
   "license": "MIT",
   "repository": {
@@ -55,7 +55,7 @@
     "vitest-browser-react": "^2.0.2"
   },
   "peerDependencies": {
-    "@virtuoso.dev/reactive-engine-core": ">=0.0.4",
+    "@virtuoso.dev/reactive-engine-core": ">=0.0.5",
     "react": ">= 18",
     "react-dom": ">= 18"
   }
