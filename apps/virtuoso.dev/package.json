@@ -72,11 +72,11 @@
     "@virtuoso.dev/masonry": "workspace:*",
     "estree-util-visit": "^2.0.0",
     "mdast-util-mdx": "^3.0.0",
-    "prettier": "^3.5.3",
+    "prettier": "^3.8.1",
     "prettier-plugin-astro": "^0.14.1",
     "react-virtuoso": "workspace:*",
     "typescript": "catalog:",
-    "unist-util-visit": "^5.0.0",
+    "unist-util-visit": "^5.1.0",
     "vfile": "^6.0.3"
   }
 }
