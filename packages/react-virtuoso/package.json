@@ -1,6 +1,6 @@
 {
   "name": "react-virtuoso",
-  "version": "4.18.2",
+  "version": "4.18.3",
   "description": "A virtual scroll React component for efficiently rendering large scrollable lists, grids, tables, and feeds",
   "keywords": [
     "chat",

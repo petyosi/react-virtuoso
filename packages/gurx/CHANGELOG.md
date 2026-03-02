@@ -1,5 +1,11 @@
 # Change Log - @virtuoso.dev/gurx
 
+## 1.2.2
+
+### Patch Changes
+
+- [`161db63`](https://github.com/petyosi/react-virtuoso/commit/161db63a12bd7419dc339da075f3a78e6473a9a9) Thanks [@petyosi](https://github.com/petyosi)! - Use changeset publish for proper git tagging and GitHub release creation
+
 ## 1.2.1
 
 ### Patch Changes
