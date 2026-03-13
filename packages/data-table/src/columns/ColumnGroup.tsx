@@ -4,6 +4,11 @@ import { usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
 import { createRegistryCell } from './registry'
 
+/**
+ * Describes a registered column group.
+ *
+ * @group Components
+ */
 export interface ColumnGroupInfo {
   id: string
   parentGroupId?: string
@@ -24,12 +29,22 @@ export function useColumnGroupId() {
 }
 
 export namespace ColumnGroup {
+  /**
+   * The properties accepted by the `ColumnGroup` component.
+   *
+   * @group Components
+   */
   export interface Props {
     children?: React.ReactNode
     sticky?: 'left' | 'right'
   }
 }
 
+/**
+ * Groups related columns under a shared header.
+ *
+ * @group Components
+ */
 export function ColumnGroup({ children, sticky }: ColumnGroup.Props) {
   const groupId = useId()
   const parentGroupId = useContext(ColumnGroupIdContext) || undefined

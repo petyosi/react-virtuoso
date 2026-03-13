@@ -16,6 +16,7 @@ import { bundleCode } from './bundleCode'
 import { createSandbox } from './createCodesandbox'
 import { importMap, libDefinitions } from './extraImports'
 import iFrameStyle from './iframe-style.css?raw'
+import { tailwindBrowserInlineScript } from './tailwindTransform'
 
 import type { Theme } from '@/components/theme-utils'
 import type * as MonacoEditor from 'monaco-editor'
@@ -68,14 +69,58 @@ function getCodeTypographyFromCSS(): {
   return { fontFamily, fontSize, lineHeight: parseFloat(lineHeightStr) }
 }
 
+const shadcnVarsLight = `
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+`
+
+const shadcnVarsDark = `
+  --radius: 0.625rem;
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+`
+
 const iframeThemeStyles = {
   dark: `
     :root {
       --foreground: #fff;
       --background: #000;
       --alt-background: #222222;
-      --border: #333;
       --highlight: #B8860B;
+      ${shadcnVarsDark}
     }
   `,
   light: `
@@ -83,8 +128,8 @@ const iframeThemeStyles = {
       --foreground: #1a1a1a;
       --background: #fff;
       --alt-background: #f5f5f5;
-      --border: #e0e0e0;
       --highlight: #B8860B;
+      ${shadcnVarsLight}
     }
   `,
 }
@@ -102,7 +147,48 @@ const IframePortal: React.FC<{ children: React.ReactNode; theme: Theme }> = ({ c
     }
 
     const updatePortalRoot = () => {
-      setPortalRoot(iFrameEl.contentDocument?.body ?? null)
+      const doc = iFrameEl.contentDocument
+      if (!doc) {
+        setPortalRoot(null)
+        return
+      }
+      if (!doc.head.querySelector('script[data-tailwind-inline]')) {
+        const themeStyle = doc.createElement('style')
+        themeStyle.setAttribute('type', 'text/tailwindcss')
+        themeStyle.textContent = `
+          @theme inline {
+            --radius-sm: calc(var(--radius) - 4px);
+            --radius-md: calc(var(--radius) - 2px);
+            --radius-lg: var(--radius);
+            --radius-xl: calc(var(--radius) + 4px);
+            --color-background: var(--background);
+            --color-foreground: var(--foreground);
+            --color-card: var(--card);
+            --color-card-foreground: var(--card-foreground);
+            --color-popover: var(--popover);
+            --color-popover-foreground: var(--popover-foreground);
+            --color-primary: var(--primary);
+            --color-primary-foreground: var(--primary-foreground);
+            --color-secondary: var(--secondary);
+            --color-secondary-foreground: var(--secondary-foreground);
+            --color-muted: var(--muted);
+            --color-muted-foreground: var(--muted-foreground);
+            --color-accent: var(--accent);
+            --color-accent-foreground: var(--accent-foreground);
+            --color-destructive: var(--destructive);
+            --color-border: var(--border);
+            --color-input: var(--input);
+            --color-ring: var(--ring);
+          }
+        `
+        doc.head.appendChild(themeStyle)
+
+        const script = doc.createElement('script')
+        script.setAttribute('data-tailwind-inline', 'true')
+        script.textContent = tailwindBrowserInlineScript
+        doc.head.appendChild(script)
+      }
+      setPortalRoot(doc.body)
     }
 
     updatePortalRoot()
@@ -171,10 +257,14 @@ async function initializeMonacoWithShiki(m: typeof MonacoEditor) {
     m.typescript.typescriptDefaults.setCompilerOptions({
       allowNonTsExtensions: true,
       allowSyntheticDefaultImports: true,
+      baseUrl: 'file:///',
       jsx: m.typescript.JsxEmit.ReactJSX,
       jsxFactory: 'React.createElement',
       jsxFragmentFactory: 'React.Fragment',
       moduleResolution: m.typescript.ModuleResolutionKind.NodeJs,
+      paths: {
+        '@/*': ['src/*'],
+      },
       reactNamespace: 'React',
       target: m.typescript.ScriptTarget.Latest,
       typeRoots: ['node_modules/@types'],

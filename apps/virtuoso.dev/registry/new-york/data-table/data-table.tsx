@@ -51,14 +51,19 @@ const DataTable = React.forwardRef<VirtuosoDataTableMethods, VirtuosoDataTablePr
         ref={ref}
         className={cn(
           'relative w-full overflow-x-auto bg-background text-foreground text-sm',
-          // row styling
-          '[&_[data-testid=virtuoso-table-row]]:border-b [&_[data-testid=virtuoso-table-row]]:border-border [&_[data-testid=virtuoso-table-row]]:transition-colors [&_[data-testid=virtuoso-table-row]:hover]:bg-muted/50',
+          // row styling: transparent border for spacing, ::after for visible border above sticky containers
+          '[&_[data-table-element-role=row]]:border-b [&_[data-table-element-role=row]]:border-transparent [&_[data-table-element-role=row]]:bg-clip-padding [&_[data-table-element-role=row]:hover]:bg-muted/50',
+          '[&_[data-table-element-role=row]]:after:content-[""] [&_[data-table-element-role=row]]:after:absolute [&_[data-table-element-role=row]]:after:-bottom-px [&_[data-table-element-role=row]]:after:inset-x-0 [&_[data-table-element-role=row]]:after:h-px [&_[data-table-element-role=row]]:after:bg-border [&_[data-table-element-role=row]]:after:z-3',
           // sticky header styling
           '[&_[data-table-element-role=sticky-header]]:border-b [&_[data-table-element-role=sticky-header]]:border-border [&_[data-table-element-role=sticky-header]]:bg-background',
+          // column group header border
+          '[&_[data-scope=colgroup]]:border-b [&_[data-scope=colgroup]]:border-border',
           // group row styling
           '[&_[data-group-row]]:bg-muted/50 [&_[data-group-row]]:font-medium',
-          // sticky column explicit background to prevent bleed-through
+          // sticky column: background to prevent bleed-through
           '[&_[data-sticky]]:bg-background',
+          // sticky column hover: opaque mix that matches the semi-transparent row hover
+          '[&_[data-table-element-role=row]:hover_[data-sticky]]:bg-[color-mix(in_oklch,var(--color-muted)_50%,var(--color-background))]',
           className
         )}
         {...props}
@@ -78,38 +83,42 @@ function DataTableColumn(props: Column.Props) {
   return <Column {...props} />
 }
 
-function DataTableColumnHeader(props: ColumnHeader.Props) {
+type DataTableColumnHeaderProps =
+  | {
+      children: ColumnHeaderRenderFunction | React.ReactNode
+      className?: string
+    }
+  | {
+      component: ColumnHeaderCustomComponent
+      className?: string
+    }
+
+function DataTableColumnHeader(props: DataTableColumnHeaderProps) {
+  const className = cn('flex h-10 items-center px-2 align-middle text-sm font-medium text-foreground whitespace-nowrap', props.className)
+
   if ('children' in props) {
     const userRender = props.children
     return (
-      <ColumnHeader>
-        {(params) => (
-          <div className="flex h-10 items-center px-2 text-left align-middle text-sm font-medium text-foreground whitespace-nowrap">
-            {userRender(params)}
-          </div>
-        )}
-      </ColumnHeader>
+      <ColumnHeader className={className}>{(params) => (typeof userRender === 'function' ? userRender(params) : userRender)}</ColumnHeader>
     )
   }
+
   const UserComponent = props.component
-  return (
-    <ColumnHeader
-      component={(params) => (
-        <div className="flex h-10 items-center px-2 text-left align-middle text-sm font-medium text-foreground whitespace-nowrap">
-          <UserComponent {...params} />
-        </div>
-      )}
-    />
-  )
+  return <ColumnHeader className={className} component={UserComponent} />
 }
 
 function DataTableCell(props: CellDefinitionProps) {
-  const userRender = props.children
-  return <Cell>{(params) => <div className="p-2 align-middle text-sm whitespace-nowrap">{userRender(params)}</div>}</Cell>
+  const { children, className } = props
+  return (
+    <Cell className={cn('p-2 align-middle text-sm whitespace-nowrap', className)}>
+      {(params) => (typeof children === 'function' ? children(params) : children)}
+    </Cell>
+  )
 }
 
 interface CellDefinitionProps {
-  children: CellRenderFunction
+  children: CellRenderFunction | React.ReactNode
+  className?: string
 }
 
 export {

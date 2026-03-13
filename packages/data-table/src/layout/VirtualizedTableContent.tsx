@@ -60,6 +60,7 @@ const LEFT_STICKY_CONTAINER_STYLE: CSSProperties = {
   left: 0,
   zIndex: 2,
   display: 'flex',
+  alignItems: 'flex-end',
 }
 
 const RIGHT_STICKY_CONTAINER_STYLE: CSSProperties = {
@@ -67,6 +68,7 @@ const RIGHT_STICKY_CONTAINER_STYLE: CSSProperties = {
   right: 0,
   zIndex: 2,
   display: 'flex',
+  alignItems: 'flex-end',
 }
 
 const SCROLLABLE_HEADER_CONTAINER_STYLE: CSSProperties = {
@@ -112,7 +114,7 @@ function StickyHeaderContent() {
   return (
     <>
       {stickyColumnsState.leftColumns.length > 0 && (
-        <div style={LEFT_STICKY_CONTAINER_STYLE}>
+        <div style={LEFT_STICKY_CONTAINER_STYLE} data-sticky="left">
           {leftTree.map((node) => (
             <HeaderNodeRenderer
               key={node.type === 'column' ? node.key : node.groupId}
@@ -142,7 +144,7 @@ function StickyHeaderContent() {
         ))}
       </div>
       {stickyColumnsState.rightColumns.length > 0 && (
-        <div style={RIGHT_STICKY_CONTAINER_STYLE}>
+        <div style={RIGHT_STICKY_CONTAINER_STYLE} data-sticky="right">
           {rightTree.map((node, idx) => (
             <HeaderNodeRenderer
               key={node.type === 'column' ? node.key : node.groupId}

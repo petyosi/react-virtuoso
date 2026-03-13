@@ -2,6 +2,11 @@ import { createModel } from './model-core'
 
 import type { AsyncErrorEmitter, AsyncResultEmitter, ConcurrencyStrategy, DataModelHandle, DataResult, FrameAdapter } from './types'
 
+/**
+ * Parameters for an offset-based fetch request.
+ *
+ * @group Data Models
+ */
 export interface FetchParams<Params = Record<string, unknown>> {
   offset: number
   limit: number
@@ -9,11 +14,21 @@ export interface FetchParams<Params = Record<string, unknown>> {
   signal: AbortSignal
 }
 
+/**
+ * Result for an offset-based fetch request.
+ *
+ * @group Data Models
+ */
 export interface FetchResult<T> {
   rows: T[]
   totalCount: number
 }
 
+/**
+ * Parameters for an append-mode fetch request.
+ *
+ * @group Data Models
+ */
 export interface AppendFetchParams<Params = Record<string, unknown>> {
   cursor: unknown
   limit: number
@@ -21,19 +36,39 @@ export interface AppendFetchParams<Params = Record<string, unknown>> {
   signal: AbortSignal
 }
 
+/**
+ * Result for an append-mode fetch request.
+ *
+ * @group Data Models
+ */
 export interface AppendFetchResult<T> {
   rows: T[]
   hasMore: boolean
   cursor: unknown
 }
 
+/**
+ * Transforms action payloads into remote query params.
+ *
+ * @group Data Models
+ */
 export type ParamTransformer<Params> = (ctx: { payload: unknown; params: Params }) => Params
 
+/**
+ * Configuration for a remote action.
+ *
+ * @group Data Models
+ */
 export interface RemoteActionConfig<Params> {
   handler: ParamTransformer<Params>
   strategy?: ConcurrencyStrategy
 }
 
+/**
+ * Context passed to an offset viewport handler.
+ *
+ * @group Data Models
+ */
 export interface OffsetViewportContext<Params = Record<string, unknown>> {
   startIndex: number
   endIndex: number
@@ -43,8 +78,18 @@ export interface OffsetViewportContext<Params = Record<string, unknown>> {
   pageSize: number
 }
 
+/**
+ * Action returned by an offset viewport handler.
+ *
+ * @group Data Models
+ */
 export type OffsetViewportAction = { fetch: { offset: number; limit: number }[] } | void
 
+/**
+ * Context passed to an append viewport handler.
+ *
+ * @group Data Models
+ */
 export interface AppendViewportContext<Params = Record<string, unknown>> {
   startIndex: number
   endIndex: number
@@ -55,8 +100,18 @@ export interface AppendViewportContext<Params = Record<string, unknown>> {
   pageSize: number
 }
 
+/**
+ * Action returned by an append viewport handler.
+ *
+ * @group Data Models
+ */
 export type AppendViewportAction = { loadMore: true } | void
 
+/**
+ * Configuration for an offset-mode remote source.
+ *
+ * @group Data Models
+ */
 export interface OffsetRemoteSourceConfig<T, Params = Record<string, unknown>> {
   mode?: 'offset'
   fetch: (params: FetchParams<Params>) => Promise<FetchResult<T>>
@@ -68,6 +123,11 @@ export interface OffsetRemoteSourceConfig<T, Params = Record<string, unknown>> {
   onError?: (error: Error) => void
 }
 
+/**
+ * Configuration for an append-mode remote source.
+ *
+ * @group Data Models
+ */
 export interface AppendRemoteSourceConfig<T, Params = Record<string, unknown>> {
   mode: 'append'
   fetch: (params: AppendFetchParams<Params>) => Promise<AppendFetchResult<T>>
@@ -78,6 +138,11 @@ export interface AppendRemoteSourceConfig<T, Params = Record<string, unknown>> {
   onError?: (error: Error) => void
 }
 
+/**
+ * Configuration for `remoteSource()`.
+ *
+ * @group Data Models
+ */
 export type RemoteSourceConfig<T, Params = Record<string, unknown>> =
   | OffsetRemoteSourceConfig<T, Params>
   | AppendRemoteSourceConfig<T, Params>
@@ -143,6 +208,11 @@ function abortAppendInFlight<T>(vd: AppendViewData<T>) {
   vd.fetching = false
 }
 
+/**
+ * Default viewport strategy for offset mode.
+ *
+ * @group Data Models
+ */
 export function defaultOffsetViewportHandler<Params>(context: OffsetViewportContext<Params>): OffsetViewportAction {
   const { startIndex, endIndex, loadedRanges, pageSize } = context
   const pageStart = Math.floor(startIndex / pageSize) * pageSize
@@ -168,6 +238,11 @@ export function defaultOffsetViewportHandler<Params>(context: OffsetViewportCont
   }
 }
 
+/**
+ * Default viewport strategy for append mode.
+ *
+ * @group Data Models
+ */
 export function defaultAppendViewportHandler<Params>(context: AppendViewportContext<Params>): AppendViewportAction {
   const { endIndex, loadedCount, hasMore, fetching, pageSize } = context
   if (!fetching && hasMore && endIndex >= loadedCount - Math.floor(pageSize / 2)) {
@@ -576,6 +651,11 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
   return createModel(adapter)
 }
 
+/**
+ * Creates a remote reactive data model for the table.
+ *
+ * @group Data Models
+ */
 export function remoteSource<T, Params = Record<string, unknown>>(config: RemoteSourceConfig<T, Params>): DataModelHandle<T> {
   if (config.mode === 'append') {
     return createAppendSource(config)

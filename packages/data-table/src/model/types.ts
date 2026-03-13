@@ -1,3 +1,8 @@
+/**
+ * Message envelope used by data model protocols.
+ *
+ * @group Data Models
+ */
 export interface MessageEnvelope<P = unknown> {
   type: 'request' | 'ack' | 'result' | 'error' | 'cancel' | 'event'
   requestId: string
@@ -9,11 +14,21 @@ export interface MessageEnvelope<P = unknown> {
   error?: { message: string }
 }
 
+/**
+ * A normalized table data result returned by data models.
+ *
+ * @group Data Models
+ */
 export interface DataResult<T = unknown, G = never> {
   data: (T | G)[]
   groups: { index: number; level: number }[]
 }
 
+/**
+ * The handle exposed by local and remote data models.
+ *
+ * @group Data Models
+ */
 export interface DataModelHandle<T = unknown> {
   send(msg: { action: string; payload?: unknown; viewId?: string; requestId?: string }): void
   subscribe(listener: (msg: MessageEnvelope) => void): () => void
@@ -21,6 +36,11 @@ export interface DataModelHandle<T = unknown> {
   setData?(data: T[], groups?: { index: number; level: number }[]): void
 }
 
+/**
+ * Concurrency strategies supported by model actions.
+ *
+ * @group Data Models
+ */
 export type ConcurrencyStrategy = 'supersede' | 'queue' | 'deduplicate'
 
 export type AsyncResultEmitter<T = unknown, G = never> = (viewId: string, result: DataResult<T, G>, requestId?: string) => void

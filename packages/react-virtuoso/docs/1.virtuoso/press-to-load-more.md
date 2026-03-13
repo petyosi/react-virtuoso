@@ -40,7 +40,7 @@ export default function App() {
       context={{ loading, loadMore }}
       increaseViewportBy={200}
       itemContent={(index, user) => {
-        return <div>{user.name}</div>
+        return <div className="border-b border-gray-200 px-4 py-2 text-sm">{user.name}</div>
       }}
       components={{ Footer }}
     />
@@ -51,14 +51,12 @@ export default function App() {
 ```tsx live file=Footer.tsx
 export const Footer = ({ context: { loadMore, loading } }) => {
   return (
-    <div
-      style={{
-        padding: '2rem',
-        display: 'flex',
-        justifyContent: 'center',
-      }}
-    >
-      <button disabled={loading} onClick={loadMore}>
+    <div className="flex justify-center p-6">
+      <button
+        className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600 disabled:opacity-50"
+        disabled={loading}
+        onClick={loadMore}
+      >
         {loading ? 'Loading...' : 'Press to load more'}
       </button>
     </div>

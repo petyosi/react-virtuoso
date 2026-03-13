@@ -3,7 +3,6 @@ import { createContext, useContext, useId, useLayoutEffect } from 'react'
 // oxlint-disable require-hook
 import { Cell, Stream, e } from '@virtuoso.dev/reactive-engine-core'
 import { usePublisher } from '@virtuoso.dev/reactive-engine-react'
-import invariant from 'tiny-invariant'
 
 import { columnCount$, columnRanges$ } from './column-sizes'
 import { ColumnGroupIdContext } from './ColumnGroup'
@@ -13,6 +12,11 @@ import type { SizeRange } from '../interfaces'
 
 const ColumnIdContext = createContext<string>('')
 
+/**
+ * Describes a registered column in the table.
+ *
+ * @group Components
+ */
 export interface ColumnInfo {
   field: string
   sticky?: 'left' | 'right'
@@ -22,11 +26,21 @@ export interface ColumnInfo {
 const { cell$: columns$, register$: columnRegister$ } = createRegistryCell<ColumnInfo>()
 export { columns$ }
 
+/**
+ * Payload for changing the sticky side of a column.
+ *
+ * @group Remote Control
+ */
 export interface SetColumnStickyPayload {
   key: string
   sticky: 'left' | 'right' | undefined
 }
 
+/**
+ * Remote action that toggles a column sticky state.
+ *
+ * @group Remote Control
+ */
 export const setColumnSticky$ = Stream<SetColumnStickyPayload>()
 
 e.changeWith(columns$, setColumnSticky$, (columns, { key, sticky }) => {
@@ -48,12 +62,22 @@ e.changeWith(columns$, setColumnSticky$, (columns, { key, sticky }) => {
   return next
 })
 
+/**
+ * Payload for moving one column before or after another.
+ *
+ * @group Remote Control
+ */
 export interface ReorderColumnsPayload {
   sourceKey: string
   targetKey: string
   position: 'before' | 'after'
 }
 
+/**
+ * Remote action that reorders columns.
+ *
+ * @group Remote Control
+ */
 export const reorderColumns$ = Stream<ReorderColumnsPayload>()
 
 e.changeWith(columns$, reorderColumns$, (columns, { sourceKey, targetKey, position }) => {
@@ -90,12 +114,22 @@ export function useColumnId() {
 }
 
 export namespace Column {
+  /**
+   * The properties accepted by the `Column` component.
+   *
+   * @group Components
+   */
   export interface Props extends ColumnInfo {
     children?: React.ReactNode
     sticky?: 'left' | 'right'
   }
 }
 
+/**
+ * Declares a visible column in the table.
+ *
+ * @group Components
+ */
 export function Column({ children, field, sticky }: Column.Props) {
   const colId = useId()
   const groupId = useContext(ColumnGroupIdContext) || undefined
@@ -124,8 +158,8 @@ export const columnWidths$ = Cell<Map<string, number>>(new Map())
 e.changeWith(columnWidths$, columnEntries$, (widths, entries) => {
   const next = new Map(widths)
   for (const entry of entries) {
-    invariant(entry.target instanceof HTMLDivElement, 'Expected HTMLDivElement')
-    next.set(entry.target.dataset.columnKey ?? '', entry.borderBoxSize[0]!.inlineSize)
+    const target = entry.target as HTMLElement
+    next.set(target.dataset.columnKey ?? '', entry.borderBoxSize[0]!.inlineSize)
   }
   return next
 })
@@ -138,8 +172,8 @@ e.link(
       const keys = [...columns.keys()]
       const ranges: SizeRange[] = []
       for (const entry of entries) {
-        invariant(entry.target instanceof HTMLDivElement, 'Expected HTMLDivElement')
-        const index = keys.indexOf(entry.target.dataset.columnKey ?? '')
+        const target = entry.target as HTMLElement
+        const index = keys.indexOf(target.dataset.columnKey ?? '')
         ranges.push({ startIndex: index, endIndex: index, size: entry.borderBoxSize[0]!.inlineSize })
       }
       return ranges

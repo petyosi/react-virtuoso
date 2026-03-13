@@ -1,4 +1,5 @@
 import type { DataModelHandle } from './model/types'
+import type { EngineRef } from '@virtuoso.dev/reactive-engine-react'
 
 /** @internal */
 export interface OffsetPoint {
@@ -195,7 +196,6 @@ export type ComputeRowKey<Data = unknown, Context = unknown, Group = unknown> = 
  * The DOM attributes that you can pass to the `VirtuosoDataTable` component to customize the scroll element.
  *
  * @group Components
- * @noInheritDoc
  */
 export type ScrollerProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data' | 'onScroll'>
 
@@ -205,7 +205,6 @@ export type ScrollerProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data'
  * @typeParam Data - The type of the data items in the table.
  * @typeParam Context - The type of the context passed to the table.
  *
- * @noInheritDoc
  * @group Components
  */
 export interface VirtuosoDataTableProps<Data, Context, Group = unknown> extends ScrollerProps {
@@ -222,6 +221,16 @@ export interface VirtuosoDataTableProps<Data, Context, Group = unknown> extends 
    * Any additional state that you need to use in the `ItemContent`, `EmptyPlaceholder`, etc.
    */
   context?: Context
+  /**
+   * Optional stable engine ID for remote access via `useRemote*` hooks.
+   * When provided, sibling or ancestor components can read from and publish to the table engine using this ID.
+   */
+  engineId?: string
+  /**
+   * Optional reactive ref to expose the table engine instance.
+   * Create it with `useEngineRef()` and use it with `useRemote*` hooks from outside the table tree.
+   */
+  engineRef?: EngineRef
   /**
    * The initial location to scroll to. It will be applied the first time the table is rendered with data.
    * Using this property allows you to skip rendering of the items at the top of the table.

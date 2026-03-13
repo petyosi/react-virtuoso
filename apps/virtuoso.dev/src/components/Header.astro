@@ -53,6 +53,15 @@ function isActive(path: string) {
       <a
         class:list={[
           'text-sm font-medium no-underline transition-colors duration-200',
+          isActive('/data-table/') ? 'text-(--sl-color-text-accent)' : 'text-(--sl-color-white) hover:text-(--sl-color-text-accent)',
+        ]}
+        href="/data-table/"
+      >
+        Data Table
+      </a>
+      <a
+        class:list={[
+          'text-sm font-medium no-underline transition-colors duration-200',
           isActive('/masonry/') ? 'text-(--sl-color-text-accent)' : 'text-(--sl-color-white) hover:text-(--sl-color-text-accent)',
         ]}
         href="/masonry/"

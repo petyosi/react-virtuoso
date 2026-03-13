@@ -1,0 +1,34 @@
+---
+title: 'Customization'
+sidebar:
+  order: 99
+  label: 'Customization'
+---
+
+## ContextAwareComponent
+
+> **ContextAwareComponent**\<`Context`\> = `React.ComponentType`\<\{ `context`: `Context`; \}\>
+
+Used for the custom components that accept the data table context prop.
+
+### Type Parameters
+
+| Type Parameter | Default type | Description |
+| ------ | ------ | ------ |
+| `Context` | `any` | The type of the context passed to the table. |
+
+
+---
+
+## ScrollElementComponent
+
+> **ScrollElementComponent**\<`Context`\> = `React.ComponentType`\<`React.HTMLProps`\<`HTMLDivElement`\> & `object` & `React.RefAttributes`\<`HTMLDivElement`\>\>
+
+The type of the component that can be used for the scroll element.
+
+### Type Parameters
+
+| Type Parameter | Default type | Description |
+| ------ | ------ | ------ |
+| `Context` | `any` | The type of the context passed to the list. |
+

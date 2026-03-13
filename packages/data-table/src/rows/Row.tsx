@@ -2,7 +2,7 @@ import React from 'react'
 
 import { useCellValue, useEngine } from '@virtuoso.dev/reactive-engine-react'
 
-import { cellRenderers$, CellRenderer } from '../columns/Cell'
+import { cellClassNames$, cellRenderers$, CellRenderer } from '../columns/Cell'
 import { columns$ } from '../columns/Column'
 import { columnItemsState$, columnsState$, EMPTY_COLUMN_STATE, stickyColumnsState$ } from '../columns/column-state'
 import { groupIndexSet$, groupLevelMap$ } from '../core/data'
@@ -40,6 +40,7 @@ const COLUMN_CELL_BASE_STYLE: React.CSSProperties = {
   flexGrow: 0,
   overflowX: 'hidden',
   minHeight: 1,
+  boxSizing: 'border-box',
 }
 
 const LEFT_STICKY_CONTAINER_STYLE: React.CSSProperties = {
@@ -97,6 +98,7 @@ function useUnstableRowRenderEvent({
 const StickyLeftCells = React.memo<RowCellSectionProps>(function StickyLeftCells({ row, sticky }) {
   const stickyState = useCellValue(stickyColumnsState$)
   const columns = useCellValue(columns$)
+  const cellClassNames = useCellValue(cellClassNames$)
   const cellRenderers = useCellValue(cellRenderers$)
   const columnsState = useCellValue(columnsState$)
 
@@ -132,7 +134,7 @@ const StickyLeftCells = React.memo<RowCellSectionProps>(function StickyLeftCells
           return null
         }
         return (
-          <div key={col.key} style={col.style}>
+          <div key={col.key} className={cellClassNames.get(col.key)} style={col.style}>
             <CellRenderer
               columnKey={col.key}
               column={column}
@@ -151,6 +153,7 @@ const StickyLeftCells = React.memo<RowCellSectionProps>(function StickyLeftCells
 const ScrollableCells = React.memo<RowCellSectionProps>(function ScrollableCells({ row, sticky }) {
   const columnItemsState = useCellValue(columnItemsState$)
   const columns = useCellValue(columns$)
+  const cellClassNames = useCellValue(cellClassNames$)
   const cellRenderers = useCellValue(cellRenderers$)
   const columnsState = useCellValue(columnsState$)
 
@@ -191,7 +194,7 @@ const ScrollableCells = React.memo<RowCellSectionProps>(function ScrollableCells
           return null
         }
         return (
-          <div key={col.key} style={col.style}>
+          <div key={col.key} className={cellClassNames.get(col.key)} style={col.style}>
             <CellRenderer
               columnKey={col.key}
               column={column}
@@ -210,6 +213,7 @@ const ScrollableCells = React.memo<RowCellSectionProps>(function ScrollableCells
 const StickyRightCells = React.memo<RowCellSectionProps>(function StickyRightCells({ row, sticky }) {
   const stickyState = useCellValue(stickyColumnsState$)
   const columns = useCellValue(columns$)
+  const cellClassNames = useCellValue(cellClassNames$)
   const cellRenderers = useCellValue(cellRenderers$)
   const columnsState = useCellValue(columnsState$)
   const hasHorizontalScroll = useCellValue(hasHorizontalScroll$)
@@ -247,7 +251,7 @@ const StickyRightCells = React.memo<RowCellSectionProps>(function StickyRightCel
         }
         const isLast = index === rightStickyCellStyles.length - 1
         return (
-          <div key={col.key} style={col.style}>
+          <div key={col.key} className={cellClassNames.get(col.key)} style={col.style}>
             <CellRenderer
               columnKey={col.key}
               column={column}
@@ -350,6 +354,7 @@ const NonMemoRow: React.FC<RowProps> = ({ row, sticky, stickyTop, stickyZIndex }
         data-index={row.index}
         data-known-size={row.size}
         data-group-row=""
+        className={groupHeaderRendererEntry?.className}
         style={rowStyle}
       >
         {groupHeaderContent}

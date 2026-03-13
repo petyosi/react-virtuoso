@@ -164,6 +164,9 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.1.17
         version: 4.1.17(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2))
+      '@virtuoso.dev/data-table':
+        specifier: workspace:*
+        version: link:../../packages/data-table
       '@virtuoso.dev/masonry':
         specifier: workspace:*
         version: link:../../packages/masonry
@@ -249,6 +252,9 @@ importers:
         specifier: 'catalog:'
         version: 7.3.1(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
     devDependencies:
+      '@tailwindcss/browser':
+        specifier: ^4.2.1
+        version: 4.2.1
       '@types/estree':
         specifier: ^1.0.8
         version: 1.0.8
@@ -2866,6 +2872,9 @@ packages:
 
   '@swc/types@0.1.25':
     resolution: {integrity: sha512-iAoY/qRhNH8a/hBvm3zKj9qQ4oc2+3w1unPJa2XvTK3XjeLXtzcCingVPw/9e5mn1+0yPqxcBGp9Jf0pkfMb1g==}
+
+  '@tailwindcss/browser@4.2.1':
+    resolution: {integrity: sha512-MxT97DWtwSupE6I4spsGQMewI6BbRY/dXZJd1f+WtWqqci++ApWfoQsVqtlRscmWSFWvPn5pzf3Wi/d2IF0w5A==}
 
   '@tailwindcss/node@4.1.17':
     resolution: {integrity: sha512-csIkHIgLb3JisEFQ0vxr2Y57GUNYh447C8xzwj89U/8fdW8LhProdxvnVH6U8M2Y73QKiTIH+LWbK3V2BBZsAg==}
@@ -8771,6 +8780,8 @@ snapshots:
   '@swc/types@0.1.25':
     dependencies:
       '@swc/counter': 0.1.3
+
+  '@tailwindcss/browser@4.2.1': {}
 
   '@tailwindcss/node@4.1.17':
     dependencies:
