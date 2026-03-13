@@ -6,6 +6,11 @@ import * as _Masonry from '@virtuoso.dev/masonry'
 import * as _ML from '@virtuoso.dev/message-list'
 import * as jsxRuntime from 'react/jsx-runtime'
 
+import * as _UiButton from '@/components/ui/button'
+import * as _UiCard from '@/components/ui/card'
+import * as _UiTooltip from '@/components/ui/tooltip'
+import * as _Utils from '@/lib/utils'
+
 // third-pary
 import falsoTypeDefs from '../../../node_modules/@ngneat/falso/src/index.d.ts?raw'
 // react
@@ -21,6 +26,10 @@ export const importMap: Record<string, unknown> = {
   '@ngneat/falso': _Falso,
   '@virtuoso.dev/masonry': _Masonry,
   '@virtuoso.dev/message-list': _ML,
+  '@/components/ui/button': _UiButton,
+  '@/components/ui/card': _UiCard,
+  '@/components/ui/tooltip': _UiTooltip,
+  '@/lib/utils': _Utils,
   react: React,
   'react/jsx-runtime': jsxRuntime,
   'react-virtuoso': _V,

@@ -65,6 +65,7 @@
     "vite": "catalog:"
   },
   "devDependencies": {
+    "@tailwindcss/browser": "^4.2.1",
     "@types/estree": "^1.0.8",
     "@types/mdast": "^4.0.4",
     "@types/react": "catalog:",

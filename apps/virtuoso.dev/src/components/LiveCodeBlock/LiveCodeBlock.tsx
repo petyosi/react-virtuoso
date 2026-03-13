@@ -16,6 +16,7 @@ import { bundleCode } from './bundleCode'
 import { createSandbox } from './createCodesandbox'
 import { importMap, libDefinitions } from './extraImports'
 import iFrameStyle from './iframe-style.css?raw'
+import { tailwindBrowserInlineScript } from './tailwindTransform'
 
 import type { Theme } from '@/components/theme-utils'
 import type * as MonacoEditor from 'monaco-editor'
@@ -70,14 +71,58 @@ function getCodeTypographyFromCSS(): {
   return { fontFamily, fontSize, lineHeight: parseFloat(lineHeightStr) }
 }
 
+const shadcnVarsLight = `
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+`
+
+const shadcnVarsDark = `
+  --radius: 0.625rem;
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+`
+
 const iframeThemeStyles = {
   dark: `
     :root {
       --foreground: #fff;
       --background: #000;
       --alt-background: #222222;
-      --border: #333;
       --highlight: #B8860B;
+      ${shadcnVarsDark}
     }
   `,
   light: `
@@ -85,14 +130,26 @@ const iframeThemeStyles = {
       --foreground: #1a1a1a;
       --background: #fff;
       --alt-background: #f5f5f5;
-      --border: #e0e0e0;
       --highlight: #B8860B;
+      ${shadcnVarsLight}
     }
   `,
 }
 
 const IframePortal: React.FC<{ children: React.ReactNode; theme: Theme }> = ({ children, theme }) => {
   const [iFrameEl, setIframeEl] = React.useState<HTMLIFrameElement | null>(null)
+  const tailwindInjectedRef = React.useRef(false)
+
+  React.useEffect(() => {
+    const doc = iFrameEl?.contentDocument
+    if (!doc || tailwindInjectedRef.current) {
+      return
+    }
+    tailwindInjectedRef.current = true
+    const script = doc.createElement('script')
+    script.textContent = tailwindBrowserInlineScript
+    doc.head.appendChild(script)
+  }, [iFrameEl])
 
   return (
     <iframe
