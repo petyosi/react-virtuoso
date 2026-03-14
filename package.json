@@ -25,12 +25,12 @@
     "@changesets/cli": "^2.29.8",
     "@types/node": "catalog:",
     "@typescript/native-preview": "7.0.0-dev.20260301.1",
-    "knip": "^5.70.2",
+    "knip": "catalog:",
     "lefthook": "^2.0.8",
     "markdownlint-cli": "^0.46.0",
-    "oxfmt": "^0.35.0",
-    "oxlint": "^1.50.0",
-    "oxlint-tsgolint": "^0.15.0",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
     "typescript": "catalog:"
   },
   "devEngines": {

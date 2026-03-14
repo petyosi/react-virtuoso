@@ -35,11 +35,11 @@
     "format:check": "oxfmt --check"
   },
   "dependencies": {
-    "tiny-invariant": "^1.3.3"
+    "tiny-invariant": "catalog:"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.0",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
