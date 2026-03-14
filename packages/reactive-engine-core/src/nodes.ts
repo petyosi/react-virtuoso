@@ -49,7 +49,7 @@ import type { Distinct, Inp, NodeRef, Out, ResourceFactory, ResourceRef } from '
  * @category Nodes
  */
 export function Stream<T>(distinct: Distinct<T> = true): NodeRef<T> {
-  return tap(Symbol(), (id) => {
+  return tap(Symbol('stream'), (id) => {
     nodeDefs$$.set(id, { distinct, type: 'stream' })
   }) as NodeRef<T>
 }
@@ -98,7 +98,7 @@ export function Stream<T>(distinct: Distinct<T> = true): NodeRef<T> {
  * @category Nodes
  */
 export function Cell<T>(value: T, distinct: Distinct<T> = true): NodeRef<T> {
-  return tap(Symbol(), (id) => {
+  return tap(Symbol('cell'), (id) => {
     nodeDefs$$.set(id, { distinct, initial: value, type: CELL_TYPE })
   }) as NodeRef<T>
 }
@@ -124,7 +124,7 @@ export function Cell<T>(value: T, distinct: Distinct<T> = true): NodeRef<T> {
  * @category Nodes
  */
 export function Trigger(): NodeRef<void> {
-  return tap(Symbol(), (id) => {
+  return tap(Symbol('trigger'), (id) => {
     nodeDefs$$.set(id, { distinct: false, type: 'stream' })
   }) as NodeRef<void>
 }
@@ -165,7 +165,7 @@ export function Trigger(): NodeRef<void> {
  * @category Resources
  */
 export function Resource<T>(factory: ResourceFactory<T>): ResourceRef<T> {
-  return tap(Symbol(), (id) => {
+  return tap(Symbol('resource'), (id) => {
     resourceDefs$$.set(id, { factory, type: RESOURCE_TYPE })
   }) as ResourceRef<T>
 }
@@ -191,7 +191,7 @@ export function Resource<T>(factory: ResourceFactory<T>): ResourceRef<T> {
  * @category Nodes
  */
 export function DerivedCell<T>(value: T, source$: NodeRef<T>, distinct: Distinct<T> = true): NodeRef<T> {
-  return tap(Symbol(), (id) => {
+  return tap(Symbol('derived-cell'), (id) => {
     nodeDefs$$.set(id, {
       distinct,
       initial: value,

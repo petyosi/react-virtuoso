@@ -274,7 +274,7 @@ export function delayWithMicrotask<I>(): Operator<I, I> {
 export function onNext<I, TOut>(bufNode: NodeRef<TOut>): Operator<I, [I, TOut]> {
   return (source, eng) => {
     const sink = eng.streamInstance<[I, TOut]>()
-    const bufferValue = Symbol()
+    const bufferValue = Symbol('pending')
     let pendingValue: I | typeof bufferValue = bufferValue
     eng.connect({
       map: (done) => (value) => {
@@ -314,6 +314,7 @@ export function handlePromise<I, OutSuccess, OnLoad, OutError>(
         value
           .then((resolved) => {
             eng.pub(sink, onSuccess(resolved))
+            return undefined
           })
           .catch((error: unknown) => {
             eng.pub(sink, onError(error))

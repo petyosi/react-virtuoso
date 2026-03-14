@@ -175,7 +175,7 @@ export function system<F extends SystemConstructor<D>, D extends SystemSpecs>(
 }
 
 /** @internal */
-const id = () => Symbol() as unknown as string
+const id = () => Symbol('id') as unknown as string
 
 /**
  * Initializes a [[SystemSpec]] by recursively initializing its dependencies.

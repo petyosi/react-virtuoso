@@ -19,8 +19,6 @@
     "promise/prefer-await-to-callbacks": "off",
     "promise/avoid-new": "off",
     "promise/prefer-await-to-then": "off",
-    "promise/always-return": "off",
-    "promise/param-names": "off",
     "no-console": ["error", { "allow": ["warn", "error"] }],
     "typescript/no-unused-vars": [
       "error",
@@ -58,7 +56,6 @@
     "radix": "off",
     "sort-imports": "off",
     "sort-keys": "off",
-    "symbol-description": "off",
 
     "typescript/restrict-template-expressions": ["error", { "allowNumber": true }],
     "typescript/ban-types": "error",
@@ -68,7 +65,6 @@
     "import/exports-last": "off",
     "import/prefer-default-export": "off",
     "import/no-namespace": "off",
-    "import/default": "off",
     "max-depth": "off",
     "no-duplicate-imports": ["error", { "allowSeparateTypeImports": true }],
     "no-inner-declarations": "off"

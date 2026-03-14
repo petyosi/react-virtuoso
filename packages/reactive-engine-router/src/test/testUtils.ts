@@ -63,7 +63,7 @@ export function generateComplexObject() {
  */
 export function generatePromiseScenarios() {
   return {
-    delayedReject: new Promise((_, reject) => {
+    delayedReject: new Promise((_resolve, reject) => {
       setTimeout(() => {
         reject(new Error('delayed error'))
       }, 10)

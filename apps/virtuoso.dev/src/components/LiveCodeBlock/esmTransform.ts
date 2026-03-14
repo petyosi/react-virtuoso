@@ -14,6 +14,7 @@ export async function transformToFunctionBody(code: string) {
       })
       .then(() => {
         resolve(true)
+        return undefined
       })
       .catch(() => {
         reject(new Error('Failed to initialize esbuild'))

@@ -5,7 +5,7 @@ import { RefCount } from '../../RefCount'
 describe('ref counter', () => {
   it('increments by one', () => {
     const counter = new RefCount()
-    const key = Symbol()
+    const key = Symbol('test-key')
     counter.increment(key)
     expect(counter.map.get(key)).toEqual(1)
     counter.increment(key)
@@ -15,7 +15,7 @@ describe('ref counter', () => {
   it('decrements by one', () => {
     const cb = vi.fn()
     const counter = new RefCount()
-    const key = Symbol()
+    const key = Symbol('test-key')
     counter.increment(key)
     expect(counter.map.get(key)).toEqual(1)
     counter.increment(key)
