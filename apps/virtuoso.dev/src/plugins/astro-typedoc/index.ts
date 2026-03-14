@@ -81,7 +81,7 @@ const onRendererPageEnd = (frontmatterObject?: FrontmatterObject) => (event: Pag
 
   const prependix = `---
 title: '${event.model.name}'
-${group !== undefined ? `group: '${group}'` : ''}
+${group === undefined ? '' : `group: '${group}'`}
 ${objectToFrontmatter(frontmatterObject)}
 ---
 

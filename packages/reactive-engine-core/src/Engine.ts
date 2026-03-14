@@ -189,11 +189,10 @@ export class Engine {
 
   copyDistinctValue(source$: NodeRef, target$: NodeRef) {
     const comparator = this.distinctNodes.get(source$)
-    if (comparator !== undefined) {
-      this.distinctNodes.set(target$, comparator)
-    } else {
-      // delete
+    if (comparator === undefined) {
       this.distinctNodes.delete(target$)
+    } else {
+      this.distinctNodes.set(target$, comparator)
     }
   }
 

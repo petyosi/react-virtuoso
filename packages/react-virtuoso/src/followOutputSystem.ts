@@ -75,16 +75,16 @@ export const followOutputSystem = u.system(
         }
 
         // if the items have fixed size, we can scroll immediately
-        if (u.getValue(fixedItemSize) !== undefined) {
-          requestAnimationFrame(() => {
-            u.getValue(log)('following output to ', { totalCount }, LogLevel.DEBUG)
-            scrollToBottom(followOutputBehavior)
-          })
-        } else {
+        if (u.getValue(fixedItemSize) === undefined) {
           pendingScrollHandle = u.handleNext(listRefresh, () => {
             u.getValue(log)('following output to ', { totalCount }, LogLevel.DEBUG)
             scrollToBottom(followOutputBehavior)
             pendingScrollHandle = null
+          })
+        } else {
+          requestAnimationFrame(() => {
+            u.getValue(log)('following output to ', { totalCount }, LogLevel.DEBUG)
+            scrollToBottom(followOutputBehavior)
           })
         }
       }
@@ -170,16 +170,16 @@ export const followOutputSystem = u.system(
         }
 
         // if the items have fixed size, we can scroll immediately
-        if (u.getValue(fixedItemSize) !== undefined) {
-          requestAnimationFrame(() => {
-            u.getValue(log)('scrolling into view', {})
-            u.publish(scrollIntoView, viewLocation)
-          })
-        } else {
+        if (u.getValue(fixedItemSize) === undefined) {
           pendingScrollHandle = u.handleNext(listRefresh, () => {
             u.getValue(log)('scrolling into view', {})
             u.publish(scrollIntoView, viewLocation)
             pendingScrollHandle = null
+          })
+        } else {
+          requestAnimationFrame(() => {
+            u.getValue(log)('scrolling into view', {})
+            u.publish(scrollIntoView, viewLocation)
           })
         }
       }

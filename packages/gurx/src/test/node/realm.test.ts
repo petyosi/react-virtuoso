@@ -446,7 +446,7 @@ describe('realm features', () => {
       () => {
         // noop
       },
-      (current, next) => (current !== undefined ? current.id === next.id : false)
+      (current, next) => (current === undefined ? false : current.id === next.id)
     )
     const spy = vi.fn()
     r.sub(a, spy)

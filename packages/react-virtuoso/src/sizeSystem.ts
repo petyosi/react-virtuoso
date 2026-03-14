@@ -76,15 +76,15 @@ function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[]) {
     let shouldInsert = false
     for (const { end: rangeEnd, start: rangeStart, value: rangeValue } of overlappingRanges) {
       // previous range
-      if (!firstPassDone) {
-        shouldInsert = rangeValue !== size
-        firstPassDone = true
-      } else {
+      if (firstPassDone) {
         // remove the range if it starts within the new range OR if
         // it has the same value as it, in order to perform a merge
         if (endIndex >= rangeStart || size === rangeValue) {
           sizeTree = remove(sizeTree, rangeStart)
         }
+      } else {
+        shouldInsert = rangeValue !== size
+        firstPassDone = true
       }
 
       // next range
@@ -209,7 +209,7 @@ export function sizeStateReducer(state: SizeState, [ranges, groupIndices, log, g
 export function sizeTreeToRanges(sizeTree: AANode<number>): SizeRange[] {
   return walk(sizeTree).map(({ k: startIndex, v: size }, index, sizeArray) => {
     const nextSize = sizeArray[index + 1]
-    const endIndex = nextSize !== undefined ? nextSize.k - 1 : Infinity
+    const endIndex = nextSize === undefined ? Infinity : nextSize.k - 1
 
     return { endIndex, size, startIndex }
   })
@@ -235,7 +235,9 @@ function createOffsetTree(prevOffsetTree: OffsetPoint[], syncStart: number, size
   let prevOffset = 0
   let startIndex = 0
 
-  if (syncStart !== 0) {
+  if (syncStart === 0) {
+    offsetTree = []
+  } else {
     startIndex = arrayBinarySearch.findIndexOfClosestSmallerOrEqual(offsetTree, syncStart - 1, indexComparator)
     const offsetInfo = offsetTree[startIndex]!
     prevOffset = offsetInfo.offset
@@ -248,8 +250,6 @@ function createOffsetTree(prevOffsetTree: OffsetPoint[], syncStart: number, size
     }
 
     offsetTree = offsetTree.slice(0, startIndex + 1)
-  } else {
-    offsetTree = []
   }
 
   for (const { start: startIndex, value } of rangesWithin(sizeTree, syncStart, Infinity)) {

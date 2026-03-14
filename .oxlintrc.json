@@ -15,7 +15,6 @@
   },
   "rules": {
     "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
-    "import/no-anonymous-default-export": "off",
     "promise/prefer-await-to-callbacks": "off",
     "promise/avoid-new": "off",
     "promise/prefer-await-to-then": "off",
@@ -49,11 +48,9 @@
     "no-continue": "off",
     "no-inline-comments": "off",
     "no-magic-numbers": "off",
-    "no-negated-condition": "off",
     "no-nested-ternary": "off",
     "no-ternary": "off",
     "prefer-destructuring": "off",
-    "radix": "off",
     "sort-imports": "off",
     "sort-keys": "off",
 
@@ -67,7 +64,6 @@
     "import/no-namespace": "off",
     "max-depth": "off",
     "no-duplicate-imports": ["error", { "allowSeparateTypeImports": true }],
-    "no-inner-declarations": "off"
   },
   "overrides": [
     {

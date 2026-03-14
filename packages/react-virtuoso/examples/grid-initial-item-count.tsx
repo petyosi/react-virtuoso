@@ -88,7 +88,7 @@ function Example() {
           List: TheList,
         }}
         initialItemCount={40} // if set to INITIAL_ITEM_COUNT, end reached is never called, wonder if this is correct.
-        {...(initialTopMostItemIndex !== null ? { initialTopMostItemIndex } : undefined)}
+        {...(initialTopMostItemIndex === null ? undefined : { initialTopMostItemIndex })}
         data={data}
         endReached={loadNextPage}
         itemContent={itemContent}
