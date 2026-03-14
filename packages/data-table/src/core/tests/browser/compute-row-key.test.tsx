@@ -35,7 +35,7 @@ function visibleIndexRange() {
 
 describe('computeRowKey', () => {
   test('computeRowKey is called with correct params (data, index, context)', async () => {
-    const computeRowKey = vi.fn(({ index }: { data: Item | unknown; index: number; context: string }) => `item-${index}`)
+    const computeRowKey = vi.fn(({ index }: { data: unknown; index: number; context: string }) => `item-${index}`)
     const testContext = 'test-context-value'
 
     const screen = await render(
@@ -72,7 +72,7 @@ describe('computeRowKey', () => {
   })
 
   test('computeRowKey is called for each visible row', async () => {
-    const computeRowKey = vi.fn(({ index }: { data: Item | unknown; index: number; context: undefined }) => `item-${index}`)
+    const computeRowKey = vi.fn(({ index }: { data: unknown; index: number; context: undefined }) => `item-${index}`)
 
     const screen = await render(
       <VirtuosoDataTable<Item, undefined>

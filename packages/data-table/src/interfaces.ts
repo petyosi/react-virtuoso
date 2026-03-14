@@ -1,3 +1,5 @@
+import type { DataModelHandle } from './model/types'
+
 /** @internal */
 export interface OffsetPoint {
   offset: number
@@ -215,7 +217,7 @@ export interface VirtuosoDataTableProps<Data, Context, Group = unknown> extends 
    * An optional data model handle that provides data to the table through a message-exchange protocol.
    * When provided, the `data` prop is ignored and data flows through the model bridge instead.
    */
-  model?: import('./model/types').DataModelHandle<Data | Group>
+  model?: DataModelHandle<Data | Group>
   /**
    * Any additional state that you need to use in the `ItemContent`, `EmptyPlaceholder`, etc.
    */

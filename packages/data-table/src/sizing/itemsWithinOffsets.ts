@@ -44,7 +44,7 @@ export function itemsWithinOffsets(
   data: DataArray | null,
   stickyGroups?: ProcessedStickyGroup[],
   excludeIndicesInfo?: ExcludeIndicesInfo,
-  stickyHeaderHeight: number = 0
+  stickyHeaderHeight = 0
 ): VisibleItemsResult {
   const stickyResult =
     stickyGroups && stickyGroups.length > 0
@@ -155,7 +155,7 @@ export function itemsWithinOffsets(
   const lastItem = items.at(-1)
   const virtualListEnd = lastItem ? lastItem.offset + lastItem.size : 0
   const paddingEnd = effectiveTotalSize - virtualListEnd + stickyResult.endStickySize
-  const paddingStart = (items[0]?.offset || 0) + stickyResult.startStickySize
+  const paddingStart = (items[0]?.offset ?? 0) + stickyResult.startStickySize
 
   return {
     items,

@@ -14,7 +14,7 @@ interface ViewState {
   inFlightActions: Set<string>
   inFlightRequests: Map<string, InFlightRequest>
   lastRequestByAction: Map<string, string>
-  actionQueues: Map<string, Array<{ payload: unknown; requestId: string }>>
+  actionQueues: Map<string, { payload: unknown; requestId: string }[]>
 }
 
 export function createModel<T, G = never>(adapter: FrameAdapter<T, G>): DataModelHandle<T | G> {

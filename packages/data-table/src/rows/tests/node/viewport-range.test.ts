@@ -75,7 +75,7 @@ describe('rowsState$ stable field', () => {
   })
 })
 
-describe(`${String(viewportRange$)}`, () => {
+describe(String(viewportRange$), () => {
   let engine!: Engine
 
   beforeEach(() => {

@@ -164,7 +164,7 @@ e.link(
   tableBodyForceBottomSpace$
 )
 
-export type ScrollToParams = {
+export interface ScrollToParams {
   left?: number
   top?: number
   behavior?: ScrollBehavior

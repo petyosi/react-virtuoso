@@ -13,7 +13,7 @@ describe('grouped data', () => {
     engine.register(groupLevelMap$)
   })
 
-  describe(`${String(groupStickyConfig$)}`, () => {
+  describe(String(groupStickyConfig$), () => {
     it('returns empty array for no groups', () => {
       engine.pub(groupIndices$, [])
       expect(engine.getValue(groupStickyConfig$)).toStrictEqual([])
@@ -66,7 +66,7 @@ describe('grouped data', () => {
     })
   })
 
-  describe(`${String(groupIndexSet$)}`, () => {
+  describe(String(groupIndexSet$), () => {
     it('returns empty set for no groups', () => {
       engine.pub(groupIndices$, [])
       expect(engine.getValue(groupIndexSet$).size).toBe(0)
@@ -88,7 +88,7 @@ describe('grouped data', () => {
     })
   })
 
-  describe(`${String(groupLevelMap$)}`, () => {
+  describe(String(groupLevelMap$), () => {
     it('returns empty map for no groups', () => {
       engine.pub(groupIndices$, [])
       expect(engine.getValue(groupLevelMap$).size).toBe(0)

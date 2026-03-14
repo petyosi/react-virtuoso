@@ -7,8 +7,8 @@ import type { SizeState } from '../../SizeState'
 
 function expectSizeState(
   state: SizeState,
-  expectedSizeTree: Array<{ k: number; v: number }>,
-  expectedOffsetTree: Array<{ index: number; offset: number; size: number }>,
+  expectedSizeTree: { k: number; v: number }[],
+  expectedOffsetTree: { index: number; offset: number; size: number }[],
   lastIndex: number,
   lastSize: number,
   lastOffset: number
