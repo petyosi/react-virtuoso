@@ -13,7 +13,9 @@ export function offsetTreeReducer(offsetTree: OffsetPoint[], [sizeTree, lastRang
   let prevOffset = 0
   let startAtIndex = 0
 
-  if (lastRangeStart !== 0) {
+  if (lastRangeStart === 0) {
+    offsetTree = []
+  } else {
     startAtIndex = findIndexOfClosestSmallerOrEqual(offsetTree, lastRangeStart - 1, indexComparator)
     const offsetInfo = offsetTree[startAtIndex]!
     prevOffset = offsetInfo.offset
@@ -29,8 +31,6 @@ export function offsetTreeReducer(offsetTree: OffsetPoint[], [sizeTree, lastRang
     }
 
     offsetTree = offsetTree.slice(0, startAtIndex + 1)
-  } else {
-    offsetTree = []
   }
 
   for (const { start: index, value: height } of rangesWithin(sizeTree, lastRangeStart, Number.POSITIVE_INFINITY)) {

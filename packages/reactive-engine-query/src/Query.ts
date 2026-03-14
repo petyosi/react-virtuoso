@@ -66,18 +66,8 @@ import type { Engine } from '@virtuoso.dev/reactive-engine-core'
 export function Query<TParams, TData>(options: QueryOptions<TParams, TData>) {
   // Determine initial state
   const initialState: QueryResult<TData> =
-    options.initialData !== undefined
+    options.initialData === undefined
       ? {
-          data: options.initialData,
-          dataUpdatedAt: Date.now(),
-          error: null,
-          isError: false,
-          isFetching: false,
-          isLoading: false,
-          isSuccess: true,
-          type: 'success',
-        }
-      : {
           data: null,
           dataUpdatedAt: null,
           error: null,
@@ -86,6 +76,16 @@ export function Query<TParams, TData>(options: QueryOptions<TParams, TData>) {
           isLoading: true,
           isSuccess: false,
           type: 'pending',
+        }
+      : {
+          data: options.initialData,
+          dataUpdatedAt: Date.now(),
+          error: null,
+          isError: false,
+          isFetching: false,
+          isLoading: false,
+          isSuccess: true,
+          type: 'success',
         }
 
   // Create nodes

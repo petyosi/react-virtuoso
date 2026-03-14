@@ -35,15 +35,15 @@ export function insertRanges(sizeTree: AANode, ranges: SizeRange[]) {
     let shouldInsert = false
     for (const { end: rangeEnd, start: rangeStart, value: rangeValue } of overlappingRanges) {
       // previous range
-      if (!firstPassDone) {
-        shouldInsert = rangeValue !== size
-        firstPassDone = true
-      } else {
+      if (firstPassDone) {
         // remove the range if it starts within the new range OR if
         // it has the same value as it, in order to perform a merge
         if (endIndex >= rangeStart || size === rangeValue) {
           sizeTree = remove(sizeTree, rangeStart)
         }
+      } else {
+        shouldInsert = rangeValue !== size
+        firstPassDone = true
       }
 
       // next range

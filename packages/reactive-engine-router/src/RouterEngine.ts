@@ -93,169 +93,172 @@ function createRouteSubscription({
   return async (params, eng) => {
     const restRoutes = routes.filter((r) => r !== route$)
     const nullPayload = Object.fromEntries(restRoutes.map((r) => [r, null]))
-    if (params !== null) {
-      const routeDef = routeDefinitions$$.get(route$ as symbol)
-      if (routeDef !== undefined) {
-        const interpolated = interpolateRoute(routeDef, params)
-
-        // STEP 1: Execute guards for this route before rendering
-        const matchedGuards = guards
-          .map((guardSymbol) => {
-            const def = guardDefinitions$$.get(guardSymbol)
-            if (!def) {
-              return null
-            }
-
-            const parsed = matchGuardPattern(interpolated, def.pattern)
-            if (parsed === null) {
-              return null
-            }
-
-            return { def, parsed }
-          })
-          .filter((g): g is NonNullable<typeof g> => g !== null)
-          .sort((a, b) => {
-            if (a.def.priority !== b.def.priority) {
-              return a.def.priority - b.def.priority
-            }
-            const aLen = a.def.pattern.length
-            const bLen = b.def.pattern.length
-            if (aLen !== bLen) {
-              return aLen - bLen
-            }
-            return a.def.order - b.def.order
-          })
-
-        // STEP 2: Execute guards sequentially
-        let targetUrl = interpolated
-        const currentUrl = eng.getValue(currentRoute$)
-
-        for (const { def, parsed } of matchedGuards) {
-          const context: GuardContext = {
-            continue: () => ({
-              type: CONTINUE_RESULT,
-            }),
-            currentUrl,
-            engine: eng,
-            location: {
-              hash: '',
-              pathname: targetUrl.split('?')[0] ?? '',
-              search: targetUrl.includes('?') ? (targetUrl.split('?')[1] ?? '') : '',
-            },
-            navigate: (route: string | symbol, routeParams?: Record<string, unknown>) => {
-              let url: string
-
-              if (typeof route === 'symbol') {
-                url = getUrl(route as RouteReference, routeParams)
-              } else {
-                // It's a string URL
-                url = route
-              }
-
-              return {
-                type: NAVIGATE_RESULT,
-                url,
-              } as NavigateResult
-            },
-            params: { ...parsed },
-            // Bound action methods using arrow functions - support both string URLs and RouteReferences
-            redirect: (route: string | symbol, paramsOrOptions?: Record<string, unknown>, redirectOptions?: Record<string, unknown>) => {
-              let url: string
-              let resultOptions: Record<string, unknown> | undefined
-
-              if (typeof route === 'symbol') {
-                // It's a RouteReference - paramsOrOptions is params, redirectOptions is options
-                url = getUrl(route as RouteReference, paramsOrOptions)
-                resultOptions = redirectOptions
-              } else {
-                // It's a string URL - paramsOrOptions is options
-                url = route
-                resultOptions = paramsOrOptions
-              }
-
-              return {
-                options: resultOptions,
-                type: REDIRECT_RESULT,
-                url,
-              } as RedirectResult
-            },
-          }
-
-          const result = def.guardFn(context)
-
-          if (result instanceof Promise) {
-            const interpolatedGuardUrl = interpolateRoute(def.pattern, parsed)
-            const guardMatchingLayoutComponents = findMatchingLayouts(interpolatedGuardUrl, layouts)
-            let rendered: React.ReactNode = React.createElement(SuspenceTrigger, { promise: result })
-
-            for (let i = guardMatchingLayoutComponents.length - 1; i >= 0; i--) {
-              const LayoutComponent = guardMatchingLayoutComponents[i]!
-              rendered = React.createElement(LayoutComponent, null, rendered)
-            }
-            eng.pub(component$, () => rendered)
-          }
-
-          // oxlint-disable-next-line no-await-in-loop
-          const awaitedResult = result instanceof Promise ? await result : result
-
-          if (!awaitedResult) {
-            continue
-          }
-
-          if ('type' in awaitedResult) {
-            if (awaitedResult.type === REDIRECT_RESULT) {
-              // Redirect: navigate to new URL through goToUrl$
-              eng.pub(goToUrl$, awaitedResult.url)
-              return
-            }
-            if (awaitedResult.type === NAVIGATE_RESULT) {
-              // Navigate: change target URL and find matching route
-              targetUrl = awaitedResult.url
-              // Find and activate the route that matches the new URL
-              for (const r$ of routes) {
-                const rDef = routeDefinitions$$.get(r$ as symbol)
-                if (rDef !== undefined) {
-                  const rParsed = parseUrl(targetUrl, rDef)
-                  if (rParsed !== null) {
-                    eng.pub(r$, rParsed)
-                    return
-                  }
-                }
-              }
-              return
-            }
-          }
-        }
-
-        const component = routeComponents$$.get(route$ as symbol)
-
-        // Find matching layouts
-        const matchingLayoutComponents = findMatchingLayouts(interpolated, layouts)
-
-        // Create an assembled component that wraps the route component with layouts and passes props
-        const activeComponent: ActiveComponent = component
-          ? () => {
-              const ComponentCasted = component as React.ComponentType<typeof params>
-              let rendered: React.ReactNode = React.createElement(ComponentCasted, params)
-
-              // Wrap with layouts from innermost to outermost
-              for (let i = matchingLayoutComponents.length - 1; i >= 0; i--) {
-                const LayoutComponent = matchingLayoutComponents[i]!
-                rendered = React.createElement(LayoutComponent, null, rendered)
-              }
-
-              return rendered
-            }
-          : null
-
-        eng.pubIn({ [component$]: activeComponent, [currentRoute$]: interpolated, ...nullPayload })
-      }
-    } else {
+    if (params === null) {
       // When this route becomes null, check if any other route is active
       const anyActiveRoute = routes.find((r) => r !== route$ && eng.getValue(r) !== null)
       if (!anyActiveRoute) {
         eng.pub(component$, null)
       }
+      return
     }
+
+    const routeDef = routeDefinitions$$.get(route$ as symbol)
+    if (routeDef === undefined) {
+      return
+    }
+
+    const interpolated = interpolateRoute(routeDef, params)
+
+    // STEP 1: Execute guards for this route before rendering
+    const matchedGuards = guards
+      .map((guardSymbol) => {
+        const def = guardDefinitions$$.get(guardSymbol)
+        if (!def) {
+          return null
+        }
+
+        const parsed = matchGuardPattern(interpolated, def.pattern)
+        if (parsed === null) {
+          return null
+        }
+
+        return { def, parsed }
+      })
+      .filter((g): g is NonNullable<typeof g> => g !== null)
+      .sort((a, b) => {
+        if (a.def.priority !== b.def.priority) {
+          return a.def.priority - b.def.priority
+        }
+        const aLen = a.def.pattern.length
+        const bLen = b.def.pattern.length
+        if (aLen !== bLen) {
+          return aLen - bLen
+        }
+        return a.def.order - b.def.order
+      })
+
+    // STEP 2: Execute guards sequentially
+    let targetUrl = interpolated
+    const currentUrl = eng.getValue(currentRoute$)
+
+    for (const { def, parsed } of matchedGuards) {
+      const context: GuardContext = {
+        continue: () => ({
+          type: CONTINUE_RESULT,
+        }),
+        currentUrl,
+        engine: eng,
+        location: {
+          hash: '',
+          pathname: targetUrl.split('?')[0] ?? '',
+          search: targetUrl.includes('?') ? (targetUrl.split('?')[1] ?? '') : '',
+        },
+        navigate: (route: string | symbol, routeParams?: Record<string, unknown>) => {
+          let url: string
+
+          if (typeof route === 'symbol') {
+            url = getUrl(route as RouteReference, routeParams)
+          } else {
+            // It's a string URL
+            url = route
+          }
+
+          return {
+            type: NAVIGATE_RESULT,
+            url,
+          } as NavigateResult
+        },
+        params: { ...parsed },
+        // Bound action methods using arrow functions - support both string URLs and RouteReferences
+        redirect: (route: string | symbol, paramsOrOptions?: Record<string, unknown>, redirectOptions?: Record<string, unknown>) => {
+          let url: string
+          let resultOptions: Record<string, unknown> | undefined
+
+          if (typeof route === 'symbol') {
+            // It's a RouteReference - paramsOrOptions is params, redirectOptions is options
+            url = getUrl(route as RouteReference, paramsOrOptions)
+            resultOptions = redirectOptions
+          } else {
+            // It's a string URL - paramsOrOptions is options
+            url = route
+            resultOptions = paramsOrOptions
+          }
+
+          return {
+            options: resultOptions,
+            type: REDIRECT_RESULT,
+            url,
+          } as RedirectResult
+        },
+      }
+
+      const result = def.guardFn(context)
+
+      if (result instanceof Promise) {
+        const interpolatedGuardUrl = interpolateRoute(def.pattern, parsed)
+        const guardMatchingLayoutComponents = findMatchingLayouts(interpolatedGuardUrl, layouts)
+        let rendered: React.ReactNode = React.createElement(SuspenceTrigger, { promise: result })
+
+        for (let i = guardMatchingLayoutComponents.length - 1; i >= 0; i--) {
+          const LayoutComponent = guardMatchingLayoutComponents[i]!
+          rendered = React.createElement(LayoutComponent, null, rendered)
+        }
+        eng.pub(component$, () => rendered)
+      }
+
+      // oxlint-disable-next-line no-await-in-loop
+      const awaitedResult = result instanceof Promise ? await result : result
+
+      if (!awaitedResult) {
+        continue
+      }
+
+      if ('type' in awaitedResult) {
+        if (awaitedResult.type === REDIRECT_RESULT) {
+          // Redirect: navigate to new URL through goToUrl$
+          eng.pub(goToUrl$, awaitedResult.url)
+          return
+        }
+        if (awaitedResult.type === NAVIGATE_RESULT) {
+          // Navigate: change target URL and find matching route
+          targetUrl = awaitedResult.url
+          // Find and activate the route that matches the new URL
+          for (const r$ of routes) {
+            const rDef = routeDefinitions$$.get(r$ as symbol)
+            if (rDef !== undefined) {
+              const rParsed = parseUrl(targetUrl, rDef)
+              if (rParsed !== null) {
+                eng.pub(r$, rParsed)
+                return
+              }
+            }
+          }
+          return
+        }
+      }
+    }
+
+    const component = routeComponents$$.get(route$ as symbol)
+
+    // Find matching layouts
+    const matchingLayoutComponents = findMatchingLayouts(interpolated, layouts)
+
+    // Create an assembled component that wraps the route component with layouts and passes props
+    const activeComponent: ActiveComponent = component
+      ? () => {
+          const ComponentCasted = component as React.ComponentType<typeof params>
+          let rendered: React.ReactNode = React.createElement(ComponentCasted, params)
+
+          // Wrap with layouts from innermost to outermost
+          for (let i = matchingLayoutComponents.length - 1; i >= 0; i--) {
+            const LayoutComponent = matchingLayoutComponents[i]!
+            rendered = React.createElement(LayoutComponent, null, rendered)
+          }
+
+          return rendered
+        }
+      : null
+
+    eng.pubIn({ [component$]: activeComponent, [currentRoute$]: interpolated, ...nullPayload })
   }
 }

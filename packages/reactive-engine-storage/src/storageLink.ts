@@ -192,7 +192,7 @@ function getStorageKey<T>(engine: Engine, options: StorageLinkOptions<T>): strin
     return options.key
   }
 
-  return engine.id !== undefined ? `${engine.id}:${options.key}` : options.key
+  return engine.id === undefined ? options.key : `${engine.id}:${options.key}`
 }
 
 function isStorageAvailable(type: 'cookie' | 'localStorage' | 'sessionStorage'): boolean {

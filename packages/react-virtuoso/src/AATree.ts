@@ -220,11 +220,11 @@ function adjust<T>(node: NonNilAANode<T>): NonNilAANode<T> {
 
 function clone<T>(node: NonNilAANode<T>, args: Partial<NonNilAANode<T>>): NonNilAANode<T> {
   return newAANode(
-    args.k !== undefined ? args.k : node.k,
-    args.v !== undefined ? args.v : node.v,
-    args.lvl !== undefined ? args.lvl : node.lvl,
-    args.l !== undefined ? args.l : node.l,
-    args.r !== undefined ? args.r : node.r
+    args.k === undefined ? node.k : args.k,
+    args.v === undefined ? node.v : args.v,
+    args.lvl === undefined ? node.lvl : args.lvl,
+    args.l === undefined ? node.l : args.l,
+    args.r === undefined ? node.r : args.r
   )
 }
 

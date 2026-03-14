@@ -16,10 +16,10 @@ const defaultCalculateViewLocation: CalculateViewLocation = ({
   viewportTop,
 }) => {
   if (itemTop < viewportTop) {
-    return { ...rest, align: align ?? 'start', ...(behavior !== undefined ? { behavior } : {}) }
+    return { ...rest, align: align ?? 'start', ...(behavior === undefined ? {} : { behavior }) }
   }
   if (itemBottom > viewportBottom) {
-    return { ...rest, align: align ?? 'end', ...(behavior !== undefined ? { behavior } : {}) }
+    return { ...rest, align: align ?? 'end', ...(behavior === undefined ? {} : { behavior }) }
   }
   return null
 }
@@ -54,7 +54,9 @@ export const scrollIntoViewSystem = u.system(
             viewportTop,
           })
 
-          if (location !== null) {
+          if (location === null) {
+            done?.()
+          } else {
             done &&
               u.handleNext(
                 u.pipe(
@@ -66,8 +68,6 @@ export const scrollIntoViewSystem = u.system(
                 ),
                 done
               )
-          } else {
-            done?.()
           }
 
           return location

@@ -1,4 +1,5 @@
 /** @type {import('@ladle/react').UserConfig} */
-export default {
+const config = {
   host: '0.0.0.0',
 }
+export default config

@@ -32,7 +32,7 @@ export function interpolateRoute(route: string, params: NonNullable<RouteRefValu
     const searchParams = new URLSearchParams()
     const processedKeys = new Set<string>()
 
-    function addParam(name: string, value: unknown) {
+    const addParam = (name: string, value: unknown) => {
       if (value !== undefined) {
         if (Array.isArray(value)) {
           // Add array values as multiple entries with the same key

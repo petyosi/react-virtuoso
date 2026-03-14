@@ -184,11 +184,11 @@ const VirtuosoScroller: React.FC<ScrollerProps> = ({ style: passedStyle, ...html
           continue
         }
 
-        const index = Number.parseInt(element.dataset.index)
+        const index = Number.parseInt(element.dataset.index, 10)
         const knownSize = Number.parseFloat(element.dataset.knownSize ?? '')
         const size = entry.contentRect.height
-        const columnIndex = Number.parseInt(element.dataset.columnIndex ?? '0')
-        const absoluteIndex = Number.parseInt(element.dataset.absoluteIndex ?? '0')
+        const columnIndex = Number.parseInt(element.dataset.columnIndex ?? '0', 10)
+        const absoluteIndex = Number.parseInt(element.dataset.absoluteIndex ?? '0', 10)
 
         absoluteSizes[absoluteIndex] = size
         if (size === knownSize) {

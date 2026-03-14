@@ -438,7 +438,7 @@ describe('engine features', () => {
   })
 
   it('supports custom comparator when distinct flag is set', () => {
-    const a = Cell({ id: 'foo' }, (current, next) => (current !== undefined ? current.id === next.id : false))
+    const a = Cell({ id: 'foo' }, (current, next) => (current === undefined ? false : current.id === next.id))
     const spy = vi.fn()
     eng.sub(a, spy)
     eng.pub(a, { id: 'foo' })

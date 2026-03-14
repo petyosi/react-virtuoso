@@ -4,7 +4,7 @@ import invariant from 'tiny-invariant'
 
 import type { Engine, Inp, NodeRef, Out, Subscription } from '@virtuoso.dev/reactive-engine-core'
 
-export const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? React.useLayoutEffect : React.useEffect
+export const useIsomorphicLayoutEffect = typeof document === 'undefined' ? React.useEffect : React.useLayoutEffect
 
 // EngineRef: reactive ref for engine instances
 
@@ -345,7 +345,7 @@ function useRemoteEngine(source: EngineSource): Engine | null {
   const engineRef = isRef ? source : null
 
   const [engineFromRegistry, setEngineFromRegistry] = React.useState<Engine | null>(() =>
-    engineId !== null ? getRegistryEngine(engineId) : null
+    engineId === null ? null : getRegistryEngine(engineId)
   )
 
   useIsomorphicLayoutEffect(() => {
