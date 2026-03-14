@@ -306,6 +306,7 @@ export default function LiveCodeBlock({ code, disableSandbox = false }: { code: 
             console.log('code is invalid:', e, result.code)
           }
         }
+        return undefined
       })
       .catch((e: unknown) => {
         console.log('code is invalid:', e)

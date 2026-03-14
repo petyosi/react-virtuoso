@@ -196,8 +196,8 @@ export function Query<TParams, TData>(options: QueryOptions<TParams, TData>) {
           type: 'success',
         })
 
-        // Start polling if configured
         startPolling(engine, params)
+        return undefined
       })
       .catch((error: unknown) => {
         // Check if this is an abort error

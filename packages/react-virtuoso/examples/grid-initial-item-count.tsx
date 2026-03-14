@@ -108,11 +108,11 @@ function useDataPager(initialCount: number, initialTopMostItemIndex: null | numb
 
   const loadPage = React.useCallback(
     (page: number) => {
-      void fetchData(page).then((dataPage) => {
+      void fetchData(page).then((dataPage) =>
         setData((prevData) => {
           return [...prevData.slice(0, page * ITEMS_PER_PAGE), ...dataPage, ...prevData.slice((page + 1) * ITEMS_PER_PAGE)]
         })
-      })
+      )
     },
     [setData]
   )
@@ -120,11 +120,11 @@ function useDataPager(initialCount: number, initialTopMostItemIndex: null | numb
   const loadNextPage = React.useCallback(() => {
     const nextPage = Math.floor(data.length / ITEMS_PER_PAGE)
     fetchedPages.current.add(nextPage)
-    void fetchData(nextPage).then((dataPage) => {
+    void fetchData(nextPage).then((dataPage) =>
       setData((prevData) => {
         return [...prevData, ...dataPage]
       })
-    })
+    )
   }, [data.length])
 
   const rangeRendered = React.useCallback(

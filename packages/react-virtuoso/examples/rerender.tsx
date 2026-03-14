@@ -3,14 +3,14 @@ import React from 'react'
 import { Virtuoso, VirtuosoGrid } from '../src/'
 
 export function Example() {
-  const [, setFoo] = React.useState(Symbol())
+  const [, setFoo] = React.useState(Symbol('rerender'))
   const [bar, setBar] = React.useState<{ name: string }[]>([])
 
   return (
     <>
       <button
         onClick={() => {
-          setFoo(Symbol())
+          setFoo(Symbol('rerender'))
         }}
       >
         Bam!

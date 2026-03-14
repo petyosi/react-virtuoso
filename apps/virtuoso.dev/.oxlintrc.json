@@ -9,6 +9,7 @@
     "max-classes-per-file": "off",
     "react/jsx-curly-brace-presence": "off",
     "react/iframe-missing-sandbox": "off",
+    "import/default": "off",
     "import/first": "off",
     "import/no-named-as-default": "off",
     "import/no-named-as-default-member": "off",

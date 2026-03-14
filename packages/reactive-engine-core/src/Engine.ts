@@ -71,7 +71,7 @@ export class Engine {
    * @param node - optional, a reference to a cell. If the cell has not been touched in the engine before, the engine will instantiate a reference to it. If it's registered already, the function will return the reference.
    * @typeParam T - The type of values that the cell will emit/accept.
    */
-  cellInstance<T>(value: T, distinct: Distinct<T> = true, node = Symbol()): NodeRef<T> {
+  cellInstance<T>(value: T, distinct: Distinct<T> = true, node = Symbol('cell')): NodeRef<T> {
     if (!this.state.has(node)) {
       this.state.set(node, value)
     }
@@ -525,7 +525,7 @@ export class Engine {
    * @param node - optional, a reference to a stream. If the stream has not been touched in the engine before, the engine will instantiate a reference to it. If it's registered already, the function will return the reference.
    * @typeParam T - The type of values that the stream will emit/accept.
    */
-  streamInstance<T>(distinct: Distinct<T> = true, node = Symbol()): NodeRef<T> {
+  streamInstance<T>(distinct: Distinct<T> = true, node = Symbol('stream')): NodeRef<T> {
     if (distinct !== false) {
       this.distinctNodes.set(node, distinct === true ? defaultComparator : (distinct as Comparator<unknown>))
       this.streamState.set(node, emptyStreamValue)
