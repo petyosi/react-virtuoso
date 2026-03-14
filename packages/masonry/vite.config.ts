@@ -18,7 +18,7 @@ export default inLadle
       build: {
         target: 'es2022',
         lib: {
-          entry: resolve(__dirname, 'src/index.ts'),
+          entry: resolve(import.meta.dirname, 'src/index.ts'),
           fileName: 'index',
           formats: ['es'],
           name: 'Virtuoso',

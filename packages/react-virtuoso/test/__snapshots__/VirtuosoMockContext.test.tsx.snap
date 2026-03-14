@@ -5,7 +5,7 @@ exports[`VirtuosoMockContext > Grid > correctly renders items 1`] = `
   <div
     data-testid="virtuoso-scroller"
     data-virtuoso-scroller="true"
-    style="height: 100%; outline: none; overflow-y: auto; position: relative; -webkit-overflow-scrolling: touch;"
+    style="height: 100%; outline: none; overflow-y: auto; position: relative;"
     tabindex="0"
   >
     <div
@@ -119,7 +119,7 @@ exports[`VirtuosoMockContext > List > correctly renders items 1`] = `
   <div
     data-testid="virtuoso-scroller"
     data-virtuoso-scroller="true"
-    style="height: 100%; outline: none; overflow-y: auto; position: relative; -webkit-overflow-scrolling: touch;"
+    style="height: 100%; outline: none; overflow-y: auto; position: relative;"
     tabindex="0"
   >
     <div
@@ -261,7 +261,7 @@ exports[`VirtuosoMockContext > Table > correctly renders items 1`] = `
   <div
     data-testid="virtuoso-scroller"
     data-virtuoso-scroller="true"
-    style="height: 100%; outline: none; overflow-y: auto; position: relative; -webkit-overflow-scrolling: touch;"
+    style="height: 100%; outline: none; overflow-y: auto; position: relative;"
     tabindex="0"
   >
     <div
