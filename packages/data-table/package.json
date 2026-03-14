@@ -1,0 +1,103 @@
+{
+  "name": "@virtuoso.dev/data-table",
+  "version": "0.0.0-semantic-release",
+  "private": false,
+  "description": "Virtualized React data table component with column and row virtualization.",
+  "keywords": [
+    "columns",
+    "data table",
+    "endless scrolling",
+    "grid",
+    "infinite",
+    "react",
+    "scrolling",
+    "table",
+    "virtual",
+    "virtualized"
+  ],
+  "homepage": "https://virtuoso.dev/data-table/",
+  "bugs": {
+    "email": "support@virtuoso.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/petyosi/react-virtuoso.git",
+    "directory": "packages/data-table"
+  },
+  "license": "MIT",
+  "author": "The Virtuoso team <support@virtuoso.dev>",
+  "files": [
+    "CHANGELOG.md",
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsc && vite build",
+    "lint": "oxlint --type-aware",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "dev": "LADLE=true ladle serve",
+    "dev:build": "LADLE=true ladle build",
+    "dev:preview": "LADLE=true ladle preview",
+    "test": "vitest run --browser.headless",
+    "typecheck": "tsgo -b --noEmit",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck",
+    "knip": "knip",
+    "docs:build": "npx typedoc --plugin typedoc-plugin-no-inherit --watch --excludeInternal --excludePrivate --out docs --name 'Virtuoso Data Table' src/index.ts",
+    "docs:serve": "npx serve docs",
+    "registry:build": "npx shadcn build"
+  },
+  "dependencies": {
+    "@virtuoso.dev/reactive-engine-core": "workspace:*",
+    "@virtuoso.dev/reactive-engine-react": "workspace:*",
+    "tiny-invariant": "^1.3.3"
+  },
+  "devDependencies": {
+    "@ladle/react": "~5.1.1",
+    "@ngneat/falso": "^8.0.2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@typescript/native-preview": "7.0.0-dev.20260308.1",
+    "@vitejs/plugin-react": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
+    "jsdom": "^27.4.0",
+    "knip": "^5.80.2",
+    "oxfmt": "^0.36.0",
+    "oxlint": "^1.51.0",
+    "oxlint-tsgolint": "^0.16.0",
+    "random-avatar-generator": "^2.0.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "resize-observer-polyfill": "^1.5.1",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-dts": "catalog:",
+    "vitest": "catalog:",
+    "vitest-browser-react": "^2.0.2"
+  },
+  "peerDependencies": {
+    "@virtuoso.dev/reactive-engine-core": ">=0.0.5",
+    "@virtuoso.dev/reactive-engine-react": ">=0.2.0",
+    "react": ">= 16 || >= 17 || >= 18 || >= 19",
+    "react-dom": ">= 16 || >= 17 || >= 18 || >= 19"
+  }
+}

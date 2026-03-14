@@ -1,0 +1,79 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "react-perf", "jsx-a11y", "vitest", "import", "promise", "unicorn"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error",
+    "pedantic": "error",
+    "style": "error"
+  },
+  "settings": {
+    "react": {
+      "version": "19"
+    }
+  },
+  "rules": {
+    "no-duplicate-imports": ["error", { "allowSeparateTypeImports": true }],
+    "arrow-body-style": "off",
+    "capitalized-comments": "off",
+    "func-style": "off",
+    "id-length": "off",
+    "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+    "import/exports-last": "off",
+    "import/group-exports": "off",
+    "import/no-anonymous-default-export": "off",
+    "import/no-named-export": "off",
+    "import/no-namespace": "off",
+    "import/prefer-default-export": "off",
+    "init-declarations": "off",
+    "jest/no-hooks": "off",
+    "jest/prefer-lowercase-title": "off",
+    "jest/require-top-level-describe": "off",
+    "max-dependencies": "off",
+    "max-lines-per-function": "off",
+    "max-lines": "off",
+    "max-params": "off",
+    "max-statements": "off",
+    "new-cap": "off",
+    "no-continue": "off",
+    "no-magic-numbers": "off",
+    "no-nested-ternary": "off",
+    "no-ternary": "off",
+    "prefer-destructuring": "off",
+    "promise/prefer-await-to-callbacks": "off",
+    "react/jsx-max-depth": "off",
+    "react/jsx-props-no-spreading": "off",
+    "jest/require-hook": "off",
+    "react/react-in-jsx-scope": "off",
+    "sort-imports": "off",
+    "sort-keys": "off",
+    "unicorn/filename-case": "off",
+    "unicorn/no-array-callback-reference": "off",
+    "unicorn/number-literal-case": "off",
+    "unicorn/no-array-method-this-argument": "off",
+    "unicorn/no-nested-ternary": "off",
+    "unicorn/no-null": "off",
+    "unicorn/no-unreadable-array-destructuring": "off",
+    "unicorn/prefer-global-this": "off",
+    "vitest/no-importing-vitest-globals": "off",
+    "vitest/prefer-called-times": "off",
+    "vitest/prefer-to-be-truthy": "off"
+  },
+  "overrides": [
+    {
+      "files": ["vite.config.ts"],
+      "rules": {
+        "import/no-nodejs-modules": "off"
+      }
+    },
+    {
+      "files": ["**/*.test.tsx", "**/*.test.ts", "**/*.stories.tsx", "registry/**/*.tsx"],
+      "rules": {
+        "react-perf/jsx-no-new-function-as-prop": "off",
+        "react-perf/jsx-no-new-object-as-prop": "off",
+        "vitest/max-expect": ["error", { "max": 20 }]
+      }
+    }
+  ]
+}

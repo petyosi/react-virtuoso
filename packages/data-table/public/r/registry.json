@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "virtuoso",
+  "homepage": "https://virtuoso.dev",
+  "items": [
+    {
+      "name": "data-table",
+      "type": "registry:component",
+      "title": "Data Table",
+      "description": "A virtualized data table with row and column virtualization.",
+      "dependencies": ["@virtuoso.dev/data-table"],
+      "files": [
+        {
+          "path": "registry/new-york/data-table/data-table.tsx",
+          "type": "registry:component"
+        }
+      ]
+    }
+  ]
+}

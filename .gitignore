@@ -7,6 +7,11 @@ build
 .turbo
 test-results
 __screenshots__
+*.tsbuildinfo
+*.tgz
+tmp
+playwright-report
+blob-report
 
 # generated docs
 docs/virtuoso-api/*
