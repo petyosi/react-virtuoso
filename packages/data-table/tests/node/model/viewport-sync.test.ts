@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { remoteSource } from '../../../src/model/remote-source'
 import { delay } from '../../../src/tests/utils'
 
-import type { AppendFetchParams, FetchParams } from '../../../src/model/remote-source'
+import type { AppendFetchParams, AppendViewportContext, FetchParams, OffsetViewportContext } from '../../../src/model/remote-source'
 import type { DataResult, MessageEnvelope } from '../../../src/model/types'
 
 interface Item {
@@ -221,10 +221,12 @@ describe('offset mode viewportChange', () => {
       initialParams: {},
       pageSize: 20,
       placeholder: { id: -1, name: 'loading' },
-      onViewportChange: (ctx) => {
+      onViewportChange: (ctx: OffsetViewportContext) => {
         if (ctx.startIndex >= 20) {
           return { fetch: [{ offset: ctx.startIndex, limit: 20 }] }
         }
+        // oxlint-disable-next-line no-useless-return -- required for noImplicitReturns
+        return
       },
     })
 
@@ -375,11 +377,13 @@ describe('append mode viewportChange', () => {
       fetch,
       initialParams: {},
       pageSize: 10,
-      onViewportChange: (ctx) => {
+      onViewportChange: (ctx: AppendViewportContext) => {
         handlerCalls.push({ ...ctx })
         if (!ctx.fetching) {
           return { loadMore: true }
         }
+        // oxlint-disable-next-line no-useless-return -- required for noImplicitReturns
+        return
       },
     })
 

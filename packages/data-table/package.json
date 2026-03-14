@@ -19,13 +19,13 @@
   "bugs": {
     "email": "support@virtuoso.dev"
   },
+  "license": "MIT",
+  "author": "The Virtuoso team <support@virtuoso.dev>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/petyosi/react-virtuoso.git",
     "directory": "packages/data-table"
   },
-  "license": "MIT",
-  "author": "The Virtuoso team <support@virtuoso.dev>",
   "files": [
     "CHANGELOG.md",
     "dist"
@@ -49,7 +49,7 @@
   },
   "scripts": {
     "build": "tsc && vite build",
-    "lint": "oxlint --type-aware",
+    "lint": "oxlint --type-aware --type-check",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "dev": "LADLE=true ladle serve",

@@ -18,7 +18,8 @@
     "typescript/no-misused-promises": "off",
     "typescript/restrict-template-expressions": "off",
     "typescript/no-implied-eval": "off",
-    "import/no-nodejs-modules": "off"
+    "import/no-nodejs-modules": "off",
+    "jsx-a11y/iframe-has-title": "off"
   },
   "overrides": [
     {

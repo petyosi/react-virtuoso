@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "react", "import"],
+  "plugins": ["typescript", "react", "jsx-a11y", "import", "promise"],
   "categories": {
     "correctness": "error",
     "suspicious": "error",
@@ -8,7 +8,19 @@
     "style": "error",
     "perf": "error"
   },
+  "settings": {
+    "react": {
+      "version": "19"
+    }
+  },
   "rules": {
+    "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+    "import/no-anonymous-default-export": "off",
+    "promise/prefer-await-to-callbacks": "off",
+    "promise/avoid-new": "off",
+    "promise/prefer-await-to-then": "off",
+    "promise/always-return": "off",
+    "promise/param-names": "off",
     "no-console": ["error", { "allow": ["warn", "error"] }],
     "typescript/no-unused-vars": [
       "error",

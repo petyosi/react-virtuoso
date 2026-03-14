@@ -55,7 +55,7 @@ describe('multi-view', () => {
       actions: {
         filter: {
           stage: 'filter',
-          handler: ({ data, payload }) => data.filter((item) => item.category === (payload as string)),
+          handler: ({ data, payload }: { data: Item[]; payload: unknown }) => data.filter((item) => item.category === (payload as string)),
         },
       },
     })
@@ -90,7 +90,7 @@ describe('multi-view', () => {
       actions: {
         filter: {
           stage: 'filter',
-          handler: ({ data, payload }) => data.filter((item) => item.category === (payload as string)),
+          handler: ({ data, payload }: { data: Item[]; payload: unknown }) => data.filter((item) => item.category === (payload as string)),
         },
       },
     })
@@ -116,11 +116,11 @@ describe('multi-view', () => {
       actions: {
         filter: {
           stage: 'filter',
-          handler: ({ data, payload }) => data.filter((item) => item.category === (payload as string)),
+          handler: ({ data, payload }: { data: Item[]; payload: unknown }) => data.filter((item) => item.category === (payload as string)),
         },
         sort: {
           stage: 'sort',
-          handler: ({ data }) => data.toSorted((a, b) => b.id - a.id),
+          handler: ({ data }: { data: Item[] }) => data.toSorted((a, b) => b.id - a.id),
         },
       },
     })
@@ -151,10 +151,10 @@ describe('multi-view', () => {
       actions: {
         filter: {
           stage: 'filter',
-          handler: ({ data, payload }) => data.filter((item) => item.category === (payload as string)),
+          handler: ({ data, payload }: { data: Item[]; payload: unknown }) => data.filter((item) => item.category === (payload as string)),
         },
         deleteItem: {
-          handler: ({ source, payload }) => source.filter((item) => item.id !== (payload as number)),
+          handler: ({ source, payload }: { source: Item[]; payload: unknown }) => source.filter((item) => item.id !== (payload as number)),
         },
       },
     })
