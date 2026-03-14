@@ -480,7 +480,7 @@ describe('reactive loop termination', () => {
 
     await expect
       .poll(() => {
-        return fetch.mock.calls.some((c) => (c[0] as FetchParams).offset >= PAGE_SIZE)
+        return fetch.mock.calls.some((c) => c[0].offset >= PAGE_SIZE)
       })
       .toBe(true)
 

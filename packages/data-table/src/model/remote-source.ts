@@ -550,5 +550,5 @@ export function remoteSource<T, Params = Record<string, unknown>>(config: Remote
   if (config.mode === 'append') {
     return createAppendSource(config)
   }
-  return createOffsetSource(config as OffsetRemoteSourceConfig<T, Params>)
+  return createOffsetSource(config)
 }

@@ -9,7 +9,7 @@ import { computeStickyItems, EMPTY_STICKY_RESULT, findStickyEndIndex, findSticky
 import type { SizeState } from '../../SizeState'
 import type { ProcessedStickyGroup, StickyItemsConfig } from '../../stickyItems'
 
-function createSizeState(sizeRanges: Array<{ startIndex: number; endIndex: number; size: number }>): SizeState {
+function createSizeState(sizeRanges: { startIndex: number; endIndex: number; size: number }[]): SizeState {
   let state = EMPTY_SIZE_STATE
   for (const range of sizeRanges) {
     state = updateSizeState(state, [range])
@@ -17,7 +17,7 @@ function createSizeState(sizeRanges: Array<{ startIndex: number; endIndex: numbe
   return state
 }
 
-function createOffsetTree(sizeRanges: Array<{ startIndex: number; endIndex: number; size: number }>) {
+function createOffsetTree(sizeRanges: { startIndex: number; endIndex: number; size: number }[]) {
   return createSizeState(sizeRanges).offsetTree
 }
 

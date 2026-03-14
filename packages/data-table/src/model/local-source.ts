@@ -32,7 +32,7 @@ function isPipelineAction<T, G>(config: PipelineActionConfig<T, G> | SourceMutat
 
 interface ViewPipelineState<T, G = never> {
   stageCache: ((T | G)[] | null)[]
-  stagePayloads: (unknown | undefined)[]
+  stagePayloads: unknown[]
   lastPipelineResult: DataResult<T, G> | null
 }
 

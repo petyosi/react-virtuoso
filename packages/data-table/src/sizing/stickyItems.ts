@@ -168,7 +168,7 @@ export function computeStickyItems(
   viewportStart: number,
   viewportEnd: number,
   data: DataArray | null,
-  stickyHeaderHeight: number = 0
+  stickyHeaderHeight = 0
 ): StickyResult {
   if (processedGroups.length === 0) {
     return EMPTY_STICKY_RESULT

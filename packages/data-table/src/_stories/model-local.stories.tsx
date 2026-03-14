@@ -169,7 +169,7 @@ export function GroupByCategory() {
               if (!category) {
                 return data
               }
-              return data.filter((item): item is Item => 'id' in item && (item as Item).category === category)
+              return data.filter((item): item is Item => 'id' in item && item.category === category)
             },
           },
           group: {

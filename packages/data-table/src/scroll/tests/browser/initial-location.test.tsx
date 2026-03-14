@@ -109,7 +109,7 @@ describe('initialLocation', () => {
 
     await expect.poll(() => scroller.scrollTop).toBe(0)
 
-    screen.rerender(<Table initialLocation={50} />)
+    void screen.rerender(<Table initialLocation={50} />)
 
     await delay(100)
 

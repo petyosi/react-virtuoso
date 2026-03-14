@@ -35,6 +35,7 @@ describe('cancel', () => {
       expect(cancels).toHaveLength(1)
       expect(cancels[0]!.requestId).toBe('req-1')
       expect(cancels[0]!.viewId).toBe('v1')
+      // oxlint-disable-next-line typescript/unbound-method -- vi.fn() mock, no `this` binding
       expect(adapter.handleCancel).toHaveBeenCalledWith('v1', 'req-1')
     })
 

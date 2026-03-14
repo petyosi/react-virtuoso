@@ -7,7 +7,12 @@ const readySelector = '[data-testid=virtuoso-table-root][data-ready]'
 const rowSelector = '[data-testid=virtuoso-table-row]'
 const scrollerSelector = '[data-testid=virtuoso-table-scroller]'
 
-type RowSnapshot = { top: number; height: number; sticky: boolean; text: string }
+interface RowSnapshot {
+  top: number
+  height: number
+  sticky: boolean
+  text: string
+}
 
 function readRows(container: HTMLElement): RowSnapshot[] {
   return [...container.querySelectorAll(rowSelector)].map((row) => {
@@ -54,9 +59,7 @@ test('large multi-level grouped scrolling does not open viewport gap below stick
   const scroller = screen.container.querySelector(scrollerSelector) as HTMLElement
   const viewportHeight = scroller.clientHeight
 
-  await expect
-    .poll(() => visibleGapAfterSticky(screen.container as HTMLElement, scroller.scrollTop, viewportHeight).gap)
-    .toBeLessThanOrEqual(120)
+  await expect.poll(() => visibleGapAfterSticky(screen.container, scroller.scrollTop, viewportHeight).gap).toBeLessThanOrEqual(120)
 
   const stressTargets = [
     ...Array.from({ length: 35 }, (_, i) => 80 + i * 80),
@@ -71,7 +74,7 @@ test('large multi-level grouped scrolling does not open viewport gap below stick
     // oxlint-disable-next-line no-await-in-loop
     await expect
       .poll(() => {
-        const { gap } = visibleGapAfterSticky(screen.container as HTMLElement, scroller.scrollTop, viewportHeight)
+        const { gap } = visibleGapAfterSticky(screen.container, scroller.scrollTop, viewportHeight)
         return gap
       })
       .toBeLessThanOrEqual(120)

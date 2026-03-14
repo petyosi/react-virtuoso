@@ -33,9 +33,7 @@ function expandGroupHeaderRanges(ranges: SizeRange[], groupIndicesList: { index:
     if (!group) {
       continue
     }
-    if (!levelToSize) {
-      levelToSize = new Map()
-    }
+    levelToSize ??= new Map()
     levelToSize.set(group.level, range.size)
   }
   if (!levelToSize) {

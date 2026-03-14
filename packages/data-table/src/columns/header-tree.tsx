@@ -31,7 +31,7 @@ export interface GroupedHeaderGroupNode {
   type: 'group'
   groupId: string
   group: ColumnGroupInfo
-  children: Array<GroupedHeaderNode | GroupedHeaderGroupNode>
+  children: (GroupedHeaderNode | GroupedHeaderGroupNode)[]
 }
 
 export type HeaderNode = GroupedHeaderNode | GroupedHeaderGroupNode

@@ -42,7 +42,7 @@ const horizontalOverlayScrollbarStyle: CSSProperties = {
 }
 
 export namespace ScrollbarOverlay {
-  export type Props = {}
+  export type Props = Record<string, never>
 }
 
 export function ScrollbarOverlay() {
