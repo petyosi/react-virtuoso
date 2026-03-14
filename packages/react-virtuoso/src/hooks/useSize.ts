@@ -22,7 +22,11 @@ export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled: bo
             callback(element)
           }
         }
-        skipAnimationFrame ? code() : requestAnimationFrame(code)
+        if (skipAnimationFrame) {
+          code()
+        } else {
+          requestAnimationFrame(code)
+        }
       })
     }
     return null

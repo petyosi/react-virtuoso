@@ -22,7 +22,6 @@
     "typescript/unbound-method": "off",
     "typescript/no-unnecessary-type-arguments": "off",
     "typescript/no-floating-promises": "off",
-    "typescript/no-deprecated": "off",
     "typescript/consistent-type-imports": "off",
     "typescript/ban-types": "off",
     "jest/no-hooks": "off",

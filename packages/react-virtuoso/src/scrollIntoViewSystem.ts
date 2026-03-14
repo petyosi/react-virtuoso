@@ -57,7 +57,7 @@ export const scrollIntoViewSystem = u.system(
           if (location === null) {
             done?.()
           } else {
-            done &&
+            if (done) {
               u.handleNext(
                 u.pipe(
                   scrollingInProgress,
@@ -68,6 +68,7 @@ export const scrollIntoViewSystem = u.system(
                 ),
                 done
               )
+            }
           }
 
           return location
