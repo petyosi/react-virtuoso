@@ -20,7 +20,7 @@ function scrollTopIsAlmostEqual(newValue: number, currentValue: number) {
 export function useSmoothScroll(
   scrollerRef: React.RefObject<HTMLElement | null>,
   listRef: React.RefObject<HTMLElement | null>,
-  scrollTarget: React.MutableRefObject<number | null>
+  scrollTarget: React.RefObject<number | null>
 ) {
   const engine = useEngine()
   const animationFrameRef = React.useRef<ReturnType<typeof requestAnimationFrame> | null>(null)

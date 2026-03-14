@@ -63,7 +63,7 @@
     "import/prefer-default-export": "off",
     "import/no-namespace": "off",
     "max-depth": "off",
-    "no-duplicate-imports": ["error", { "allowSeparateTypeImports": true }],
+    "no-duplicate-imports": ["error", { "allowSeparateTypeImports": true }]
   },
   "overrides": [
     {

@@ -16,7 +16,7 @@ function user(index = 0) {
     bgColor: toggleBg(index),
     description: faker.lorem.sentence(10),
     index: index + 1,
-    initials: `${firstName.substr(0, 1)}${lastName.substr(0, 1)}`,
+    initials: `${firstName[0]}${lastName[0]}`,
     jobTitle: faker.name.jobTitle(),
     longText: faker.lorem.paragraphs(1),
     name: `${firstName} ${lastName}`,

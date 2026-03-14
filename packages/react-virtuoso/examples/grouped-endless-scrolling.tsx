@@ -14,7 +14,7 @@ const getUser = () => {
   return {
     avatar: faker.internet.avatar(),
     description: faker.company.catchPhrase(),
-    initials: `${firstName.substr(0, 1)}${lastName.substr(0, 1)}`,
+    initials: `${firstName[0]}${lastName[0]}`,
     name: `${firstName} ${lastName}`,
   }
 }
