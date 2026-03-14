@@ -28,7 +28,7 @@ describe('localSource pipeline', () => {
       actions: {
         filter: {
           stage: 'filter',
-          handler: ({ data, payload }) => {
+          handler: ({ data, payload }: { data: Item[]; payload: unknown }) => {
             const category = payload as string
             return data.filter((item) => item.category === category)
           },
@@ -63,7 +63,7 @@ describe('localSource pipeline', () => {
       actions: {
         sort: {
           stage: 'sort',
-          handler: ({ data, payload }) => {
+          handler: ({ data, payload }: { data: Item[]; payload: unknown }) => {
             const field = payload as keyof Item
             return data.toSorted((a, b) => (a[field] < b[field] ? -1 : a[field] > b[field] ? 1 : 0))
           },
@@ -87,11 +87,11 @@ describe('localSource pipeline', () => {
       actions: {
         filter: {
           stage: 'filter',
-          handler: ({ data, payload }) => data.filter((item) => item.category === (payload as string)),
+          handler: ({ data, payload }: { data: Item[]; payload: unknown }) => data.filter((item) => item.category === (payload as string)),
         },
         sort: {
           stage: 'sort',
-          handler: ({ data, payload }) => {
+          handler: ({ data, payload }: { data: Item[]; payload: unknown }) => {
             const field = payload as keyof Item
             return data.toSorted((a, b) => (a[field] < b[field] ? -1 : a[field] > b[field] ? 1 : 0))
           },
@@ -128,7 +128,7 @@ describe('localSource pipeline', () => {
       actions: {
         group: {
           stage: 'group',
-          handler: ({ data }) => {
+          handler: ({ data }: { data: Item[] }) => {
             const grouped: Item[] = []
             const groups: { index: number; level: number }[] = []
             const byCategory = new Map<string, Item[]>()
@@ -174,10 +174,10 @@ describe('localSource pipeline', () => {
       actions: {
         filter: {
           stage: 'filter',
-          handler: ({ data, payload }) => data.filter((item) => item.category === (payload as string)),
+          handler: ({ data, payload }: { data: Item[]; payload: unknown }) => data.filter((item) => item.category === (payload as string)),
         },
         deleteItem: {
-          handler: ({ source, payload }) => source.filter((item) => item.id !== (payload as number)),
+          handler: ({ source, payload }: { source: Item[]; payload: unknown }) => source.filter((item) => item.id !== (payload as number)),
         },
       },
     })
@@ -235,15 +235,15 @@ describe('localSource pipeline', () => {
       actions: {
         filter: {
           stage: 'filter',
-          handler: ({ data, payload }) => data.filter((item) => item.category !== (payload as string)),
+          handler: ({ data, payload }: { data: Item[]; payload: unknown }) => data.filter((item) => item.category !== (payload as string)),
         },
         sort: {
           stage: 'sort',
-          handler: ({ data }) => data.toSorted((a, b) => b.id - a.id),
+          handler: ({ data }: { data: Item[] }) => data.toSorted((a, b) => b.id - a.id),
         },
         group: {
           stage: 'group',
-          handler: ({ data }) => {
+          handler: ({ data }: { data: Item[] }) => {
             const grouped: Item[] = []
             const groups: { index: number; level: number }[] = []
             const byCategory = new Map<string, Item[]>()
@@ -293,7 +293,7 @@ describe('localSource pipeline', () => {
       actions: {
         filter: {
           stage: 'filter',
-          handler: ({ data, payload }) => data.filter((item) => item.category === (payload as string)),
+          handler: ({ data, payload }: { data: Item[]; payload: unknown }) => data.filter((item) => item.category === (payload as string)),
         },
       },
     })

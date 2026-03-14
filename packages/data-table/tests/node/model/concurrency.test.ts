@@ -171,7 +171,7 @@ describe('error recovery', () => {
   it('stale operationVersion result is dropped', () => {
     const adapter: FrameAdapter<number> = {
       handleHandshake: () => ({ data: [1], groups: [] }),
-      handleAction: (viewId, action) => {
+      handleAction: (_viewId, action) => {
         if (action === 'a') {
           return { data: [2], groups: [] }
         }
