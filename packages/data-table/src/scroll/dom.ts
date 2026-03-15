@@ -158,7 +158,7 @@ e.link(
       if (minScrollTop === 0) {
         return 0
       }
-      return Math.max(0, Math.min(minScrollTop - (totalHeight + headerHeight + stickyHeaderHeight - viewportHeight)))
+      return Math.max(0, Math.min(minScrollTop - (totalHeight + headerHeight + stickyHeaderHeight - viewportHeight), viewportHeight))
     })
   ),
   tableBodyForceBottomSpace$
