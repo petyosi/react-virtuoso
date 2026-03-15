@@ -6,6 +6,9 @@ import { useCellValue } from '@virtuoso.dev/reactive-engine-react'
 const rootResizeObserverSignal$ = Stream<ResizeObserverEntry[]>()
 
 export const resizeObserverSingleton$ = Resource((engine) => {
+  if (typeof ResizeObserver === 'undefined') {
+    return null
+  }
   return new ResizeObserver((entries) => {
     engine.pub(rootResizeObserverSignal$, entries)
   })
