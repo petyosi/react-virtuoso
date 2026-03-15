@@ -107,15 +107,14 @@ export function insert(node: AANode, k: number, v: number): NonNilAANode {
   return rebalance(clone(node, { r: insert(node.r, k, v) }))
 }
 
-export function walkWithin(node: AANode, start: number, end: number): NodeData[] {
+export function walkWithin(node: AANode, start: number, end: number, result: NodeData[] = []): NodeData[] {
   if (empty(node)) {
-    return []
+    return result
   }
 
   const { k, v, l, r } = node
-  let result: NodeData[] = []
   if (k > start) {
-    result = [...result, ...walkWithin(l, start, end)]
+    walkWithin(l, start, end, result)
   }
 
   if (k >= start && k <= end) {
@@ -123,7 +122,7 @@ export function walkWithin(node: AANode, start: number, end: number): NodeData[]
   }
 
   if (k <= end) {
-    result = [...result, ...walkWithin(r, start, end)]
+    walkWithin(r, start, end, result)
   }
 
   return result
@@ -159,12 +158,15 @@ export function deleteRange(node: AANode, offset: number, count: number): AANode
   return result
 }
 
-export function walk(node: AANode): NodeData[] {
+export function walk(node: AANode, result: NodeData[] = []): NodeData[] {
   if (empty(node)) {
-    return []
+    return result
   }
 
-  return [...walk(node.l), { k: node.k, v: node.v }, ...walk(node.r)]
+  walk(node.l, result)
+  result.push({ k: node.k, v: node.v })
+  walk(node.r, result)
+  return result
 }
 
 function last(node: NonNilAANode): [number, number] {
@@ -227,11 +229,14 @@ function adjust(node: NonNilAANode): NonNilAANode {
   throw new Error('Unexpected empty nodes')
 }
 
-export function keys(node: AANode): number[] {
+export function keys(node: AANode, result: number[] = []): number[] {
   if (empty(node)) {
-    return []
+    return result
   }
-  return [...keys(node.l), node.k, ...keys(node.r)]
+  keys(node.l, result)
+  result.push(node.k)
+  keys(node.r, result)
+  return result
 }
 
 export function ranges(node: AANode): Range[] {
