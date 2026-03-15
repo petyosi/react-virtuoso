@@ -39,6 +39,7 @@ const COLUMN_CELL_BASE_STYLE: React.CSSProperties = {
   flexShrink: 0,
   flexGrow: 0,
   overflowX: 'hidden',
+  minHeight: 1,
 }
 
 const LEFT_STICKY_CONTAINER_STYLE: React.CSSProperties = {
