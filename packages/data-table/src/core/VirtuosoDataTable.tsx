@@ -139,12 +139,26 @@ export const VirtuosoDataTable = React.forwardRef<VirtuosoDataTableMethods<unkno
           e.pubIn({
             [context$]: context,
             [customScrollParent$]: customScrollParent,
+            [increaseViewportBy$]: increaseViewportBy,
+            [computeRowKey$]: computeRowKey,
+            [emptyPlaceholder$]: EmptyPlaceholder,
+            [columnOverscanCount$]: columnOverscanCount,
           })
           e.singletonSub(onScroll$, onScroll)
           e.singletonSub(currentlyRenderedRows$, onRenderedDataChange)
         }}
         // oxlint-disable-next-line jsx-no-new-array-as-prop
-        updateDeps={[data, context, customScrollParent, onScroll, onRenderedDataChange]}
+        updateDeps={[
+          data,
+          context,
+          customScrollParent,
+          increaseViewportBy,
+          computeRowKey,
+          EmptyPlaceholder,
+          columnOverscanCount,
+          onScroll,
+          onRenderedDataChange,
+        ]}
       >
         {children}
         <VirtualizedTableContent {...scrollerProps} />

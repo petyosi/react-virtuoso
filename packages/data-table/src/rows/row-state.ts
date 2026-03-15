@@ -88,35 +88,46 @@ e.link(
       muteRowsChange$,
       recalcInProgress$,
       mobileSafariIsReadjusting$,
-      groupStickyConfig$
+      groupStickyConfig$,
+      increaseViewportBy$
     ),
     e.filter((args) => {
-      const mobileSafariIsReadjusting = args.at(-2) as boolean
-      const recalcInProgress = args.at(-3) as boolean
-      const muteRowsChange = args.at(-4) as boolean
+      const mobileSafariIsReadjusting = args.at(-3) as boolean
+      const recalcInProgress = args.at(-4) as boolean
+      const muteRowsChange = args.at(-5) as boolean
       return !recalcInProgress && !mobileSafariIsReadjusting && !muteRowsChange
     }),
+    e.withLatestFrom(viewportHeight$, headerHeight$, scrollTop$, scrollToPending$, scrollDirection$, lastJumpDueToRowResize$),
     e.scan(
       (
         current,
         [
-          listScrollTop,
-          visibleListHeight,
-          sizeState,
-          totalCount,
-          totalHeight,
-          data,
-          scrollOffset,
-          initialLocation,
-          pendingScrollToInitialLocation,
-          scrollableHeaderHeight,
-          stickyHeaderHeight,
-          stickyFooterHeight,
-          deviation,
-          _muteRowsChange,
-          _recalcInProgress,
-          _mobileSafariIsReadjusting,
-          groupStickyConfig,
+          [
+            listScrollTop,
+            visibleListHeight,
+            sizeState,
+            totalCount,
+            totalHeight,
+            data,
+            scrollOffset,
+            initialLocation,
+            pendingScrollToInitialLocation,
+            scrollableHeaderHeight,
+            stickyHeaderHeight,
+            stickyFooterHeight,
+            deviation,
+            _muteRowsChange,
+            _recalcInProgress,
+            _mobileSafariIsReadjusting,
+            groupStickyConfig,
+            increaseViewportBy,
+          ],
+          viewportHeight,
+          headerHeight,
+          scrollTop,
+          scrollToPending,
+          scrollDirection,
+          lastJumpDueToRowResize,
         ]
       ) => {
         if (data?.length === 0) {
@@ -140,8 +151,8 @@ e.link(
               location: pendingScrollToInitialLocation,
               sizeState,
               totalCount,
-              viewportHeight: e.getValue(viewportHeight$),
-              headerHeight: e.getValue(headerHeight$),
+              viewportHeight,
+              headerHeight,
               stickyHeaderHeight,
               stickyFooterHeight,
             }).top ?? 0
@@ -149,20 +160,12 @@ e.link(
 
         let deviationDelta = 0
 
-        if (
-          e.getValue(scrollTop$) !== 0 &&
-          !e.getValue(scrollToPending$) &&
-          e.getValue(scrollDirection$) === UP &&
-          current.totalCount === totalCount &&
-          current.rows.length > 0
-        ) {
+        if (scrollTop !== 0 && !scrollToPending && scrollDirection === UP && current.totalCount === totalCount && current.rows.length > 0) {
           deviationDelta = totalHeight - current.totalSize
           if (deviationDelta !== 0) {
-            deviationDelta += e.getValue(lastJumpDueToRowResize$)
+            deviationDelta += lastJumpDueToRowResize
           }
         }
-
-        const increaseViewportBy = e.getValue(increaseViewportBy$)
 
         const viewportTop = Math.min(
           Math.max(
