@@ -191,8 +191,7 @@
 
 - **File(s):** `remote-source.ts:421`, `remote-source.ts:442`, `remote-source.ts:454`
 - **Severity:** Moderate
-- **Description:** In append mode, an aborted fetch can return through the `controller.signal.aborted` branch before `vd.fetching` and `vd.abortController` are reset, which can permanently block future `loadMore` calls.
-- **Suggested fix:** Move all request-state cleanup into `finally`, and only append rows when the controller is still current.
+- **Resolved:** Moved `vd.fetching = false` and `vd.abortController = null` into the `finally` block so cleanup always runs regardless of how the try block exits (success, abort early return, or thrown error). The separate `catch` block for `vd.fetching` reset was removed as redundant. Previously, `handleCancel` would abort the controller without resetting `vd.fetching`, and if the fetch resolved after abort, the early return at `controller.signal.aborted` skipped cleanup, permanently blocking future `loadMore` calls. Test added in `append-abort-recovery.test.ts`.
 
 ### 6.9 `skip` operator captures mutable closure state
 
@@ -362,7 +361,7 @@
 | Severity | Count | Key findings |
 |----------|-------|--------------|
 | **Critical** | 7 | ~~Async dedup only protects sync path (1.1)~~, ~~stale async overwrites (1.2)~~, ~~`Math.min` single-arg bugs (6.1)~~, public API leaks reactive internals (7.1-7.3), `bridgeModelToEngine` leak (8.1), ScrollbarOverlay listener leak (8.2) |
-| **Moderate** | 14 | `getEffectiveSticky` duplication (2.1), `rowsState$` complexity (3.1), residual horizontal scroll cost in `ScrollableCells` (4.1), column overscan (4.2), Map reconstruction (4.3), cumulative excluded size O(n*k) (4.4), header re-renders (5.1), props ignored after mount (6.3), scrollToRow silent no-op (6.4), ~~binary search throws (6.5)~~, ~~division by zero (6.6)~~, size tree reset (6.7), abort blocks loadMore (6.8), capture flag mismatch (8.3), CustomScrollParent rebind (8.4), fetch errors swallowed (10.1), column key mismatch (10.2) |
+| **Moderate** | 14 | `getEffectiveSticky` duplication (2.1), `rowsState$` complexity (3.1), residual horizontal scroll cost in `ScrollableCells` (4.1), column overscan (4.2), Map reconstruction (4.3), cumulative excluded size O(n*k) (4.4), header re-renders (5.1), props ignored after mount (6.3), scrollToRow silent no-op (6.4), ~~binary search throws (6.5)~~, ~~division by zero (6.6)~~, size tree reset (6.7), ~~abort blocks loadMore (6.8)~~, capture flag mismatch (8.3), CustomScrollParent rebind (8.4), fetch errors swallowed (10.1), column key mismatch (10.2) |
 | **Minor** | 8 | Registration boilerplate (2.2), totalHeight/totalWidth (2.3), measureItems duplication (2.4), AATree spread (4.5), shift() O(n^2) (4.6), buildHeaderTree 3x (4.7), skip operator (6.9), currentlyRenderedRows$ type (5.2), zero-height (10.3), rAF guard (9.2) |
 
 ## Recommended Fix Priority
