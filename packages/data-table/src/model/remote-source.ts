@@ -421,6 +421,9 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
   async function doFetch(viewId: string, requestId?: string) {
     const vd = getViewData(viewId)
     if (vd.fetching || !vd.hasMore) {
+      if (requestId) {
+        asyncEmit?.(viewId, buildAppendResult(vd), requestId)
+      }
       return
     }
 
@@ -471,6 +474,9 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
     },
 
     getActionStrategy(action: string) {
+      if (action === 'loadMore') {
+        return 'deduplicate'
+      }
       return actions[action]?.strategy
     },
 

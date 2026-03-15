@@ -4,6 +4,8 @@ interface InFlightRequest {
   requestId: string
   action: string
   viewId: string
+  operationVersion: number
+  cancelled?: boolean
 }
 
 interface ViewState {
@@ -112,7 +114,13 @@ export function createModel<T, G = never>(adapter: FrameAdapter<T, G>): DataMode
       action,
     })
     const view = views.get(viewId)
-    view?.inFlightRequests.delete(requestId)
+    if (view) {
+      const inFlight = view.inFlightRequests.get(requestId)
+      if (inFlight) {
+        inFlight.cancelled = true
+      }
+      view.inFlightActions.delete(action)
+    }
   }
 
   function emitEvent(viewId: string, payload: unknown) {
@@ -131,16 +139,23 @@ export function createModel<T, G = never>(adapter: FrameAdapter<T, G>): DataMode
     })
   }
 
-  function executeAction(viewId: string, action: string, payload: unknown, requestId: string) {
+  function executeAction(viewId: string, action: string, payload: unknown, requestId: string): boolean {
     const view = getOrCreateView(viewId)
     view.operationVersion++
     const opVersion = view.operationVersion
+
+    const inFlight = view.inFlightRequests.get(requestId)
+    if (inFlight) {
+      inFlight.operationVersion = opVersion
+    }
 
     try {
       const result = adapter.handleAction!(viewId, action, payload, requestId)
       if (result) {
         emitResult(viewId, result, opVersion, requestId)
+        return true
       }
+      return false
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       emitError(viewId, action, message, requestId)
@@ -148,6 +163,7 @@ export function createModel<T, G = never>(adapter: FrameAdapter<T, G>): DataMode
       if (view.lastKnownGood) {
         emitResult(viewId, view.lastKnownGood as DataResult<T, G>, view.operationVersion)
       }
+      return true
     }
   }
 
@@ -205,7 +221,6 @@ export function createModel<T, G = never>(adapter: FrameAdapter<T, G>): DataMode
 
       adapter.handleCancel?.(viewId, cancelRequestId)
       emitCancel(cancelRequestId, viewId, inFlight.action)
-      view.inFlightActions.delete(inFlight.action)
       return
     }
 
@@ -233,25 +248,31 @@ export function createModel<T, G = never>(adapter: FrameAdapter<T, G>): DataMode
 
     if (strategy === 'supersede') {
       const prevRequestId = view.lastRequestByAction.get(msg.action)
-      if (prevRequestId && view.inFlightRequests.has(prevRequestId)) {
-        emitCancel(prevRequestId, viewId, msg.action)
+      if (prevRequestId) {
+        const prevInFlight = view.inFlightRequests.get(prevRequestId)
+        if (prevInFlight && !prevInFlight.cancelled) {
+          emitCancel(prevRequestId, viewId, msg.action)
+        }
       }
     }
 
-    const inFlight: InFlightRequest = { requestId, action: msg.action, viewId }
+    const inFlight: InFlightRequest = { requestId, action: msg.action, viewId, operationVersion: 0 }
     view.inFlightRequests.set(requestId, inFlight)
     view.lastRequestByAction.set(msg.action, requestId)
 
     view.inFlightActions.add(msg.action)
     emitAck(requestId, viewId, msg.action)
-    executeAction(viewId, msg.action, msg.payload, requestId)
-    view.inFlightActions.delete(msg.action)
+    const syncComplete = executeAction(viewId, msg.action, msg.payload, requestId)
 
-    // Process queued items (for queue strategy)
-    const queue = view.actionQueues.get(msg.action)
-    if (queue && queue.length > 0) {
-      const next = queue.shift()!
-      handleSend({ action: msg.action, payload: next.payload, viewId, requestId: next.requestId })
+    if (syncComplete) {
+      view.inFlightActions.delete(msg.action)
+
+      // Process queued items (for queue strategy)
+      const queue = view.actionQueues.get(msg.action)
+      if (queue && queue.length > 0) {
+        const next = queue.shift()!
+        handleSend({ action: msg.action, payload: next.payload, viewId, requestId: next.requestId })
+      }
     }
   }
 
@@ -260,8 +281,41 @@ export function createModel<T, G = never>(adapter: FrameAdapter<T, G>): DataMode
     if (destroyed) {
       return
     }
-    const view = getOrCreateView(viewId)
-    emitResult(viewId, result, view.operationVersion, requestId)
+    const view = views.get(viewId)
+    if (!view) {
+      return
+    }
+
+    const inFlight = requestId ? view.inFlightRequests.get(requestId) : undefined
+
+    if (inFlight?.cancelled) {
+      view.inFlightRequests.delete(requestId!)
+      return
+    }
+
+    const opVersion = inFlight?.operationVersion ?? view.operationVersion
+
+    if (opVersion < view.operationVersion) {
+      if (requestId) {
+        view.inFlightRequests.delete(requestId)
+      }
+      if (inFlight) {
+        view.inFlightActions.delete(inFlight.action)
+      }
+      return
+    }
+
+    emitResult(viewId, result, opVersion, requestId)
+
+    if (inFlight) {
+      view.inFlightActions.delete(inFlight.action)
+
+      const queue = view.actionQueues.get(inFlight.action)
+      if (queue && queue.length > 0) {
+        const next = queue.shift()!
+        handleSend({ action: inFlight.action, payload: next.payload, viewId, requestId: next.requestId })
+      }
+    }
   })
 
   // Provide event emitter for external data events

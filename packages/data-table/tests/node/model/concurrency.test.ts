@@ -42,7 +42,7 @@ describe('concurrency strategies', () => {
   })
 
   describe('deduplicate', () => {
-    it('second fire of same action is ignored while in-flight', () => {
+    it('second fire of same action is ignored while in-flight (sync adapter)', () => {
       let callCount = 0
       const adapter: FrameAdapter<number> = {
         handleHandshake: () => ({ data: [1, 2, 3], groups: [] }),
@@ -69,6 +69,37 @@ describe('concurrency strategies', () => {
       // Both fire because by the time the second arrives, the first has completed.
       expect(callCount).toBe(2)
       expect(messages.filter((m) => m.type === 'result')).toHaveLength(3)
+    })
+
+    it('second dispatch is dropped while first async action is in-flight', () => {
+      let handleActionCallCount = 0
+      const adapter: FrameAdapter<number> = {
+        handleHandshake: () => ({ data: [1, 2, 3], groups: [] }),
+        setAsyncEmitter() {},
+        getActionStrategy: (action) => (action === 'filter' ? 'deduplicate' : undefined),
+        handleAction: (_viewId, action) => {
+          if (action === 'filter') {
+            handleActionCallCount++
+            // Async adapter: returns null, result will come later via asyncEmit.
+            // The action should be considered in-flight until the async result arrives.
+            return null
+          }
+          return null
+        },
+      }
+
+      const model = createModel(adapter)
+      collectMessages(model)
+
+      model.send({ action: 'handshake', viewId: 'v1' })
+      model.send({ action: 'filter', payload: 'a', viewId: 'v1' })
+      model.send({ action: 'filter', payload: 'b', viewId: 'v1' })
+
+      // With deduplicate, filter 'b' should be silently dropped because filter 'a'
+      // is still in-flight (no async result yet). But inFlightActions is cleared
+      // synchronously right after executeAction returns (model-core.ts:248),
+      // so the guard at line 220 never sees the action as in-flight.
+      expect(handleActionCallCount).toBe(1)
     })
   })
 
@@ -168,7 +199,7 @@ describe('error recovery', () => {
     expect((lastMsg.payload as DataResult<number>).data).toEqual([])
   })
 
-  it('stale operationVersion result is dropped', () => {
+  it('stale operationVersion result is dropped (sync)', () => {
     const adapter: FrameAdapter<number> = {
       handleHandshake: () => ({ data: [1], groups: [] }),
       handleAction: (_viewId, action) => {
@@ -194,5 +225,50 @@ describe('error recovery', () => {
     const results = messages.filter((m) => m.type === 'result')
     expect(results).toHaveLength(3)
     expect(results[2]!.operationVersion).toBe(2)
+  })
+
+  it('stale async response is dropped when it arrives after a newer response', () => {
+    type AsyncEmitFn = (viewId: string, result: DataResult<number>, requestId?: string) => void
+    let asyncEmit: AsyncEmitFn | null = null
+    const capturedRequestIds: string[] = []
+
+    const adapter: FrameAdapter<number> = {
+      handleHandshake: () => ({ data: [0], groups: [] }),
+      setAsyncEmitter(emitter) {
+        asyncEmit = emitter as AsyncEmitFn
+      },
+      handleAction: (_viewId, action, _payload, requestId) => {
+        if (action === 'update') {
+          capturedRequestIds.push(requestId!)
+          return null
+        }
+        return null
+      },
+    }
+
+    const model = createModel(adapter)
+    const messages = collectMessages(model)
+
+    model.send({ action: 'handshake', viewId: 'v1' })
+
+    // Dispatch two updates (default strategy: supersede).
+    // The model cancels the first request and bumps operationVersion to 2.
+    model.send({ action: 'update', payload: 'first', viewId: 'v1' })
+    model.send({ action: 'update', payload: 'second', viewId: 'v1' })
+
+    // Simulate out-of-order async completion: second (fresh) resolves first.
+    asyncEmit!('v1', { data: [200], groups: [] }, capturedRequestIds[1])
+
+    // First (stale) resolves second. It was already cancelled by supersede,
+    // so this result should be dropped. But the async emitter always passes
+    // view.operationVersion at callback time (model-core.ts:264) instead of
+    // the version captured when the request was dispatched. The stale check
+    // (operationVersion < view.operationVersion) compares the current version
+    // against itself, so it's always false — stale data is never dropped.
+    asyncEmit!('v1', { data: [100], groups: [] }, capturedRequestIds[0])
+
+    const results = messages.filter((m) => m.type === 'result')
+    const lastResult = results.at(-1)!.payload as DataResult<number>
+    expect(lastResult.data).toEqual([200])
   })
 })
