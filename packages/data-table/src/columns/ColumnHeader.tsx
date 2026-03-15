@@ -78,6 +78,7 @@ export function ColumnHeader(props: ColumnHeader.Props) {
 
 const DEFAULT_COLUMN_HEADER_STYLE: CSSProperties = {
   flexGrow: 1,
+  minWidth: 1,
 }
 
 export interface ColumnHeaderRendererProps {

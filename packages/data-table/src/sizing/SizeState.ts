@@ -33,6 +33,17 @@ export const EMPTY_SIZE_STATE: SizeState = {
 }
 
 export function updateSizeState(current: SizeState, sizeRanges: SizeRange[], groupIndices?: Set<number>): SizeState {
+  if (process.env.NODE_ENV !== 'production') {
+    for (const range of sizeRanges) {
+      if (range.size <= 0) {
+        throw new Error(
+          `VirtuosoDataTable: size range [${range.startIndex}, ${range.endIndex}] reported size ${range.size}. ` +
+            `All items must have positive height/width. Check that the element at index ${range.startIndex} is not collapsed or hidden.`
+        )
+      }
+    }
+  }
+
   const [newSizeTree, lastRangeStart] = insertRanges(current.sizeTree, sizeRanges, groupIndices)
 
   if (newSizeTree === current.sizeTree) {
