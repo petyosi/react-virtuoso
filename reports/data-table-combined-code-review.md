@@ -94,8 +94,7 @@
 
 - **File(s):** `itemsWithinOffsets.ts:27-36`, called at line 111
 - **Severity:** Moderate
-- **Description:** For each visible non-sticky column, `calculateCumulativeExcludedSize` iterates over ALL excluded indices to compute cumulative offset adjustment. With `k` sticky columns and `n` visible columns, this is O(n * k). It also calls `itemOffsetAndSize` per excluded index, which is an O(log n) binary search.
-- **Suggested fix:** Precompute cumulative excluded sizes once before the loop. Build a sorted array of excluded indices with their cumulative sizes, then use binary search for O(log k) per item.
+- **Resolved:** Replaced per-item `calculateCumulativeExcludedSize` (which re-scanned all excluded indices) with a one-time precomputation of sorted excluded indices and cumulative sizes, plus a forward-advancing pointer in the main loop. Reduces from O(n\*k\*log m) to O(k log k + k log m) precomputation + O(n) traversal. Tests added in `itemsWithinOffsets.test.ts` covering both uniform and variable-sized excluded columns.
 
 ### 4.5 `walkWithin` and `walk` in AATree create intermediate arrays via spread
 
@@ -339,7 +338,7 @@
 | Severity | Count | Key findings |
 |----------|-------|--------------|
 | **Critical** | 7 | ~~Async dedup only protects sync path (1.1)~~, ~~stale async overwrites (1.2)~~, ~~`Math.min` single-arg bugs (6.1)~~, ~~public API leaks reactive internals (7.1)~~ (intentional remote-controlled state pattern), `export *` audit (7.2-7.3 downgraded to Moderate), ~~`bridgeModelToEngine` leak (8.1)~~, ~~ScrollbarOverlay listener leak (8.2)~~ |
-| **Moderate** | 16 | `getEffectiveSticky` duplication (2.1), `rowsState$` complexity (3.1), residual horizontal scroll cost in `ScrollableCells` (4.1), column overscan (4.2), Map reconstruction (4.3), cumulative excluded size O(n*k) (4.4), ~~header re-renders (5.1)~~, props ignored after mount (6.3), scrollToRow silent no-op (6.4), ~~binary search throws (6.5)~~, ~~division by zero (6.6)~~, size tree reset (6.7), ~~abort blocks loadMore (6.8)~~, `export *` audit (7.2-7.3), ~~capture flag mismatch (8.3)~~, CustomScrollParent rebind (8.4), fetch errors swallowed (10.1), column key mismatch (10.2) |
+| **Moderate** | 16 | `getEffectiveSticky` duplication (2.1), `rowsState$` complexity (3.1), residual horizontal scroll cost in `ScrollableCells` (4.1), column overscan (4.2), Map reconstruction (4.3), ~~cumulative excluded size O(n*k) (4.4)~~, ~~header re-renders (5.1)~~, props ignored after mount (6.3), scrollToRow silent no-op (6.4), ~~binary search throws (6.5)~~, ~~division by zero (6.6)~~, size tree reset (6.7), ~~abort blocks loadMore (6.8)~~, `export *` audit (7.2-7.3), ~~capture flag mismatch (8.3)~~, CustomScrollParent rebind (8.4), fetch errors swallowed (10.1), column key mismatch (10.2) |
 | **Minor** | 8 | Registration boilerplate (2.2), totalHeight/totalWidth (2.3), measureItems duplication (2.4), AATree spread (4.5), shift() O(n^2) (4.6), ~~buildHeaderTree 3x (4.7)~~, skip operator (6.9), currentlyRenderedRows$ type (5.2), zero-height (10.3), rAF guard (9.2) |
 
 ## Recommended Fix Priority

@@ -24,17 +24,6 @@ export interface ExcludeIndicesInfo {
   totalExcludedSize: number
 }
 
-function calculateCumulativeExcludedSize(excludeIndices: Set<number>, beforeIndex: number, offsetTree: OffsetBreakpoint[]): number {
-  let cumulative = 0
-  for (const excludedIndex of excludeIndices) {
-    if (excludedIndex < beforeIndex) {
-      const [, size] = itemOffsetAndSize(excludedIndex, offsetTree)
-      cumulative += size
-    }
-  }
-  return cumulative
-}
-
 export function itemsWithinOffsets(
   offsetTree: OffsetBreakpoint[],
   viewportStart: number,
@@ -63,6 +52,24 @@ export function itemsWithinOffsets(
   const totalExcludedSize = excludeIndicesInfo?.totalExcludedSize ?? 0
   const effectiveTotalSize = totalSize - totalExcludedSize
 
+  // Precompute cumulative excluded sizes sorted by index so the main loop
+  // can look up the value with a forward-advancing pointer (O(1) amortized)
+  // instead of re-scanning all excluded indices per visible item (O(k)).
+  const sortedExcludedIndices: number[] = []
+  const cumulativeExcludedSizes: number[] = []
+  if (excludeIndices.size > 0) {
+    for (const idx of excludeIndices) {
+      sortedExcludedIndices.push(idx)
+    }
+    sortedExcludedIndices.sort((a, b) => a - b)
+    let cumSize = 0
+    for (const idx of sortedExcludedIndices) {
+      const [, s] = itemOffsetAndSize(idx, offsetTree)
+      cumSize += s
+      cumulativeExcludedSizes.push(cumSize)
+    }
+  }
+
   // When items are excluded, we need to map between "virtual" offsets (without excluded items)
   // and "real" offsets (in the tree). The viewport is in virtual space, so we need to
   // expand the query range to account for excluded items that might appear within the range.
@@ -78,6 +85,8 @@ export function itemsWithinOffsets(
   let listEnd = 0
   let listStart = 0
   let firstItemFound = false
+  let excludePtr = 0
+  let runningExcludedSize = 0
 
   for (const range of offsetPointRanges) {
     const {
@@ -107,9 +116,12 @@ export function itemsWithinOffsets(
         continue
       }
 
-      // Calculate the virtual offset by subtracting cumulative excluded size before this index
-      const cumulativeExcludedBefore = calculateCumulativeExcludedSize(excludeIndices, i, offsetTree)
-      const virtualOffset = listEnd - cumulativeExcludedBefore
+      // Advance pointer past excluded indices before this item
+      while (excludePtr < sortedExcludedIndices.length && sortedExcludedIndices[excludePtr]! < i) {
+        runningExcludedSize = cumulativeExcludedSizes[excludePtr]!
+        excludePtr++
+      }
+      const virtualOffset = listEnd - runningExcludedSize
 
       // Check visibility against the virtual viewport (without excluded items)
       if (virtualOffset >= effectiveViewportEnd) {
