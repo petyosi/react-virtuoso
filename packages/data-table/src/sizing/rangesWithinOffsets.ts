@@ -26,7 +26,10 @@ export function rangesWithinOffsets(
   value: OffsetBreakpoint
 }[] {
   if (minStartIndex > 0) {
-    startOffset = Math.max(startOffset, arrayBinarySearch.findClosestSmallerOrEqual(tree, minStartIndex, indexComparator).offset)
+    const closest = arrayBinarySearch.findClosestSmallerOrEqual(tree, minStartIndex, indexComparator)
+    if (closest !== undefined) {
+      startOffset = Math.max(startOffset, closest.offset)
+    }
   }
 
   startOffset = Math.max(0, startOffset)

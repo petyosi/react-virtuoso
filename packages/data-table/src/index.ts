@@ -5,7 +5,14 @@ export {
   type GroupHeaderRenderFunction,
   type GroupHeaderCustomComponent,
 } from './rows/GroupHeaderCell'
-export { setColumnSticky$, type SetColumnStickyPayload, reorderColumns$, type ReorderColumnsPayload } from './columns/Column'
+export {
+  Column,
+  type ColumnInfo,
+  setColumnSticky$,
+  type SetColumnStickyPayload,
+  reorderColumns$,
+  type ReorderColumnsPayload,
+} from './columns/Column'
 export { ColumnGroup, type ColumnGroupInfo } from './columns/ColumnGroup'
 export {
   ColumnGroupHeader,

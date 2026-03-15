@@ -8,7 +8,11 @@ export function itemOffsetAndSize(index: number, offsetTree: OffsetBreakpoint[])
     return [0, 0]
   }
 
-  const { offset, index: startIndex, size } = findClosestSmallerOrEqual(offsetTree, index, indexComparator)
+  const match = findClosestSmallerOrEqual(offsetTree, index, indexComparator)
+  if (match === undefined) {
+    return [0, 0]
+  }
+  const { offset, index: startIndex, size } = match
   return [size * (index - startIndex) + offset, size]
 }
 
