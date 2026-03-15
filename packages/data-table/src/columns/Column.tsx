@@ -76,7 +76,7 @@ e.changeWith(columns$, reorderColumns$, (columns, { sourceKey, targetKey, positi
     return columns
   }
   const sourceEntry = columns.get(sourceKey)
-  if (!sourceEntry) {
+  if (!sourceEntry || !columns.has(targetKey)) {
     return columns
   }
 
