@@ -1,6 +1,6 @@
 import { createModel } from './model-core'
 
-import type { AsyncResultEmitter, ConcurrencyStrategy, DataModelHandle, DataResult, FrameAdapter } from './types'
+import type { AsyncErrorEmitter, AsyncResultEmitter, ConcurrencyStrategy, DataModelHandle, DataResult, FrameAdapter } from './types'
 
 export interface FetchParams<Params = Record<string, unknown>> {
   offset: number
@@ -65,6 +65,7 @@ export interface OffsetRemoteSourceConfig<T, Params = Record<string, unknown>> {
   actions?: Record<string, RemoteActionConfig<Params>>
   placeholder?: T
   onViewportChange?: (context: OffsetViewportContext<Params>) => OffsetViewportAction
+  onError?: (error: Error) => void
 }
 
 export interface AppendRemoteSourceConfig<T, Params = Record<string, unknown>> {
@@ -74,6 +75,7 @@ export interface AppendRemoteSourceConfig<T, Params = Record<string, unknown>> {
   pageSize?: number
   actions?: Record<string, RemoteActionConfig<Params>>
   onViewportChange?: (context: AppendViewportContext<Params>) => AppendViewportAction
+  onError?: (error: Error) => void
 }
 
 export type RemoteSourceConfig<T, Params = Record<string, unknown>> =
@@ -183,6 +185,7 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
   const viewDataMap = new Map<string, OffsetViewData<T>>()
   const requestAbortMap = new Map<string, AbortController>()
   let asyncEmit: AsyncResultEmitter<T> | null = null
+  let asyncErrorEmit: AsyncErrorEmitter | null = null
 
   function getViewData(viewId: string): OffsetViewData<T> {
     let vd = viewDataMap.get(viewId)
@@ -249,8 +252,12 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
       vd.abortController = null
 
       asyncEmit?.(viewId, buildResult(vd), requestId)
-    } catch {
-      // Fetch aborted or failed
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        const err = error instanceof Error ? error : new Error(String(error))
+        config.onError?.(err)
+        asyncErrorEmit?.(viewId, err.message, requestId)
+      }
     } finally {
       if (requestId) {
         requestAbortMap.delete(requestId)
@@ -288,8 +295,12 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
       addLoadedRange(vd, offset, result.rows.length)
 
       asyncEmit?.(viewId, buildResult(vd))
-    } catch {
-      // Fetch aborted or failed
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        const err = error instanceof Error ? error : new Error(String(error))
+        config.onError?.(err)
+        asyncErrorEmit?.(viewId, err.message)
+      }
     } finally {
       vd.viewportAbortControllers.delete(controller)
       vd.pendingViewportFetches.delete(key)
@@ -305,6 +316,10 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
 
     setAsyncEmitter(emitter: AsyncResultEmitter<T>) {
       asyncEmit = emitter
+    },
+
+    setAsyncErrorEmitter(emitter: AsyncErrorEmitter) {
+      asyncErrorEmit = emitter
     },
 
     getActionStrategy(action: string) {
@@ -401,6 +416,7 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
   const viewDataMap = new Map<string, AppendViewData<T>>()
   const requestAbortMap = new Map<string, AbortController>()
   let asyncEmit: AsyncResultEmitter<T> | null = null
+  let asyncErrorEmit: AsyncErrorEmitter | null = null
 
   function getViewData(viewId: string): AppendViewData<T> {
     let vd = viewDataMap.get(viewId)
@@ -451,6 +467,12 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
       vd.hasMore = result.hasMore
 
       asyncEmit?.(viewId, buildAppendResult(vd), requestId)
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        const err = error instanceof Error ? error : new Error(String(error))
+        config.onError?.(err)
+        asyncErrorEmit?.(viewId, err.message, requestId)
+      }
     } finally {
       vd.fetching = false
       vd.abortController = null
@@ -469,6 +491,10 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
 
     setAsyncEmitter(emitter: AsyncResultEmitter<T>) {
       asyncEmit = emitter
+    },
+
+    setAsyncErrorEmitter(emitter: AsyncErrorEmitter) {
+      asyncErrorEmit = emitter
     },
 
     getActionStrategy(action: string) {

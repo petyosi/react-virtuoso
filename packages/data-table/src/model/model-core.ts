@@ -318,6 +318,40 @@ export function createModel<T, G = never>(adapter: FrameAdapter<T, G>): DataMode
     }
   })
 
+  // Provide async error emitter so adapters can report failures from async operations
+  adapter.setAsyncErrorEmitter?.((viewId: string, message: string, requestId?: string) => {
+    if (destroyed) {
+      return
+    }
+    const view = views.get(viewId)
+    if (!view) {
+      return
+    }
+
+    const inFlight = requestId ? view.inFlightRequests.get(requestId) : undefined
+
+    if (inFlight?.cancelled) {
+      view.inFlightRequests.delete(requestId!)
+      return
+    }
+
+    emitError(viewId, inFlight?.action ?? 'fetch', message, requestId)
+
+    if (inFlight) {
+      view.inFlightActions.delete(inFlight.action)
+
+      const queue = view.actionQueues.get(inFlight.action)
+      if (queue && queue.length > 0) {
+        const next = queue.shift()!
+        handleSend({ action: inFlight.action, payload: next.payload, viewId, requestId: next.requestId })
+      }
+    }
+
+    if (view.lastKnownGood) {
+      emitResult(viewId, view.lastKnownGood as DataResult<T, G>, view.operationVersion)
+    }
+  })
+
   // Provide event emitter for external data events
   adapter.setEventEmitter?.((viewId: string, payload: unknown) => {
     if (destroyed) {

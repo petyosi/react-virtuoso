@@ -25,6 +25,8 @@ export type ConcurrencyStrategy = 'supersede' | 'queue' | 'deduplicate'
 
 export type AsyncResultEmitter<T = unknown, G = never> = (viewId: string, result: DataResult<T, G>, requestId?: string) => void
 
+export type AsyncErrorEmitter = (viewId: string, message: string, requestId?: string) => void
+
 export type EventEmitter = (viewId: string, payload: unknown) => void
 
 export interface FrameAdapter<T = unknown, G = never> {
@@ -35,5 +37,6 @@ export interface FrameAdapter<T = unknown, G = never> {
   destroy?(): void
   getActionStrategy?(action: string): ConcurrencyStrategy | undefined
   setAsyncEmitter?(emitter: AsyncResultEmitter<T, G>): void
+  setAsyncErrorEmitter?(emitter: AsyncErrorEmitter): void
   setEventEmitter?(emitter: EventEmitter): void
 }
