@@ -6,6 +6,7 @@ import { cellRenderers$, CellRenderer } from '../columns/Cell'
 import { columns$ } from '../columns/Column'
 import { columnItemsState$, columnsState$, EMPTY_COLUMN_STATE, stickyColumnsState$ } from '../columns/column-state'
 import { groupIndexSet$, groupLevelMap$ } from '../core/data'
+import { unstableEnableRowRenderEvents$, unstableRowRender$ } from '../debug/row-render-events'
 import { resizeObserverSingleton$ } from '../resize/resize-observer-singleton'
 import { ROW_ROLE } from '../resize/resize-observing'
 import { ranges$ } from '../resize/sizes'
@@ -25,6 +26,7 @@ interface RowProps {
 
 interface RowCellSectionProps {
   row: Item<unknown>
+  sticky?: boolean | undefined
 }
 
 const ROW_BASE_STYLE: React.CSSProperties = {
@@ -61,7 +63,37 @@ const SCROLLABLE_CELLS_CONTAINER_STYLE: React.CSSProperties = {
 // horizontal scroll (which only changes columnItemsState$) re-renders ScrollableCells alone,
 // leaving sticky cells untouched.
 
-const StickyLeftCells = React.memo<RowCellSectionProps>(function StickyLeftCells({ row }) {
+function useUnstableRowRenderEvent({
+  row,
+  sticky,
+  group,
+  section,
+  disabled = false,
+}: {
+  row: Item<unknown>
+  sticky?: boolean | undefined
+  group: boolean
+  section: 'row' | 'scrollable' | 'sticky-left' | 'sticky-right'
+  disabled?: boolean
+}) {
+  const unstableRowRenderEventsEnabled = useCellValue(unstableEnableRowRenderEvents$)
+  const engine = useEngine()
+
+  React.useLayoutEffect(() => {
+    if (disabled || !unstableRowRenderEventsEnabled) {
+      return
+    }
+
+    engine.pub(unstableRowRender$, {
+      index: row.index,
+      sticky: Boolean(sticky),
+      group,
+      section,
+    })
+  })
+}
+
+const StickyLeftCells = React.memo<RowCellSectionProps>(function StickyLeftCells({ row, sticky }) {
   const stickyState = useCellValue(stickyColumnsState$)
   const columns = useCellValue(columns$)
   const cellRenderers = useCellValue(cellRenderers$)
@@ -78,6 +110,14 @@ const StickyLeftCells = React.memo<RowCellSectionProps>(function StickyLeftCells
       })),
     [stickyState.leftColumns]
   )
+
+  useUnstableRowRenderEvent({
+    row,
+    sticky,
+    group: false,
+    section: 'sticky-left',
+    disabled: leftStickyCellStyles.length === 0,
+  })
 
   if (leftStickyCellStyles.length === 0) {
     return null
@@ -107,7 +147,7 @@ const StickyLeftCells = React.memo<RowCellSectionProps>(function StickyLeftCells
   )
 })
 
-const ScrollableCells = React.memo<RowCellSectionProps>(function ScrollableCells({ row }) {
+const ScrollableCells = React.memo<RowCellSectionProps>(function ScrollableCells({ row, sticky }) {
   const columnItemsState = useCellValue(columnItemsState$)
   const columns = useCellValue(columns$)
   const cellRenderers = useCellValue(cellRenderers$)
@@ -134,6 +174,14 @@ const ScrollableCells = React.memo<RowCellSectionProps>(function ScrollableCells
     [columnItemsState.columns]
   )
 
+  useUnstableRowRenderEvent({
+    row,
+    sticky,
+    group: false,
+    section: 'scrollable',
+    disabled: columnCellStyles.length === 0,
+  })
+
   return (
     <div style={scrollableCellsContainerStyle} data-scrollable="true">
       {columnCellStyles.map((col) => {
@@ -158,7 +206,7 @@ const ScrollableCells = React.memo<RowCellSectionProps>(function ScrollableCells
   )
 })
 
-const StickyRightCells = React.memo<RowCellSectionProps>(function StickyRightCells({ row }) {
+const StickyRightCells = React.memo<RowCellSectionProps>(function StickyRightCells({ row, sticky }) {
   const stickyState = useCellValue(stickyColumnsState$)
   const columns = useCellValue(columns$)
   const cellRenderers = useCellValue(cellRenderers$)
@@ -176,6 +224,14 @@ const StickyRightCells = React.memo<RowCellSectionProps>(function StickyRightCel
       })),
     [stickyState.rightColumns]
   )
+
+  useUnstableRowRenderEvent({
+    row,
+    sticky,
+    group: false,
+    section: 'sticky-right',
+    disabled: rightStickyCellStyles.length === 0,
+  })
 
   if (rightStickyCellStyles.length === 0) {
     return null
@@ -246,6 +302,13 @@ const NonMemoRow: React.FC<RowProps> = ({ row, sticky, stickyTop, stickyZIndex }
   const isGroupRow = groupIndexSet.has(row.index)
   const groupLevel = groupLevelMap.get(row.index) ?? 0
 
+  useUnstableRowRenderEvent({
+    row,
+    sticky,
+    group: isGroupRow,
+    section: 'row',
+  })
+
   const rowStyle = React.useMemo<React.CSSProperties>(() => {
     if (sticky) {
       return {
@@ -302,9 +365,9 @@ const NonMemoRow: React.FC<RowProps> = ({ row, sticky, stickyTop, stickyZIndex }
       data-known-size={row.size}
       style={rowStyle}
     >
-      <StickyLeftCells row={row} />
-      <ScrollableCells row={row} />
-      <StickyRightCells row={row} />
+      <StickyLeftCells row={row} sticky={sticky} />
+      <ScrollableCells row={row} sticky={sticky} />
+      <StickyRightCells row={row} sticky={sticky} />
     </div>
   )
 }
