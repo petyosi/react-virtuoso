@@ -90,6 +90,59 @@ describe(scrollToLocationFromScrollToRowLocation, () => {
     expect(result.forceBottomSpace).toBeLessThanOrEqual(VIEWPORT_HEIGHT - STICKY_HEADER_HEIGHT)
   })
 
+  describe('out-of-bounds index clamping', () => {
+    const ROW_COUNT = 100
+    const ROW_HEIGHT = 50
+    const VIEWPORT_HEIGHT = 500
+    const TOTAL_HEIGHT = ROW_COUNT * ROW_HEIGHT
+
+    const baseParams = {
+      sizeState: buildUniformSizeState(ROW_COUNT, ROW_HEIGHT),
+      totalHeight: TOTAL_HEIGHT,
+      totalCount: ROW_COUNT,
+      viewportHeight: VIEWPORT_HEIGHT,
+      headerHeight: 0,
+      stickyHeaderHeight: 0,
+      stickyFooterHeight: 0,
+    }
+
+    it('clamps a positive out-of-bounds index to the last row', () => {
+      const outOfBounds = scrollToRow({ ...baseParams, location: 150 })
+      const lastRow = scrollToRow({ ...baseParams, location: 99 })
+
+      // scrollToRow(150) on a 100-item table should behave identically to scrollToRow(99).
+      // Currently it computes top = 150 * 50 = 7500 (beyond the 5000px content).
+      expect(outOfBounds.top).toBe(lastRow.top)
+    })
+
+    it('clamps a positive out-of-bounds index with align end', () => {
+      const outOfBounds = scrollToRow({ ...baseParams, location: { index: 150, align: 'end' } })
+      const lastRow = scrollToRow({ ...baseParams, location: { index: 99, align: 'end' } })
+
+      expect(outOfBounds.top).toBe(lastRow.top)
+    })
+
+    it('clamps a negative out-of-bounds index to the first row', () => {
+      const outOfBounds = scrollToRow({ ...baseParams, location: { index: -200, align: 'start' } })
+      const firstRow = scrollToRow({ ...baseParams, location: { index: 0, align: 'start' } })
+
+      // scrollToRow({ index: -200 }) on a 100-item table normalizes to index -101,
+      // which should clamp to 0.
+      expect(outOfBounds.top).toBe(firstRow.top)
+    })
+
+    it('clamps a negative out-of-bounds index with align end without throwing', () => {
+      // index -200 normalizes to -101. findMaxKeyValue returns undefined for negative indices,
+      // causing rowHeight() to throw. The error is caught and swallowed, making this a silent no-op.
+      // Expected: should clamp to index 0 and return a valid scroll position.
+      const result = scrollToRow({ ...baseParams, location: { index: -200, align: 'end' } })
+      const firstRow = scrollToRow({ ...baseParams, location: { index: 0, align: 'end' } })
+
+      expect(result).not.toBeNull()
+      expect(result.top).toBe(firstRow.top)
+    })
+  })
+
   it('does not produce unbounded forceBottomSpace with small viewport and large content', () => {
     const ROW_COUNT = 200
     const ROW_HEIGHT = 50

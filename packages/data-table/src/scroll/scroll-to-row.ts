@@ -27,7 +27,7 @@ export { initialLocation$, pendingScrollToInitialLocation$, scrollIntoView$, scr
 export function normalizeRowLocation(location: RowLocation, lastIndex: number) {
   if (typeof location === 'number') {
     return {
-      index: location,
+      index: Math.max(0, Math.min(location, lastIndex)),
       offset: 0,
       behavior: 'auto',
       align: 'start-no-overflow',
@@ -44,9 +44,9 @@ export function normalizeRowLocation(location: RowLocation, lastIndex: number) {
   if (location.index === 'LAST') {
     result.index = lastIndex
   } else if (location.index < 0) {
-    result.index = lastIndex + location.index
+    result.index = Math.max(0, lastIndex + location.index)
   } else {
-    result.index = location.index
+    result.index = Math.min(location.index, lastIndex)
   }
 
   return result
