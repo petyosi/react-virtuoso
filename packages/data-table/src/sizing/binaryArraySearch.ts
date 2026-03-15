@@ -24,15 +24,19 @@ export function findIndexOfClosestSmallerOrEqual<T>(items: T[], value: number, c
     }
   }
 
-  throw new Error(`Failed binary finding record in array - ${items.join(',')}, searched for ${value}`)
+  return -1
 }
 
-export function findClosestSmallerOrEqual<T>(items: T[], value: number, comparator: Comparator<T>): T {
-  return items[findIndexOfClosestSmallerOrEqual(items, value, comparator)]!
+export function findClosestSmallerOrEqual<T>(items: T[], value: number, comparator: Comparator<T>): T | undefined {
+  const index = findIndexOfClosestSmallerOrEqual(items, value, comparator)
+  return index === -1 ? undefined : items[index]
 }
 
 export function findRange<T>(items: T[], startValue: number, endValue: number, comparator: Comparator<T>): T[] {
   const startIndex = findIndexOfClosestSmallerOrEqual(items, startValue, comparator)
+  if (startIndex === -1) {
+    return []
+  }
   const endIndex = findIndexOfClosestSmallerOrEqual(items, endValue, comparator, startIndex)
   return items.slice(startIndex, endIndex + 1)
 }
