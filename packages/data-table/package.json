@@ -71,8 +71,6 @@
   "devDependencies": {
     "@ladle/react": "catalog:",
     "@ngneat/falso": "^8.0.2",
-    "@testing-library/jest-dom": "catalog:",
-    "@testing-library/react": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
