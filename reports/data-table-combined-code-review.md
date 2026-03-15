@@ -280,8 +280,7 @@
 
 - **File(s):** `scroller-elements.tsx:213`, `scroller-elements.tsx:225`
 - **Severity:** Moderate
-- **Description:** `CustomScrollParentWrapper` updates `customScrollParentRef.current` when the prop changes, but it never rebinds listeners or observers to the new element unless the wrapper ref itself unmounts. Changing `customScrollParent` mid-lifecycle leaves listeners on the old parent and the new parent inert.
-- **Suggested fix:** Add an effect that detaches from the previous parent and attaches to the new one whenever `customScrollParent` changes.
+- **Resolved:** Listener management (scroll, wheel, ResizeObserver, scrollerElement$ publish) moved from the callback ref into a useEffect keyed on customScrollParent. The effect's cleanup detaches from the old element; setup attaches to the new one. The callback ref now only manages the wrapper div's own lifecycle. Test added in custom-scroll-parent-rebind.test.tsx.
 
 ---
 
@@ -338,7 +337,7 @@
 | Severity | Count | Key findings |
 |----------|-------|--------------|
 | **Critical** | 7 | ~~Async dedup only protects sync path (1.1)~~, ~~stale async overwrites (1.2)~~, ~~`Math.min` single-arg bugs (6.1)~~, ~~public API leaks reactive internals (7.1)~~ (intentional remote-controlled state pattern), `export *` audit (7.2-7.3 downgraded to Moderate), ~~`bridgeModelToEngine` leak (8.1)~~, ~~ScrollbarOverlay listener leak (8.2)~~ |
-| **Moderate** | 16 | `getEffectiveSticky` duplication (2.1), `rowsState$` complexity (3.1), residual horizontal scroll cost in `ScrollableCells` (4.1), column overscan (4.2), Map reconstruction (4.3), ~~cumulative excluded size O(n*k) (4.4)~~, ~~header re-renders (5.1)~~, props ignored after mount (6.3), scrollToRow silent no-op (6.4), ~~binary search throws (6.5)~~, ~~division by zero (6.6)~~, size tree reset (6.7), ~~abort blocks loadMore (6.8)~~, `export *` audit (7.2-7.3), ~~capture flag mismatch (8.3)~~, CustomScrollParent rebind (8.4), fetch errors swallowed (10.1), column key mismatch (10.2) |
+| **Moderate** | 16 | `getEffectiveSticky` duplication (2.1), `rowsState$` complexity (3.1), residual horizontal scroll cost in `ScrollableCells` (4.1), column overscan (4.2), Map reconstruction (4.3), ~~cumulative excluded size O(n*k) (4.4)~~, ~~header re-renders (5.1)~~, props ignored after mount (6.3), scrollToRow silent no-op (6.4), ~~binary search throws (6.5)~~, ~~division by zero (6.6)~~, size tree reset (6.7), ~~abort blocks loadMore (6.8)~~, `export *` audit (7.2-7.3), ~~capture flag mismatch (8.3)~~, ~~CustomScrollParent rebind (8.4)~~, fetch errors swallowed (10.1), column key mismatch (10.2) |
 | **Minor** | 8 | Registration boilerplate (2.2), totalHeight/totalWidth (2.3), measureItems duplication (2.4), AATree spread (4.5), shift() O(n^2) (4.6), ~~buildHeaderTree 3x (4.7)~~, skip operator (6.9), currentlyRenderedRows$ type (5.2), zero-height (10.3), rAF guard (9.2) |
 
 ## Recommended Fix Priority
@@ -350,6 +349,7 @@
 5. ~~**SSR crash** (9.1) -- `navigator` access at render time breaks server-side rendering~~ **Resolved**: `navigator` guarded, `EngineProvider` creates engine synchronously for SSR, `ResizeObserver` guarded
 6. ~~**Memory leaks** (8.1, 8.2, 8.3)~~ -- all resolved: ~~bridge cleanup (8.1)~~, ~~ScrollbarOverlay (8.2)~~, ~~capture flag mismatch (8.3) **Resolved**: `removeEventListener` now passes `{ capture: true }`, test added~~
 7. ~~**Header re-render isolation** (4.7/5.1)~~ **Resolved**: header rendering extracted into `StickyHeaderContent` component with own reactive subscriptions and memoized header trees; vertical scroll no longer triggers header re-renders
-8. **Residual horizontal scroll cost** (4.1) -- no longer the original row-shell blast radius, but still worth profiling on wide tables
+8. ~~**CustomScrollParent rebind** (8.4)~~ **Resolved**: listener management moved to `useEffect` keyed on `customScrollParent`; cleanup detaches from old element, setup attaches to new one
+9. **Residual horizontal scroll cost** (4.1) -- no longer the original row-shell blast radius, but still worth profiling on wide tables
 
 Updated after verification of the current branch: the original `Row` shell rerender finding no longer reproduces with the current `Row.tsx` structure. Verification included the unstable row render instrumentation and a passing focused browser test for horizontal-scroll instrumentation.
