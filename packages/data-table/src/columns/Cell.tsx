@@ -1,11 +1,10 @@
 import { useLayoutEffect, useMemo } from 'react'
 import type { ReactNode } from 'react'
 
-// oxlint-disable require-hook
-import { Cell, Stream, e } from '@virtuoso.dev/reactive-engine-core'
 import { usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
 import { useColumnId } from './Column'
+import { createRegistryCell } from './registry'
 
 import type { Row } from '../interfaces'
 import type { ColumnInfo } from './Column'
@@ -22,24 +21,8 @@ export interface CellRenderParams {
 
 export type CellRenderFunction = (params: CellRenderParams) => ReactNode
 
-export const cellRenderers$ = Cell<Map<string, CellRenderFunction>>(new Map())
-
-type CellRendererRegisterPayload =
-  | {
-      id: string
-      type: 'add'
-      renderFunction: CellRenderFunction
-    }
-  | { type: 'remove'; id: string }
-
-const cellRendererRegister$ = Stream<CellRendererRegisterPayload>()
-
-e.changeWith(cellRenderers$, cellRendererRegister$, (renderers, payload) => {
-  if (payload.type === 'add') {
-    return new Map([...renderers, [payload.id, payload.renderFunction]])
-  }
-  return new Map([...renderers].filter(([key]) => key !== payload.id))
-})
+const { cell$: cellRenderers$, register$: cellRendererRegister$ } = createRegistryCell<CellRenderFunction>()
+export { cellRenderers$ }
 
 export namespace CellDefinition {
   export interface Props {
@@ -52,7 +35,7 @@ export function CellDefinition({ children }: CellDefinition.Props) {
   const cellRendererRegister = usePublisher(cellRendererRegister$)
 
   useLayoutEffect(() => {
-    cellRendererRegister({ type: 'add', id: colId, renderFunction: children })
+    cellRendererRegister({ type: 'add', id: colId, value: children })
     return () => {
       cellRendererRegister({ type: 'remove', id: colId })
     }
