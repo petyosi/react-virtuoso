@@ -102,7 +102,7 @@ export function scrollToLocationFromScrollToRowLocation({
   // in dom.ts, we will calculate the margin in the state
   let forceBottomSpace = 0
   if (align === 'start') {
-    forceBottomSpace = Math.max(0, Math.min(top - (totalHeight - viewportHeight)))
+    forceBottomSpace = Math.max(0, Math.min(top - (totalHeight - viewportHeight), viewportHeight))
   }
 
   top = Math.max(0, top)
