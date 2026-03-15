@@ -52,7 +52,7 @@ export function normalizeRowLocation(location: RowLocation, lastIndex: number) {
   return result
 }
 
-export interface ScrollToLocationFromScrollToRowLocationParams {
+interface ScrollToLocationFromScrollToRowLocationParams {
   location: RowLocation
   sizeState: SizeState
   totalHeight: number
@@ -110,11 +110,11 @@ export function scrollToLocationFromScrollToRowLocation({
   return { top, behavior, align, forceBottomSpace } as ScrollToOptions
 }
 
-export const lastScrollToRowLocation$ = Cell<RowLocation | null>(null)
-export const listHasRefreshed$ = Cell(false)
-export const scrollToRowComplete$ = Cell(true)
+const lastScrollToRowLocation$ = Cell<RowLocation | null>(null)
+const listHasRefreshed$ = Cell(false)
+const scrollToRowComplete$ = Cell(true)
 
-export const cancelScrollToRow$ = Stream<true>()
+const cancelScrollToRow$ = Stream<true>()
 e.link(e.pipe(cancelScrollToRow$, e.mapTo(true)), scrollToRowComplete$)
 
 e.link(e.pipe(cancelScrollToRow$, e.mapTo(null)), lastScrollToRowLocation$)

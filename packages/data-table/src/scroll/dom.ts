@@ -40,8 +40,6 @@ export const scrollOverlayContentWidth$ = DerivedCell(
   )
 )
 
-export const listScrollTop$ = scrollTop$
-
 export const scrollOffset$ = Cell(0)
 
 export const scrollBarScrollerWidth$ = Cell(0)
@@ -66,8 +64,6 @@ export const cancelSmoothScroll$ = Trigger()
 
 export const increaseViewportBy$ = Cell(0)
 
-export const enforceStickyFooterAtBottom$ = Cell(false)
-
 export const DEFAULT_SMOOTH_SCROLL_BEZIER_FUNCTION = easeOutExpo
 
 export const DEFAULT_SMOOTH_SCROLL_FRAME_COUNT = 50
@@ -82,7 +78,7 @@ export const headerHeight$ = DerivedCell(
   )
 )
 
-export const footerHeight$ = DerivedCell(
+const footerHeight$ = DerivedCell(
   0,
   e.pipe(
     e.combine(stickyFooterHeight$, scrollableFooterHeight$),
@@ -92,7 +88,7 @@ export const footerHeight$ = DerivedCell(
   )
 )
 
-export const visibleHeaderHeight$ = DerivedCell(
+const visibleHeaderHeight$ = DerivedCell(
   0,
   e.pipe(
     e.combine(stickyHeaderHeight$, scrollableHeaderHeight$, scrollTop$),
@@ -102,7 +98,7 @@ export const visibleHeaderHeight$ = DerivedCell(
   )
 )
 
-export const visibleFooterHeight$ = DerivedCell(
+const visibleFooterHeight$ = DerivedCell(
   0,
   e.pipe(
     e.combine(stickyFooterHeight$, scrollableFooterHeight$, scrollTop$, viewportHeight$, scrollHeight$),
@@ -149,7 +145,7 @@ export const tableBodyForceBottomSpace$ = Cell(0)
     minScrollTop$
   )*/
 
-export const minScrollTop$ = Cell(0)
+const minScrollTop$ = Cell(0)
 
 e.link(
   e.pipe(
@@ -284,8 +280,6 @@ export const useWindowScroll$ = Cell(false)
 
 export const customScrollParent$ = Cell<HTMLElement | null>(null)
 export const customScrollParentWrapper$ = Cell<HTMLElement | null>(null)
-
-export const externalScrollerHeight$ = Cell(0)
 
 export const offsetTopInExternalScroller$ = Cell(0)
 

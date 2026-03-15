@@ -34,7 +34,7 @@
       "entry": ["src/index.ts"],
       "project": "**/*.{ts,tsx}",
       "vitest": {
-        "entry": ["tests/**/*.test.{ts,tsx}", "src/**/tests/**/*.test.{ts,tsx}", "vitest.config.ts"]
+        "entry": ["tests/**/*.test.{ts,tsx}", "src/**/tests/**/*.test.{ts,tsx}", "src/**/tests/**/*.bench.{ts,tsx}", "vitest.config.ts"]
       }
     },
     "packages/tooling": {

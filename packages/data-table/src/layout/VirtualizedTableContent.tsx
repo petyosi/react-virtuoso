@@ -23,6 +23,7 @@ import {
 } from '../core/components'
 import { computeRowKey$ } from '../core/content'
 import { context$, totalCount$ } from '../core/data'
+import { accumulateSizeRange } from '../resize/accumulate-size-range'
 import { useResizeObserver } from '../resize/resize-observer-singleton'
 import { FOOTER_ROLE, HEADER_ROLE, TABLE_BODY_ROLE, STICKY_FOOTER_ROLE, STICKY_HEADER_ROLE } from '../resize/resize-observing'
 import { ranges$, totalHeight$ } from '../resize/sizes'
@@ -209,25 +210,7 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
   const measureItems = React.useCallback(() => {
     const results: SizeRange[] = []
     for (const element of (tableBodyRef.current?.children ?? []) as HTMLCollectionOf<HTMLDivElement>) {
-      if (element.dataset.index === undefined) {
-        continue
-      }
-
-      const index = Number.parseInt(element.dataset.index, 10)
-      const knownSize = Number.parseFloat(element.dataset.knownSize ?? '')
-
-      const size = element.getBoundingClientRect().height
-
-      if (size === knownSize) {
-        continue
-      }
-
-      const lastResult = results.at(-1)
-      if (results.length === 0 || lastResult?.size !== size || lastResult.endIndex !== index - 1) {
-        results.push({ endIndex: index, size: size, startIndex: index })
-      } else {
-        lastResult.endIndex++
-      }
+      accumulateSizeRange(results, element, element.getBoundingClientRect().height)
     }
     engine.pub(ranges$, results)
   }, [engine])

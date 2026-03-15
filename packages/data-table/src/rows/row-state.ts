@@ -6,7 +6,6 @@ import {
   deviation$,
   headerHeight$,
   increaseViewportBy$,
-  listScrollTop$,
   scrollableHeaderHeight$,
   scrollOffset$,
   scrollToPending$,
@@ -47,7 +46,7 @@ function rowsSeed(index: number, data: unknown[] | null) {
 const EMPTY_ROWS = [] as Row<unknown>[]
 const EMPTY_STICKY_START_ITEMS = [] as Item<unknown>[]
 const EMPTY_STICKY_START_TOPS = [] as number[]
-export const EMPTY_ROWS_STATE = {
+const EMPTY_ROWS_STATE = {
   rows: EMPTY_ROWS,
   stickyStartItems: EMPTY_STICKY_START_ITEMS,
   stickyStartTops: EMPTY_STICKY_START_TOPS,
@@ -65,14 +64,14 @@ export const EMPTY_ROWS_STATE = {
   stable: false,
 }
 
-export const muteRowsChange$ = Cell(false)
+const muteRowsChange$ = Cell(false)
 
 export const rowsState$ = Cell(EMPTY_ROWS_STATE)
 
 e.link(
   e.pipe(
     e.combine(
-      listScrollTop$,
+      scrollTop$,
       visibleListHeight$,
       sizeState$,
       totalCount$,

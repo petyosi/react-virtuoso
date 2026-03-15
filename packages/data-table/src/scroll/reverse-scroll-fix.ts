@@ -4,7 +4,7 @@ import { rowsState$ } from '../rows/row-state'
 import { scrollBy$ } from './dom'
 import { deviationDelta$ } from './state'
 
-export { deviationDelta$, mobileSafariIsReadjusting$, suppressUpwardsFix$ } from './state'
+export { deviationDelta$, mobileSafariIsReadjusting$ } from './state'
 
 e.link(
   e.pipe(

@@ -8,10 +8,11 @@ import { localSource } from '../model/local-source'
 import { bridgeModelToEngine } from '../model/model-bridge'
 import { dataTableStructureEntries$ } from '../resize/resize-observing'
 import { currentlyRenderedRows$, rowsState$, viewportRange$ } from '../rows/row-state'
-import { atBottomState$, scrollDirection$ } from '../scroll/at-bottom'
+import { atBottomState$ } from '../scroll/at-bottom'
 import { customScrollParent$, increaseViewportBy$, onScroll$, scrollToPending$, useWindowScroll$ } from '../scroll/dom'
 import { deviationDelta$ } from '../scroll/reverse-scroll-fix'
 import { initialLocation$ } from '../scroll/scroll-to-row'
+import { scrollDirection$ } from '../scroll/state'
 import {
   DefaultFooterWrapper,
   DefaultHeaderWrapper,

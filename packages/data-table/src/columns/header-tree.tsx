@@ -10,31 +10,31 @@ import type { ColumnGroupInfo } from './ColumnGroup'
 import type { ColumnGroupHeaderCustomComponent, ColumnGroupHeaderRenderFunction } from './ColumnGroupHeader'
 import type { ColumnHeaderCustomComponent, ColumnHeaderRenderFunction } from './ColumnHeader'
 
-export const HEADER_GROUP_STYLE: CSSProperties = {
+const HEADER_GROUP_STYLE: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'stretch',
 }
 
-export const HEADER_GROUP_CHILDREN_STYLE: CSSProperties = {
+const HEADER_GROUP_CHILDREN_STYLE: CSSProperties = {
   display: 'flex',
   alignItems: 'flex-end',
 }
 
-export interface GroupedHeaderNode {
+interface GroupedHeaderNode {
   type: 'column'
   key: string
   column: ColumnInfo
 }
 
-export interface GroupedHeaderGroupNode {
+interface GroupedHeaderGroupNode {
   type: 'group'
   groupId: string
   group: ColumnGroupInfo
   children: (GroupedHeaderNode | GroupedHeaderGroupNode)[]
 }
 
-export type HeaderNode = GroupedHeaderNode | GroupedHeaderGroupNode
+type HeaderNode = GroupedHeaderNode | GroupedHeaderGroupNode
 
 export function getEffectiveSticky(col: ColumnInfo, groups: Map<string, ColumnGroupInfo>): 'left' | 'right' | undefined {
   if (col.sticky) {
@@ -125,14 +125,14 @@ export function groupsWithDescendantColumns(columns: Map<string, ColumnInfo>, gr
   return groupIds
 }
 
-export function getDescendantColumnKeys(node: HeaderNode): string[] {
+function getDescendantColumnKeys(node: HeaderNode): string[] {
   if (node.type === 'column') {
     return [node.key]
   }
   return node.children.flatMap(getDescendantColumnKeys)
 }
 
-export interface GroupHeaderRendererProps {
+interface GroupHeaderRendererProps {
   groupId: string
   group: ColumnGroupInfo
   columnKeys: string[]
@@ -141,7 +141,7 @@ export interface GroupHeaderRendererProps {
   rendererType: 'function' | 'component' | undefined
 }
 
-export function GroupHeaderRenderer({ groupId, group, columnKeys, totalWidth, renderer, rendererType }: GroupHeaderRendererProps) {
+function GroupHeaderRenderer({ groupId, group, columnKeys, totalWidth, renderer, rendererType }: GroupHeaderRendererProps) {
   const content = useMemo(() => {
     if (!renderer) {
       return null
@@ -166,7 +166,7 @@ export function GroupHeaderRenderer({ groupId, group, columnKeys, totalWidth, re
   )
 }
 
-export interface HeaderNodeRendererProps {
+interface HeaderNodeRendererProps {
   node: HeaderNode
   columns: Map<string, ColumnInfo>
   columnHeaders: Map<

@@ -1,4 +1,4 @@
-export type Comparator<T> = (item: T, value: number) => -1 | 0 | 1
+type Comparator<T> = (item: T, value: number) => -1 | 0 | 1
 
 export function findIndexOfClosestSmallerOrEqual<T>(items: T[], value: number, comparator: Comparator<T>, start = 0): number {
   let end = items.length - 1
