@@ -21,7 +21,7 @@ export interface ProcessedStickyGroup {
   sortedIndices: number[]
 }
 
-export interface StickyResult {
+interface StickyResult {
   stickyStartItems: Item<unknown>[]
   stickyStartTops: number[]
   stickyEndItems: Item<unknown>[]

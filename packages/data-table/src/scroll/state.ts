@@ -16,12 +16,9 @@ export const scrollToRow$ = Stream<RowLocation>()
 export const scrollIntoView$ = Stream<RowLocation>()
 
 export const mobileSafariIsReadjusting$ = Cell(false)
-export const suppressUpwardsFix$ = Cell(false)
 export const deviationDelta$ = Stream<number>()
 
-const DEFAULT_AT_TOP_THRESHOLD = 0
 const DEFAULT_AT_BOTTOM_THRESHOLD = 4
 
 export const atBottomThreshold$ = Cell(DEFAULT_AT_BOTTOM_THRESHOLD)
-export const atTopThreshold$ = Cell(DEFAULT_AT_TOP_THRESHOLD)
 export const isScrollingToBottom$ = Cell(false)

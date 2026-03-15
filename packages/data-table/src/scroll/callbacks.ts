@@ -9,7 +9,7 @@ import { useSmoothScroll } from './smooth-scroll'
 import type { ScrollToParams } from './dom'
 import type { NodeRef } from '@virtuoso.dev/reactive-engine-core'
 
-export interface ScrollCallbackParams {
+interface ScrollCallbackParams {
   scrollableRef: React.RefObject<HTMLElement | null>
   listRef: React.RefObject<HTMLElement | null>
   scrollLeftCell$: NodeRef<number>

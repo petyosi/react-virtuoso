@@ -6,7 +6,7 @@ import type { DataArray, Item } from '../interfaces'
 import type { OffsetBreakpoint } from './SizeState'
 import type { ProcessedStickyGroup } from './stickyItems'
 
-export interface VisibleItemsResult {
+interface VisibleItemsResult {
   items: Item<unknown>[]
   stickyStartItems: Item<unknown>[]
   stickyStartTops: number[]

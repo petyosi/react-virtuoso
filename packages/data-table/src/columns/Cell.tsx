@@ -44,7 +44,7 @@ export function CellDefinition({ children }: CellDefinition.Props) {
   return null
 }
 
-export interface CellRendererProps {
+interface CellRendererProps {
   columnKey: string
   column: ColumnInfo
   columnState: ColumnState
@@ -55,6 +55,12 @@ export interface CellRendererProps {
 
 export function CellRenderer({ columnKey, column, columnState, row, cellRenderFunction, overlaidByScrollbar }: CellRendererProps) {
   const cellValue = (row.data as Record<string, unknown>)?.[column.field]
+
+  if (process.env.NODE_ENV !== 'production' && row.data && typeof row.data === 'object' && !(column.field in row.data)) {
+    console.warn(
+      `[VirtuosoDataTable] Column field "${column.field}" not found in row data at index ${row.index}. Available fields: ${Object.keys(row.data).join(', ')}`
+    )
+  }
 
   const content = useMemo(() => {
     if (cellRenderFunction) {

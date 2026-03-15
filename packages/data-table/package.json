@@ -58,9 +58,7 @@
     "test": "vitest run --browser.headless",
     "typecheck": "tsgo -b --noEmit",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck",
-    "knip": "knip",
-    "docs:build": "npx typedoc --plugin typedoc-plugin-no-inherit --watch --excludeInternal --excludePrivate --out docs --name 'Virtuoso Data Table' src/index.ts",
-    "docs:serve": "npx serve docs",
+    "knip": "cd ../.. && knip --workspace packages/data-table",
     "registry:build": "npx shadcn build"
   },
   "dependencies": {
@@ -93,8 +91,6 @@
     "vitest-browser-react": "^2.0.2"
   },
   "peerDependencies": {
-    "@virtuoso.dev/reactive-engine-core": ">=0.0.5",
-    "@virtuoso.dev/reactive-engine-react": ">=0.2.0",
     "react": ">= 16 || >= 17 || >= 18 || >= 19",
     "react-dom": ">= 16 || >= 17 || >= 18 || >= 19"
   }

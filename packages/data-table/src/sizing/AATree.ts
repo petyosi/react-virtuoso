@@ -177,7 +177,7 @@ function deleteLast(node: NonNilAANode): AANode {
   return empty(node.r) ? node.l : adjust(clone(node, { r: deleteLast(node.r) }))
 }
 
-export function clone(node: NonNilAANode, args: Partial<NonNilAANode>): NonNilAANode {
+function clone(node: NonNilAANode, args: Partial<NonNilAANode>): NonNilAANode {
   return newAANode(args.k ?? node.k, args.v ?? node.v, args.lvl ?? node.lvl, args.l ?? node.l, args.r ?? node.r)
 }
 

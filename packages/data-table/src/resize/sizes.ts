@@ -1,7 +1,7 @@
 import { Cell, DerivedCell, e, Stream } from '@virtuoso.dev/reactive-engine-core'
 
 import { data$, groupIndices$, groupIndexSet$, totalCount$ } from '../core/data'
-import { itemOffsetAndSize } from '../sizing/offsetOf'
+import { computeTotalSize } from '../sizing/offsetOf'
 import { EMPTY_SIZE_STATE, updateSizeState } from '../sizing/SizeState'
 
 import type { SizeRange } from '../interfaces'
@@ -59,12 +59,6 @@ export const totalHeight$ = DerivedCell(
   0,
   e.pipe(
     e.combine(totalCount$, sizeState$),
-    e.map(([totalCount, { lastIndex, lastOffset, lastSize, offsetTree }]) => {
-      if (totalCount > 0 && lastIndex >= totalCount) {
-        const [offset, size] = itemOffsetAndSize(totalCount - 1, offsetTree)
-        return offset + size
-      }
-      return lastOffset + (totalCount - lastIndex) * lastSize
-    })
+    e.map(([totalCount, sizeState]) => computeTotalSize(totalCount, sizeState))
   )
 )

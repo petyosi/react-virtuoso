@@ -27,7 +27,7 @@ import { VirtuosoDataTableTestingContext } from '../VirtuosoDataTableTestingCont
 
 import type { ScrollerProps } from '../interfaces'
 
-export interface ScrollableRootProps extends ScrollerProps {
+interface ScrollableRootProps extends ScrollerProps {
   children: React.ReactNode
   tableBodyRef: React.RefObject<HTMLElement | null>
 }

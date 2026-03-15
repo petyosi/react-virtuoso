@@ -1,4 +1,4 @@
-import { Cell, e, Stream } from '@virtuoso.dev/reactive-engine-core'
+import { Cell, e } from '@virtuoso.dev/reactive-engine-core'
 
 import { sizeState$ } from '../resize/sizes'
 import { empty } from '../sizing/AATree'
@@ -14,21 +14,11 @@ import {
   viewportHeight$,
   viewportWidth$,
 } from './dom'
-import { DOWN, lastJumpDueToRowResize$, NONE, scrollDirection$, UP, atBottomThreshold$, atTopThreshold$ } from './state'
+import { DOWN, lastJumpDueToRowResize$, NONE, scrollDirection$, UP, atBottomThreshold$ } from './state'
 
 import type { ScrollDirection } from './state'
-import type { Operator } from '@virtuoso.dev/reactive-engine-core'
 
-export { UP, DOWN, NONE, scrollDirection$, lastJumpDueToRowResize$ } from './state'
-export type { ScrollDirection } from './state'
-export { atBottomThreshold$, atTopThreshold$, isScrollingToBottom$ } from './state'
-
-export interface ListBottomInfo {
-  bottom: number
-  offsetBottom: number
-}
-
-export interface AtBottomParams {
+interface AtBottomParams {
   offsetBottom: number
   scrollTop: number
   viewportHeight: number
@@ -37,7 +27,7 @@ export interface AtBottomParams {
   tableBodyMarginTop: number
 }
 
-export type NotAtBottomReason =
+type NotAtBottomReason =
   | 'SIZE_INCREASED'
   | 'NOT_SHOWING_LAST_ITEM'
   | 'VIEWPORT_HEIGHT_DECREASING'
@@ -45,9 +35,9 @@ export type NotAtBottomReason =
   | 'SCROLLING_UPWARDS'
   | 'NOT_FULLY_SCROLLED_TO_LAST_ITEM_BOTTOM'
 
-export type AtBottomReason = 'SIZE_DECREASED' | 'SCROLLED_DOWN' | 'LIST_TOO_SHORT'
+type AtBottomReason = 'SIZE_DECREASED' | 'SCROLLED_DOWN' | 'LIST_TOO_SHORT'
 
-export type AtBottomState =
+type AtBottomState =
   | {
       atBottom: false
       notAtBottomBecause: NotAtBottomReason
@@ -72,45 +62,10 @@ const INITIAL_BOTTOM_STATE = {
   },
 } as AtBottomState
 
-export function skip<I>(skips: number) {
-  return ((source, engine) => {
-    const sink = engine.streamInstance<I>()
-    engine.sub(source, (value) => {
-      if (skips > 0) {
-        skips--
-      } else {
-        engine.pub(sink, value)
-      }
-    })
-    return sink
-  }) as Operator<I, I>
-}
-
-export const isAtBottom$ = Cell(false)
-export const isAtTop$ = Cell(true)
-export const atBottomStateChange$ = Stream<boolean>()
-export const atTopStateChange$ = Stream<boolean>()
-
-e.link(e.pipe(isAtTop$, e.throttleTime(50)), atTopStateChange$)
-
-e.link(
-  e.pipe(
-    e.combine(scrollTop$, atTopThreshold$),
-    e.map(([top, atTopThreshold]) => top <= atTopThreshold)
-  ),
-  isAtTop$
-)
-
-export const isScrolling$ = Cell(false)
-e.link(e.pipe(scrollTop$, skip(1), e.mapTo(true)), isScrolling$)
-e.link(e.pipe(scrollTop$, skip(1), e.mapTo(false), e.debounceTime(100)), isScrolling$)
-
-export const isScrollingBy$ = Cell(false)
+const isScrollingBy$ = Cell(false)
 
 e.link(e.pipe(scrollBy$, e.mapTo(true)), isScrollingBy$)
 e.link(e.pipe(scrollBy$, e.mapTo(false), e.debounceTime(200)), isScrollingBy$)
-
-export const shouldScrollDueToSizeIncrease$ = Cell(false)
 
 export const atBottomState$ = Cell<AtBottomState | null>(null, (prev, next) => {
   if (!prev) {
@@ -200,24 +155,6 @@ e.link(
     }, INITIAL_BOTTOM_STATE)
   ),
   atBottomState$
-)
-
-e.link(
-  e.pipe(
-    atBottomState$,
-    e.scan(
-      ({ prev }, next) => {
-        const shouldScroll = Boolean(prev && next && prev.atBottom && !next.atBottom && next.notAtBottomBecause === 'SIZE_INCREASED')
-        return {
-          prev: next,
-          shouldScroll,
-        }
-      },
-      { prev: null as null | AtBottomState, shouldScroll: false }
-    ),
-    e.map(({ shouldScroll }) => shouldScroll)
-  ),
-  shouldScrollDueToSizeIncrease$
 )
 
 e.sub(

@@ -18,6 +18,7 @@ import {
   viewportHeight$,
   viewportWidth$,
 } from '../scroll/dom'
+import { accumulateSizeRange } from './accumulate-size-range'
 import { createResizeObserverSignal } from './resize-observer-singleton'
 import { ranges$ } from './sizes'
 
@@ -28,7 +29,7 @@ export const STICKY_HEADER_ROLE = 'sticky-header'
 export const FOOTER_ROLE = 'footer'
 export const STICKY_FOOTER_ROLE = 'sticky-footer'
 export const TABLE_BODY_ROLE = 'table-body'
-export const WINDOW_SCROLL_WRAPPER_ROLE = 'window-scroll-wrapper'
+const WINDOW_SCROLL_WRAPPER_ROLE = 'window-scroll-wrapper'
 export const ROW_ROLE = 'row'
 
 export const dataTableStructureEntries$ = createResizeObserverSignal(() => true)
@@ -129,24 +130,7 @@ e.singletonSub(dataTableStructureEntries$, (entries) => {
     }
 
     if (elementRole === ROW_ROLE) {
-      if (element.dataset.index === undefined) {
-        continue
-      }
-
-      const index = Number.parseInt(element.dataset.index, 10)
-      const knownSize = Number.parseFloat(element.dataset.knownSize ?? '')
-      const size = entry.contentRect.height
-
-      if (size === knownSize) {
-        continue
-      }
-
-      const lastResult = results.at(-1)
-      if (results.length === 0 || lastResult?.size !== size || lastResult.endIndex !== index - 1) {
-        results.push({ endIndex: index, size: size, startIndex: index })
-      } else {
-        lastResult.endIndex++
-      }
+      accumulateSizeRange(results, element, entry.contentRect.height)
     }
   }
 
