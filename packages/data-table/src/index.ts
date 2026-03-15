@@ -37,4 +37,10 @@ export type {
 export type { ViewportRange } from './rows/row-state'
 export type { LocalSourceConfig, PipelineActionConfig, PipelineHandler, PipelineResult } from './model/local-source'
 export * from './columns/ColumnHeader.tsx'
+export {
+  unstableEnableRowRenderEvents$,
+  unstableRowRender$,
+  type UnstableRowRenderEvent,
+  type UnstableRowRenderSection,
+} from './debug/row-render-events'
 export { VirtuosoDataTableTestingContext, type VirtuosoDataTableTestingContextValue } from './VirtuosoDataTableTestingContext'
