@@ -172,8 +172,15 @@ e.link(
       // The viewport is in "virtual" space where sticky columns don't exist.
       // The scrollable area width is viewport minus sticky widths.
       const virtualViewportWidth = viewportWidth - leftWidth - rightWidth
-      const viewportLeft = scrollLeft
-      const viewportRight = scrollLeft + virtualViewportWidth
+      let viewportLeft = scrollLeft
+      let viewportRight = scrollLeft + virtualViewportWidth
+
+      if (overscanCount > 0) {
+        const estimatedColumnWidth = sizeState.lastSize
+        const overscanWidth = overscanCount * estimatedColumnWidth
+        viewportLeft = Math.max(0, viewportLeft - overscanWidth)
+        viewportRight += overscanWidth
+      }
 
       const {
         items: initialItems,
@@ -189,29 +196,7 @@ e.link(
         undefined,
         excludeIndicesInfo
       )
-      let items = initialItems
-
-      if (overscanCount > 0 && items.length > 0) {
-        const firstVisibleIndex = items[0]!.index
-        const lastVisibleIndex = items.at(-1)!.index
-        const overscanStart = Math.max(0, firstVisibleIndex - overscanCount)
-        const overscanEnd = Math.min(count - 1, lastVisibleIndex + overscanCount)
-
-        if (overscanStart < firstVisibleIndex || overscanEnd > lastVisibleIndex) {
-          const nonStickyTotalWidth = totalWidth - totalStickyWidth
-          const result = itemsWithinOffsets(
-            sizeState.offsetTree,
-            0,
-            nonStickyTotalWidth,
-            count,
-            totalWidth,
-            columnKeys,
-            undefined,
-            excludeIndicesInfo
-          )
-          items = result.items.filter((i) => i.index >= overscanStart && i.index <= overscanEnd)
-        }
-      }
+      const items = initialItems
 
       return {
         columns: items.map((item) => ({

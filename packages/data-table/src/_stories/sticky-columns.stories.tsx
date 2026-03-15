@@ -220,6 +220,27 @@ export function WideContainerFewColumns() {
   )
 }
 
+export function ColumnOverscan() {
+  return (
+    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }} columnOverscanCount={2}>
+      <Column field="id" sticky="left">
+        <ColumnHeader>{() => <div style={STICKY_HEADER_STYLE}>ID</div>}</ColumnHeader>
+        <Cell>{({ cellValue }) => String(cellValue)}</Cell>
+      </Column>
+      {Array.from({ length: COLUMN_COUNT }, (_, i) => (
+        <Column key={`col${i}`} field={`col${i}`}>
+          <ColumnHeader>{() => <div style={HEADER_STYLE}>Column {i + 1}</div>}</ColumnHeader>
+          <Cell>{({ cellValue }) => String(cellValue)}</Cell>
+        </Column>
+      ))}
+      <Column field="actions" sticky="right">
+        <ColumnHeader>{() => <div style={STICKY_HEADER_STYLE}>Actions</div>}</ColumnHeader>
+        <Cell>{({ cellValue }) => String(cellValue)}</Cell>
+      </Column>
+    </VirtuosoDataTable>
+  )
+}
+
 export function InteractiveStickyColumn() {
   return (
     <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
