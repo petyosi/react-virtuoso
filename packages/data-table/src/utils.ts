@@ -43,7 +43,11 @@ export function delayWithAnimationFrame<I>(frames = 1) {
       function frame() {
         if (remainingFrames > 0) {
           remainingFrames--
-          requestAnimationFrame(frame)
+          if (typeof requestAnimationFrame === 'undefined') {
+            setTimeout(frame, 16)
+          } else {
+            requestAnimationFrame(frame)
+          }
         } else {
           e.pub(sink, value)
         }
