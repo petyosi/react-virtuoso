@@ -1,11 +1,10 @@
 import { useLayoutEffect } from 'react'
 import type { ReactNode } from 'react'
 
-// oxlint-disable require-hook
-import { Cell, Stream, e } from '@virtuoso.dev/reactive-engine-core'
 import { usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
 import { useColumnGroupId } from './ColumnGroup'
+import { createRegistryCell } from './registry'
 
 import type { ColumnGroupInfo } from './ColumnGroup'
 
@@ -19,33 +18,13 @@ export interface ColumnGroupHeaderRenderParams {
 export type ColumnGroupHeaderRenderFunction = (params: ColumnGroupHeaderRenderParams) => ReactNode
 export type ColumnGroupHeaderCustomComponent = React.ComponentType<ColumnGroupHeaderRenderParams>
 
-export const columnGroupHeaders$ = Cell<
-  Map<
-    string,
-    {
-      type: 'function' | 'component'
-      renderer: ColumnGroupHeaderRenderFunction | ColumnGroupHeaderCustomComponent
-    }
-  >
->(new Map())
+interface ColumnGroupHeaderEntry {
+  type: 'function' | 'component'
+  renderer: ColumnGroupHeaderRenderFunction | ColumnGroupHeaderCustomComponent
+}
 
-type ColumnGroupHeaderRegisterPayload =
-  | {
-      id: string
-      type: 'add'
-      renderer: ColumnGroupHeaderRenderFunction | ColumnGroupHeaderCustomComponent
-      rendererType: 'function' | 'component'
-    }
-  | { type: 'remove'; id: string }
-
-const columnGroupHeaderRegister$ = Stream<ColumnGroupHeaderRegisterPayload>()
-
-e.changeWith(columnGroupHeaders$, columnGroupHeaderRegister$, (headers, payload) => {
-  if (payload.type === 'add') {
-    return new Map([...headers, [payload.id, { type: payload.rendererType, renderer: payload.renderer }]])
-  }
-  return new Map([...headers].filter(([id]) => id !== payload.id))
-})
+const { cell$: columnGroupHeaders$, register$: columnGroupHeaderRegister$ } = createRegistryCell<ColumnGroupHeaderEntry>()
+export { columnGroupHeaders$ }
 
 export namespace ColumnGroupHeader {
   export type Props =
@@ -65,7 +44,7 @@ export function ColumnGroupHeader(props: ColumnGroupHeader.Props) {
   const rendererType = 'children' in props ? 'function' : 'component'
 
   useLayoutEffect(() => {
-    columnGroupHeaderRegister({ type: 'add', id: groupId, renderer, rendererType })
+    columnGroupHeaderRegister({ type: 'add', id: groupId, value: { type: rendererType, renderer } })
     return () => {
       columnGroupHeaderRegister({ type: 'remove', id: groupId })
     }

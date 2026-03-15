@@ -7,6 +7,7 @@ import invariant from 'tiny-invariant'
 
 import { columnCount$, columnRanges$ } from './column-sizes'
 import { ColumnGroupIdContext } from './ColumnGroup'
+import { createRegistryCell } from './registry'
 
 import type { SizeRange } from '../interfaces'
 
@@ -18,27 +19,8 @@ export interface ColumnInfo {
   groupId?: string
 }
 
-export const columns$ = Cell<Map<string, ColumnInfo>>(new Map())
-
-type ColumnRegisterPayload =
-  | {
-      id: string
-      type: 'add'
-      info: ColumnInfo
-    }
-  | {
-      id: string
-      type: 'remove'
-    }
-
-const columnRegister$ = Stream<ColumnRegisterPayload>()
-
-e.changeWith(columns$, columnRegister$, (columns, payload) => {
-  if (payload.type === 'add') {
-    return new Map([...columns, [payload.id, payload.info]])
-  }
-  return new Map([...columns].filter(([id]) => id !== payload.id))
-})
+const { cell$: columns$, register$: columnRegister$ } = createRegistryCell<ColumnInfo>()
+export { columns$ }
 
 export interface SetColumnStickyPayload {
   key: string
@@ -60,7 +42,10 @@ e.changeWith(columns$, setColumnSticky$, (columns, { key, sticky }) => {
     updated.sticky = sticky
   }
 
-  return new Map([...columns, [key, updated]])
+  const next = new Map(columns)
+  // oxlint-disable-next-line no-immediate-mutation
+  next.set(key, updated)
+  return next
 })
 
 export interface ReorderColumnsPayload {
@@ -124,7 +109,7 @@ export function Column({ children, field, sticky }: Column.Props) {
     if (groupId) {
       info.groupId = groupId
     }
-    columnRegister({ type: 'add', id: colId, info })
+    columnRegister({ type: 'add', id: colId, value: info })
     return () => {
       columnRegister({ type: 'remove', id: colId })
     }
@@ -137,13 +122,12 @@ export const columnEntries$ = Stream<ResizeObserverEntry[]>()
 export const columnWidths$ = Cell<Map<string, number>>(new Map())
 
 e.changeWith(columnWidths$, columnEntries$, (widths, entries) => {
-  return new Map([
-    ...widths,
-    ...entries.map((entry) => {
-      invariant(entry.target instanceof HTMLDivElement, 'Expected HTMLDivElement')
-      return [entry.target.dataset.columnKey ?? '', entry.borderBoxSize[0]!.inlineSize] as [string, number]
-    }),
-  ])
+  const next = new Map(widths)
+  for (const entry of entries) {
+    invariant(entry.target instanceof HTMLDivElement, 'Expected HTMLDivElement')
+    next.set(entry.target.dataset.columnKey ?? '', entry.borderBoxSize[0]!.inlineSize)
+  }
+  return next
 })
 
 e.link(

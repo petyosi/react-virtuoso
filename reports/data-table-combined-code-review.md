@@ -29,10 +29,9 @@
 
 ### 2.2 Registration/deregistration boilerplate repeated 6 times
 
-- **File(s):** `Cell.tsx:25-42`, `Column.tsx:22-41`, `ColumnHeader.tsx:24-50`, `ColumnGroupHeader.tsx:22-48`, `ColumnGroup.tsx:16-36`, `GroupHeaderCell.tsx:18-39`
+- **File(s):** `Cell.tsx`, `Column.tsx`, `ColumnHeader.tsx`, `ColumnGroupHeader.tsx`, `ColumnGroup.tsx`
 - **Severity:** Minor
-- **Description:** Each module follows an identical pattern: a `Cell<Map>` for the collection, a `Stream` for register/deregister payloads, and a `changeWith` handler that spreads the Map to add/remove entries. The add path (`new Map([...existing, [id, value]])`) and remove path (`new Map([...existing].filter(...))`) are identical across all six.
-- **Suggested fix:** Extract a generic `createRegistryCell<V>()` factory that returns `{ cell$, register$, useRegister }`. Each module calls the factory with its value type.
+- **Resolved:** Extracted `createRegistryCell<V>()` factory in `columns/registry.ts` that returns `{ cell$, register$ }`. All five Map-based registries now use the factory. `GroupHeaderCell.tsx` remains unchanged (singleton, not a Map registry). The factory also uses clone-and-mutate (`Map.set()`/`Map.delete()`) instead of spread-rebuild, fixing 4.3 in the same change.
 
 ### 2.3 `totalHeight$` and `totalWidth$` are near-identical
 
@@ -78,17 +77,15 @@
 
 ### 4.2 Column overscan re-queries the entire tree
 
-- **File(s):** `column-state.ts:194-213`
+- **File(s):** `column-state.ts:178-183`
 - **Severity:** Moderate
-- **Description:** When `columnOverscanCount > 0`, the code calls `itemsWithinOffsets` a second time with `(0, nonStickyTotalWidth)` to get ALL non-sticky items, then filters by index range. For tables with hundreds of columns, this degenerates into an O(total columns) pass per horizontal scroll update.
-- **Suggested fix:** Expand the viewport range by `overscanCount * estimatedColumnWidth` before the first `itemsWithinOffsets` call, eliminating the second query. Alternatively, extend `itemsWithinOffsets()` to accept an index overscan window directly.
+- **Resolved:** Overscan is now handled by expanding `viewportLeft`/`viewportRight` by `overscanCount * estimatedColumnWidth` before the single `itemsWithinOffsets` call, eliminating the second full-width query entirely.
 
 ### 4.3 Map reconstruction on every registration event
 
-- **File(s):** `Cell.tsx:37-42`, `Column.tsx:36-41`, `ColumnHeader.tsx:45-50`, `ColumnGroupHeader.tsx:43-48`, `ColumnGroup.tsx:31-36`
+- **File(s):** `columns/registry.ts`, `Column.tsx`
 - **Severity:** Moderate
-- **Description:** On registration, `new Map([...existing, [id, value]])` spreads the entire map. On deregistration, `new Map([...existing].filter(...))` spreads to array, filters, and rebuilds. With 30 columns, mount produces 30 successive Map copies (sizes 1, 2, 3, ... 30), allocating ~465 intermediate entries total.
-- **Suggested fix:** Use `Map.prototype.set()` / `Map.prototype.delete()` and return a new `Map(existing)` clone with the mutation. Or batch registrations with `useLayoutEffect` ordering.
+- **Resolved:** All five Map registries now use `createRegistryCell()` (see 2.2), which clones via `new Map(current)` then mutates with `.set()`/`.delete()` -- eliminating the spread-to-array-filter-rebuild cycle. The `setColumnSticky$` and `columnWidths$` handlers in `Column.tsx` were also converted from spread patterns to clone-and-mutate.
 
 ### 4.4 `calculateCumulativeExcludedSize` is O(excludedIndices) per visible item
 
@@ -168,8 +165,7 @@
 
 - **File(s):** `scroll-to-row.ts:27`, `scroll-to-row.ts:78`, `scroll-to-row.ts:155`
 - **Severity:** Moderate
-- **Description:** Out-of-bounds `scrollToRow` input is not clamped or warned on. Invalid indices throw inside `rowHeight()`, then get swallowed and filtered out, so the public method becomes a silent no-op.
-- **Suggested fix:** Clamp indices into `[0, totalCount - 1]` or emit a dev warning/error when the caller targets an invalid row.
+- **Resolved:** Out-of-bounds `scrollToRow` indices are now clamped to `[0, totalCount - 1]`. Test added in `scroll-to-row.test.ts`.
 
 ### 6.5 `binaryArraySearch` throws on edge cases
 
@@ -307,8 +303,7 @@
 
 - **File(s):** `remote-source.ts:252`, `remote-source.ts:291`, `remote-source.ts:453`
 - **Severity:** Moderate
-- **Description:** All remote fetch failures are swallowed. A broken data source leaves the table empty or half-populated with no error signal to the consumer.
-- **Suggested fix:** Distinguish aborts from real failures and propagate non-abort failures through the model as `error` or `event` messages, with a dev-time warning path in the table.
+- **Resolved:** Three catch sites now distinguish abort from real error via `controller.signal.aborted`. Real errors propagate through two channels: (1) `onError` callback on the `remoteSource` config for consumer-facing UI (toasts, error state), and (2) `AsyncErrorEmitter` through the model protocol so `model.subscribe()` consumers receive `type: 'error'` messages. The async error emitter in `model-core.ts` mirrors the async result emitter's cleanup: it clears `inFlightActions` (critical for `deduplicate`/`queue` — without this a failed `loadMore` would permanently block retries), drains queued actions, and reverts to `lastKnownGood` state when available. The append mode's missing catch block (which caused unhandled promise rejections) now has a proper catch. Tests added in `remote-source-error-propagation.test.ts` covering offset errors, append errors, retry after failure, lastKnownGood revert, `onError` callback, and abort-is-not-error.
 
 ### 10.2 Column key mismatch renders empty string without warning
 
@@ -337,8 +332,8 @@
 | Severity | Count | Key findings |
 |----------|-------|--------------|
 | **Critical** | 7 | ~~Async dedup only protects sync path (1.1)~~, ~~stale async overwrites (1.2)~~, ~~`Math.min` single-arg bugs (6.1)~~, ~~public API leaks reactive internals (7.1)~~ (intentional remote-controlled state pattern), `export *` audit (7.2-7.3 downgraded to Moderate), ~~`bridgeModelToEngine` leak (8.1)~~, ~~ScrollbarOverlay listener leak (8.2)~~ |
-| **Moderate** | 16 | `getEffectiveSticky` duplication (2.1), `rowsState$` complexity (3.1), residual horizontal scroll cost in `ScrollableCells` (4.1), column overscan (4.2), Map reconstruction (4.3), ~~cumulative excluded size O(n*k) (4.4)~~, ~~header re-renders (5.1)~~, props ignored after mount (6.3), scrollToRow silent no-op (6.4), ~~binary search throws (6.5)~~, ~~division by zero (6.6)~~, size tree reset (6.7), ~~abort blocks loadMore (6.8)~~, `export *` audit (7.2-7.3), ~~capture flag mismatch (8.3)~~, ~~CustomScrollParent rebind (8.4)~~, fetch errors swallowed (10.1), column key mismatch (10.2) |
-| **Minor** | 8 | Registration boilerplate (2.2), totalHeight/totalWidth (2.3), measureItems duplication (2.4), AATree spread (4.5), shift() O(n^2) (4.6), ~~buildHeaderTree 3x (4.7)~~, skip operator (6.9), currentlyRenderedRows$ type (5.2), zero-height (10.3), rAF guard (9.2) |
+| **Moderate** | 16 | `getEffectiveSticky` duplication (2.1), `rowsState$` complexity (3.1), residual horizontal scroll cost in `ScrollableCells` (4.1), ~~column overscan (4.2)~~, ~~Map reconstruction (4.3)~~, ~~cumulative excluded size O(n*k) (4.4)~~, ~~header re-renders (5.1)~~, props ignored after mount (6.3), ~~scrollToRow silent no-op (6.4)~~, ~~binary search throws (6.5)~~, ~~division by zero (6.6)~~, size tree reset (6.7), ~~abort blocks loadMore (6.8)~~, `export *` audit (7.2-7.3), ~~capture flag mismatch (8.3)~~, ~~CustomScrollParent rebind (8.4)~~, ~~fetch errors swallowed (10.1)~~, column key mismatch (10.2) |
+| **Minor** | 8 | ~~Registration boilerplate (2.2)~~, totalHeight/totalWidth (2.3), measureItems duplication (2.4), AATree spread (4.5), shift() O(n^2) (4.6), ~~buildHeaderTree 3x (4.7)~~, skip operator (6.9), currentlyRenderedRows$ type (5.2), zero-height (10.3), rAF guard (9.2) |
 
 ## Recommended Fix Priority
 

@@ -1,8 +1,8 @@
 import { createContext, useContext, useId, useLayoutEffect } from 'react'
 
-// oxlint-disable require-hook
-import { Cell, Stream, e } from '@virtuoso.dev/reactive-engine-core'
 import { usePublisher } from '@virtuoso.dev/reactive-engine-react'
+
+import { createRegistryCell } from './registry'
 
 export interface ColumnGroupInfo {
   id: string
@@ -13,27 +13,8 @@ export interface ColumnGroupInfo {
   childGroupIds: string[]
 }
 
-export const columnGroups$ = Cell<Map<string, ColumnGroupInfo>>(new Map())
-
-type ColumnGroupRegisterPayload =
-  | {
-      id: string
-      type: 'add'
-      info: ColumnGroupInfo
-    }
-  | {
-      id: string
-      type: 'remove'
-    }
-
-const columnGroupRegister$ = Stream<ColumnGroupRegisterPayload>()
-
-e.changeWith(columnGroups$, columnGroupRegister$, (groups, payload) => {
-  if (payload.type === 'add') {
-    return new Map([...groups, [payload.id, payload.info]])
-  }
-  return new Map([...groups].filter(([id]) => id !== payload.id))
-})
+const { cell$: columnGroups$, register$: columnGroupRegister$ } = createRegistryCell<ColumnGroupInfo>()
+export { columnGroups$ }
 
 export const ColumnGroupIdContext = createContext<string>('')
 const ColumnGroupDepthContext = createContext<number>(0)
@@ -71,7 +52,7 @@ export function ColumnGroup({ children, sticky }: ColumnGroup.Props) {
     if (effectiveSticky) {
       info.sticky = effectiveSticky
     }
-    register({ type: 'add', id: groupId, info })
+    register({ type: 'add', id: groupId, value: info })
     return () => {
       register({ type: 'remove', id: groupId })
     }
