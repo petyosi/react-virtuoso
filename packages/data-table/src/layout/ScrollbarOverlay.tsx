@@ -110,11 +110,14 @@ export function ScrollbarOverlay() {
     let muteOverlayScrollEvents = false
     let muteContentScrollEvents = false
 
-    horizontalScrollbarRef.current?.addEventListener('scroll', () => {
+    const hEl = horizontalScrollbarRef.current
+    const vEl = verticalScrollbarRef.current
+
+    const hHandler = () => {
       if (!muteOverlayScrollEvents) {
         muteContentScrollEvents = true
         if (scrollableElement) {
-          scrollableElement.scrollLeft = horizontalScrollbarRef.current!.scrollLeft
+          scrollableElement.scrollLeft = hEl!.scrollLeft
         }
         reschedule(
           muteContentScrollEventsTimeoutRef,
@@ -124,13 +127,13 @@ export function ScrollbarOverlay() {
           100
         )
       }
-    })
+    }
 
-    verticalScrollbarRef.current?.addEventListener('scroll', () => {
+    const vHandler = () => {
       if (!muteOverlayScrollEvents) {
         muteContentScrollEvents = true
         if (scrollableElement) {
-          scrollableElement.scrollTop = verticalScrollbarRef.current!.scrollTop
+          scrollableElement.scrollTop = vEl!.scrollTop
         }
         reschedule(
           muteContentScrollEventsTimeoutRef,
@@ -140,16 +143,16 @@ export function ScrollbarOverlay() {
           100
         )
       }
-    })
+    }
 
-    scrollableElement?.addEventListener('scroll', () => {
+    const contentHandler = () => {
       if (!muteContentScrollEvents) {
         muteOverlayScrollEvents = true
-        if (horizontalScrollbarRef.current) {
-          horizontalScrollbarRef.current.scrollLeft = scrollableElement?.scrollLeft
+        if (hEl) {
+          hEl.scrollLeft = scrollableElement!.scrollLeft
         }
-        if (verticalScrollbarRef.current) {
-          verticalScrollbarRef.current.scrollTop = scrollableElement?.scrollTop
+        if (vEl) {
+          vEl.scrollTop = scrollableElement!.scrollTop
         }
 
         reschedule(
@@ -160,7 +163,25 @@ export function ScrollbarOverlay() {
           100
         )
       }
-    })
+    }
+
+    hEl?.addEventListener('scroll', hHandler)
+    vEl?.addEventListener('scroll', vHandler)
+    scrollableElement?.addEventListener('scroll', contentHandler)
+
+    return () => {
+      hEl?.removeEventListener('scroll', hHandler)
+      vEl?.removeEventListener('scroll', vHandler)
+      scrollableElement?.removeEventListener('scroll', contentHandler)
+      if (muteContentScrollEventsTimeoutRef.current !== null) {
+        clearTimeout(muteContentScrollEventsTimeoutRef.current)
+        muteContentScrollEventsTimeoutRef.current = null
+      }
+      if (muteOverlayScrollEventsTimeoutRef.current !== null) {
+        clearTimeout(muteOverlayScrollEventsTimeoutRef.current)
+        muteOverlayScrollEventsTimeoutRef.current = null
+      }
+    }
   }, [scrollableElement, setScrollbarScrollerWidth])
 
   const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
