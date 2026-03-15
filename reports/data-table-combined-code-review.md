@@ -56,8 +56,7 @@
 
 - **File(s):** `row-state.ts:72-236`
 - **Severity:** Moderate
-- **Description:** The `e.combine` feeds 17 reactive cells into a filter+scan pipeline. Three of the 17 inputs are only used in the filter (lines 93-98) and are destructured as `_muteRowsChange`, `_recalcInProgress`, `_mobileSafariIsReadjusting`. Inside the scan callback, `e.getValue(viewportHeight$)`, `e.getValue(headerHeight$)`, `e.getValue(scrollTop$)`, `e.getValue(scrollToPending$)`, `e.getValue(scrollDirection$)`, `e.getValue(lastJumpDueToRowResize$)`, and `e.getValue(increaseViewportBy$)` are called directly (lines 143-165), bypassing the reactive dependency graph. This means those values are read synchronously and may not trigger recomputation when they change.
-- **Suggested fix:** Either include all `getValue` dependencies in the `combine` (makes the dependency graph correct), or extract the filter conditions into a separate guard cell that produces a "compute-allowed" signal, reducing the combine arity.
+- **Resolved:** `increaseViewportBy$` moved into `e.combine` (now a proper reactive dependency). The remaining `getValue` calls (`viewportHeight$`, `headerHeight$`, `scrollTop$`, `scrollToPending$`, `scrollDirection$`, `lastJumpDueToRowResize$`) replaced with `e.withLatestFrom`, making the data flow explicit in the pipeline without adding them as triggering dependencies. These values are intentionally snapshot-read (not triggering) because they change in lockstep with `listScrollTop$` and other combine inputs that already drive recomputation.
 
 ### 3.2 Verification update: previous `Row` subscription blast radius appears fixed on the current branch
 
@@ -116,8 +115,7 @@
 
 - **File(s):** `VirtualizedTableContent.tsx:234, 251, 268`
 - **Severity:** Minor
-- **Description:** The sticky header section calls `buildHeaderTree` three times (left-sticky, scrollable, right-sticky), each iterating over all columns. These calls are inside the render body without memoization.
-- **Suggested fix:** Compute all three trees in a single `useMemo` that depends on `columns` and `columnGroups`.
+- **Resolved:** Header rendering extracted into `StickyHeaderContent` component with its own reactive subscriptions. All three header trees (left-sticky, scrollable, right-sticky) are now computed in a single `useMemo` keyed on `[columns, columnGroups]`. The component only re-renders when column-related state changes, not on scroll. See also 5.1.
 
 ---
 
@@ -127,8 +125,7 @@
 
 - **File(s):** `VirtualizedTableContent.tsx:80`, `VirtualizedTableContent.tsx:92-104`, `VirtualizedTableContent.tsx:234`, `VirtualizedTableContent.tsx:251`, `VirtualizedTableContent.tsx:268`
 - **Severity:** Moderate
-- **Description:** `VirtualizedTableContent` subscribes to `rowsState$` and also rebuilds the header tree inline three times. Since the sticky header, scrollable header, and footer JSX are all in the same component, any `rowsState$` change (triggered by every scroll event) re-renders the entire component including all header rendering logic. Vertical scrolling therefore re-renders header structure and header cells even though they do not depend on row data. The `buildHeaderTree` calls (finding 4.7) are in the render body.
-- **Suggested fix:** Split header rendering into a separate memoized component that subscribes only to column-related state, not row state. Memoize the left/center/right header trees.
+- **Resolved:** Header rendering extracted into a `StickyHeaderContent` component that subscribes only to column-related cells (`columns$`, `columnHeaders$`, `stickyColumnsState$`, `columnsState$`, `columnGroups$`, `columnGroupHeaders$`, `columnWidths$`, `hasHorizontalScroll$`). `VirtualizedTableContent` no longer subscribes to these cells. Vertical scrolling no longer triggers header re-renders or `buildHeaderTree` calls. Tests added in `header-rerender-isolation.test.tsx`.
 
 ### 5.2 `currentlyRenderedRows$` type is wrong
 
@@ -158,8 +155,15 @@
 
 - **File(s):** `VirtuosoDataTable.tsx:111`, `VirtuosoDataTable.tsx:135`, `VirtuosoDataTable.tsx:147`
 - **Severity:** Moderate
-- **Description:** Several props are only published during `initFn` and never updated: `computeRowKey`, `EmptyPlaceholder`, `ScrollElement`, `useWindowScroll`, `increaseViewportBy`, and `columnOverscanCount`. Changing them after mount silently does nothing.
-- **Suggested fix:** Either republish all mutable props in `updateFn` and include them in `updateDeps`, or document them as immutable construction-time options.
+- **Description:** Several props are only published during `initFn` and never updated. Changing them after mount silently does nothing.
+- **Resolved props** (published in `updateFn`, added to `updateDeps`):
+  - `increaseViewportBy` — Also moved from `getValue` to `e.combine` in `rowsState$`. Test added in `props-update-after-mount.test.tsx`.
+  - `columnOverscanCount` — Was already in `e.combine` in `columnItemsState$`, only needed `updateFn`/`updateDeps`.
+  - `EmptyPlaceholder` — Render-only cell, no reactive pipeline involvement.
+  - `computeRowKey` — Render-only cell. Non-memoized functions will trigger redundant `updateFn` calls, but the cost is negligible since `VirtualizedTableContent` already re-renders on scroll.
+- **Intentionally init-only** (document as construction-time options):
+  - `ScrollElement` — Swapping the scroller element mid-lifecycle would require rebinding listeners and observers.
+  - `useWindowScroll` — Switching between container and window scroll is a structural change.
 
 ### 6.4 Out-of-bounds `scrollToRow` is a silent no-op
 
@@ -184,8 +188,7 @@
 
 - **File(s):** `sizes.ts:56`
 - **Severity:** Moderate
-- **Description:** `e.changeWith(sizeState$, data$, ...)` resets `sizeState` to `EMPTY_SIZE_STATE` on every `data$` change, preserving only `lastSize`. For remote sources that update data on viewport change (e.g., sparse data filling in), each update wipes all measured sizes, forcing complete re-measurement. This creates a measurement -> data -> reset -> re-measurement loop.
-- **Suggested fix:** Only reset when the data length changes or when a sentinel flag indicates a full replacement. For in-place updates (same length, different content), preserve the size tree.
+- **Deferred:** The analysis assumed same-length data updates always contain the same items, but a same-length array can contain completely different items with different heights. Preserving measured sizes for replaced items would be incorrect. The current reset-on-data-change behavior is the safe default. Revisit only if a concrete scenario is identified where item identity is preserved across data updates and size retention is both safe and beneficial.
 
 ### 6.8 Aborted fetch can permanently block `loadMore` in append mode
 
@@ -204,31 +207,25 @@
 
 ## 7. Public API Surface Lock-in
 
-### 7.1 Raw reactive streams exported as public API
+### 7.1 ~~Raw reactive streams exported as public API~~
 
 - **File(s):** `index.ts:8`
-- **Severity:** Critical
-- **Description:** `setColumnSticky$` and `reorderColumns$` are exported as raw reactive `Stream` instances. To use them, consumers must get the engine from context and call `engine.pub(setColumnSticky$, payload)`. This couples the public API to the internal reactive engine, which is an implementation detail. Renaming or restructuring the reactive graph becomes a breaking change.
-- **Suggested fix:** Expose these as methods on `VirtuosoDataTableMethods` (the ref API):
+- **Severity:** ~~Critical~~ Not applicable
+- **Resolved:** Exporting reactive node references (`setColumnSticky$`, `reorderColumns$`, etc.) is **intentional**. The reactive-engine-react package provides `useRemoteCellValue`, `useRemotePublisher`, and `engine.pub()` as the primary consumption pattern. Stream/Cell symbols are the public API contract by design -- consumers use them with `engine.pub(setColumnSticky$, payload)` or `useRemotePublisher(reorderColumns$, engineRef)`. This is the "remote-controlled state" pattern central to the reactive-engine architecture.
 
-  ```ts
-  setColumnSticky: (key: string, sticky: 'left' | 'right' | undefined) => void
-  reorderColumns: (sourceKey: string, targetKey: string, position: 'before' | 'after') => void
-  ```
-
-### 7.2 `export *` from `column-sizes.ts` leaks internal cells
+### 7.2 `export *` from `column-sizes.ts` -- audit which nodes are consumer-facing
 
 - **File(s):** `index.ts:16`
-- **Severity:** Critical
-- **Description:** Exports `columnCount$`, `columnSizeState$`, `columnRanges$`, `totalWidth$`. These are internal reactive cells. `columnSizeState$` in particular exposes `SizeState` (AA tree internals). Publishing to `columnRanges$` from consumer code would corrupt the size tree.
-- **Suggested fix:** Replace `export *` with explicit named exports of only the types consumers need (likely none from this module).
+- **Severity:** Moderate (downgraded from Critical)
+- **Description:** Exports `columnCount$`, `columnSizeState$`, `columnRanges$`, `totalWidth$`. Given the remote-controlled state pattern, some of these may be intentional consumer-facing nodes (e.g., `totalWidth$` for layout). However, `columnSizeState$` exposes `SizeState` (AA tree internals) and `columnRanges$` could corrupt the size tree if published to. The `export *` makes it unclear which are intended API vs. internal plumbing.
+- **Suggested fix:** Replace `export *` with explicit named exports. Export nodes that consumers should read/write, and keep internal-only nodes unexported. Use `export type` for types needed by consumers.
 
-### 7.3 `export *` from `column-state.ts` leaks internal cells and constants
+### 7.3 `export *` from `column-state.ts` -- audit which nodes are consumer-facing
 
 - **File(s):** `index.ts:17`
-- **Severity:** Critical
-- **Description:** Exports `stickyColumnsState$`, `columnsState$`, `columnItemsState$`, `columnOverscanCount$`, and `EMPTY_*` constants. Consumers should not be publishing to or subscribing to these directly. Types like `ColumnItem`, `ColumnItemsState`, `ColumnState`, `ColumnsStateMap` may be useful, but the cells themselves should be private.
-- **Suggested fix:** Export only the types: `export type { ColumnItem, ColumnItemsState, StickyColumnsState, ColumnState }`.
+- **Severity:** Moderate (downgraded from Critical)
+- **Description:** Exports `stickyColumnsState$`, `columnsState$`, `columnItemsState$`, `columnOverscanCount$`, and `EMPTY_*` constants. Some of these (e.g., `columnsState$`, `stickyColumnsState$`) may be useful for consumers building custom column UIs via the remote-controlled state pattern. Others (e.g., `EMPTY_*` constants, `columnOverscanCount$`) are internal implementation details.
+- **Suggested fix:** Replace `export *` with explicit named exports, distinguishing consumer-facing nodes from internal ones.
 
 ### 7.4 `export *` from `ColumnHeader.tsx` leaks internal components
 
@@ -278,8 +275,7 @@
 
 - **File(s):** `VirtuosoDataTable.tsx:81-88`
 - **Severity:** Moderate
-- **Description:** `addEventListener` uses `{ capture: true }` but `removeEventListener` is called without the capture option (defaults to `false`). These are considered different registrations by the DOM API, so the listener is never actually removed. Over multiple mount/unmount cycles, duplicate listeners accumulate.
-- **Suggested fix:** `window.removeEventListener('error', silenceResizeObserverError, { capture: true })`.
+- **Resolved:** `removeEventListener` now passes `{ capture: true }` to match `addEventListener`. Test added in `resize-observer-error-listener-cleanup.test.tsx` verifying that the capture flags match across mount/unmount.
 
 ### 8.4 `CustomScrollParentWrapper` doesn't rebind on prop change
 
@@ -342,18 +338,19 @@
 
 | Severity | Count | Key findings |
 |----------|-------|--------------|
-| **Critical** | 7 | ~~Async dedup only protects sync path (1.1)~~, ~~stale async overwrites (1.2)~~, ~~`Math.min` single-arg bugs (6.1)~~, public API leaks reactive internals (7.1-7.3), ~~`bridgeModelToEngine` leak (8.1)~~, ~~ScrollbarOverlay listener leak (8.2)~~ |
-| **Moderate** | 14 | `getEffectiveSticky` duplication (2.1), `rowsState$` complexity (3.1), residual horizontal scroll cost in `ScrollableCells` (4.1), column overscan (4.2), Map reconstruction (4.3), cumulative excluded size O(n*k) (4.4), header re-renders (5.1), props ignored after mount (6.3), scrollToRow silent no-op (6.4), ~~binary search throws (6.5)~~, ~~division by zero (6.6)~~, size tree reset (6.7), ~~abort blocks loadMore (6.8)~~, capture flag mismatch (8.3), CustomScrollParent rebind (8.4), fetch errors swallowed (10.1), column key mismatch (10.2) |
-| **Minor** | 8 | Registration boilerplate (2.2), totalHeight/totalWidth (2.3), measureItems duplication (2.4), AATree spread (4.5), shift() O(n^2) (4.6), buildHeaderTree 3x (4.7), skip operator (6.9), currentlyRenderedRows$ type (5.2), zero-height (10.3), rAF guard (9.2) |
+| **Critical** | 7 | ~~Async dedup only protects sync path (1.1)~~, ~~stale async overwrites (1.2)~~, ~~`Math.min` single-arg bugs (6.1)~~, ~~public API leaks reactive internals (7.1)~~ (intentional remote-controlled state pattern), `export *` audit (7.2-7.3 downgraded to Moderate), ~~`bridgeModelToEngine` leak (8.1)~~, ~~ScrollbarOverlay listener leak (8.2)~~ |
+| **Moderate** | 16 | `getEffectiveSticky` duplication (2.1), `rowsState$` complexity (3.1), residual horizontal scroll cost in `ScrollableCells` (4.1), column overscan (4.2), Map reconstruction (4.3), cumulative excluded size O(n*k) (4.4), ~~header re-renders (5.1)~~, props ignored after mount (6.3), scrollToRow silent no-op (6.4), ~~binary search throws (6.5)~~, ~~division by zero (6.6)~~, size tree reset (6.7), ~~abort blocks loadMore (6.8)~~, `export *` audit (7.2-7.3), ~~capture flag mismatch (8.3)~~, CustomScrollParent rebind (8.4), fetch errors swallowed (10.1), column key mismatch (10.2) |
+| **Minor** | 8 | Registration boilerplate (2.2), totalHeight/totalWidth (2.3), measureItems duplication (2.4), AATree spread (4.5), shift() O(n^2) (4.6), ~~buildHeaderTree 3x (4.7)~~, skip operator (6.9), currentlyRenderedRows$ type (5.2), zero-height (10.3), rAF guard (9.2) |
 
 ## Recommended Fix Priority
 
-1. **Public API surface** (7.1-7.6) -- lock down before first publish makes internals a semver contract
+1. **Public API surface audit** (7.2-7.6) -- replace `export *` with explicit named exports to distinguish consumer-facing nodes from internal plumbing (7.1 resolved: exporting reactive streams is intentional per the remote-controlled state pattern)
 2. ~~**`Math.min` single-arg bugs** (6.1) -- actual logic errors in scroll calculations producing wrong results now~~ **Resolved**: clamped `forceBottomSpace` to `viewportHeight` in both locations, added unit test
 3. ~~**`reorderColumns` data loss** (6.2) -- silently drops a column on invalid target key~~ **Resolved** in `70dc9cfa`
 4. ~~**Async concurrency** (1.1, 1.2) -- stale data races and ineffective dedup in remote source workflows~~ **Resolved**: `inFlightActions` now persists through async completion; `operationVersion` captured per-request for stale detection; cancelled requests tracked and dropped
 5. ~~**SSR crash** (9.1) -- `navigator` access at render time breaks server-side rendering~~ **Resolved**: `navigator` guarded, `EngineProvider` creates engine synchronously for SSR, `ResizeObserver` guarded
-6. **Memory leaks** (~~8.1~~, ~~8.2~~, 8.3) -- ~~bridge cleanup (8.1) **Resolved**: `bridgeModelToEngine` now self-registers cleanup via `engine.onDispose`~~; ~~ScrollbarOverlay (8.2) **Resolved**: handlers stored as named variables, cleanup returned from useEffect, pending timeouts cleared~~; capture flag mismatch remains (8.3)
-7. **Residual horizontal scroll cost** (4.1/5.1) -- no longer the original row-shell blast radius, but still worth profiling on wide tables
+6. ~~**Memory leaks** (8.1, 8.2, 8.3)~~ -- all resolved: ~~bridge cleanup (8.1)~~, ~~ScrollbarOverlay (8.2)~~, ~~capture flag mismatch (8.3) **Resolved**: `removeEventListener` now passes `{ capture: true }`, test added~~
+7. ~~**Header re-render isolation** (4.7/5.1)~~ **Resolved**: header rendering extracted into `StickyHeaderContent` component with own reactive subscriptions and memoized header trees; vertical scroll no longer triggers header re-renders
+8. **Residual horizontal scroll cost** (4.1) -- no longer the original row-shell blast radius, but still worth profiling on wide tables
 
 Updated after verification of the current branch: the original `Row` shell rerender finding no longer reproduces with the current `Row.tsx` structure. Verification included the unstable row render instrumentation and a passing focused browser test for horizontal-scroll instrumentation.

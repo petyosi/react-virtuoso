@@ -74,6 +74,92 @@ const SCROLLABLE_HEADER_CONTAINER_STYLE: CSSProperties = {
   alignItems: 'flex-end',
 }
 
+function StickyHeaderContent() {
+  const [columns, columnHeaders, stickyColumnsState, columnsState, columnGroups, columnGroupHeaders, columnWidths] = useCellValues(
+    columns$,
+    columnHeaders$,
+    stickyColumnsState$,
+    columnsState$,
+    columnGroups$,
+    columnGroupHeaders$,
+    columnWidths$
+  )
+  const hasHorizontalScroll = useCellValue(hasHorizontalScroll$)
+
+  const warnedEmptyGroups = React.useRef(new Set<string>())
+
+  React.useEffect(() => {
+    const nonEmptyGroups = groupsWithDescendantColumns(columns, columnGroups)
+
+    for (const [groupId] of columnGroups) {
+      if (nonEmptyGroups.has(groupId) || warnedEmptyGroups.current.has(groupId)) {
+        continue
+      }
+      console.warn(`ColumnGroup ${groupId} has no columns and will not be rendered`)
+      warnedEmptyGroups.current.add(groupId)
+    }
+  }, [columns, columnGroups])
+
+  const { leftTree, scrollableTree, rightTree } = useMemo(() => {
+    return {
+      leftTree: buildHeaderTree(columns, columnGroups, (_key, col) => getEffectiveSticky(col, columnGroups) === 'left'),
+      scrollableTree: buildHeaderTree(columns, columnGroups, (_key, col) => !getEffectiveSticky(col, columnGroups)),
+      rightTree: buildHeaderTree(columns, columnGroups, (_key, col) => getEffectiveSticky(col, columnGroups) === 'right'),
+    }
+  }, [columns, columnGroups])
+
+  return (
+    <>
+      {stickyColumnsState.leftColumns.length > 0 && (
+        <div style={LEFT_STICKY_CONTAINER_STYLE}>
+          {leftTree.map((node) => (
+            <HeaderNodeRenderer
+              key={node.type === 'column' ? node.key : node.groupId}
+              node={node}
+              columns={columns}
+              columnHeaders={columnHeaders}
+              columnGroupHeaders={columnGroupHeaders}
+              columnsState={columnsState}
+              columnWidths={columnWidths}
+              overlaidByScrollbar={false}
+            />
+          ))}
+        </div>
+      )}
+      <div style={SCROLLABLE_HEADER_CONTAINER_STYLE}>
+        {scrollableTree.map((node) => (
+          <HeaderNodeRenderer
+            key={node.type === 'column' ? node.key : node.groupId}
+            node={node}
+            columns={columns}
+            columnHeaders={columnHeaders}
+            columnGroupHeaders={columnGroupHeaders}
+            columnsState={columnsState}
+            columnWidths={columnWidths}
+            overlaidByScrollbar={false}
+          />
+        ))}
+      </div>
+      {stickyColumnsState.rightColumns.length > 0 && (
+        <div style={RIGHT_STICKY_CONTAINER_STYLE}>
+          {rightTree.map((node, idx) => (
+            <HeaderNodeRenderer
+              key={node.type === 'column' ? node.key : node.groupId}
+              node={node}
+              columns={columns}
+              columnHeaders={columnHeaders}
+              columnGroupHeaders={columnGroupHeaders}
+              columnsState={columnsState}
+              columnWidths={columnWidths}
+              overlaidByScrollbar={hasHorizontalScroll && idx === rightTree.length - 1}
+            />
+          ))}
+        </div>
+      )}
+    </>
+  )
+}
+
 export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passedStyle, ...htmlProps }) => {
   const engine = useEngine()
 
@@ -103,18 +189,7 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
     rowsState$
   )
 
-  const [columns, columnHeaders, columnWidthsCssVars, stickyColumnsState, columnsState, columnGroups, columnGroupHeaders, columnWidths] =
-    useCellValues(
-      columns$,
-      columnHeaders$,
-      columnWidthsCssVars$,
-      stickyColumnsState$,
-      columnsState$,
-      columnGroups$,
-      columnGroupHeaders$,
-      columnWidths$
-    )
-  const warnedEmptyGroups = React.useRef(new Set<string>())
+  const columnWidthsCssVars = useCellValue(columnWidthsCssVars$)
 
   const deviation = useCellValue(deviation$)
   const transformDeviation = useCellValue(transformDeviation$)
@@ -128,7 +203,6 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
   const totalHeight = useCellValue(totalHeight$)
   const useWindowScroll = useCellValue(useWindowScroll$)
   const pendingScrollToInitialLocation = useCellValue(pendingScrollToInitialLocation$)
-  const hasHorizontalScroll = useCellValue(hasHorizontalScroll$)
 
   const tableBodyRef = React.useRef<HTMLElement | null>(null)
 
@@ -167,18 +241,6 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
       engine.pub(emptyRenderCycle$)
     }
   }, [rows, engine])
-
-  React.useEffect(() => {
-    const nonEmptyGroups = groupsWithDescendantColumns(columns, columnGroups)
-
-    for (const [groupId] of columnGroups) {
-      if (nonEmptyGroups.has(groupId) || warnedEmptyGroups.current.has(groupId)) {
-        continue
-      }
-      console.warn(`ColumnGroup ${groupId} has no columns and will not be rendered`)
-      warnedEmptyGroups.current.add(groupId)
-    }
-  }, [columns, columnGroups])
 
   const ScrollableRoot = customScrollParent ? CustomScrollParentWrapper : useWindowScroll ? WindowScrollElementWrapper : ScrollableElement
 
@@ -229,62 +291,7 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
       <ScrollableRoot {...htmlProps} tableBodyRef={tableBodyRef}>
         {(totalCount === 0 || pendingScrollToInitialLocation) && EmptyPlaceholder ? <EmptyPlaceholder context={context} /> : null}
         <StickyHeaderWrapper data-table-element-role={STICKY_HEADER_ROLE} ref={stickyHeaderRef} style={stickyHeaderWrapperStyle}>
-          {stickyColumnsState.leftColumns.length > 0 && (
-            <div style={LEFT_STICKY_CONTAINER_STYLE}>
-              {buildHeaderTree(columns, columnGroups, (_key, col) => {
-                return getEffectiveSticky(col, columnGroups) === 'left'
-              }).map((node) => (
-                <HeaderNodeRenderer
-                  key={node.type === 'column' ? node.key : node.groupId}
-                  node={node}
-                  columns={columns}
-                  columnHeaders={columnHeaders}
-                  columnGroupHeaders={columnGroupHeaders}
-                  columnsState={columnsState}
-                  columnWidths={columnWidths}
-                  overlaidByScrollbar={false}
-                />
-              ))}
-            </div>
-          )}
-          <div style={SCROLLABLE_HEADER_CONTAINER_STYLE}>
-            {buildHeaderTree(columns, columnGroups, (_key, col) => {
-              return !getEffectiveSticky(col, columnGroups)
-            }).map((node) => (
-              <HeaderNodeRenderer
-                key={node.type === 'column' ? node.key : node.groupId}
-                node={node}
-                columns={columns}
-                columnHeaders={columnHeaders}
-                columnGroupHeaders={columnGroupHeaders}
-                columnsState={columnsState}
-                columnWidths={columnWidths}
-                overlaidByScrollbar={false}
-              />
-            ))}
-          </div>
-          {stickyColumnsState.rightColumns.length > 0 &&
-            (() => {
-              const nodes = buildHeaderTree(columns, columnGroups, (_key, col) => {
-                return getEffectiveSticky(col, columnGroups) === 'right'
-              })
-              return (
-                <div style={RIGHT_STICKY_CONTAINER_STYLE}>
-                  {nodes.map((node, idx) => (
-                    <HeaderNodeRenderer
-                      key={node.type === 'column' ? node.key : node.groupId}
-                      node={node}
-                      columns={columns}
-                      columnHeaders={columnHeaders}
-                      columnGroupHeaders={columnGroupHeaders}
-                      columnsState={columnsState}
-                      columnWidths={columnWidths}
-                      overlaidByScrollbar={hasHorizontalScroll && idx === nodes.length - 1}
-                    />
-                  ))}
-                </div>
-              )
-            })()}
+          <StickyHeaderContent />
         </StickyHeaderWrapper>
         {Header && (
           <HeaderWrapper data-table-element-role={HEADER_ROLE} ref={headerRef} style={NO_OVERFLOW_ANCHOR_STYLE}>
