@@ -83,7 +83,7 @@ export const VirtuosoDataTable = React.forwardRef<VirtuosoDataTableMethods<unkno
         capture: true,
       })
       return () => {
-        window.removeEventListener('error', silenceResizeObserverError)
+        window.removeEventListener('error', silenceResizeObserverError, { capture: true })
       }
     }, [])
 
