@@ -163,8 +163,7 @@ export function ScrollbarOverlay() {
     })
   }, [scrollableElement, setScrollbarScrollerWidth])
 
-  // detect safari,
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+  const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
 
   if (isSafari) {
     return (

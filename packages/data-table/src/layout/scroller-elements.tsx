@@ -80,12 +80,12 @@ export const ScrollableElement: React.FC<ScrollableRootProps> = ({ children, tab
             [scrollTop$]: 0,
           })
         }
-        observer.observe(el, { box: 'border-box' })
+        observer?.observe(el, { box: 'border-box' })
       } else if (scrollerRef.current) {
         scrollerRef.current.removeEventListener('scroll', onScroll)
         scrollerRef.current.removeEventListener('wheel', onWheel)
         engine.pub(scrollerElement$, null)
-        observer.unobserve(scrollerRef.current)
+        observer?.unobserve(scrollerRef.current)
         scrollerRef.current = null
       }
     },
