@@ -266,8 +266,7 @@
 
 - **File(s):** `VirtuosoDataTable.tsx:93`, `VirtuosoDataTable.tsx:109`, `model-bridge.ts:7`
 - **Severity:** Critical
-- **Description:** `bridgeModelToEngine()` returns the cleanup that unsubscribes from the model and sends `disconnect`, but `VirtuosoDataTable` ignores it. Unmounting or recreating the engine leaves model subscriptions and per-view state behind.
-- **Suggested fix:** Register the returned cleanup with `engine.onDispose(...)`, and destroy the implicit local model when the component tears down.
+- **Resolved:** `bridgeModelToEngine` now calls `engine.onDispose(cleanup)` internally, so the bridge's cleanup (disconnect message + unsubscribe from model + unsubscribe from engine viewport) runs automatically when the engine disposes on unmount. The cleanup function is still returned for callers that need manual/early teardown; both paths are idempotent. Tests added in `bridge-cleanup.test.ts` verifying that `handleDisconnect` is called on engine disposal and that per-view pipeline state in `localSource` is properly cleared on reconnect.
 
 ### 8.2 `ScrollbarOverlay` event listeners are never cleaned up
 
@@ -360,7 +359,7 @@
 
 | Severity | Count | Key findings |
 |----------|-------|--------------|
-| **Critical** | 7 | ~~Async dedup only protects sync path (1.1)~~, ~~stale async overwrites (1.2)~~, ~~`Math.min` single-arg bugs (6.1)~~, public API leaks reactive internals (7.1-7.3), `bridgeModelToEngine` leak (8.1), ScrollbarOverlay listener leak (8.2) |
+| **Critical** | 7 | ~~Async dedup only protects sync path (1.1)~~, ~~stale async overwrites (1.2)~~, ~~`Math.min` single-arg bugs (6.1)~~, public API leaks reactive internals (7.1-7.3), ~~`bridgeModelToEngine` leak (8.1)~~, ScrollbarOverlay listener leak (8.2) |
 | **Moderate** | 14 | `getEffectiveSticky` duplication (2.1), `rowsState$` complexity (3.1), residual horizontal scroll cost in `ScrollableCells` (4.1), column overscan (4.2), Map reconstruction (4.3), cumulative excluded size O(n*k) (4.4), header re-renders (5.1), props ignored after mount (6.3), scrollToRow silent no-op (6.4), ~~binary search throws (6.5)~~, ~~division by zero (6.6)~~, size tree reset (6.7), ~~abort blocks loadMore (6.8)~~, capture flag mismatch (8.3), CustomScrollParent rebind (8.4), fetch errors swallowed (10.1), column key mismatch (10.2) |
 | **Minor** | 8 | Registration boilerplate (2.2), totalHeight/totalWidth (2.3), measureItems duplication (2.4), AATree spread (4.5), shift() O(n^2) (4.6), buildHeaderTree 3x (4.7), skip operator (6.9), currentlyRenderedRows$ type (5.2), zero-height (10.3), rAF guard (9.2) |
 
@@ -371,7 +370,7 @@
 3. ~~**`reorderColumns` data loss** (6.2) -- silently drops a column on invalid target key~~ **Resolved** in `70dc9cfa`
 4. ~~**Async concurrency** (1.1, 1.2) -- stale data races and ineffective dedup in remote source workflows~~ **Resolved**: `inFlightActions` now persists through async completion; `operationVersion` captured per-request for stale detection; cancelled requests tracked and dropped
 5. ~~**SSR crash** (9.1) -- `navigator` access at render time breaks server-side rendering~~ **Resolved**: `navigator` guarded, `EngineProvider` creates engine synchronously for SSR, `ResizeObserver` guarded
-6. **Memory leaks** (8.1, 8.2, 8.3) -- listener accumulation and cleanup omissions
+6. **Memory leaks** (~~8.1~~, 8.2, 8.3) -- ~~bridge cleanup (8.1) **Resolved**: `bridgeModelToEngine` now self-registers cleanup via `engine.onDispose`~~; listener accumulation and cleanup omissions remain (8.2, 8.3)
 7. **Residual horizontal scroll cost** (4.1/5.1) -- no longer the original row-shell blast radius, but still worth profiling on wide tables
 
 Updated after verification of the current branch: the original `Row` shell rerender finding no longer reproduces with the current `Row.tsx` structure. Verification included the unstable row render instrumentation and a passing focused browser test for horizontal-scroll instrumentation.

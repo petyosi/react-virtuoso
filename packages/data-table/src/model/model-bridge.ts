@@ -23,9 +23,12 @@ export function bridgeModelToEngine(model: DataModelHandle, engine: Engine, view
 
   model.send({ action: 'handshake', viewId })
 
-  return () => {
+  const cleanup = () => {
     model.send({ action: 'disconnect', viewId })
     unsub()
     unsubViewport()
   }
+
+  engine.onDispose(cleanup)
+  return cleanup
 }
