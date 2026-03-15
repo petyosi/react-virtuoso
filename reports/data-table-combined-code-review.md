@@ -272,24 +272,7 @@
 
 - **File(s):** `ScrollbarOverlay.tsx:102-163`
 - **Severity:** Critical
-- **Description:** The `useEffect` at line 102 adds scroll event listeners to `horizontalScrollbarRef.current`, `verticalScrollbarRef.current`, and `scrollableElement` using anonymous arrow functions. The effect has NO cleanup return. When `scrollableElement` changes (it's in the deps array), the effect re-runs and adds NEW listeners without removing old ones. Anonymous functions can't be matched for removal anyway.
-- **Suggested fix:** Store the listener functions in refs or named variables, and return a cleanup function:
-
-  ```ts
-  useEffect(() => {
-    const hHandler = () => { ... }
-    const vHandler = () => { ... }
-    const contentHandler = () => { ... }
-    horizontalScrollbarRef.current?.addEventListener('scroll', hHandler)
-    verticalScrollbarRef.current?.addEventListener('scroll', vHandler)
-    scrollableElement?.addEventListener('scroll', contentHandler)
-    return () => {
-      horizontalScrollbarRef.current?.removeEventListener('scroll', hHandler)
-      verticalScrollbarRef.current?.removeEventListener('scroll', vHandler)
-      scrollableElement?.removeEventListener('scroll', contentHandler)
-    }
-  }, [scrollableElement, setScrollbarScrollerWidth])
-  ```
+- **Resolved:** Handlers are now stored as named variables (`hHandler`, `vHandler`, `contentHandler`) and element references are captured at effect-run time. The `useEffect` returns a cleanup function that removes all three listeners using the same references and clears pending `reschedule` timeouts. Test added in `scrollbar-overlay-listener-cleanup.test.tsx` verifying that mount/unmount cycles do not accumulate scroll event listeners.
 
 ### 8.3 `silenceResizeObserverError` listener never removed (capture flag mismatch)
 
@@ -359,7 +342,7 @@
 
 | Severity | Count | Key findings |
 |----------|-------|--------------|
-| **Critical** | 7 | ~~Async dedup only protects sync path (1.1)~~, ~~stale async overwrites (1.2)~~, ~~`Math.min` single-arg bugs (6.1)~~, public API leaks reactive internals (7.1-7.3), ~~`bridgeModelToEngine` leak (8.1)~~, ScrollbarOverlay listener leak (8.2) |
+| **Critical** | 7 | ~~Async dedup only protects sync path (1.1)~~, ~~stale async overwrites (1.2)~~, ~~`Math.min` single-arg bugs (6.1)~~, public API leaks reactive internals (7.1-7.3), ~~`bridgeModelToEngine` leak (8.1)~~, ~~ScrollbarOverlay listener leak (8.2)~~ |
 | **Moderate** | 14 | `getEffectiveSticky` duplication (2.1), `rowsState$` complexity (3.1), residual horizontal scroll cost in `ScrollableCells` (4.1), column overscan (4.2), Map reconstruction (4.3), cumulative excluded size O(n*k) (4.4), header re-renders (5.1), props ignored after mount (6.3), scrollToRow silent no-op (6.4), ~~binary search throws (6.5)~~, ~~division by zero (6.6)~~, size tree reset (6.7), ~~abort blocks loadMore (6.8)~~, capture flag mismatch (8.3), CustomScrollParent rebind (8.4), fetch errors swallowed (10.1), column key mismatch (10.2) |
 | **Minor** | 8 | Registration boilerplate (2.2), totalHeight/totalWidth (2.3), measureItems duplication (2.4), AATree spread (4.5), shift() O(n^2) (4.6), buildHeaderTree 3x (4.7), skip operator (6.9), currentlyRenderedRows$ type (5.2), zero-height (10.3), rAF guard (9.2) |
 
@@ -370,7 +353,7 @@
 3. ~~**`reorderColumns` data loss** (6.2) -- silently drops a column on invalid target key~~ **Resolved** in `70dc9cfa`
 4. ~~**Async concurrency** (1.1, 1.2) -- stale data races and ineffective dedup in remote source workflows~~ **Resolved**: `inFlightActions` now persists through async completion; `operationVersion` captured per-request for stale detection; cancelled requests tracked and dropped
 5. ~~**SSR crash** (9.1) -- `navigator` access at render time breaks server-side rendering~~ **Resolved**: `navigator` guarded, `EngineProvider` creates engine synchronously for SSR, `ResizeObserver` guarded
-6. **Memory leaks** (~~8.1~~, 8.2, 8.3) -- ~~bridge cleanup (8.1) **Resolved**: `bridgeModelToEngine` now self-registers cleanup via `engine.onDispose`~~; listener accumulation and cleanup omissions remain (8.2, 8.3)
+6. **Memory leaks** (~~8.1~~, ~~8.2~~, 8.3) -- ~~bridge cleanup (8.1) **Resolved**: `bridgeModelToEngine` now self-registers cleanup via `engine.onDispose`~~; ~~ScrollbarOverlay (8.2) **Resolved**: handlers stored as named variables, cleanup returned from useEffect, pending timeouts cleared~~; capture flag mismatch remains (8.3)
 7. **Residual horizontal scroll cost** (4.1/5.1) -- no longer the original row-shell blast radius, but still worth profiling on wide tables
 
 Updated after verification of the current branch: the original `Row` shell rerender finding no longer reproduces with the current `Row.tsx` structure. Verification included the unstable row render instrumentation and a passing focused browser test for horizontal-scroll instrumentation.
