@@ -449,13 +449,11 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
       vd.data.push(...result.rows)
       vd.cursor = result.cursor
       vd.hasMore = result.hasMore
-      vd.fetching = false
-      vd.abortController = null
 
       asyncEmit?.(viewId, buildAppendResult(vd), requestId)
-    } catch {
-      vd.fetching = false
     } finally {
+      vd.fetching = false
+      vd.abortController = null
       if (requestId) {
         requestAbortMap.delete(requestId)
       }
