@@ -23,6 +23,10 @@ interface RowProps {
   stickyZIndex?: number
 }
 
+interface RowCellSectionProps {
+  row: Item<unknown>
+}
+
 const ROW_BASE_STYLE: React.CSSProperties = {
   overflowAnchor: 'none',
   position: 'absolute',
@@ -53,14 +57,157 @@ const SCROLLABLE_CELLS_CONTAINER_STYLE: React.CSSProperties = {
   display: 'flex',
 }
 
-const NonMemoRow: React.FC<RowProps> = ({ row, sticky, stickyTop, stickyZIndex }) => {
+// Sticky and scrollable cell sections are separate memoized components so that
+// horizontal scroll (which only changes columnItemsState$) re-renders ScrollableCells alone,
+// leaving sticky cells untouched.
+
+const StickyLeftCells = React.memo<RowCellSectionProps>(function StickyLeftCells({ row }) {
+  const stickyState = useCellValue(stickyColumnsState$)
   const columns = useCellValue(columns$)
   const cellRenderers = useCellValue(cellRenderers$)
-  const columnItemsState = useCellValue(columnItemsState$)
-  const stickyState = useCellValue(stickyColumnsState$)
   const columnsState = useCellValue(columnsState$)
-  const observer = useCellValue(resizeObserverSingleton$)
+
+  const leftStickyCellStyles = React.useMemo(
+    () =>
+      stickyState.leftColumns.map((col) => ({
+        key: col.key,
+        style: {
+          ...COLUMN_CELL_BASE_STYLE,
+          width: col.size,
+        },
+      })),
+    [stickyState.leftColumns]
+  )
+
+  if (leftStickyCellStyles.length === 0) {
+    return null
+  }
+
+  return (
+    <div style={LEFT_STICKY_CONTAINER_STYLE} data-sticky="left">
+      {leftStickyCellStyles.map((col) => {
+        const column = columns.get(col.key)
+        if (!column) {
+          return null
+        }
+        return (
+          <div key={col.key} style={col.style}>
+            <CellRenderer
+              columnKey={col.key}
+              column={column}
+              columnState={columnsState.get(col.key) ?? EMPTY_COLUMN_STATE}
+              row={row}
+              cellRenderFunction={cellRenderers.get(col.key)}
+              overlaidByScrollbar={false}
+            />
+          </div>
+        )
+      })}
+    </div>
+  )
+})
+
+const ScrollableCells = React.memo<RowCellSectionProps>(function ScrollableCells({ row }) {
+  const columnItemsState = useCellValue(columnItemsState$)
+  const columns = useCellValue(columns$)
+  const cellRenderers = useCellValue(cellRenderers$)
+  const columnsState = useCellValue(columnsState$)
+
+  const scrollableCellsContainerStyle = React.useMemo<React.CSSProperties>(
+    () => ({
+      ...SCROLLABLE_CELLS_CONTAINER_STYLE,
+      marginLeft: columnItemsState.paddingStart,
+      marginRight: columnItemsState.paddingEnd,
+    }),
+    [columnItemsState.paddingStart, columnItemsState.paddingEnd]
+  )
+
+  const columnCellStyles = React.useMemo(
+    () =>
+      columnItemsState.columns.map((col) => ({
+        key: col.key,
+        style: {
+          ...COLUMN_CELL_BASE_STYLE,
+          width: col.size,
+        },
+      })),
+    [columnItemsState.columns]
+  )
+
+  return (
+    <div style={scrollableCellsContainerStyle} data-scrollable="true">
+      {columnCellStyles.map((col) => {
+        const column = columns.get(col.key)
+        if (!column) {
+          return null
+        }
+        return (
+          <div key={col.key} style={col.style}>
+            <CellRenderer
+              columnKey={col.key}
+              column={column}
+              columnState={columnsState.get(col.key) ?? EMPTY_COLUMN_STATE}
+              row={row}
+              cellRenderFunction={cellRenderers.get(col.key)}
+              overlaidByScrollbar={false}
+            />
+          </div>
+        )
+      })}
+    </div>
+  )
+})
+
+const StickyRightCells = React.memo<RowCellSectionProps>(function StickyRightCells({ row }) {
+  const stickyState = useCellValue(stickyColumnsState$)
+  const columns = useCellValue(columns$)
+  const cellRenderers = useCellValue(cellRenderers$)
+  const columnsState = useCellValue(columnsState$)
   const hasHorizontalScroll = useCellValue(hasHorizontalScroll$)
+
+  const rightStickyCellStyles = React.useMemo(
+    () =>
+      stickyState.rightColumns.map((col) => ({
+        key: col.key,
+        style: {
+          ...COLUMN_CELL_BASE_STYLE,
+          width: col.size,
+        },
+      })),
+    [stickyState.rightColumns]
+  )
+
+  if (rightStickyCellStyles.length === 0) {
+    return null
+  }
+
+  return (
+    <div style={RIGHT_STICKY_CONTAINER_STYLE} data-sticky="right">
+      {rightStickyCellStyles.map((col, index) => {
+        const column = columns.get(col.key)
+        if (!column) {
+          return null
+        }
+        const isLast = index === rightStickyCellStyles.length - 1
+        return (
+          <div key={col.key} style={col.style}>
+            <CellRenderer
+              columnKey={col.key}
+              column={column}
+              columnState={columnsState.get(col.key) ?? EMPTY_COLUMN_STATE}
+              row={row}
+              cellRenderFunction={cellRenderers.get(col.key)}
+              overlaidByScrollbar={isLast && hasHorizontalScroll}
+            />
+          </div>
+        )
+      })}
+    </div>
+  )
+})
+
+const NonMemoRow: React.FC<RowProps> = ({ row, sticky, stickyTop, stickyZIndex }) => {
+  const observer = useCellValue(resizeObserverSingleton$)
   const groupIndexSet = useCellValue(groupIndexSet$)
   const groupLevelMap = useCellValue(groupLevelMap$)
   const groupHeaderRendererEntry = useCellValue(groupHeaderRenderer$)
@@ -130,51 +277,6 @@ const NonMemoRow: React.FC<RowProps> = ({ row, sticky, stickyTop, stickyZIndex }
     return (groupHeaderRendererEntry.renderer as GroupHeaderRenderFunction)({ row, level: groupLevel })
   }, [isGroupRow, groupHeaderRendererEntry, row, groupLevel])
 
-  const scrollableCellsContainerStyle = React.useMemo<React.CSSProperties>(
-    () => ({
-      ...SCROLLABLE_CELLS_CONTAINER_STYLE,
-      marginLeft: columnItemsState.paddingStart,
-      marginRight: columnItemsState.paddingEnd,
-    }),
-    [columnItemsState.paddingStart, columnItemsState.paddingEnd]
-  )
-
-  const columnCellStyles = React.useMemo(
-    () =>
-      columnItemsState.columns.map((col) => ({
-        key: col.key,
-        style: {
-          ...COLUMN_CELL_BASE_STYLE,
-          width: col.size,
-        },
-      })),
-    [columnItemsState.columns]
-  )
-
-  const leftStickyCellStyles = React.useMemo(
-    () =>
-      stickyState.leftColumns.map((col) => ({
-        key: col.key,
-        style: {
-          ...COLUMN_CELL_BASE_STYLE,
-          width: col.size,
-        },
-      })),
-    [stickyState.leftColumns]
-  )
-
-  const rightStickyCellStyles = React.useMemo(
-    () =>
-      stickyState.rightColumns.map((col) => ({
-        key: col.key,
-        style: {
-          ...COLUMN_CELL_BASE_STYLE,
-          width: col.size,
-        },
-      })),
-    [stickyState.rightColumns]
-  )
-
   if (isGroupRow) {
     return (
       <div
@@ -200,71 +302,9 @@ const NonMemoRow: React.FC<RowProps> = ({ row, sticky, stickyTop, stickyZIndex }
       data-known-size={row.size}
       style={rowStyle}
     >
-      {leftStickyCellStyles.length > 0 && (
-        <div style={LEFT_STICKY_CONTAINER_STYLE} data-sticky="left">
-          {leftStickyCellStyles.map((col) => {
-            const column = columns.get(col.key)
-            if (!column) {
-              return null
-            }
-            return (
-              <div key={col.key} style={col.style}>
-                <CellRenderer
-                  columnKey={col.key}
-                  column={column}
-                  columnState={columnsState.get(col.key) ?? EMPTY_COLUMN_STATE}
-                  row={row}
-                  cellRenderFunction={cellRenderers.get(col.key)}
-                  overlaidByScrollbar={false}
-                />
-              </div>
-            )
-          })}
-        </div>
-      )}
-      <div style={scrollableCellsContainerStyle} data-scrollable="true">
-        {columnCellStyles.map((col) => {
-          const column = columns.get(col.key)
-          if (!column) {
-            return null
-          }
-          return (
-            <div key={col.key} style={col.style}>
-              <CellRenderer
-                columnKey={col.key}
-                column={column}
-                columnState={columnsState.get(col.key) ?? EMPTY_COLUMN_STATE}
-                row={row}
-                cellRenderFunction={cellRenderers.get(col.key)}
-                overlaidByScrollbar={false}
-              />
-            </div>
-          )
-        })}
-      </div>
-      {rightStickyCellStyles.length > 0 && (
-        <div style={RIGHT_STICKY_CONTAINER_STYLE} data-sticky="right">
-          {rightStickyCellStyles.map((col, index) => {
-            const column = columns.get(col.key)
-            if (!column) {
-              return null
-            }
-            const isLast = index === rightStickyCellStyles.length - 1
-            return (
-              <div key={col.key} style={col.style}>
-                <CellRenderer
-                  columnKey={col.key}
-                  column={column}
-                  columnState={columnsState.get(col.key) ?? EMPTY_COLUMN_STATE}
-                  row={row}
-                  cellRenderFunction={cellRenderers.get(col.key)}
-                  overlaidByScrollbar={isLast && hasHorizontalScroll}
-                />
-              </div>
-            )
-          })}
-        </div>
-      )}
+      <StickyLeftCells row={row} />
+      <ScrollableCells row={row} />
+      <StickyRightCells row={row} />
     </div>
   )
 }
