@@ -85,18 +85,28 @@ export const EngineProvider: React.FC<EngineProviderProps> = ({
   updateDeps,
   updateFn,
 }) => {
-  const [engine, setEngine] = React.useState<Engine | null>(null)
+  const [engine, setEngine] = React.useState<Engine>(() => {
+    const instance = new Engine(initWith, id)
+    initFn?.(instance)
+    return instance
+  })
 
   useIsomorphicLayoutEffect(() => {
-    const instance = new Engine(initWith, id)
-    setEngine(instance)
-    initFn?.(instance)
+    let activeEngine = engine
+
+    if (activeEngine.isDisposed) {
+      activeEngine = new Engine(initWith, id)
+      initFn?.(activeEngine)
+      setEngine(activeEngine)
+    }
+
     if (id !== undefined) {
-      setRegistryEngine(id, instance)
+      setRegistryEngine(id, activeEngine)
     }
     if (engineRef) {
-      getRefInternal(engineRef).set(instance)
+      getRefInternal(engineRef).set(activeEngine)
     }
+
     return () => {
       if (id !== undefined) {
         setRegistryEngine(id, null)
@@ -104,15 +114,15 @@ export const EngineProvider: React.FC<EngineProviderProps> = ({
       if (engineRef) {
         getRefInternal(engineRef).set(null)
       }
-      instance.dispose()
+      activeEngine.dispose()
     }
   }, [initWith, id, engineRef])
 
   useIsomorphicLayoutEffect(() => {
-    if (engine) {
+    if (!engine.isDisposed) {
       updateFn?.(engine)
     }
   }, [engine, ...(updateDeps ?? [])])
 
-  return engine && <EngineContext.Provider value={engine}>{children}</EngineContext.Provider>
+  return engine.isDisposed ? null : <EngineContext.Provider value={engine}>{children}</EngineContext.Provider>
 }

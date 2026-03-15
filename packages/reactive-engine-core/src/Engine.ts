@@ -30,6 +30,7 @@ const emptyStreamValue = Symbol('empty stream')
  */
 export class Engine {
   public readonly id?: string | undefined
+  public isDisposed = false
   private readonly calledInits = new Set<NodeInit<unknown>>()
   private childEngines: Engine[] = []
   private readonly combinedCells: CombinedCellRecord[] = []
@@ -197,6 +198,7 @@ export class Engine {
   }
 
   dispose() {
+    this.isDisposed = true
     // Remove self from parent's childEngines array
     if (this.parentEngine) {
       const index = this.parentEngine.childEngines.indexOf(this)
