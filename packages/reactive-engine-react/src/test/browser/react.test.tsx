@@ -1,5 +1,7 @@
 /// <reference types="@vitest/browser/matchers" />
 
+import React from 'react'
+
 import { Cell, e, mapTo, Trigger } from '@virtuoso.dev/reactive-engine-core'
 import { describe, expect, it } from 'vitest'
 import { render, renderHook } from 'vitest-browser-react'
@@ -669,6 +671,85 @@ describe('Remote hooks with EngineRef', () => {
       const screen = await render(<App />)
       await expect.element(screen.getByTestId('ref-value')).toHaveTextContent('dual-value')
       await expect.element(screen.getByTestId('id-value')).toHaveTextContent('dual-value')
+    })
+  })
+
+  describe('React.StrictMode', () => {
+    it('recovers after strict mode double-invoke disposes the engine', async () => {
+      const strictCell$ = Cell('strict-hello')
+
+      function StrictChild() {
+        const value = useCellValue(strictCell$)
+        return <div data-testid="strict-value">{value}</div>
+      }
+
+      const screen = await render(
+        <React.StrictMode>
+          <EngineProvider initFn={noop} updateDeps={[]} updateFn={noop}>
+            <StrictChild />
+          </EngineProvider>
+        </React.StrictMode>
+      )
+
+      await expect.element(screen.getByTestId('strict-value')).toHaveTextContent('strict-hello')
+    })
+
+    it('supports publishing values after strict mode recovery', async () => {
+      const strictPubCell$ = Cell('initial')
+
+      function StrictPubChild() {
+        const [value, setValue] = useCell(strictPubCell$)
+        return (
+          <div>
+            <div data-testid="strict-pub-value">{value}</div>
+            <button
+              data-testid="strict-pub-button"
+              onClick={() => {
+                setValue('updated')
+              }}
+            >
+              Update
+            </button>
+          </div>
+        )
+      }
+
+      const screen = await render(
+        <React.StrictMode>
+          <EngineProvider initFn={noop} updateDeps={[]} updateFn={noop}>
+            <StrictPubChild />
+          </EngineProvider>
+        </React.StrictMode>
+      )
+
+      await expect.element(screen.getByTestId('strict-pub-value')).toHaveTextContent('initial')
+      await screen.getByTestId('strict-pub-button').click()
+      await expect.element(screen.getByTestId('strict-pub-value')).toHaveTextContent('updated')
+    })
+
+    it('updateFn runs with the recovered engine', async () => {
+      const strictUpdateCell$ = Cell('before')
+
+      function StrictUpdateChild() {
+        const value = useCellValue(strictUpdateCell$)
+        return <div data-testid="strict-update-value">{value}</div>
+      }
+
+      const screen = await render(
+        <React.StrictMode>
+          <EngineProvider
+            initFn={(engine) => engine.register(strictUpdateCell$)}
+            updateFn={(engine) => {
+              engine.pub(strictUpdateCell$, 'after')
+            }}
+            updateDeps={[]}
+          >
+            <StrictUpdateChild />
+          </EngineProvider>
+        </React.StrictMode>
+      )
+
+      await expect.element(screen.getByTestId('strict-update-value')).toHaveTextContent('after')
     })
   })
 })
