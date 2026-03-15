@@ -270,15 +270,14 @@ export const viewportRange$ = DerivedCell(
 )
 
 export const currentlyRenderedRows$ = DerivedCell(
-  [] as DataArray[],
+  [] as unknown[],
   e.pipe(
     e.combine(rowsState$, scrollTop$, groupIndexSet$),
     e.map(([rowsState, scrollTop, groupIndexSet]) => {
-      const rows = [...rowsState.rows]
-      while (rows.length > 0 && rows[0]!.offset + rows[0]!.size < scrollTop) {
-        rows.shift()
-      }
-      return rows.filter((row) => !groupIndexSet.has(row.index)).map((row) => row.data as DataArray)
+      const allRows = rowsState.rows
+      const startIdx = allRows.findIndex((r) => r.offset + r.size >= scrollTop)
+      const rows = startIdx === -1 ? [] : allRows.slice(startIdx)
+      return rows.filter((row) => !groupIndexSet.has(row.index)).map((row) => row.data)
     })
   )
 )

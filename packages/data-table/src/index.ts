@@ -40,9 +40,18 @@ export type {
   OffsetViewportAction,
   AppendViewportContext,
   AppendViewportAction,
+  ParamTransformer,
+  RemoteActionConfig,
 } from './model/remote-source'
 export type { ViewportRange } from './rows/row-state'
-export type { LocalSourceConfig, PipelineActionConfig, PipelineHandler, PipelineResult } from './model/local-source'
+export type {
+  LocalSourceConfig,
+  PipelineActionConfig,
+  PipelineHandler,
+  PipelineResult,
+  SourceMutator,
+  SourceMutatorConfig,
+} from './model/local-source'
 export * from './columns/ColumnHeader.tsx'
 export {
   unstableEnableRowRenderEvents$,

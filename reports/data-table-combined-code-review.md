@@ -24,8 +24,7 @@
 
 - **File(s):** `header-tree.tsx:39-56`, `column-state.ts:97-107`
 - **Severity:** Moderate
-- **Description:** The logic that walks a column's group ancestry chain to resolve effective sticky is implemented twice. `header-tree.tsx` has a standalone `getEffectiveSticky` function; `column-state.ts` inlines the same logic inside the `stickyColumnsState$` computation.
-- **Suggested fix:** Use `getEffectiveSticky` from `header-tree.tsx` inside the `stickyColumnsState$` pipe in `column-state.ts`.
+- **Resolved:** `column-state.ts` now imports and calls `getEffectiveSticky` from `header-tree.tsx` (line 9, 98) instead of inlining the logic. No duplication remains.
 
 ### 2.2 Registration/deregistration boilerplate repeated 6 times
 
@@ -97,15 +96,13 @@
 
 - **File(s):** `AATree.ts:110-130`, `AATree.ts:162-168`
 - **Severity:** Minor
-- **Description:** `walkWithin` uses `result = [...result, ...walkWithin(...)]` which creates O(n) intermediate arrays. `walk` uses `[...walk(node.l), { k, v }, ...walk(node.r)]`. Both are in the critical path during size state updates.
-- **Suggested fix:** Use a mutation-based approach: pass a result array as a parameter and push to it.
+- **Resolved:** `walk`, `walkWithin`, and `keys` now use a mutable accumulator array passed through recursion instead of spread-into-new-array. Benchmarks on a 5,000-node variable-size tree show 3.7x speedup for `walk`, 5.6-6.3x for `walkWithin`, and 4.0x for `keys`. The hot-path `walkWithin` (50-node viewport window) went from ~405K to ~2.2M ops/s. Benchmark file added in `sizing/tests/node/AATree.bench.ts`.
 
 ### 4.6 `currentlyRenderedRows$` uses `shift()` in a while loop
 
 - **File(s):** `row-state.ts:274-275`
 - **Severity:** Minor
-- **Description:** `rows.shift()` is O(n) for each call (shifts all remaining elements). In the worst case this is O(n^2). Additionally, a new array is created (`[...rowsState.rows]`) on every `scrollTop$` change, even when the result hasn't changed.
-- **Suggested fix:** Use `findIndex` to find the first visible row, then `slice` from that index. Add an equality check to the DerivedCell to avoid propagating identical results.
+- **Resolved:** Replaced the `[...rows]` copy + `shift()` while-loop with `findIndex` + `slice`. Benchmark results (10,000 rows): 2.2x faster at midpoint scroll, 6-11x faster near the end of the list. At scroll top (no rows to skip) performance is equivalent. Benchmark added in `rows/tests/node/currentlyRenderedRows.bench.ts`.
 
 ### 4.7 `buildHeaderTree` called 3 times per render
 
@@ -127,8 +124,7 @@
 
 - **File(s):** `row-state.ts:269-280`, `hooks.ts:24-26`
 - **Severity:** Minor
-- **Description:** `currentlyRenderedRows$` has initial value typed as `DataArray[]` (= `unknown[][]`), but each element is a single data item (`row.data`), not an array. The cast `row.data as DataArray` is incorrect. The `useCurrentlyRenderedData<Data>()` hook then casts the result to `Data[]`, which papers over the type error. At runtime, the values are correct (individual data items), but the intermediate types are wrong.
-- **Suggested fix:** Change the initial value type and mapping: `[] as unknown[]` and `row.data` without the `as DataArray` cast.
+- **Resolved:** Initial value is now `[] as unknown[]` and `.map` returns `row.data` without the `as DataArray` cast. The hook's `as Data[]` cast at the consumer boundary is correct.
 
 ---
 
@@ -247,8 +243,7 @@
 
 - **File(s):** `index.ts` vs `model/index.ts`
 - **Severity:** Minor
-- **Description:** `ParamTransformer`, `RemoteActionConfig`, `SourceMutator`, `SourceMutatorConfig` are exported from `model/index.ts` but not from the top-level `index.ts`. Consumers configuring `localSource` or `remoteSource` with actions need these types but can't import them from the package root.
-- **Suggested fix:** Add these to the top-level `export type {}` block.
+- **Resolved:** Added `ParamTransformer`, `RemoteActionConfig` to the remote-source type export and `SourceMutator`, `SourceMutatorConfig` to the local-source type export in `index.ts`.
 
 ---
 
@@ -292,8 +287,7 @@
 
 - **File(s):** `utils.ts:46`
 - **Severity:** Minor
-- **Description:** The `requestAnimationFrame` call is inside a subscription callback (not at module load), so it's only invoked at runtime. However, if any pipe using this operator runs during SSR (e.g., during server-side engine initialization), it will throw.
-- **Suggested fix:** Guard: `typeof requestAnimationFrame !== 'undefined' ? requestAnimationFrame(frame) : setTimeout(frame, 16)`.
+- **Resolved:** Already guarded with `typeof requestAnimationFrame === 'undefined' ? setTimeout(frame, 16) : requestAnimationFrame(frame)` at line 46-50.
 
 ---
 
@@ -333,7 +327,7 @@
 |----------|-------|--------------|
 | **Critical** | 7 | ~~Async dedup only protects sync path (1.1)~~, ~~stale async overwrites (1.2)~~, ~~`Math.min` single-arg bugs (6.1)~~, ~~public API leaks reactive internals (7.1)~~ (intentional remote-controlled state pattern), `export *` audit (7.2-7.3 downgraded to Moderate), ~~`bridgeModelToEngine` leak (8.1)~~, ~~ScrollbarOverlay listener leak (8.2)~~ |
 | **Moderate** | 16 | `getEffectiveSticky` duplication (2.1), `rowsState$` complexity (3.1), residual horizontal scroll cost in `ScrollableCells` (4.1), ~~column overscan (4.2)~~, ~~Map reconstruction (4.3)~~, ~~cumulative excluded size O(n*k) (4.4)~~, ~~header re-renders (5.1)~~, props ignored after mount (6.3), ~~scrollToRow silent no-op (6.4)~~, ~~binary search throws (6.5)~~, ~~division by zero (6.6)~~, size tree reset (6.7), ~~abort blocks loadMore (6.8)~~, `export *` audit (7.2-7.3), ~~capture flag mismatch (8.3)~~, ~~CustomScrollParent rebind (8.4)~~, ~~fetch errors swallowed (10.1)~~, column key mismatch (10.2) |
-| **Minor** | 8 | ~~Registration boilerplate (2.2)~~, totalHeight/totalWidth (2.3), measureItems duplication (2.4), AATree spread (4.5), shift() O(n^2) (4.6), ~~buildHeaderTree 3x (4.7)~~, skip operator (6.9), currentlyRenderedRows$ type (5.2), zero-height (10.3), rAF guard (9.2) |
+| **Minor** | 8 | ~~Registration boilerplate (2.2)~~, totalHeight/totalWidth (2.3), measureItems duplication (2.4), ~~AATree spread (4.5)~~, shift() O(n^2) (4.6), ~~buildHeaderTree 3x (4.7)~~, skip operator (6.9), currentlyRenderedRows$ type (5.2), zero-height (10.3), rAF guard (9.2) |
 
 ## Recommended Fix Priority
 

@@ -6,6 +6,7 @@ import { itemsWithinOffsets } from '../sizing/itemsWithinOffsets'
 import { columns$, columnWidths$ } from './Column'
 import { columnCount$, columnSizeState$, totalWidth$ } from './column-sizes'
 import { columnGroups$ } from './ColumnGroup'
+import { getEffectiveSticky } from './header-tree'
 
 import type { ExcludeIndicesInfo } from '../sizing/itemsWithinOffsets'
 
@@ -94,17 +95,7 @@ e.link(
         const [key, info] = entries[index]!
         const size = widths.get(key) ?? 0
 
-        let effectiveSticky = info.sticky
-        if (!effectiveSticky && info.groupId) {
-          let currentGroupId: string | undefined = info.groupId
-          while (currentGroupId && !effectiveSticky) {
-            const group = groups.get(currentGroupId)
-            if (group?.sticky) {
-              effectiveSticky = group.sticky
-            }
-            currentGroupId = group?.parentGroupId
-          }
-        }
+        const effectiveSticky = getEffectiveSticky(info, groups)
 
         if (effectiveSticky === 'left') {
           leftColumns.push({ index, key, offset: leftOffset, size })
