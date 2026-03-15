@@ -210,10 +210,6 @@ export const CustomScrollParentWrapper: React.FC<ScrollableRootProps> = ({ child
   const customScrollParentWrapperRef = React.useRef<HTMLElement | null>(null)
   const observer = useCellValue(resizeObserverSingleton$)
 
-  useEffect(() => {
-    customScrollParentRef.current = customScrollParent
-  }, [customScrollParent])
-
   const { onWheel, onScroll } = useScrollCallbacks({
     listRef,
     scrollLeftCell$: scrollLeft$,
@@ -222,48 +218,48 @@ export const CustomScrollParentWrapper: React.FC<ScrollableRootProps> = ({ child
     scrollableRef: customScrollParentRef,
   })
 
+  useEffect(() => {
+    customScrollParentRef.current = customScrollParent
+    if (!customScrollParent) {
+      engine.pub(scrollerElement$, null)
+      return
+    }
+
+    engine.pub(scrollerElement$, customScrollParent)
+    customScrollParent.addEventListener('scroll', onScroll)
+    customScrollParent.addEventListener('wheel', onWheel)
+    observer?.observe(customScrollParent, { box: 'border-box' })
+
+    if (testingContext) {
+      engine.pubIn({
+        [externalScrollerViewportHeight$]: customScrollParent.clientHeight,
+        [scrollHeight$]: customScrollParentWrapperRef.current?.getBoundingClientRect().height,
+        [externalScrollerScrollTop$]: 0,
+      })
+    }
+
+    return () => {
+      customScrollParent.removeEventListener('scroll', onScroll)
+      customScrollParent.removeEventListener('wheel', onWheel)
+      observer?.unobserve(customScrollParent)
+    }
+  }, [customScrollParent, onScroll, onWheel, observer, engine, testingContext])
+
   const customScrollParentWrapperCallbackRef = React.useCallback(
     (el: HTMLElement | null) => {
       if (el) {
-        const customParent = customScrollParentRef.current
-        engine.pubIn({
-          [scrollerElement$]: customParent,
-          [customScrollParentWrapper$]: el,
-        })
+        engine.pub(customScrollParentWrapper$, el)
         customScrollParentWrapperRef.current = el
-        if (customParent) {
-          customParent.addEventListener('scroll', onScroll)
-          customParent.addEventListener('wheel', onWheel)
-
-          if (testingContext) {
-            engine.pubIn({
-              [externalScrollerViewportHeight$]: customParent.clientHeight,
-              [scrollHeight$]: el.getBoundingClientRect().height,
-              [externalScrollerScrollTop$]: 0,
-            })
-          }
-
-          observer?.observe(customParent, { box: 'border-box' })
-        }
         observer?.observe(el, { box: 'border-box' })
       } else {
-        const customParent = customScrollParentRef.current
-        if (customParent) {
-          customParent.removeEventListener('scroll', onScroll)
-          customParent.removeEventListener('wheel', onWheel)
-          engine.pubIn({
-            [scrollerElement$]: null,
-            [customScrollParentWrapper$]: null,
-          })
-          observer?.unobserve(customParent)
-        }
+        engine.pub(customScrollParentWrapper$, null)
         if (customScrollParentWrapperRef.current) {
           observer?.unobserve(customScrollParentWrapperRef.current)
         }
         customScrollParentWrapperRef.current = null
       }
     },
-    [observer, engine, onScroll, onWheel, testingContext]
+    [observer, engine]
   )
 
   usePollForHeightInMobileSafari(() => customScrollParentWrapperRef.current?.getBoundingClientRect().height)
