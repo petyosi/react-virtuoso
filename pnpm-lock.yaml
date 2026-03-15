@@ -350,12 +350,6 @@ importers:
       '@ngneat/falso':
         specifier: ^8.0.2
         version: 8.0.2
-      '@testing-library/jest-dom':
-        specifier: 'catalog:'
-        version: 6.9.1
-      '@testing-library/react':
-        specifier: 'catalog:'
-        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.1
