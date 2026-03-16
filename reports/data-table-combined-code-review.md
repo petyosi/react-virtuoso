@@ -36,15 +36,13 @@
 
 - **File(s):** `sizes.ts:58-70`, `column-sizes.ts:17-29`
 - **Severity:** Minor
-- **Description:** Both derived cells compute `lastOffset + (count - lastIndex) * lastSize` with a fallback for when `lastIndex >= count`. Only the variable names differ (totalCount/columnCount, sizeState/columnSizeState).
-- **Suggested fix:** Extract a `computeTotalSize(count, sizeState)` utility.
+- **Resolved:** Extracted `computeTotalSize(count, sizeState)` into `sizing/offsetOf.ts`. Both `totalHeight$` and `totalWidth$` now call this shared utility instead of inlining the formula.
 
 ### 2.4 `measureItems` in `VirtualizedTableContent.tsx` duplicates logic in `resize-observing.ts`
 
 - **File(s):** `VirtualizedTableContent.tsx:136-159`, `resize-observing.ts:131-151`
 - **Severity:** Minor
-- **Description:** Both iterate over elements, parse `data-index` and `data-knownSize`, compare against current size, and build coalesced `SizeRange[]` arrays. The logic is identical.
-- **Suggested fix:** Extract a shared `buildSizeRangesFromElements(elements)` function.
+- **Resolved:** Extracted `accumulateSizeRange(results, element, size)` into `resize/accumulate-size-range.ts`. Both `resize-observing.ts` and `VirtualizedTableContent.tsx` now call this shared function instead of inlining the index-parsing, knownSize-comparison, and range-coalescing logic.
 
 ---
 
@@ -191,8 +189,7 @@
 
 - **File(s):** `at-bottom.ts:75-87`
 - **Severity:** Minor
-- **Description:** The `skip` operator decrements a captured `skips` variable. If the subscription is torn down and re-established (which the engine may do), the skip count will be zero on the second subscription.
-- **Suggested fix:** Document this as a "consume once" operator, or reset `skips` if re-subscription is possible.
+- **Resolved:** Documented as a consume-once operator with a comment explaining that the skip count will not reset on re-subscription.
 
 ---
 
@@ -303,21 +300,13 @@
 
 - **File(s):** `Cell.tsx:74, 81`
 - **Severity:** Moderate
-- **Description:** If `column.field` doesn't match any property in the row's data object, `cellValue` is `undefined` and the cell renders an empty string. No dev-mode warning. This is one of the most common consumer mistakes (typo in field name).
-- **Suggested fix:** In development mode, warn when `column.field` is not a key of `row.data`:
-
-  ```ts
-  if (process.env.NODE_ENV !== 'production' && row.data && typeof row.data === 'object' && !(column.field in row.data)) {
-    console.warn(`Column field "${column.field}" not found in row data at index ${row.index}`)
-  }
-  ```
+- **Resolved:** Dev-mode `console.warn` added in `CellRenderer` when `column.field` is not a key of `row.data`. The warning includes the field name, row index, and available fields to help diagnose typos.
 
 ### 10.3 Zero-height container fails silently
 
 - **File(s):** Various (table renders nothing)
 - **Severity:** Minor
-- **Description:** When the container element has zero height (common mistake: forgetting CSS `height`), `viewportHeight$ = 0`, `visibleListHeight$ = 0`, and no rows render. `tableReady$` never becomes true. There's no console warning to help the developer diagnose this.
-- **Suggested fix:** After a timeout (e.g., 2 seconds), if `viewportHeight$` is still 0 and data is present, emit a dev-mode warning: `"VirtuosoDataTable: container element has zero height. Set a height on the parent element."`.
+- **Resolved:** Dev-mode warning added in `table-ready.ts`. When `viewportHeight$` is 0 and `totalCount$` > 0 for 2 seconds, a `console.warn` fires suggesting the developer set a height on the container or use `useWindowScroll`. The timer is cleared if the viewport gains height before the timeout.
 
 ---
 
@@ -327,7 +316,7 @@
 |----------|-------|--------------|
 | **Critical** | 7 | ~~Async dedup only protects sync path (1.1)~~, ~~stale async overwrites (1.2)~~, ~~`Math.min` single-arg bugs (6.1)~~, ~~public API leaks reactive internals (7.1)~~ (intentional remote-controlled state pattern), `export *` audit (7.2-7.3 downgraded to Moderate), ~~`bridgeModelToEngine` leak (8.1)~~, ~~ScrollbarOverlay listener leak (8.2)~~ |
 | **Moderate** | 16 | `getEffectiveSticky` duplication (2.1), `rowsState$` complexity (3.1), residual horizontal scroll cost in `ScrollableCells` (4.1), ~~column overscan (4.2)~~, ~~Map reconstruction (4.3)~~, ~~cumulative excluded size O(n*k) (4.4)~~, ~~header re-renders (5.1)~~, props ignored after mount (6.3), ~~scrollToRow silent no-op (6.4)~~, ~~binary search throws (6.5)~~, ~~division by zero (6.6)~~, size tree reset (6.7), ~~abort blocks loadMore (6.8)~~, `export *` audit (7.2-7.3), ~~capture flag mismatch (8.3)~~, ~~CustomScrollParent rebind (8.4)~~, ~~fetch errors swallowed (10.1)~~, column key mismatch (10.2) |
-| **Minor** | 8 | ~~Registration boilerplate (2.2)~~, totalHeight/totalWidth (2.3), measureItems duplication (2.4), ~~AATree spread (4.5)~~, shift() O(n^2) (4.6), ~~buildHeaderTree 3x (4.7)~~, skip operator (6.9), currentlyRenderedRows$ type (5.2), zero-height (10.3), rAF guard (9.2) |
+| **Minor** | 8 | ~~Registration boilerplate (2.2)~~, ~~totalHeight/totalWidth (2.3)~~, ~~measureItems duplication (2.4)~~, ~~AATree spread (4.5)~~, shift() O(n^2) (4.6), ~~buildHeaderTree 3x (4.7)~~, ~~skip operator (6.9)~~, currentlyRenderedRows$ type (5.2), zero-height (10.3), rAF guard (9.2) |
 
 ## Recommended Fix Priority
 
