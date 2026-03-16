@@ -168,7 +168,7 @@ export function LargeMultiLevelGrouping() {
   const tableData = buildLargeMultiLevelData()
 
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={tableData}>
+    <VirtuosoDataTable style={LIST_STYLE} data={tableData} increaseViewportBy={400}>
       <GroupHeaderCell>
         {({ row, level }) => <div style={LEVEL_STYLES[level] ?? GROUP_HEADER_STYLE}>{(row.data as GroupItem).groupName}</div>}
       </GroupHeaderCell>

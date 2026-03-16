@@ -20,11 +20,24 @@ export {
   type ColumnGroupHeaderRenderFunction,
   type ColumnGroupHeaderCustomComponent,
 } from './columns/ColumnGroupHeader'
-export * from './columns/column-sizes'
-export * from './columns/column-state'
-export * from './core/hooks'
-export * from './interfaces'
-export * from './core/VirtuosoDataTable'
+export { totalWidth$, columnCount$ } from './columns/column-sizes'
+export { columnsState$, stickyColumnsState$ } from './columns/column-state'
+export type { ColumnState, ColumnsStateMap, StickyColumnsState, ColumnItem, ColumnItemsState } from './columns/column-state'
+export { useVirtuosoLocation, useCurrentlyRenderedData, useVirtuosoMethods } from './core/hooks'
+export type {
+  TableData,
+  ScrollBehavior,
+  RowLocationWithAlign,
+  RowLocation,
+  ContextAwareComponent,
+  ScrollElementComponent,
+  ListScrollLocation,
+  BezierFunction,
+  ScrollerProps,
+  VirtuosoDataTableProps,
+  VirtuosoDataTableMethods,
+} from './interfaces'
+export { VirtuosoDataTable } from './core/VirtuosoDataTable'
 export { localSource } from './model/local-source'
 export { remoteSource, defaultOffsetViewportHandler, defaultAppendViewportHandler } from './model/remote-source'
 export type { DataModelHandle, DataResult, MessageEnvelope, ConcurrencyStrategy, EventEmitter } from './model/types'
@@ -52,7 +65,12 @@ export type {
   SourceMutator,
   SourceMutatorConfig,
 } from './model/local-source'
-export * from './columns/ColumnHeader.tsx'
+export {
+  ColumnHeader,
+  type ColumnHeaderRenderParams,
+  type ColumnHeaderRenderFunction,
+  type ColumnHeaderCustomComponent,
+} from './columns/ColumnHeader'
 export {
   unstableEnableRowRenderEvents$,
   unstableRowRender$,

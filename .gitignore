@@ -21,7 +21,7 @@ docs/virtuoso-masonry-api/*
 apps/virtuoso.dev/docs/virtuoso-masonry-api/*
 .vscode
 .serena
-.claude/settings.local.json
+.claude/
 plans
 prompts
 reports
