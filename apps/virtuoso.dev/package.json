@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "build": "npx shadcn build && astro build",
+    "registry:build": "npx shadcn build",
     "preview": "astro preview",
     "astro": "astro",
     "typecheck": "astro check",

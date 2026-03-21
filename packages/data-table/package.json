@@ -58,8 +58,7 @@
     "test": "vitest run --browser.headless",
     "typecheck": "tsgo -b --noEmit",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck",
-    "knip": "cd ../.. && knip --workspace packages/data-table",
-    "registry:build": "npx shadcn build"
+    "knip": "cd ../.. && knip --workspace packages/data-table"
   },
   "dependencies": {
     "@virtuoso.dev/reactive-engine-core": "workspace:*",
