@@ -1,6 +1,7 @@
 {
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
   "extends": ["../../.oxlintrc.json"],
+  "ignorePatterns": ["registry/"],
   "rules": {
     "no-console": "off",
     "no-loop-func": "off",

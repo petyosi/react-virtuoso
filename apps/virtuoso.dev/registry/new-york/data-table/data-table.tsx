@@ -50,7 +50,7 @@ const DataTable = React.forwardRef<VirtuosoDataTableMethods, VirtuosoDataTablePr
       <VirtuosoDataTable
         ref={ref}
         className={cn(
-          'rounded-md border border-border bg-background text-foreground',
+          'relative w-full overflow-x-auto bg-background text-foreground text-sm',
           // row styling
           '[&_[data-testid=virtuoso-table-row]]:border-b [&_[data-testid=virtuoso-table-row]]:border-border [&_[data-testid=virtuoso-table-row]]:transition-colors [&_[data-testid=virtuoso-table-row]:hover]:bg-muted/50',
           // sticky header styling
@@ -84,7 +84,7 @@ function DataTableColumnHeader(props: ColumnHeader.Props) {
     return (
       <ColumnHeader>
         {(params) => (
-          <div className="flex h-10 items-center px-2 text-left align-middle text-sm font-medium text-muted-foreground">
+          <div className="flex h-10 items-center px-2 text-left align-middle text-sm font-medium text-foreground whitespace-nowrap">
             {userRender(params)}
           </div>
         )}
@@ -95,7 +95,7 @@ function DataTableColumnHeader(props: ColumnHeader.Props) {
   return (
     <ColumnHeader
       component={(params) => (
-        <div className="flex h-10 items-center px-2 text-left align-middle text-sm font-medium text-muted-foreground">
+        <div className="flex h-10 items-center px-2 text-left align-middle text-sm font-medium text-foreground whitespace-nowrap">
           <UserComponent {...params} />
         </div>
       )}
@@ -105,7 +105,7 @@ function DataTableColumnHeader(props: ColumnHeader.Props) {
 
 function DataTableCell(props: CellDefinitionProps) {
   const userRender = props.children
-  return <Cell>{(params) => <div className="px-2 py-1.5 align-middle text-sm">{userRender(params)}</div>}</Cell>
+  return <Cell>{(params) => <div className="p-2 align-middle text-sm whitespace-nowrap">{userRender(params)}</div>}</Cell>
 }
 
 interface CellDefinitionProps {
