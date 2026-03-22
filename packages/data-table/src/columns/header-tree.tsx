@@ -21,6 +21,10 @@ const HEADER_GROUP_CHILDREN_STYLE: CSSProperties = {
   alignItems: 'flex-end',
 }
 
+const GROUP_HEADER_STYLE: CSSProperties = {
+  boxSizing: 'border-box',
+}
+
 interface GroupedHeaderNode {
   type: 'column'
   key: string
@@ -139,9 +143,10 @@ interface GroupHeaderRendererProps {
   totalWidth: number
   renderer: ColumnGroupHeaderRenderFunction | ColumnGroupHeaderCustomComponent | undefined
   rendererType: 'function' | 'component' | undefined
+  className?: string
 }
 
-function GroupHeaderRenderer({ groupId, group, columnKeys, totalWidth, renderer, rendererType }: GroupHeaderRendererProps) {
+function GroupHeaderRenderer({ groupId, group, columnKeys, totalWidth, renderer, rendererType, className }: GroupHeaderRendererProps) {
   const content = useMemo(() => {
     if (!renderer) {
       return null
@@ -160,7 +165,7 @@ function GroupHeaderRenderer({ groupId, group, columnKeys, totalWidth, renderer,
   }
 
   return (
-    <div role="columnheader" aria-colspan={columnKeys.length} data-scope="colgroup">
+    <div role="columnheader" aria-colspan={columnKeys.length} className={className} data-scope="colgroup" style={GROUP_HEADER_STYLE}>
       {content}
     </div>
   )
@@ -174,6 +179,7 @@ interface HeaderNodeRendererProps {
     {
       type: 'function' | 'component'
       renderer: ColumnHeaderRenderFunction | ColumnHeaderCustomComponent
+      className?: string
     }
   >
   columnGroupHeaders: Map<
@@ -181,6 +187,7 @@ interface HeaderNodeRendererProps {
     {
       type: 'function' | 'component'
       renderer: ColumnGroupHeaderRenderFunction | ColumnGroupHeaderCustomComponent
+      className?: string
     }
   >
   columnsState: Map<string, ColumnState>
@@ -188,7 +195,7 @@ interface HeaderNodeRendererProps {
   overlaidByScrollbar: boolean
 }
 
-export function HeaderNodeRenderer({
+function HeaderGroupNodeRenderer({
   node,
   columns,
   columnHeaders,
@@ -196,27 +203,15 @@ export function HeaderNodeRenderer({
   columnsState,
   columnWidths,
   overlaidByScrollbar,
-}: HeaderNodeRendererProps) {
-  if (node.type === 'column') {
-    const header = columnHeaders.get(node.key)
-    return (
-      <ColumnHeaderRenderer
-        renderer={header?.renderer}
-        rendererType={header?.type}
-        columnKey={node.key}
-        column={node.column}
-        columnState={columnsState.get(node.key) ?? EMPTY_COLUMN_STATE}
-        overlaidByScrollbar={overlaidByScrollbar}
-      />
-    )
-  }
-
+}: Omit<HeaderNodeRendererProps, 'node'> & { node: GroupedHeaderGroupNode }) {
   const descendantKeys = getDescendantColumnKeys(node)
   const totalWidth = descendantKeys.reduce((sum, key) => sum + (columnWidths.get(key) ?? 0), 0)
   const groupHeader = columnGroupHeaders.get(node.groupId)
 
+  const groupStyle = useMemo<CSSProperties>(() => ({ ...HEADER_GROUP_STYLE, flex: descendantKeys.length }), [descendantKeys.length])
+
   return (
-    <div style={HEADER_GROUP_STYLE} data-column-group={node.groupId}>
+    <div style={groupStyle} data-column-group={node.groupId}>
       <GroupHeaderRenderer
         groupId={node.groupId}
         group={node.group}
@@ -224,6 +219,7 @@ export function HeaderNodeRenderer({
         totalWidth={totalWidth}
         renderer={groupHeader?.renderer}
         rendererType={groupHeader?.type}
+        {...(groupHeader?.className === undefined ? {} : { className: groupHeader.className })}
       />
       <div style={HEADER_GROUP_CHILDREN_STYLE}>
         {node.children.map((child, idx) => (
@@ -240,5 +236,42 @@ export function HeaderNodeRenderer({
         ))}
       </div>
     </div>
+  )
+}
+
+export function HeaderNodeRenderer({
+  node,
+  columns,
+  columnHeaders,
+  columnGroupHeaders,
+  columnsState,
+  columnWidths,
+  overlaidByScrollbar,
+}: HeaderNodeRendererProps) {
+  if (node.type === 'column') {
+    const header = columnHeaders.get(node.key)
+    return (
+      <ColumnHeaderRenderer
+        columnKey={node.key}
+        column={node.column}
+        columnState={columnsState.get(node.key) ?? EMPTY_COLUMN_STATE}
+        overlaidByScrollbar={overlaidByScrollbar}
+        renderer={header?.renderer}
+        rendererType={header?.type}
+        {...(header?.className === undefined ? {} : { className: header.className })}
+      />
+    )
+  }
+
+  return (
+    <HeaderGroupNodeRenderer
+      node={node}
+      columns={columns}
+      columnHeaders={columnHeaders}
+      columnGroupHeaders={columnGroupHeaders}
+      columnsState={columnsState}
+      columnWidths={columnWidths}
+      overlaidByScrollbar={overlaidByScrollbar}
+    />
   )
 }

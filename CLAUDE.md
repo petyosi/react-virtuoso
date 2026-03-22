@@ -151,6 +151,7 @@ E2E tests in `packages/react-virtuoso/e2e/`:
 
 ## Code Style
 
+- Never use `data-testid` attributes for CSS styling selectors. `data-testid` is reserved for testing only. Use `data-table-element-role` or other semantic data attributes for styling hooks.
 - TypeScript with strong typing; avoid `any`
 - oxfmt: 140 char width, single quotes, no semicolons
 - Naming: camelCase for variables/functions, PascalCase for components
