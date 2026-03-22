@@ -4,6 +4,7 @@ import * as _V from 'react-virtuoso'
 import * as _Falso from '@ngneat/falso'
 import * as _Masonry from '@virtuoso.dev/masonry'
 import * as _ML from '@virtuoso.dev/message-list'
+import * as jsxRuntime from 'react/jsx-runtime'
 
 // third-pary
 import falsoTypeDefs from '../../../node_modules/@ngneat/falso/src/index.d.ts?raw'
@@ -21,6 +22,7 @@ export const importMap: Record<string, unknown> = {
   '@virtuoso.dev/masonry': _Masonry,
   '@virtuoso.dev/message-list': _ML,
   react: React,
+  'react/jsx-runtime': jsxRuntime,
   'react-virtuoso': _V,
 }
 
