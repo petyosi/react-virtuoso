@@ -1,10 +1,11 @@
 import { useLayoutEffect, useMemo } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 
-import { usePublisher } from '@virtuoso.dev/reactive-engine-react'
+import { useCellValue, usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
 import { useResizeObserver } from '../resize/resize-observer-singleton'
 import { useColumnId } from './Column'
+import { columnWidthOverrides$ } from './column-resize'
 import { createRegistryCell } from './registry'
 
 import type { ColumnInfo } from './Column'
@@ -78,6 +79,7 @@ export function ColumnHeaderRenderer({
   overlaidByScrollbar,
 }: ColumnHeaderRendererProps) {
   const ref = useResizeObserver('border-box')
+  const columnWidthOverrides = useCellValue(columnWidthOverrides$)
   const content = useMemo(() => {
     if (!renderer) {
       return column.field
@@ -90,9 +92,22 @@ export function ColumnHeaderRenderer({
 
     return (renderer as ColumnHeaderRenderFunction)({ columnKey, column, columnState, overlaidByScrollbar })
   }, [columnKey, column, columnState, overlaidByScrollbar, renderer, rendererType])
+  const style = useMemo<CSSProperties>(() => {
+    const override = columnWidthOverrides.get(columnKey)
+    if (override === undefined) {
+      return DEFAULT_COLUMN_HEADER_STYLE
+    }
+
+    return {
+      width: override,
+      minWidth: override,
+      flexGrow: 0,
+      flexShrink: 0,
+    }
+  }, [columnKey, columnWidthOverrides])
 
   return (
-    <div ref={ref} data-column-key={columnKey} data-observer-group="column-header" style={DEFAULT_COLUMN_HEADER_STYLE}>
+    <div ref={ref} data-column-key={columnKey} data-observer-group="column-header" style={style}>
       {content}
     </div>
   )

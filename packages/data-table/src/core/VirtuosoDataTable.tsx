@@ -61,6 +61,8 @@ export const VirtuosoDataTable = React.forwardRef<VirtuosoDataTableMethods<unkno
       model: externalModel,
       computeRowKey = defaultComputeRowKey,
       context = null,
+      engineId,
+      engineRef,
       initialLocation = null,
       onScroll,
       onRenderedDataChange,
@@ -77,6 +79,10 @@ export const VirtuosoDataTable = React.forwardRef<VirtuosoDataTableMethods<unkno
   ) => {
     const apiObjectRef = React.useRef<VirtuosoDataTableMethods<unknown> | null>(null)
     const implicitModelRef = React.useRef<DataModelHandle | null>(null)
+    const engineProviderProps = {
+      ...(engineId === undefined ? {} : { engineId }),
+      ...(engineRef === undefined ? {} : { engineRef }),
+    }
     React.useImperativeHandle(ref, () => apiObjectRef.current!, [])
 
     React.useEffect(() => {
@@ -90,6 +96,7 @@ export const VirtuosoDataTable = React.forwardRef<VirtuosoDataTableMethods<unkno
 
     return (
       <EngineProvider
+        {...engineProviderProps}
         // oxlint-disable-next-line jsx-no-new-function-as-prop
         initFn={(e) => {
           e.register(rowsState$)
