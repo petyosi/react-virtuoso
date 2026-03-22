@@ -36,17 +36,39 @@ export async function createSandbox(files: Record<string, string>, packages: str
       ),
     },
     'public/index.html': {
-      content: `
-<!DOCTYPE html>
+      content: `<!DOCTYPE html>
 <html>
   <head>
     <title>Dynamic Sandbox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --radius: 0.625rem;
+        --background: oklch(1 0 0);
+        --foreground: oklch(0.145 0 0);
+        --card: oklch(1 0 0);
+        --card-foreground: oklch(0.145 0 0);
+        --popover: oklch(1 0 0);
+        --popover-foreground: oklch(0.145 0 0);
+        --primary: oklch(0.205 0 0);
+        --primary-foreground: oklch(0.985 0 0);
+        --secondary: oklch(0.97 0 0);
+        --secondary-foreground: oklch(0.205 0 0);
+        --muted: oklch(0.97 0 0);
+        --muted-foreground: oklch(0.556 0 0);
+        --accent: oklch(0.97 0 0);
+        --accent-foreground: oklch(0.205 0 0);
+        --destructive: oklch(0.577 0.245 27.325);
+        --border: oklch(0.922 0 0);
+        --input: oklch(0.922 0 0);
+        --ring: oklch(0.708 0 0);
+      }
+    </style>
   </head>
   <body>
     <div id="root" style="height: 400px"></div>
   </body>
-</html>
-        `,
+</html>`,
     },
     'src/index.tsx': {
       content: `
