@@ -1,5 +1,12 @@
 # Change Log - @virtuoso.dev/masonry
 
+## 1.4.3
+
+### Patch Changes
+
+- Updated dependencies [[`5b57a93`](https://github.com/petyosi/react-virtuoso/commit/5b57a93ea047dbb9351bfd5786be496bc6ee9b14)]:
+  - @virtuoso.dev/gurx@1.2.3
+
 ## 1.4.2
 
 ### Patch Changes
