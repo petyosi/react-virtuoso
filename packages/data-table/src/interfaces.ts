@@ -196,7 +196,6 @@ export type ComputeRowKey<Data = unknown, Context = unknown, Group = unknown> = 
  * The DOM attributes that you can pass to the `VirtuosoDataTable` component to customize the scroll element.
  *
  * @group Components
- * @noInheritDoc
  */
 export type ScrollerProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data' | 'onScroll'>
 
@@ -206,7 +205,6 @@ export type ScrollerProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data'
  * @typeParam Data - The type of the data items in the table.
  * @typeParam Context - The type of the context passed to the table.
  *
- * @noInheritDoc
  * @group Components
  */
 export interface VirtuosoDataTableProps<Data, Context, Group = unknown> extends ScrollerProps {

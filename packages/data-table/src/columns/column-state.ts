@@ -10,6 +10,9 @@ import { getEffectiveSticky } from './header-tree'
 
 import type { ExcludeIndicesInfo } from '../sizing/itemsWithinOffsets'
 
+/**
+ * @group State
+ */
 export interface ColumnItem {
   index: number
   key: string
@@ -17,6 +20,9 @@ export interface ColumnItem {
   size: number
 }
 
+/**
+ * @group State
+ */
 export interface ColumnItemsState {
   columns: ColumnItem[]
   paddingStart: number
@@ -31,6 +37,9 @@ export const EMPTY_COLUMN_ITEMS_STATE: ColumnItemsState = {
   totalWidth: 0,
 }
 
+/**
+ * @group State
+ */
 export interface StickyColumnsState {
   leftColumns: ColumnItem[]
   rightColumns: ColumnItem[]
@@ -49,16 +58,28 @@ export const EMPTY_STICKY_COLUMNS_STATE: StickyColumnsState = {
   totalStickyWidth: 0,
 }
 
+/**
+ * @group State
+ */
 export const stickyColumnsState$ = Cell(EMPTY_STICKY_COLUMNS_STATE)
 
+/**
+ * @group State
+ */
 export interface ColumnState {
   sticky?: 'left' | 'right'
 }
 
+/**
+ * @group State
+ */
 export type ColumnsStateMap = Map<string, ColumnState>
 
 export const EMPTY_COLUMN_STATE: ColumnState = {}
 
+/**
+ * @group State
+ */
 export const columnsState$ = Cell<ColumnsStateMap>(new Map())
 
 e.link(
@@ -119,6 +140,9 @@ e.link(
 
 export const columnOverscanCount$ = Cell(0)
 
+/**
+ * @group State
+ */
 export const columnItemsState$ = Cell(EMPTY_COLUMN_ITEMS_STATE)
 
 e.link(

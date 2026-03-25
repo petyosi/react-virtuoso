@@ -1,6 +1,7 @@
-export { CellDefinition as Cell, type CellRenderFunction, type CellRenderParams } from './columns/Cell'
+export { CellDefinition as Cell, type CellProps, type CellRenderFunction, type CellRenderParams } from './columns/Cell'
 export {
   GroupHeaderCell,
+  type GroupHeaderCellProps,
   type GroupHeaderRenderParams,
   type GroupHeaderRenderFunction,
   type GroupHeaderCustomComponent,
@@ -18,6 +19,7 @@ export {
 export { ColumnGroup, type ColumnGroupInfo } from './columns/ColumnGroup'
 export {
   ColumnGroupHeader,
+  type ColumnGroupHeaderProps,
   type ColumnGroupHeaderRenderParams,
   type ColumnGroupHeaderRenderFunction,
   type ColumnGroupHeaderCustomComponent,
@@ -33,6 +35,7 @@ export type {
   ScrollBehavior,
   RowLocationWithAlign,
   RowLocation,
+  Row,
   ContextAwareComponent,
   ScrollElementComponent,
   ListScrollLocation,
@@ -76,6 +79,7 @@ export type {
 } from './model/local-source'
 export {
   ColumnHeader,
+  type ColumnHeaderProps,
   type ColumnHeaderRenderParams,
   type ColumnHeaderRenderFunction,
   type ColumnHeaderCustomComponent,

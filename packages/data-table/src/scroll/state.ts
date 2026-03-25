@@ -12,7 +12,13 @@ export const lastJumpDueToRowResize$ = Cell<number>(0)
 
 export const pendingScrollToInitialLocation$ = Cell<RowLocation | null>(null)
 export const initialLocation$ = Cell<RowLocation | null>(null, false)
+/**
+ * @group Remote Control
+ */
 export const scrollToRow$ = Stream<RowLocation>()
+/**
+ * @group Remote Control
+ */
 export const scrollIntoView$ = Stream<RowLocation>()
 
 export const mobileSafariIsReadjusting$ = Cell(false)

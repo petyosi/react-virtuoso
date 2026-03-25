@@ -11,6 +11,11 @@ import { createRegistryCell } from './registry'
 import type { ColumnInfo } from './Column'
 import type { ColumnState } from './column-state'
 
+/**
+ * The parameters passed to a column header renderer.
+ *
+ * @group Components
+ */
 export interface ColumnHeaderRenderParams {
   columnKey: string
   column: ColumnInfo
@@ -18,40 +23,70 @@ export interface ColumnHeaderRenderParams {
   overlaidByScrollbar: boolean
 }
 
+/**
+ * The render function used by a column header.
+ *
+ * @group Components
+ */
 export type ColumnHeaderRenderFunction = (params: ColumnHeaderRenderParams) => ReactNode
+/**
+ * A React component variant for a column header.
+ *
+ * @group Components
+ */
 export type ColumnHeaderCustomComponent = React.ComponentType<ColumnHeaderRenderParams>
 
 interface ColumnHeaderEntry {
   type: 'function' | 'component'
   renderer: ColumnHeaderRenderFunction | ColumnHeaderCustomComponent
+  className?: string
 }
 
 const { cell$: columnHeaders$, register$: columnHeaderRegister$ } = createRegistryCell<ColumnHeaderEntry>()
 export { columnHeaders$ }
 
 export namespace ColumnHeader {
+  /**
+   * The properties accepted by the `ColumnHeader` component.
+   *
+   * @group Components
+   */
   export type Props =
     | {
         children: ColumnHeaderRenderFunction
+        className?: string
       }
     | {
         component: ColumnHeaderCustomComponent
+        className?: string
       }
 }
 
+export type ColumnHeaderProps = ColumnHeader.Props
+
+/**
+ * Declares the header renderer for the current column.
+ *
+ * @group Components
+ */
 export function ColumnHeader(props: ColumnHeader.Props) {
   const colId = useColumnId()
   const columnHeaderRegister = usePublisher(columnHeaderRegister$)
 
   const renderer = 'children' in props ? props.children : props.component
   const rendererType = 'children' in props ? 'function' : 'component'
+  const { className } = props
 
   useLayoutEffect(() => {
-    columnHeaderRegister({ type: 'add', id: colId, value: { type: rendererType, renderer } })
+    columnHeaderRegister({
+      type: 'add',
+      id: colId,
+      value: className === undefined ? { type: rendererType, renderer } : { type: rendererType, renderer, className },
+    })
     return () => {
       columnHeaderRegister({ type: 'remove', id: colId })
     }
-  }, [columnHeaderRegister, rendererType, colId, renderer])
+  }, [className, columnHeaderRegister, rendererType, colId, renderer])
 
   return null
 }
@@ -59,6 +94,7 @@ export function ColumnHeader(props: ColumnHeader.Props) {
 const DEFAULT_COLUMN_HEADER_STYLE: CSSProperties = {
   flexGrow: 1,
   minWidth: 1,
+  boxSizing: 'border-box',
 }
 
 export interface ColumnHeaderRendererProps {
@@ -68,6 +104,7 @@ export interface ColumnHeaderRendererProps {
   renderer: ColumnHeaderCustomComponent | ColumnHeaderRenderFunction | undefined
   rendererType: 'component' | 'function' | undefined
   overlaidByScrollbar: boolean
+  className?: string
 }
 
 export function ColumnHeaderRenderer({
@@ -77,6 +114,7 @@ export function ColumnHeaderRenderer({
   renderer,
   rendererType,
   overlaidByScrollbar,
+  className,
 }: ColumnHeaderRendererProps) {
   const ref = useResizeObserver('border-box')
   const columnWidthOverrides = useCellValue(columnWidthOverrides$)
@@ -103,11 +141,12 @@ export function ColumnHeaderRenderer({
       minWidth: override,
       flexGrow: 0,
       flexShrink: 0,
+      boxSizing: 'border-box',
     }
   }, [columnKey, columnWidthOverrides])
 
   return (
-    <div ref={ref} data-column-key={columnKey} data-observer-group="column-header" style={style}>
+    <div ref={ref} className={className} data-column-key={columnKey} data-observer-group="column-header" style={style}>
       {content}
     </div>
   )

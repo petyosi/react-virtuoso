@@ -2,23 +2,53 @@ import { createModel } from './model-core'
 
 import type { ConcurrencyStrategy, DataModelHandle, DataResult, FrameAdapter } from './types'
 
+/**
+ * The result of a local pipeline stage.
+ *
+ * @group Data Models
+ */
 export type PipelineResult<T, G = never> = (T | G)[] | DataResult<T, G>
 
+/**
+ * A pipeline stage handler for `localSource()`.
+ *
+ * @group Data Models
+ */
 export type PipelineHandler<T, G = never> = (params: { data: (T | G)[]; payload: unknown }) => PipelineResult<T, G>
 
+/**
+ * A mutator that updates the backing source array.
+ *
+ * @group Data Models
+ */
 export type SourceMutator<T> = (params: { source: T[]; payload: unknown }) => T[]
 
+/**
+ * Configuration for a derived pipeline action.
+ *
+ * @group Data Models
+ */
 export interface PipelineActionConfig<T, G = never> {
   stage: string
   handler: PipelineHandler<T, G>
   strategy?: ConcurrencyStrategy
 }
 
+/**
+ * Configuration for a source mutation action.
+ *
+ * @group Data Models
+ */
 export interface SourceMutatorConfig<T> {
   handler: SourceMutator<T>
   strategy?: ConcurrencyStrategy
 }
 
+/**
+ * Configuration for `localSource()`.
+ *
+ * @group Data Models
+ */
 export interface LocalSourceConfig<T, G = never> {
   data: T[]
   groups?: { index: number; level: number }[]
@@ -36,6 +66,11 @@ interface ViewPipelineState<T, G = never> {
   lastPipelineResult: DataResult<T, G> | null
 }
 
+/**
+ * Creates a local reactive data model for the table.
+ *
+ * @group Data Models
+ */
 export function localSource<T, G = never>(config: LocalSourceConfig<T, G>): DataModelHandle<T | G> {
   let sourceData = config.data
   let currentGroups = config.groups ?? []

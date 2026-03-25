@@ -237,11 +237,17 @@ e.link(
   rowsState$
 )
 
+/**
+ * @group State
+ */
 export interface ViewportRange {
   startIndex: number
   endIndex: number
 }
 
+/**
+ * @group State
+ */
 export const viewportRange$ = DerivedCell(
   null as ViewportRange | null,
   e.pipe(
@@ -268,6 +274,9 @@ export const viewportRange$ = DerivedCell(
       prev.endIndex === curr.endIndex)
 )
 
+/**
+ * @group State
+ */
 export const currentlyRenderedRows$ = DerivedCell(
   [] as unknown[],
   e.pipe(

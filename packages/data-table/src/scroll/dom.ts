@@ -192,6 +192,9 @@ e.link(
 
 export const externalScrollerScrollTo$ = Stream<ScrollToParams>()
 
+/**
+ * @group State
+ */
 export const scrollLocation$ = DerivedCell<ListScrollLocation>(
   {
     listOffset: 0,
