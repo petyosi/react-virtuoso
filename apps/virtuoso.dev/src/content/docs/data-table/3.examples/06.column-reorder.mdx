@@ -1,0 +1,143 @@
+---
+title: Column Reorder Example
+description: Reorder columns from an external toolbar while keeping the current table state readable.
+sidebar:
+  order: 6
+  label: "6.Column Reorder"
+---
+
+This example uses explicit controls instead of drag-and-drop. The underlying primitive is the same `reorderColumns$` action, so you can swap the toolbar for in-header drag interactions later.
+
+## APIs that matter
+
+- `reorderColumns$`
+- `columns$`
+- `engineRef`
+
+```tsx live wide file=App.tsx
+import { Button } from '@/components/ui/button'
+import { DataTable, DataTableCell, DataTableColumn, DataTableColumnHeader } from '@/components/ui/data-table'
+import { columns$, reorderColumns$, useEngineRef, useRemoteCellValue, useRemotePublisher } from '@virtuoso.dev/data-table'
+
+import { DragHandle } from './DragHandle'
+import { products } from './data'
+
+import type { ColumnInfo } from '@virtuoso.dev/data-table'
+
+function findColumnKey(columns: Map<string, ColumnInfo> | undefined, field: string) {
+  return columns ? [...columns].find(([, info]) => info.field === field)?.[0] : undefined
+}
+
+export default function App() {
+  const engineRef = useEngineRef()
+  const columns = useRemoteCellValue(columns$, engineRef)
+  const reorderColumns = useRemotePublisher(reorderColumns$, engineRef)
+  const statusKey = findColumnKey(columns, 'status')
+  const nameKey = findColumnKey(columns, 'name')
+  const regionKey = findColumnKey(columns, 'region')
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        <Button
+          disabled={!statusKey || !nameKey}
+          onClick={() => {
+            if (statusKey && nameKey) {
+              reorderColumns({ sourceKey: statusKey, targetKey: nameKey, position: 'before' })
+            }
+          }}
+          variant="outline"
+        >
+          <DragHandle label="status" /> move first
+        </Button>
+        <Button
+          disabled={!regionKey || !statusKey}
+          onClick={() => {
+            if (regionKey && statusKey) {
+              reorderColumns({ sourceKey: regionKey, targetKey: statusKey, position: 'after' })
+            }
+          }}
+          variant="outline"
+        >
+          <DragHandle label="region" /> move after status
+        </Button>
+      </div>
+
+      <DataTable className="rounded-xl" data={{ data: products, groups: [] }} engineRef={engineRef} style={{ height: 400 }}>
+        <DataTableColumn field="name">
+          <DataTableColumnHeader>
+            {() => (
+              <div className="flex items-center gap-2">
+                <DragHandle label="name" /> Product
+              </div>
+            )}
+          </DataTableColumnHeader>
+          <DataTableCell className="font-medium">{({ row }) => row.data.name}</DataTableCell>
+        </DataTableColumn>
+        <DataTableColumn field="category">
+          <DataTableColumnHeader>
+            {() => (
+              <div className="flex items-center gap-2">
+                <DragHandle label="category" /> Category
+              </div>
+            )}
+          </DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+        </DataTableColumn>
+        <DataTableColumn field="status">
+          <DataTableColumnHeader>
+            {() => (
+              <div className="flex items-center gap-2">
+                <DragHandle label="status" /> Status
+              </div>
+            )}
+          </DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+        </DataTableColumn>
+        <DataTableColumn field="region">
+          <DataTableColumnHeader>
+            {() => (
+              <div className="flex items-center gap-2">
+                <DragHandle label="region" /> Region
+              </div>
+            )}
+          </DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+        </DataTableColumn>
+      </DataTable>
+    </div>
+  )
+}
+```
+
+```tsx live file=DragHandle.tsx
+export function DragHandle({ label }: { label: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="inline-flex h-5 items-center rounded-sm border bg-muted px-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
+      title={label}
+    >
+      ::
+    </span>
+  )
+}
+```
+
+```ts live file=data.ts
+export const products = Array.from({ length: 100 }, (_, index) => {
+  const stock = (index * 5) % 32
+
+  return {
+    id: `SKU-${String(index + 1).padStart(3, '0')}`,
+    name: `Product ${index + 1}`,
+    category: ['Office', 'Peripherals', 'Audio'][index % 3]!,
+    status: stock < 6 ? 'Backorder' : stock < 12 ? 'Low stock' : 'In stock',
+    region: ['US', 'EU', 'APAC'][index % 3]!,
+  }
+})
+```
+
+## Tradeoffs
+
+Explicit reorder controls are accessible and easy to test, but true drag-and-drop is more discoverable for spreadsheet-like workflows.

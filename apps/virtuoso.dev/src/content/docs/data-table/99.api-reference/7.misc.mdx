@@ -1,0 +1,360 @@
+---
+title: 'Misc'
+sidebar:
+  order: 7
+  label: 'Misc'
+---
+
+## Cell
+
+### Components
+
+- [Props](../components/#props)
+
+
+---
+
+## CellProps
+
+> **CellProps** = [`Props`](../components/#props)
+
+
+---
+
+## Column
+
+### Components
+
+- [Props](../components/#props)
+
+
+---
+
+## ColumnGroup
+
+### Components
+
+- [Props](../components/#props)
+
+
+---
+
+## ColumnGroupHeader
+
+### Components
+
+- [Props](../components/#props)
+
+
+---
+
+## ColumnGroupHeaderProps
+
+> **ColumnGroupHeaderProps** = [`Props`](../components/#props)
+
+
+---
+
+## ColumnHeader
+
+### Components
+
+- [Props](../components/#props)
+
+
+---
+
+## ColumnHeaderProps
+
+> **ColumnHeaderProps** = [`Props`](../components/#props)
+
+
+---
+
+## columns$
+
+> **columns$**: `NodeRef`\<`Map`\<`string`, [`ColumnInfo`](../components/#columninfo)\>\>
+
+
+---
+
+## columnWidths$
+
+> `const` **columnWidths$**: `NodeRef`\<`Map`\<`string`, `number`\>\>
+
+
+---
+
+## EngineRef
+
+A reactive ref that holds an engine instance. Created by [useEngineRef](../misc/#useengineref).
+Pass it to EngineProvider via the `engineRef` prop, then use it with
+the `useRemote*` hooks to access the engine from anywhere in the component tree.
+
+### Remarks
+
+An `EngineRef` should only be used with a single `EngineProvider`.
+Using the same ref with multiple providers is unsupported.
+
+### Properties
+
+#### current
+
+`Engine` \| `null`
+
+The current engine instance, or null if not yet available.
+
+
+---
+
+## EngineSource
+
+> **EngineSource** = [`EngineRef`](../misc/#engineref) \| `string`
+
+Union type for the engine source parameter accepted by `useRemote*` hooks.
+Can be either a string engine ID (for global registry lookup) or an [EngineRef](../misc/#engineref).
+
+
+---
+
+## EventEmitter
+
+> **EventEmitter** = (`viewId`, `payload`) => `void`
+
+### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `viewId` | `string` |
+| `payload` | `unknown` |
+
+### Returns
+
+`void`
+
+
+---
+
+## GroupHeaderCell
+
+### Components
+
+- [Props](../components/#props)
+
+
+---
+
+## GroupHeaderCellProps
+
+> **GroupHeaderCellProps** = [`Props`](../components/#props)
+
+
+---
+
+## Row
+
+> **Row**\<`D`\> = `Item`\<`D`\>
+
+Alias for Item, used in row-specific contexts
+
+### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `D` |
+
+
+---
+
+## TableData
+
+### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `Data` |
+| `Group` |
+
+### Properties
+
+#### data
+
+> **data**: (`Data` \| `Group`)[]
+
+***
+
+#### groups
+
+`object`[]
+
+##### index
+
+`number`
+
+##### level
+
+`number`
+
+
+---
+
+## useEngineRef
+
+> **useEngineRef**(): [`EngineRef`](../misc/#engineref)
+
+Creates a stable, memoized [EngineRef](../misc/#engineref) for use inside a component.
+Pass the returned ref to an EngineProvider via the `engineRef` prop,
+and to `useRemote*` hooks to access the engine reactively.
+
+### Returns
+
+[`EngineRef`](../misc/#engineref)
+
+### Example
+
+```tsx
+function App() {
+  const engineRef = useEngineRef()
+  return (
+    <>
+      <SiblingComponent engineRef={engineRef} />
+      <EngineProvider engineRef={engineRef} initFn={initFn}>
+        <NestedComponent />
+      </EngineProvider>
+    </>
+  )
+}
+```
+
+
+---
+
+## useRemoteCell
+
+> **useRemoteCell**\<`T`\>(`cell`, `engineSource`): \[`T` \| `undefined`, (`value`) => `void`\]
+
+Returns a tuple of the current value and a publisher function for a cell in an engine identified by `engineSource`.
+Returns `[undefined, noop]` when the engine is not available yet.
+
+### Type Parameters
+
+| Type Parameter | Description |
+| ------ | ------ |
+| `T` | The type of values that the cell emits/accepts. |
+
+### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `cell` | `NodeRef`\<`T`\> | The cell to use. |
+| `engineSource` | [`EngineSource`](../misc/#enginesource) | A string engine ID or an [EngineRef](../misc/#engineref). |
+
+### Returns
+
+\[`T` \| `undefined`, (`value`) => `void`\]
+
+A tuple of the current value (or undefined) and a publisher function.
+
+### Example
+
+```tsx
+const cell$ = Cell(0)
+// ...
+function SiblingComponent({ engineRef }: { engineRef: EngineRef }) {
+  const [value, setValue] = useRemoteCell(cell$, engineRef)
+  if (value === undefined) return <div>Loading...</div>
+  return <button onClick={() => setValue(value + 1)}>{value}</button>
+}
+```
+
+
+---
+
+## useRemoteCellValue
+
+> **useRemoteCellValue**\<`T`\>(`cell`, `engineSource`): `T` \| `undefined`
+
+Gets the current value of the cell from an engine identified by `engineSource`.
+Returns `undefined` when the engine is not available yet.
+
+### Type Parameters
+
+| Type Parameter | Description |
+| ------ | ------ |
+| `T` | The type of the value that the cell carries. |
+
+### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `cell` | `Out`\<`T`\> | The cell to read from. |
+| `engineSource` | [`EngineSource`](../misc/#enginesource) | A string engine ID or an [EngineRef](../misc/#engineref) to read from. |
+
+### Returns
+
+`T` \| `undefined`
+
+The current value of the cell, or `undefined` if the engine is not available.
+
+### Example
+
+```tsx
+const cell$ = Cell(0)
+// ...
+function SiblingComponent({ engineRef }: { engineRef: EngineRef }) {
+  const value = useRemoteCellValue(cell$, engineRef)
+  if (value === undefined) return <div>Loading...</div>
+  return <div>{value}</div>
+}
+```
+
+
+---
+
+## useRemotePublisher
+
+> **useRemotePublisher**\<`T`\>(`node$`, `engineSource`): (`value`) => `void`
+
+Returns a function that publishes values to a node in an engine identified by `engineSource`.
+Returns a no-op function when the engine is not available yet.
+
+### Type Parameters
+
+| Type Parameter | Description |
+| ------ | ------ |
+| `T` | The type of values that the node accepts. |
+
+### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `node$` | `Inp`\<`T`\> | The node to publish to. |
+| `engineSource` | [`EngineSource`](../misc/#enginesource) | A string engine ID or an [EngineRef](../misc/#engineref) to publish to. |
+
+### Returns
+
+A publisher function that accepts values of type T.
+
+> (`value`): `void`
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `T` |
+
+#### Returns
+
+`void`
+
+### Example
+
+```tsx
+const trigger$ = Trigger()
+// ...
+function SiblingComponent({ engineRef }: { engineRef: EngineRef }) {
+  const publish = useRemotePublisher(trigger$, engineRef)
+  return <button onClick={() => publish()}>Trigger</button>
+}
+```
+

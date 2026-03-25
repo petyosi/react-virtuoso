@@ -1,8 +1,84 @@
+import { localFiles } from './extraImports'
+
 interface CodeSandboxResponse {
   sandbox_id: string
 }
 
+function escapeRegExp(value: string) {
+  return value.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function dirname(path: string) {
+  const parts = path.split('/')
+  parts.pop()
+  return parts
+}
+
+function toRelativeImport(fromPath: string, toPath: string) {
+  const fromParts = dirname(fromPath)
+  const toParts = toPath.split('/')
+
+  while (fromParts.length > 0 && toParts.length > 0 && fromParts[0] === toParts[0]) {
+    fromParts.shift()
+    toParts.shift()
+  }
+
+  const relativeParts = [...Array.from({ length: fromParts.length }, () => '..'), ...toParts]
+  const joined = relativeParts.join('/').replace(/\.(tsx|ts|jsx|js)$/, '')
+
+  return joined.startsWith('.') ? joined : `./${joined}`
+}
+
+function rewriteLocalImports(code: string, fromPath: string) {
+  let rewritten = code
+
+  for (const [specifier, localFile] of Object.entries(localFiles)) {
+    const replacement = toRelativeImport(fromPath, localFile.sandboxPath)
+    const pattern = new RegExp(`(['"])${escapeRegExp(specifier)}\\1`, 'g')
+    rewritten = rewritten.replace(pattern, `$1${replacement}$1`)
+  }
+
+  return rewritten
+}
+
+function resolveLocalFiles(packages: string[]) {
+  const resolvedFiles = new Map<string, (typeof localFiles)[string]>()
+  const resolvedPackages = new Set<string>()
+  const queue = packages.filter((pkg) => pkg.startsWith('@/'))
+
+  while (queue.length > 0) {
+    const specifier = queue.shift()!
+    const localFile = localFiles[specifier]
+
+    if (localFile === undefined || resolvedFiles.has(specifier)) {
+      continue
+    }
+
+    resolvedFiles.set(specifier, localFile)
+    localFile.dependencies.forEach((dependency) => resolvedPackages.add(dependency))
+    localFile.imports?.forEach((importSpecifier) => {
+      if (importSpecifier.startsWith('@/')) {
+        queue.push(importSpecifier)
+      } else {
+        resolvedPackages.add(importSpecifier)
+      }
+    })
+  }
+
+  if (resolvedFiles.size > 0) {
+    resolvedPackages.add('tailwindcss')
+  }
+
+  return {
+    files: [...resolvedFiles.values()],
+    packages: [...resolvedPackages],
+  }
+}
+
 export async function createSandbox(files: Record<string, string>, packages: string[]) {
+  const externalPackages = packages.filter((pkg) => !pkg.startsWith('@/'))
+  const { files: resolvedLocalFiles, packages: localPackages } = resolveLocalFiles(packages)
+  const sandboxDependencies = [...new Set([...externalPackages, ...localPackages])]
   const sandboxFiles: Record<string, { content: string }> = {
     'package.json': {
       content: JSON.stringify(
@@ -13,7 +89,7 @@ export async function createSandbox(files: Record<string, string>, packages: str
             react: '18.2.0',
             'react-dom': '18.2.0',
             'react-scripts': '5.0.1',
-            ...packages.reduce((acc, pkg) => ({ ...acc, [pkg]: 'latest' }), {}),
+            ...sandboxDependencies.reduce((acc, pkg) => ({ ...acc, [pkg]: 'latest' }), {}),
           },
           description: 'An example forked from the docs of https://virtuoso.dev/',
           devDependencies: {
@@ -93,20 +169,29 @@ root.render(
         "./src/**/*"
     ],
     "compilerOptions": {
+        "baseUrl": ".",
         "strict": true,
         "esModuleInterop": true,
         "lib": [
             "dom",
             "es2015"
         ],
-        "jsx": "react-jsx"
+        "jsx": "react-jsx",
+        "paths": {
+            "@/*": ["src/*"]
+        }
     }
 }`,
     },
   }
 
   for (const [fileName, fileCode] of Object.entries(files)) {
-    sandboxFiles[`src/${fileName}`] = { content: fileCode }
+    const sandboxPath = `src/${fileName}`
+    sandboxFiles[sandboxPath] = { content: rewriteLocalImports(fileCode, sandboxPath) }
+  }
+
+  for (const localFile of resolvedLocalFiles) {
+    sandboxFiles[localFile.sandboxPath] = { content: rewriteLocalImports(localFile.content, localFile.sandboxPath) }
   }
 
   try {

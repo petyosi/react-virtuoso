@@ -1,0 +1,107 @@
+---
+title: 'Imperative API'
+sidebar:
+  order: 99
+  label: 'Imperative API'
+---
+
+## VirtuosoDataTableMethods
+
+The imperative API of the data table component. You can access it with a `ref`, or by using the [\`useVirtuosoMethods()\`](../hooks/#usevirtuosomethods) hook from a child component.
+
+### Type Parameters
+
+| Type Parameter | Default type | Description |
+| ------ | ------ | ------ |
+| `Data` | `any` | The type of the data items in the table. |
+
+### Properties
+
+#### cancelSmoothScroll()
+
+> **cancelSmoothScroll**: () => `void`
+
+Cancels the current smooth scroll operation, if any.
+
+##### Returns
+
+`void`
+
+***
+
+#### getScrollLocation()
+
+> **getScrollLocation**: () => [`ListScrollLocation`](../state/#listscrolllocation)
+
+Retrieves the current scroll location
+
+##### Returns
+
+[`ListScrollLocation`](../state/#listscrolllocation)
+
+***
+
+#### height()
+
+> **height**: (`item`) => `number`
+
+Gets the known height of the item.
+
+##### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `item` | `Data` |
+
+##### Returns
+
+`number`
+
+***
+
+#### scrollerElement()
+
+> **scrollerElement**: () => `HTMLDivElement` \| `null`
+
+Lets you obtain a reference to the component's scroller DOM element.
+
+##### Returns
+
+`HTMLDivElement` \| `null`
+
+***
+
+#### scrollIntoView()
+
+> **scrollIntoView**: (`location`) => `void`
+
+Scrolls the specified row into view if necessary. See [RowLocation](../scroll-location/#rowlocation) for possible location details. Passing a number scrolls to the row at the specified index.
+
+##### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `location` | [`RowLocation`](../scroll-location/#rowlocation) |
+
+##### Returns
+
+`void`
+
+***
+
+#### scrollToRow()
+
+> **scrollToRow**: (`location`) => `void`
+
+Scrolls the table to the specified row. See [RowLocation](../scroll-location/#rowlocation) for possible location details. Passing a number scrolls to the row at the specified index aligned to the top.
+
+##### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `location` | [`RowLocation`](../scroll-location/#rowlocation) |
+
+##### Returns
+
+`void`
+

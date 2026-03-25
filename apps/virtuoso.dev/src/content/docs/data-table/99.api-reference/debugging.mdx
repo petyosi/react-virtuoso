@@ -1,0 +1,63 @@
+---
+title: 'Debugging'
+sidebar:
+  order: 99
+  label: 'Debugging'
+---
+
+## unstableEnableRowRenderEvents$
+
+> `const` **unstableEnableRowRenderEvents$**: `NodeRef`\<`boolean`\>
+
+Enables emission of unstable row render instrumentation events.
+Disabled by default to avoid paying the per-row event cost unless debugging.
+
+
+---
+
+## unstableRowRender$
+
+> `const` **unstableRowRender$**: `NodeRef`\<[`UnstableRowRenderEvent`](../debugging/#unstablerowrenderevent)\>
+
+Stream of unstable row render instrumentation events.
+
+
+---
+
+## UnstableRowRenderEvent
+
+Fired after a row commit when unstable row render instrumentation is enabled.
+
+### Properties
+
+#### group
+
+`boolean`
+
+***
+
+#### index
+
+`number`
+
+***
+
+#### section
+
+[`UnstableRowRenderSection`](../debugging/#unstablerowrendersection)
+
+***
+
+#### sticky
+
+`boolean`
+
+
+---
+
+## UnstableRowRenderSection
+
+> **UnstableRowRenderSection** = `"row"` \| `"scrollable"` \| `"sticky-left"` \| `"sticky-right"`
+
+Fired after a row commit when unstable row render instrumentation is enabled.
+

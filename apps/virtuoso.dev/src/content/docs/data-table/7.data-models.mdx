@@ -1,0 +1,70 @@
+---
+title: Data Models
+description: Choose between direct data props, local derived models, and remote models based on where your source of truth lives.
+sidebar:
+  order: 7
+  label: "7.Data Models"
+---
+
+There are three practical ways to feed the table:
+
+- direct `data` for simple local state
+- `localSource()` for derived client-side views
+- `remoteSource()` for viewport-driven fetching
+
+## Targeted example
+
+```tsx live
+import { useEffect, useMemo } from 'react'
+
+import { DataTable, DataTableCell, DataTableColumn, DataTableColumnHeader } from '@/components/ui/data-table'
+import { localSource } from '@virtuoso.dev/data-table'
+
+const rows = Array.from({ length: 60 }, (_, index) => ({
+  id: `SKU-${String(index + 1).padStart(3, '0')}`,
+  name: `Product ${index + 1}`,
+  price: 49 + (index % 11) * 13,
+}))
+
+export default function App() {
+  const model = useMemo(
+    () =>
+      localSource({
+        actions: {
+          sort: {
+            handler: ({ data }) => {
+              return data.toSorted((a, b) => b.price - a.price)
+            },
+            stage: 'sort',
+          },
+        },
+        data: rows,
+        pipeline: ['sort'],
+      }),
+    []
+  )
+
+  useEffect(() => {
+    model.send({ action: 'sort', payload: true })
+  }, [model])
+
+  return (
+    <DataTable className="rounded-xl" model={model} style={{ height: 320 }}>
+      <DataTableColumn field="name">
+        <DataTableColumnHeader>Product</DataTableColumnHeader>
+        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+      </DataTableColumn>
+      <DataTableColumn field="price">
+        <DataTableColumnHeader className="justify-end">Price</DataTableColumnHeader>
+        <DataTableCell className="text-right">{({ cellValue }) => String(cellValue)}</DataTableCell>
+      </DataTableColumn>
+    </DataTable>
+  )
+}
+```
+
+## Patterns
+
+- Use direct `data` until you feel pressure to derive multiple views.
+- Use `localSource()` when the data is local but the view is reactive.
+- Use `remoteSource()` when the viewport should drive the backend contract.

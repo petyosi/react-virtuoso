@@ -1,0 +1,69 @@
+---
+title: Theming and Customization
+description: Adapt the shadcn wrapper to your product styling without losing the headless engine underneath.
+sidebar:
+  order: 10
+  label: "10.Theming and Customization"
+---
+
+The shadcn wrapper is intentionally thin. You should treat it as your app code, not as an untouchable abstraction.
+
+## Targeted example
+
+```tsx live
+import { DataTable, DataTableCell, DataTableColumn, DataTableColumnHeader } from '@/components/ui/data-table'
+
+const rows = [
+  { name: 'Standing Desk', status: 'Launch ready', theme: 'Office' },
+  { name: 'USB-C Dock', status: 'Low stock', theme: 'Peripherals' },
+  { name: 'Noise-canceling Headset', status: 'Backorder', theme: 'Audio' },
+]
+
+export default function App() {
+  return (
+    <DataTable
+      className="
+        rounded-[1.5rem] border-2 border-slate-900/10 bg-gradient-to-b from-background
+        to-slate-50 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.35)]
+      "
+      data={{ data: rows, groups: [] }}
+      style={{ height: 280 }}
+    >
+      <DataTableColumn field="name">
+        <DataTableColumnHeader>Product</DataTableColumnHeader>
+        <DataTableCell className="font-medium">{({ cellValue }) => String(cellValue)}</DataTableCell>
+      </DataTableColumn>
+      <DataTableColumn field="theme">
+        <DataTableColumnHeader>Theme</DataTableColumnHeader>
+        <DataTableCell>
+          {({ cellValue }) => <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium">{String(cellValue)}</span>}
+        </DataTableCell>
+      </DataTableColumn>
+      <DataTableColumn field="status">
+        <DataTableColumnHeader>Status</DataTableColumnHeader>
+        <DataTableCell>
+          {({ cellValue }) => (
+            <span
+              className={
+                cellValue === 'Backorder'
+                  ? 'font-medium text-red-600'
+                  : cellValue === 'Low stock'
+                    ? 'font-medium text-amber-600'
+                    : 'font-medium text-emerald-600'
+              }
+            >
+              {String(cellValue)}
+            </span>
+          )}
+        </DataTableCell>
+      </DataTableColumn>
+    </DataTable>
+  )
+}
+```
+
+## Patterns
+
+- Start with class overrides on `DataTable`.
+- Move repeated presentational logic into your local wrapper file.
+- Keep advanced behavior in the headless package so styling and mechanics stay decoupled.

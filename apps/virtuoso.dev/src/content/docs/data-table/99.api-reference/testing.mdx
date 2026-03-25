@@ -1,0 +1,37 @@
+---
+title: 'Testing'
+sidebar:
+  order: 99
+  label: 'Testing'
+---
+
+## VirtuosoDataTableTestingContext
+
+> `const` **VirtuosoDataTableTestingContext**: `Context`\<[`VirtuosoDataTableTestingContextValue`](../testing/#virtuosodatatabletestingcontextvalue) \| `undefined`\>
+
+A React context that provides a controlled testing environment for VirtuosoDataTable.
+When this context is provided, the component skips the ResizeObserver measurements and uses the values from the context instead.
+
+
+---
+
+## VirtuosoDataTableTestingContextValue
+
+The value expected by the [VirtuosoDataTableTestingContext](../testing/#virtuosodatatabletestingcontext). Useful for testing components that use VirtuosoDataTable.
+
+### Properties
+
+#### itemHeight
+
+`number`
+
+The simulated item height in pixels.
+
+***
+
+#### viewportHeight
+
+`number`
+
+The simulated viewport height in pixels.
+
