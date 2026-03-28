@@ -26,7 +26,7 @@ import {
 } from '../scroll/state'
 import { empty } from '../sizing/AATree'
 import { itemsWithinOffsetsWithStickyResult } from '../sizing/itemsWithinOffsets'
-import { computeStickyItems, computeStickyItemsFromAnchorIndex, EMPTY_STICKY_RESULT } from '../sizing/stickyItems'
+import { computeStickyItems, computeStickyItemsFromAnchorOffset, EMPTY_STICKY_RESULT } from '../sizing/stickyItems'
 
 import type { DataArray, Item, Row } from '../interfaces'
 import type { OffsetBreakpoint } from '../sizing/SizeState'
@@ -89,9 +89,8 @@ function visualStartStickySize(stickyResult: StickyResult, stickyHeaderHeight: n
     : 0
 }
 
-function firstVisibleDataRowIndex(
+function firstVisibleInlineRowAnchorOffset(
   rows: Row<unknown>[],
-  groupIndexSet: Set<number>,
   visibleViewportTop: number,
   visibleViewportBottom: number,
   stickyResult: StickyResult,
@@ -100,10 +99,6 @@ function firstVisibleDataRowIndex(
   const effectiveVisibleStart = visibleViewportTop + visualStartStickySize(stickyResult, stickyHeaderHeight)
 
   for (const row of rows) {
-    if (groupIndexSet.has(row.index)) {
-      continue
-    }
-
     if (row.offset + row.size <= effectiveVisibleStart) {
       continue
     }
@@ -112,7 +107,7 @@ function firstVisibleDataRowIndex(
       return null
     }
 
-    return row.index
+    return Math.max(0, row.offset - 1)
   }
 
   return null
@@ -170,7 +165,7 @@ e.link(
             _recalcInProgress,
             _mobileSafariIsReadjusting,
             groupStickyConfig,
-            groupIndexSet,
+            _groupIndexSet,
             increaseViewportBy,
           ],
           viewportHeight,
@@ -273,23 +268,22 @@ e.link(
         // A threshold-only selection can lag by one group near transitions, so correct it
         // against the actual visible data row when necessary.
         for (let iteration = 0; iteration < 2; iteration++) {
-          const anchorIndex = firstVisibleDataRowIndex(
+          const anchorOffset = firstVisibleInlineRowAnchorOffset(
             rowsResult.items,
-            groupIndexSet,
             visibleViewportTop,
             visibleViewportBottom,
             effectiveStickyResult,
             stickyHeaderHeight
           )
 
-          if (anchorIndex === null) {
+          if (anchorOffset === null) {
             break
           }
 
-          const anchoredStickyResult = computeStickyItemsFromAnchorIndex(
+          const anchoredStickyResult = computeStickyItemsFromAnchorOffset(
             groupStickyConfig,
             sizeState.offsetTree,
-            anchorIndex,
+            anchorOffset,
             visibleViewportTop,
             visibleViewportBottom,
             data,

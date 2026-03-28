@@ -7,6 +7,7 @@ import { EMPTY_SIZE_STATE, updateSizeState } from '../../SizeState'
 import {
   computeStickyItems,
   computeStickyItemsFromAnchorIndex,
+  computeStickyItemsFromAnchorOffset,
   EMPTY_STICKY_RESULT,
   findStickyEndIndex,
   findStickyStartIndex,
@@ -881,6 +882,74 @@ describe('viewport shift (increaseViewportBy simulation)', () => {
     expect(result.stickyStartItems).toHaveLength(2)
     expect(result.stickyStartItems[0]!.index).toBe(0) // Dept 0
     expect(result.stickyStartItems[1]!.index).toBe(63) // Team 0-2
+  })
+
+  it('anchor offset keeps the previous team sticky while the next team header is still inline', () => {
+    const state = createSizeState([{ startIndex: 0, endIndex: TOTAL - 1, size: ITEM_SIZE }])
+    const groups = makeGroups()
+    const groupIndexSet = new Set([...LEVEL_0_INDICES, ...LEVEL_1_INDICES])
+    const viewportStart = 1200
+    const viewportEnd = viewportStart + 500
+
+    const initialSticky = computeStickyItems(groups, state.offsetTree, viewportStart, viewportEnd, null)
+    expect(initialSticky.stickyStartItems.map((item) => item.index)).toStrictEqual([0, 1])
+
+    const initialRows = itemsWithinOffsetsWithStickyResult(
+      state.offsetTree,
+      viewportStart,
+      viewportEnd,
+      TOTAL,
+      TOTAL_SIZE,
+      null,
+      initialSticky
+    )
+    const firstInlineItem = initialRows.items.find((item) => item.offset + item.size > viewportStart + initialSticky.startStickySize)
+    const firstDataItem = initialRows.items.find((item) => !groupIndexSet.has(item.index))
+
+    expect(firstInlineItem?.index).toBe(32)
+    expect(firstDataItem?.index).toBe(33)
+
+    const indexAnchored = computeStickyItemsFromAnchorIndex(
+      groups,
+      state.offsetTree,
+      firstDataItem!.index,
+      viewportStart,
+      viewportEnd,
+      null
+    )
+    const offsetAnchored = computeStickyItemsFromAnchorOffset(
+      groups,
+      state.offsetTree,
+      firstInlineItem!.offset - 1,
+      viewportStart,
+      viewportEnd,
+      null
+    )
+
+    expect(indexAnchored.stickyStartItems.map((item) => item.index)).toStrictEqual([0, 32])
+    expect(offsetAnchored.stickyStartItems.map((item) => item.index)).toStrictEqual([0, 1])
+
+    const indexAnchoredRows = itemsWithinOffsetsWithStickyResult(
+      state.offsetTree,
+      viewportStart,
+      viewportEnd,
+      TOTAL,
+      TOTAL_SIZE,
+      null,
+      indexAnchored
+    )
+    const offsetAnchoredRows = itemsWithinOffsetsWithStickyResult(
+      state.offsetTree,
+      viewportStart,
+      viewportEnd,
+      TOTAL,
+      TOTAL_SIZE,
+      null,
+      offsetAnchored
+    )
+
+    expect(indexAnchoredRows.items[0]!.index).toBe(33)
+    expect(offsetAnchoredRows.items[0]!.index).toBe(32)
   })
 
   it('level 1 sticky transitions exactly at team header offset minus parent size', () => {
