@@ -316,12 +316,25 @@ export function computeStickyItemsFromAnchorIndex(
   data: DataArray | null,
   stickyHeaderHeight = 0
 ): StickyResult {
+  const [anchorOffset] = itemOffsetAndSize(anchorIndex, offsetTree)
+
+  return computeStickyItemsFromAnchorOffset(processedGroups, offsetTree, anchorOffset, viewportStart, viewportEnd, data, stickyHeaderHeight)
+}
+
+export function computeStickyItemsFromAnchorOffset(
+  processedGroups: ProcessedStickyGroup[],
+  offsetTree: OffsetBreakpoint[],
+  anchorOffset: number,
+  viewportStart: number,
+  viewportEnd: number,
+  data: DataArray | null,
+  stickyHeaderHeight = 0
+): StickyResult {
   if (processedGroups.length === 0) {
     return EMPTY_STICKY_RESULT
   }
 
   const viewportSize = viewportEnd - viewportStart
-  const [anchorOffset] = itemOffsetAndSize(anchorIndex, offsetTree)
   let estimatedStartStickySize = 0
   let estimatedEndStickySize = 0
   const selectedIndices: number[] = []

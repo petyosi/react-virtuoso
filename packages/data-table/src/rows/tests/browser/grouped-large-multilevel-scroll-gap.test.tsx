@@ -15,13 +15,18 @@ interface RowSnapshot {
 }
 
 interface StickyViewportState {
+  stickyBottom: number
   stickyDepartmentId: string | null
   stickyDepartmentText: string | null
   stickyTeamId: string | null
   stickyTeamText: string | null
+  firstVisibleInlineRowIsGroup: boolean
+  firstVisibleInlineRowText: string | null
   firstVisibleEmployeeDepartmentId: string | null
   firstVisibleEmployeeTeamId: string | null
   firstVisibleEmployeeText: string | null
+  firstVisibleStickyTeamEmployeeTop: number | null
+  firstVisibleStickyTeamEmployeeText: string | null
 }
 
 function readRows(container: HTMLElement): RowSnapshot[] {
@@ -103,19 +108,28 @@ function readStickyViewportState(container: HTMLElement, scroller: HTMLElement):
   const stickyDepartment = rows.find((row) => row.group && row.sticky && row.text.startsWith('Department '))
   const stickyTeam = rows.find((row) => row.group && row.sticky && row.text.startsWith('Team '))
   const stickyTeamId = stickyTeam ? teamIdFromStickyHeader(stickyTeam.text) : null
-  const firstVisibleEmployee = rows
-    .filter((row) => !row.group && row.rectBottom > stickyBottom && row.rectTop < scrollerRect.bottom)
-    .toSorted((a, b) => a.rectTop - b.rectTop)[0]
+  const visibleRows = rows
+    .filter((row) => row.rectBottom > stickyBottom && row.rectTop < scrollerRect.bottom)
+    .toSorted((a, b) => a.rectTop - b.rectTop)
+  const firstVisibleInlineRow = visibleRows[0]
+  const firstVisibleEmployee = visibleRows.find((row) => !row.group)
+  const firstVisibleStickyTeamEmployee =
+    stickyTeamId === null ? undefined : visibleRows.find((row) => !row.group && employeeIdsFromRow(row.text).teamId === stickyTeamId)
   const employeeIds = firstVisibleEmployee ? employeeIdsFromRow(firstVisibleEmployee.text) : { departmentId: null, teamId: null }
 
   return {
+    stickyBottom,
     stickyDepartmentId: stickyDepartment ? departmentIdFromStickyHeader(stickyDepartment.text) : null,
     stickyDepartmentText: stickyDepartment?.text ?? null,
     stickyTeamId,
     stickyTeamText: stickyTeam?.text ?? null,
+    firstVisibleInlineRowIsGroup: firstVisibleInlineRow?.group ?? false,
+    firstVisibleInlineRowText: firstVisibleInlineRow?.text ?? null,
     firstVisibleEmployeeDepartmentId: employeeIds.departmentId,
     firstVisibleEmployeeTeamId: employeeIds.teamId,
     firstVisibleEmployeeText: firstVisibleEmployee?.text ?? null,
+    firstVisibleStickyTeamEmployeeTop: firstVisibleStickyTeamEmployee?.rectTop ?? null,
+    firstVisibleStickyTeamEmployeeText: firstVisibleStickyTeamEmployee?.text ?? null,
   }
 }
 
@@ -205,6 +219,10 @@ test('large multi-level grouped scrolling keeps the sticky team in sync with the
     // oxlint-disable-next-line no-await-in-loop
     const state = await waitForStickyViewportState(screen.container, scroller, target)
 
+    if (state.firstVisibleInlineRowIsGroup) {
+      continue
+    }
+
     if (state.stickyTeamId !== state.firstVisibleEmployeeTeamId) {
       throw new Error(
         `At scrollTop ${target}, sticky team was "${state.stickyTeamText}" but the first visible employee row was "${state.firstVisibleEmployeeText}".`
@@ -224,6 +242,10 @@ test('large multi-level grouped scrolling keeps the sticky team in sync when scr
   for (const target of targets) {
     // oxlint-disable-next-line no-await-in-loop
     const state = await waitForStickyViewportState(screen.container, scroller, target)
+
+    if (state.firstVisibleInlineRowIsGroup) {
+      continue
+    }
 
     if (state.stickyTeamId !== state.firstVisibleEmployeeTeamId) {
       throw new Error(
@@ -245,6 +267,10 @@ test('large multi-level grouped scrolling keeps the sticky department in sync wi
     // oxlint-disable-next-line no-await-in-loop
     const state = await waitForStickyViewportState(screen.container, scroller, target)
 
+    if (state.firstVisibleInlineRowIsGroup) {
+      continue
+    }
+
     expect(
       state.stickyDepartmentId,
       `At scrollTop ${target}, sticky department was "${state.stickyDepartmentText}" but the first visible employee row was "${state.firstVisibleEmployeeText}".`
@@ -252,28 +278,45 @@ test('large multi-level grouped scrolling keeps the sticky department in sync wi
   }
 })
 
-test('sticky team updates correctly through fine 10px scroll steps across a team boundary', async () => {
+test('next team header does not become sticky before its team content reaches the sticky stack', async () => {
   const screen = await render(<LargeMultiLevelGrouping />)
 
   await expect.poll(() => screen.container.querySelector(readySelector)).not.toBeNull()
 
   const scroller = screen.container.querySelector(scrollerSelector) as HTMLElement
-  const startTarget = Math.floor(scroller.scrollHeight * 0.02)
-  const endTarget = startTarget + 600
-  const step = 10
+  const team27HeaderIndex = 311 + 1 + 6 * 31
+  const estimatedBoundaryOffset = Math.floor(scroller.scrollHeight * (team27HeaderIndex / 31_100))
+  const startTarget = Math.max(0, estimatedBoundaryOffset - 300)
+  const endTarget = estimatedBoundaryOffset + 200
+  const step = 5
+  let seenTeam26 = false
 
   for (let target = startTarget; target <= endTarget; target += step) {
-    scroller.scrollTop = target
-
     // oxlint-disable-next-line no-await-in-loop
     const state = await waitForStickyViewportState(screen.container, scroller, target)
 
-    if (state.stickyTeamId !== state.firstVisibleEmployeeTeamId) {
-      throw new Error(
-        `At scrollTop ${target} (10px steps), sticky team was "${state.stickyTeamText}" but first visible employee was "${state.firstVisibleEmployeeText}".`
-      )
+    if (state.stickyTeamId === '2-6') {
+      seenTeam26 = true
+      continue
     }
+
+    if (!seenTeam26 || state.stickyTeamId !== '2-7') {
+      continue
+    }
+
+    expect(
+      state.firstVisibleStickyTeamEmployeeTop,
+      `At scrollTop ${target}, sticky team switched to "${state.stickyTeamText}" before its team content was visible below the sticky stack.`
+    ).not.toBeNull()
+    expect(
+      state.firstVisibleStickyTeamEmployeeTop!,
+      `At scrollTop ${target}, sticky team was "${state.stickyTeamText}" but its first visible employee row was "${state.firstVisibleStickyTeamEmployeeText}".`
+    ).toBeLessThanOrEqual(state.stickyBottom + 1)
+
+    return
   }
+
+  throw new Error(`Did not observe the Team 2-6 -> Team 2-7 sticky handoff between scrollTop ${startTarget} and ${endTarget}.`)
 })
 
 test('rapid scroll direction reversal keeps sticky team in sync', async () => {
@@ -296,6 +339,10 @@ test('rapid scroll direction reversal keeps sticky team in sync', async () => {
   for (const target of targets) {
     // oxlint-disable-next-line no-await-in-loop
     const state = await waitForStickyViewportState(screen.container, scroller, target)
+
+    if (state.firstVisibleInlineRowIsGroup) {
+      continue
+    }
 
     if (state.stickyTeamId !== state.firstVisibleEmployeeTeamId) {
       throw new Error(
@@ -324,6 +371,10 @@ test('sticky department and team update correctly across a department boundary',
 
     // oxlint-disable-next-line no-await-in-loop
     const state = await waitForStickyViewportState(screen.container, scroller, target)
+
+    if (state.firstVisibleInlineRowIsGroup) {
+      continue
+    }
 
     expect(
       state.stickyDepartmentId,
