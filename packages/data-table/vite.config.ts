@@ -1,5 +1,6 @@
 import { join, resolve } from 'node:path'
 
+import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 /// <reference types="vitest" />
 import { defineConfig, searchForWorkspaceRoot } from 'vite'
@@ -14,6 +15,17 @@ const define = {
 export default inLadle
   ? defineConfig({
       define,
+      plugins: [tailwindcss()],
+      resolve: {
+        alias: [
+          {
+            find: '@/components/ui/data-table',
+            replacement: resolve(import.meta.dirname, '../../apps/virtuoso.dev/registry/new-york/data-table/data-table.tsx'),
+          },
+          { find: '@/', replacement: `${resolve(import.meta.dirname, '../../apps/virtuoso.dev/src')}/` },
+          { find: '@virtuoso.dev/data-table', replacement: resolve(import.meta.dirname, 'src/index.ts') },
+        ],
+      },
       server: {
         fs: {
           allow: [
