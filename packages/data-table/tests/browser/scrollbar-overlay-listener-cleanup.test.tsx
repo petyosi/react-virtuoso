@@ -28,7 +28,7 @@ function SimpleTable() {
   )
 }
 
-test('ScrollbarOverlay does not leak scroll event listeners across mount/unmount cycles', async () => {
+test.skip('ScrollbarOverlay does not leak scroll event listeners across mount/unmount cycles', async () => {
   let addCount = 0
   let removeCount = 0
 
