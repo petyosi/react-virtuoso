@@ -71,6 +71,12 @@
       "rules": {
         "import/no-nodejs-modules": "off"
       }
+    },
+    {
+      "files": ["**/.ladle/**"],
+      "rules": {
+        "import/no-unassigned-import": "off"
+      }
     }
   ],
   "ignorePatterns": ["node_modules/", "dist/", "test-results"]

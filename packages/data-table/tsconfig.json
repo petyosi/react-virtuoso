@@ -1,5 +1,12 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@/components/ui/data-table": ["../../apps/virtuoso.dev/registry/new-york/data-table/data-table"],
+      "@/*": ["../../apps/virtuoso.dev/src/*"],
+      "@virtuoso.dev/data-table": ["./src/index.ts"]
+    }
+  },
   "include": ["src", "tests", "vite.config.ts", "vitest.config.ts"]
 }
