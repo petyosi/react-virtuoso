@@ -21,7 +21,7 @@ export interface ProcessedStickyGroup {
   sortedIndices: number[]
 }
 
-interface StickyResult {
+export interface StickyResult {
   stickyStartItems: Item<unknown>[]
   stickyStartTops: number[]
   stickyEndItems: Item<unknown>[]
@@ -162,18 +162,15 @@ function findNextIndexInSortedArray(indices: number[], target: number): number |
   return pos === -1 ? undefined : indices[pos + 1]
 }
 
-export function computeStickyItems(
+function buildStickyResultFromSelection(
   processedGroups: ProcessedStickyGroup[],
+  selectedIndices: number[],
   offsetTree: OffsetBreakpoint[],
   viewportStart: number,
   viewportEnd: number,
   data: DataArray | null,
   stickyHeaderHeight = 0
 ): StickyResult {
-  if (processedGroups.length === 0) {
-    return EMPTY_STICKY_RESULT
-  }
-
   const viewportSize = viewportEnd - viewportStart
 
   const stickyStartItems: Item<unknown>[] = []
@@ -183,48 +180,47 @@ export function computeStickyItems(
   const excludedIndices = new Set<number>()
   let startStickySize = 0
   let endStickySize = 0
-  let cumulativeThreshold = viewportStart
 
-  for (const group of processedGroups) {
-    const foundIndex =
-      group.align === 'start'
-        ? findStickyStartIndex(group.sortedIndices, cumulativeThreshold, offsetTree)
-        : findStickyEndIndex(group.sortedIndices, viewportEnd, offsetTree)
+  for (let groupIndex = 0; groupIndex < processedGroups.length; groupIndex++) {
+    const group = processedGroups[groupIndex]!
+    const foundIndex = selectedIndices[groupIndex] ?? -1
 
-    if (foundIndex !== -1) {
-      const [offset, size] = itemOffsetAndSize(foundIndex, offsetTree)
-
-      if (startStickySize + endStickySize + size >= viewportSize) {
-        continue
-      }
-
-      const item: Item<unknown> = {
-        index: foundIndex,
-        offset,
-        size,
-        data: data?.[foundIndex],
-        prevData: data?.[foundIndex - 1] ?? null,
-        nextData: data?.[foundIndex + 1] ?? null,
-      }
-
-      if (group.align === 'start') {
-        stickyStartItems.push(item)
-        startStickySize += size
-        cumulativeThreshold += size
-
-        const nextIndex = findNextIndexInSortedArray(group.sortedIndices, foundIndex)
-        if (nextIndex === undefined) {
-          stickyStartNextOffsets.push(undefined)
-        } else {
-          const [nextOff] = itemOffsetAndSize(nextIndex, offsetTree)
-          stickyStartNextOffsets.push(nextOff)
-        }
-      } else {
-        stickyEndItems.push(item)
-        endStickySize += size
-      }
-      excludedIndices.add(foundIndex)
+    if (foundIndex === -1) {
+      continue
     }
+
+    const [offset, size] = itemOffsetAndSize(foundIndex, offsetTree)
+
+    if (startStickySize + endStickySize + size >= viewportSize) {
+      continue
+    }
+
+    const item: Item<unknown> = {
+      index: foundIndex,
+      offset,
+      size,
+      data: data?.[foundIndex],
+      prevData: data?.[foundIndex - 1] ?? null,
+      nextData: data?.[foundIndex + 1] ?? null,
+    }
+
+    if (group.align === 'start') {
+      stickyStartItems.push(item)
+      startStickySize += size
+
+      const nextIndex = findNextIndexInSortedArray(group.sortedIndices, foundIndex)
+      if (nextIndex === undefined) {
+        stickyStartNextOffsets.push(undefined)
+      } else {
+        const [nextOff] = itemOffsetAndSize(nextIndex, offsetTree)
+        stickyStartNextOffsets.push(nextOff)
+      }
+    } else {
+      stickyEndItems.push(item)
+      endStickySize += size
+    }
+
+    excludedIndices.add(foundIndex)
   }
 
   // When a parent level's next group approaches, it must push the entire child
@@ -253,7 +249,7 @@ export function computeStickyItems(
     cumulativeTop = top + stickyStartItems[i]!.size
   }
 
-  const result = {
+  return {
     stickyStartItems,
     stickyStartTops,
     stickyEndItems,
@@ -261,5 +257,99 @@ export function computeStickyItems(
     endStickySize,
     excludedIndices,
   }
-  return result
+}
+
+export function computeStickyItems(
+  processedGroups: ProcessedStickyGroup[],
+  offsetTree: OffsetBreakpoint[],
+  viewportStart: number,
+  viewportEnd: number,
+  data: DataArray | null,
+  stickyHeaderHeight = 0
+): StickyResult {
+  if (processedGroups.length === 0) {
+    return EMPTY_STICKY_RESULT
+  }
+
+  const viewportSize = viewportEnd - viewportStart
+  let cumulativeThreshold = viewportStart
+  let estimatedStartStickySize = 0
+  let estimatedEndStickySize = 0
+  const selectedIndices: number[] = []
+
+  for (const group of processedGroups) {
+    const foundIndex =
+      group.align === 'start'
+        ? findStickyStartIndex(group.sortedIndices, cumulativeThreshold, offsetTree)
+        : findStickyEndIndex(group.sortedIndices, viewportEnd, offsetTree)
+
+    if (foundIndex === -1) {
+      selectedIndices.push(-1)
+      continue
+    }
+
+    const [, size] = itemOffsetAndSize(foundIndex, offsetTree)
+
+    if (estimatedStartStickySize + estimatedEndStickySize + size >= viewportSize) {
+      selectedIndices.push(-1)
+      continue
+    }
+
+    if (group.align === 'start') {
+      estimatedStartStickySize += size
+      cumulativeThreshold += size
+    } else {
+      estimatedEndStickySize += size
+    }
+    selectedIndices.push(foundIndex)
+  }
+
+  return buildStickyResultFromSelection(processedGroups, selectedIndices, offsetTree, viewportStart, viewportEnd, data, stickyHeaderHeight)
+}
+
+export function computeStickyItemsFromAnchorIndex(
+  processedGroups: ProcessedStickyGroup[],
+  offsetTree: OffsetBreakpoint[],
+  anchorIndex: number,
+  viewportStart: number,
+  viewportEnd: number,
+  data: DataArray | null,
+  stickyHeaderHeight = 0
+): StickyResult {
+  if (processedGroups.length === 0) {
+    return EMPTY_STICKY_RESULT
+  }
+
+  const viewportSize = viewportEnd - viewportStart
+  const [anchorOffset] = itemOffsetAndSize(anchorIndex, offsetTree)
+  let estimatedStartStickySize = 0
+  let estimatedEndStickySize = 0
+  const selectedIndices: number[] = []
+
+  for (const group of processedGroups) {
+    const foundIndex =
+      group.align === 'start'
+        ? findStickyStartIndex(group.sortedIndices, anchorOffset, offsetTree)
+        : findStickyEndIndex(group.sortedIndices, viewportEnd, offsetTree)
+
+    if (foundIndex === -1) {
+      selectedIndices.push(-1)
+      continue
+    }
+
+    const [, size] = itemOffsetAndSize(foundIndex, offsetTree)
+    if (estimatedStartStickySize + estimatedEndStickySize + size >= viewportSize) {
+      selectedIndices.push(-1)
+      continue
+    }
+
+    if (group.align === 'start') {
+      estimatedStartStickySize += size
+    } else {
+      estimatedEndStickySize += size
+    }
+    selectedIndices.push(foundIndex)
+  }
+
+  return buildStickyResultFromSelection(processedGroups, selectedIndices, offsetTree, viewportStart, viewportEnd, data, stickyHeaderHeight)
 }

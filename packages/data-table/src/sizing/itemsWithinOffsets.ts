@@ -4,7 +4,7 @@ import { computeStickyItems, EMPTY_STICKY_RESULT } from './stickyItems'
 
 import type { DataArray, Item } from '../interfaces'
 import type { OffsetBreakpoint } from './SizeState'
-import type { ProcessedStickyGroup } from './stickyItems'
+import type { ProcessedStickyGroup, StickyResult } from './stickyItems'
 
 interface VisibleItemsResult {
   items: Item<unknown>[]
@@ -24,22 +24,17 @@ export interface ExcludeIndicesInfo {
   totalExcludedSize: number
 }
 
-export function itemsWithinOffsets(
+export function itemsWithinOffsetsWithStickyResult(
   offsetTree: OffsetBreakpoint[],
   viewportStart: number,
   viewportEnd: number,
   totalCount: number,
   totalSize: number,
   data: DataArray | null,
-  stickyGroups?: ProcessedStickyGroup[],
+  stickyResult: StickyResult,
   excludeIndicesInfo?: ExcludeIndicesInfo,
   stickyHeaderHeight = 0
 ): VisibleItemsResult {
-  const stickyResult =
-    stickyGroups && stickyGroups.length > 0
-      ? computeStickyItems(stickyGroups, offsetTree, viewportStart, viewportEnd, data, stickyHeaderHeight)
-      : EMPTY_STICKY_RESULT
-
   const lastStickyStartIdx = stickyResult.stickyStartItems.length - 1
   const visualStartStickySize =
     lastStickyStartIdx >= 0
@@ -181,4 +176,33 @@ export function itemsWithinOffsets(
     paddingStart,
     paddingEnd,
   }
+}
+
+export function itemsWithinOffsets(
+  offsetTree: OffsetBreakpoint[],
+  viewportStart: number,
+  viewportEnd: number,
+  totalCount: number,
+  totalSize: number,
+  data: DataArray | null,
+  stickyGroups?: ProcessedStickyGroup[],
+  excludeIndicesInfo?: ExcludeIndicesInfo,
+  stickyHeaderHeight = 0
+): VisibleItemsResult {
+  const stickyResult =
+    stickyGroups && stickyGroups.length > 0
+      ? computeStickyItems(stickyGroups, offsetTree, viewportStart, viewportEnd, data, stickyHeaderHeight)
+      : EMPTY_STICKY_RESULT
+
+  return itemsWithinOffsetsWithStickyResult(
+    offsetTree,
+    viewportStart,
+    viewportEnd,
+    totalCount,
+    totalSize,
+    data,
+    stickyResult,
+    excludeIndicesInfo,
+    stickyHeaderHeight
+  )
 }

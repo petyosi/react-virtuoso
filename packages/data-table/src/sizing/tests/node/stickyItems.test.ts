@@ -2,9 +2,16 @@
 // oxlint-disable max-expects
 import { describe, expect, it } from 'vitest'
 
-import { itemsWithinOffsets } from '../../itemsWithinOffsets'
+import { itemsWithinOffsets, itemsWithinOffsetsWithStickyResult } from '../../itemsWithinOffsets'
 import { EMPTY_SIZE_STATE, updateSizeState } from '../../SizeState'
-import { computeStickyItems, EMPTY_STICKY_RESULT, findStickyEndIndex, findStickyStartIndex, processStickyConfig } from '../../stickyItems'
+import {
+  computeStickyItems,
+  computeStickyItemsFromAnchorIndex,
+  EMPTY_STICKY_RESULT,
+  findStickyEndIndex,
+  findStickyStartIndex,
+  processStickyConfig,
+} from '../../stickyItems'
 
 import type { SizeState } from '../../SizeState'
 import type { ProcessedStickyGroup, StickyItemsConfig } from '../../stickyItems'
@@ -725,6 +732,20 @@ describe('multi-level sticky group hierarchy consistency', () => {
     const itemIndices = result.items.map((i) => i.index)
     expect(itemIndices).toContain(10)
   })
+
+  it('can widen the render window without changing nested sticky selection', () => {
+    const state = createSizeState([{ startIndex: 0, endIndex: TOTAL_COUNT - 1, size: ITEM_SIZE }])
+    const totalSize = TOTAL_COUNT * ITEM_SIZE
+    const groups = makeGroups()
+    const stickyResult = computeStickyItems(groups, state.offsetTree, 440, 940, null)
+
+    const narrow = itemsWithinOffsetsWithStickyResult(state.offsetTree, 440, 940, TOTAL_COUNT, totalSize, null, stickyResult)
+    const wide = itemsWithinOffsetsWithStickyResult(state.offsetTree, 40, 1340, TOTAL_COUNT, totalSize, null, stickyResult)
+
+    expect(narrow.stickyStartItems.map((item) => item.index)).toStrictEqual([10, 11])
+    expect(wide.stickyStartItems.map((item) => item.index)).toStrictEqual([10, 11])
+    expect(wide.items.length).toBeGreaterThan(narrow.items.length)
+  })
 })
 
 describe('stickyHeaderHeight offset', () => {
@@ -799,5 +820,219 @@ describe('stickyHeaderHeight offset', () => {
       expect(result.stickyStartItems).toHaveLength(1)
       expect(result.stickyStartItems[0]!.index).toBe(0)
     })
+  })
+})
+
+describe('viewport shift (increaseViewportBy simulation)', () => {
+  // Layout: 2 departments, 3 teams each, 30 employees per team.
+  // Items per team section: 1 header + 30 employees = 31
+  // Items per department: 1 header + 3 * 31 = 94
+  // Total: 2 * 94 = 188 items
+  const ITEM_SIZE = 40
+  const EMPLOYEES_PER_TEAM = 30
+  const TEAMS_PER_DEPT = 3
+  const ITEMS_PER_TEAM = 1 + EMPLOYEES_PER_TEAM // 31
+  const ITEMS_PER_DEPT = 1 + TEAMS_PER_DEPT * ITEMS_PER_TEAM // 94
+  const DEPT_COUNT = 2
+  const TOTAL = DEPT_COUNT * ITEMS_PER_DEPT // 188
+  const TOTAL_SIZE = TOTAL * ITEM_SIZE // 7520
+
+  const LEVEL_0_INDICES = [0, ITEMS_PER_DEPT] // [0, 94]
+  const LEVEL_1_INDICES = [
+    1,
+    1 + ITEMS_PER_TEAM,
+    1 + 2 * ITEMS_PER_TEAM, // dept 0 teams: 1, 32, 63
+    ITEMS_PER_DEPT + 1,
+    ITEMS_PER_DEPT + 1 + ITEMS_PER_TEAM,
+    ITEMS_PER_DEPT + 1 + 2 * ITEMS_PER_TEAM, // dept 1 teams: 95, 126, 157
+  ]
+
+  function makeGroups(): ProcessedStickyGroup[] {
+    return [
+      { groupId: 0, align: 'start', level: 0, sortedIndices: LEVEL_0_INDICES },
+      { groupId: 1, align: 'start', level: 1, sortedIndices: LEVEL_1_INDICES },
+    ]
+  }
+
+  it('selects correct level 1 item with un-shifted viewport', () => {
+    const offsetTree = createOffsetTree([{ startIndex: 0, endIndex: TOTAL - 1, size: ITEM_SIZE }])
+    const groups = makeGroups()
+
+    // Team 0-2 at index 63, offset = 63 * 40 = 2520
+    // With the true viewport at 2560 (past Team 0-2's header), Team 0-2 should be sticky
+    const viewportStart = 2560
+    const result = computeStickyItems(groups, offsetTree, viewportStart, viewportStart + 500, null)
+
+    expect(result.stickyStartItems).toHaveLength(2)
+    expect(result.stickyStartItems[0]!.index).toBe(0) // Dept 0
+    expect(result.stickyStartItems[1]!.index).toBe(63) // Team 0-2
+  })
+
+  it('computeStickyItemsFromAnchorIndex selects correct group headers for a given data row', () => {
+    const offsetTree = createOffsetTree([{ startIndex: 0, endIndex: TOTAL - 1, size: ITEM_SIZE }])
+    const groups = makeGroups()
+
+    // Employee 0-2-5 is at index 63 + 1 + 5 = 69
+    // Its group headers should be: Dept 0 (index 0) and Team 0-2 (index 63)
+    const anchorIndex = 69
+    const viewportStart = 2560
+    const result = computeStickyItemsFromAnchorIndex(groups, offsetTree, anchorIndex, viewportStart, viewportStart + 500, null)
+
+    expect(result.stickyStartItems).toHaveLength(2)
+    expect(result.stickyStartItems[0]!.index).toBe(0) // Dept 0
+    expect(result.stickyStartItems[1]!.index).toBe(63) // Team 0-2
+  })
+
+  it('level 1 sticky transitions exactly at team header offset minus parent size', () => {
+    const offsetTree = createOffsetTree([{ startIndex: 0, endIndex: TOTAL - 1, size: ITEM_SIZE }])
+    const groups = makeGroups()
+
+    // Team 0-1 at index 32, offset = 32 * 40 = 1280
+    // Transition when offset(Team 0-1) <= viewportStart + deptHeaderSize
+    // i.e. viewportStart >= 1280 - 40 = 1240
+    const team01Offset = 32 * ITEM_SIZE // 1280
+    const transitionPoint = team01Offset - ITEM_SIZE // 1240
+
+    const before = computeStickyItems(groups, offsetTree, transitionPoint - 1, transitionPoint - 1 + 500, null)
+    expect(before.stickyStartItems[1]!.index).toBe(1) // still Team 0-0
+
+    const at = computeStickyItems(groups, offsetTree, transitionPoint, transitionPoint + 500, null)
+    expect(at.stickyStartItems[1]!.index).toBe(32) // now Team 0-1
+  })
+
+  it('anchor-corrected sticky matches the first visible data row at every scroll position', () => {
+    const offsetTree = createOffsetTree([{ startIndex: 0, endIndex: TOTAL - 1, size: ITEM_SIZE }])
+    const groups = makeGroups()
+    const groupIndexSet = new Set([...LEVEL_0_INDICES, ...LEVEL_1_INDICES])
+
+    for (let vs = 0; vs < TOTAL_SIZE - 500; vs += ITEM_SIZE) {
+      const initialResult = computeStickyItems(groups, offsetTree, vs, vs + 500, null)
+      if (initialResult.stickyStartItems.length < 2) {
+        continue
+      }
+
+      const firstRegularOffset = vs + initialResult.startStickySize
+      let firstDataIndex = Math.floor(firstRegularOffset / ITEM_SIZE)
+      while (firstDataIndex < TOTAL && (groupIndexSet.has(firstDataIndex) || initialResult.excludedIndices.has(firstDataIndex))) {
+        firstDataIndex++
+      }
+      if (firstDataIndex >= TOTAL) {
+        continue
+      }
+
+      // Anchor-based correction: use the first visible data row to select the correct sticky headers
+      const corrected = computeStickyItemsFromAnchorIndex(groups, offsetTree, firstDataIndex, vs, vs + 500, null)
+      if (corrected.stickyStartItems.length < 2) {
+        continue
+      }
+
+      const stickyTeamIndex = corrected.stickyStartItems[1]!.index
+      const teamPos = LEVEL_1_INDICES.indexOf(stickyTeamIndex)
+      const rangeEnd = LEVEL_1_INDICES[teamPos + 1] ?? TOTAL
+
+      expect(
+        firstDataIndex,
+        `At viewportStart=${vs}, corrected sticky team is index ${stickyTeamIndex} but first data row index ${firstDataIndex} is outside [${stickyTeamIndex}, ${rangeEnd})`
+      ).toBeGreaterThanOrEqual(stickyTeamIndex)
+      expect(firstDataIndex).toBeLessThan(rangeEnd)
+    }
+  })
+
+  it('selects correct team with larger group headers than data rows', () => {
+    // dept header: 60px, team headers: 48px, employees: 40px
+    // Dept(0), Team-0(1), employees 2-11, Team-1(12), employees 13-22
+    // Team-1 offset = 60 + 48 + 10*40 = 508
+    // Transition: viewportStart >= 508 - 60 = 448
+    const offsetTree = createOffsetTree([
+      { startIndex: 0, endIndex: 0, size: 60 },
+      { startIndex: 1, endIndex: 1, size: 48 },
+      { startIndex: 2, endIndex: 11, size: 40 },
+      { startIndex: 12, endIndex: 12, size: 48 },
+      { startIndex: 13, endIndex: 22, size: 40 },
+    ])
+    const groups: ProcessedStickyGroup[] = [
+      { groupId: 0, align: 'start', level: 0, sortedIndices: [0] },
+      { groupId: 1, align: 'start', level: 1, sortedIndices: [1, 12] },
+    ]
+
+    const before = computeStickyItems(groups, offsetTree, 447, 947, null)
+    expect(before.stickyStartItems[1]!.index).toBe(1) // still Team-0
+
+    const at = computeStickyItems(groups, offsetTree, 448, 948, null)
+    expect(at.stickyStartItems[1]!.index).toBe(12) // now Team-1
+  })
+
+  it('three-level hierarchy selects correct sticky item at each level', () => {
+    // Dept(0), Div-A(1), Team-Alpha(2), employees 3-7,
+    // Team-Beta(8), employees 9-13,
+    // Div-B(14), Team-Gamma(15), employees 16-20,
+    // Dept-2(21), ...
+    const TOTAL_3L = 42
+    const offsetTree = createOffsetTree([{ startIndex: 0, endIndex: TOTAL_3L - 1, size: ITEM_SIZE }])
+    const groups: ProcessedStickyGroup[] = [
+      { groupId: 0, align: 'start', level: 0, sortedIndices: [0, 21] },
+      { groupId: 1, align: 'start', level: 1, sortedIndices: [1, 14, 22, 35] },
+      { groupId: 2, align: 'start', level: 2, sortedIndices: [2, 8, 15, 23, 29, 36] },
+    ]
+
+    // Scroll to Team-Beta territory (index 8, offset 320)
+    // L0: Dept(0) at offset 0 <= 320 -> sticky. threshold = 360
+    // L1: Div-A(1) at offset 40 <= 360 -> sticky. threshold = 400
+    // L2: Team-Beta(8) at offset 320 <= 400 -> sticky.
+    const result = computeStickyItems(groups, offsetTree, 320, 820, null)
+
+    expect(result.stickyStartItems).toHaveLength(3)
+    expect(result.stickyStartItems[0]!.index).toBe(0) // Dept
+    expect(result.stickyStartItems[1]!.index).toBe(1) // Div-A
+    expect(result.stickyStartItems[2]!.index).toBe(8) // Team-Beta
+  })
+
+  it('anchor-corrected sticky covers first data row through itemsWithinOffsetsWithStickyResult at every scroll position', () => {
+    const state = createSizeState([{ startIndex: 0, endIndex: TOTAL - 1, size: ITEM_SIZE }])
+    const groups = makeGroups()
+    const groupIndexSet = new Set([...LEVEL_0_INDICES, ...LEVEL_1_INDICES])
+
+    for (let viewportStart = 0; viewportStart < TOTAL_SIZE - 500; viewportStart += ITEM_SIZE) {
+      const viewportEnd = viewportStart + 500
+
+      // Initial sticky selection (may lag by one team near boundaries)
+      const initialSticky = computeStickyItems(groups, state.offsetTree, viewportStart, viewportEnd, null)
+      let result = itemsWithinOffsetsWithStickyResult(state.offsetTree, viewportStart, viewportEnd, TOTAL, TOTAL_SIZE, null, initialSticky)
+
+      if (result.stickyStartItems.length < 2 || result.items.length === 0) {
+        continue
+      }
+
+      // Find first visible data row and correct via anchor
+      const firstDataItem = result.items.find((item) => !groupIndexSet.has(item.index))
+      if (!firstDataItem) {
+        continue
+      }
+
+      const correctedSticky = computeStickyItemsFromAnchorIndex(
+        groups,
+        state.offsetTree,
+        firstDataItem.index,
+        viewportStart,
+        viewportEnd,
+        null
+      )
+      result = itemsWithinOffsetsWithStickyResult(state.offsetTree, viewportStart, viewportEnd, TOTAL, TOTAL_SIZE, null, correctedSticky)
+
+      const correctedFirstData = result.items.find((item) => !groupIndexSet.has(item.index))
+      if (!correctedFirstData || result.stickyStartItems.length < 2) {
+        continue
+      }
+
+      const stickyTeamIdx = result.stickyStartItems[1]!.index
+      const teamPos = LEVEL_1_INDICES.indexOf(stickyTeamIdx)
+      const teamEnd = LEVEL_1_INDICES[teamPos + 1] ?? TOTAL
+
+      expect(
+        correctedFirstData.index,
+        `viewportStart=${viewportStart}: sticky team ${stickyTeamIdx}, first data row ${correctedFirstData.index} outside [${stickyTeamIdx}, ${teamEnd})`
+      ).toBeGreaterThanOrEqual(stickyTeamIdx)
+      expect(correctedFirstData.index).toBeLessThan(teamEnd)
+    }
   })
 })

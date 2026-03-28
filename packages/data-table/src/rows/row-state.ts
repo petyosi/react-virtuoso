@@ -25,10 +25,12 @@ import {
   mobileSafariIsReadjusting$,
 } from '../scroll/state'
 import { empty } from '../sizing/AATree'
-import { itemsWithinOffsets } from '../sizing/itemsWithinOffsets'
+import { itemsWithinOffsetsWithStickyResult } from '../sizing/itemsWithinOffsets'
+import { computeStickyItems, computeStickyItemsFromAnchorIndex, EMPTY_STICKY_RESULT } from '../sizing/stickyItems'
 
 import type { DataArray, Item, Row } from '../interfaces'
 import type { OffsetBreakpoint } from '../sizing/SizeState'
+import type { StickyResult } from '../sizing/stickyItems'
 
 function rowsSeed(index: number, data: unknown[] | null) {
   return [
@@ -50,6 +52,7 @@ const EMPTY_ROWS_STATE = {
   rows: EMPTY_ROWS,
   stickyStartItems: EMPTY_STICKY_START_ITEMS,
   stickyStartTops: EMPTY_STICKY_START_TOPS,
+  stickySignature: '',
   startStickySize: 0,
   listEnd: 0,
   listStart: 0,
@@ -67,6 +70,53 @@ const EMPTY_ROWS_STATE = {
 const muteRowsChange$ = Cell(false)
 
 export const rowsState$ = Cell(EMPTY_ROWS_STATE)
+
+function buildStickySignature(stickyResult: StickyResult) {
+  if (stickyResult === EMPTY_STICKY_RESULT || (stickyResult.stickyStartItems.length === 0 && stickyResult.stickyEndItems.length === 0)) {
+    return ''
+  }
+
+  const stickyStart = stickyResult.stickyStartItems.map((item, index) => `${item.index}:${stickyResult.stickyStartTops[index]}`).join('|')
+  const stickyEnd = stickyResult.stickyEndItems.map((item) => item.index).join('|')
+
+  return `${stickyStart}::${stickyEnd}`
+}
+
+function visualStartStickySize(stickyResult: StickyResult, stickyHeaderHeight: number) {
+  const lastStickyStartIdx = stickyResult.stickyStartItems.length - 1
+  return lastStickyStartIdx >= 0
+    ? stickyResult.stickyStartTops[lastStickyStartIdx]! + stickyResult.stickyStartItems[lastStickyStartIdx]!.size - stickyHeaderHeight
+    : 0
+}
+
+function firstVisibleDataRowIndex(
+  rows: Row<unknown>[],
+  groupIndexSet: Set<number>,
+  visibleViewportTop: number,
+  visibleViewportBottom: number,
+  stickyResult: StickyResult,
+  stickyHeaderHeight: number
+) {
+  const effectiveVisibleStart = visibleViewportTop + visualStartStickySize(stickyResult, stickyHeaderHeight)
+
+  for (const row of rows) {
+    if (groupIndexSet.has(row.index)) {
+      continue
+    }
+
+    if (row.offset + row.size <= effectiveVisibleStart) {
+      continue
+    }
+
+    if (row.offset >= visibleViewportBottom) {
+      return null
+    }
+
+    return row.index
+  }
+
+  return null
+}
 
 e.link(
   e.pipe(
@@ -88,12 +138,13 @@ e.link(
       recalcInProgress$,
       mobileSafariIsReadjusting$,
       groupStickyConfig$,
+      groupIndexSet$,
       increaseViewportBy$
     ),
     e.filter((args) => {
-      const mobileSafariIsReadjusting = args.at(-3) as boolean
-      const recalcInProgress = args.at(-4) as boolean
-      const muteRowsChange = args.at(-5) as boolean
+      const mobileSafariIsReadjusting = args.at(-4) as boolean
+      const recalcInProgress = args.at(-5) as boolean
+      const muteRowsChange = args.at(-6) as boolean
       return !recalcInProgress && !mobileSafariIsReadjusting && !muteRowsChange
     }),
     e.withLatestFrom(viewportHeight$, headerHeight$, scrollTop$, scrollToPending$, scrollDirection$, lastJumpDueToRowResize$),
@@ -119,6 +170,7 @@ e.link(
             _recalcInProgress,
             _mobileSafariIsReadjusting,
             groupStickyConfig,
+            groupIndexSet,
             increaseViewportBy,
           ],
           viewportHeight,
@@ -166,57 +218,111 @@ e.link(
           }
         }
 
-        const viewportTop = Math.min(
+        const visibleViewportTop = Math.min(
           Math.max(
-            listScrollTop +
-              offsetDueToPendingScrollToInitialLocation +
-              scrollOffset -
-              deviation -
-              scrollableHeaderHeight +
-              deviationDelta -
-              increaseViewportBy,
+            listScrollTop + offsetDueToPendingScrollToInitialLocation + scrollOffset - deviation - scrollableHeaderHeight + deviationDelta,
             0
           ),
           totalHeight - visibleListHeight
         )
 
-        const viewportBottom = viewportTop + visibleListHeight + increaseViewportBy * 2
+        const visibleViewportBottom = visibleViewportTop + visibleListHeight
+        const renderViewportTop = Math.min(Math.max(visibleViewportTop - increaseViewportBy, 0), totalHeight - visibleListHeight)
+        const renderViewportBottom = renderViewportTop + visibleListHeight + increaseViewportBy * 2
+
+        const stickyResult =
+          groupStickyConfig.length > 0
+            ? computeStickyItems(
+                groupStickyConfig,
+                sizeState.offsetTree,
+                visibleViewportTop,
+                visibleViewportBottom,
+                data,
+                stickyHeaderHeight
+              )
+            : EMPTY_STICKY_RESULT
+
+        let effectiveStickyResult = stickyResult
+        let stickySignature = buildStickySignature(effectiveStickyResult)
 
         if (
+          groupStickyConfig.length === 0 &&
           current.offsetTree === sizeState.offsetTree &&
           current.totalCount === totalCount &&
           current.data === data &&
-          viewportTop >= current.listStart &&
-          viewportBottom <= current.listEnd
+          current.stickySignature === stickySignature &&
+          renderViewportTop >= current.listStart &&
+          renderViewportBottom <= current.listEnd
         ) {
           return current
         }
 
-        const {
-          items: rows,
-          stickyStartItems,
-          stickyStartTops,
-          startStickySize,
-          listStart,
-          listEnd,
-          paddingStart,
-          paddingEnd,
-        } = itemsWithinOffsets(
+        let rowsResult = itemsWithinOffsetsWithStickyResult(
           sizeState.offsetTree,
-          viewportTop,
-          viewportBottom,
+          renderViewportTop,
+          renderViewportBottom,
           totalCount,
           totalHeight,
           data,
-          groupStickyConfig,
+          effectiveStickyResult,
           undefined,
           stickyHeaderHeight
         )
+
+        // Sticky rows should describe the first visible data row below the sticky stack.
+        // A threshold-only selection can lag by one group near transitions, so correct it
+        // against the actual visible data row when necessary.
+        for (let iteration = 0; iteration < 2; iteration++) {
+          const anchorIndex = firstVisibleDataRowIndex(
+            rowsResult.items,
+            groupIndexSet,
+            visibleViewportTop,
+            visibleViewportBottom,
+            effectiveStickyResult,
+            stickyHeaderHeight
+          )
+
+          if (anchorIndex === null) {
+            break
+          }
+
+          const anchoredStickyResult = computeStickyItemsFromAnchorIndex(
+            groupStickyConfig,
+            sizeState.offsetTree,
+            anchorIndex,
+            visibleViewportTop,
+            visibleViewportBottom,
+            data,
+            stickyHeaderHeight
+          )
+          const anchoredStickySignature = buildStickySignature(anchoredStickyResult)
+
+          if (anchoredStickySignature === stickySignature) {
+            break
+          }
+
+          effectiveStickyResult = anchoredStickyResult
+          stickySignature = anchoredStickySignature
+          rowsResult = itemsWithinOffsetsWithStickyResult(
+            sizeState.offsetTree,
+            renderViewportTop,
+            renderViewportBottom,
+            totalCount,
+            totalHeight,
+            data,
+            effectiveStickyResult,
+            undefined,
+            stickyHeaderHeight
+          )
+        }
+
+        const { items: rows, stickyStartItems, stickyStartTops, startStickySize, listStart, listEnd, paddingStart, paddingEnd } = rowsResult
 
         return {
           rows,
           stickyStartItems,
           stickyStartTops,
+          stickySignature,
           startStickySize,
           listEnd,
           listStart,
