@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.0",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
@@ -55,7 +55,7 @@
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",
     "vitest": "catalog:",
-    "vitest-browser-react": "^2.0.2"
+    "vitest-browser-react": "^2.1.0"
   },
   "peerDependencies": {
     "@virtuoso.dev/reactive-engine-core": ">=0.0.5",
