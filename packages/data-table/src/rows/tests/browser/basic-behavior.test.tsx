@@ -31,7 +31,7 @@ const MULTI_COLUMN_ITEMS = Array.from({ length: ITEM_COUNT }, (_, i) => ({
 const rowSelector = '[data-testid=virtuoso-table-row]'
 const tableBodySelector = '[data-testid=virtuoso-table-body]'
 const scrollerSelector = '[data-testid=virtuoso-table-scroller]'
-const headerCellSelector = '[data-column-key]'
+const headerCellSelector = '[data-table-element-role="column-header"]'
 const readySelector = '[data-testid=virtuoso-table-root][data-ready]'
 const scrollableCellsSelector = '[data-scrollable="true"]'
 

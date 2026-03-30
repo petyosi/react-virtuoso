@@ -1,3 +1,6 @@
+// oxlint-disable-next-line no-unassigned-import
+import '../../styles.css'
+
 // Suppress the `null` logged by vitest's error catcher for ResizeObserver errors
 // ResizeObserver errors have event.error = null, and vitest logs this null value
 const originalError = console.error

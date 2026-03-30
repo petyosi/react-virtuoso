@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 import tailwindcss from '@tailwindcss/vite'
@@ -23,6 +24,7 @@ export default inLadle
             replacement: resolve(import.meta.dirname, '../../apps/virtuoso.dev/registry/new-york/data-table/data-table.tsx'),
           },
           { find: '@/', replacement: `${resolve(import.meta.dirname, '../../apps/virtuoso.dev/src')}/` },
+          { find: '@virtuoso.dev/data-table/styles.css', replacement: resolve(import.meta.dirname, 'src/styles.css') },
           { find: '@virtuoso.dev/data-table', replacement: resolve(import.meta.dirname, 'src/index.ts') },
         ],
       },
@@ -44,6 +46,16 @@ export default inLadle
           staticImport: true,
           compilerOptions: { skipLibCheck: true },
         }),
+        {
+          name: 'emit-styles',
+          generateBundle() {
+            this.emitFile({
+              type: 'asset',
+              fileName: 'styles.css',
+              source: readFileSync(resolve(import.meta.dirname, 'src/styles.css'), 'utf8'),
+            })
+          },
+        },
       ],
       build: {
         minify: true,

@@ -91,11 +91,7 @@ export function ColumnHeader(props: ColumnHeader.Props) {
   return null
 }
 
-const DEFAULT_COLUMN_HEADER_STYLE: CSSProperties = {
-  flexGrow: 1,
-  minWidth: 1,
-  boxSizing: 'border-box',
-}
+const DEFAULT_COLUMN_HEADER_STYLE: CSSProperties = {}
 
 export interface ColumnHeaderRendererProps {
   columnKey: string
@@ -141,12 +137,18 @@ export function ColumnHeaderRenderer({
       minWidth: override,
       flexGrow: 0,
       flexShrink: 0,
-      boxSizing: 'border-box',
     }
   }, [columnKey, columnWidthOverrides])
 
   return (
-    <div ref={ref} className={className} data-column-key={columnKey} data-observer-group="column-header" style={style}>
+    <div
+      ref={ref}
+      className={className}
+      data-table-element-role="column-header"
+      data-column-key={columnKey}
+      data-observer-group="column-header"
+      style={style}
+    >
       {content}
     </div>
   )

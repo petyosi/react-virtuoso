@@ -68,7 +68,7 @@ describe('column groups', () => {
     expect(groupHeader).not.toBeNull()
     expect(groupHeader?.textContent).toBe('Personal Info')
 
-    const groupHeaders = groupContainer?.querySelectorAll('[data-column-key]')
+    const groupHeaders = groupContainer?.querySelectorAll('[data-table-element-role="column-header"]')
     expect(groupHeaders?.length).toBe(2)
   })
 
