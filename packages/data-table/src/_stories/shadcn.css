@@ -3,6 +3,7 @@
 
 @source "../../../../apps/virtuoso.dev/src/components/ui";
 @source "../../../../apps/virtuoso.dev/registry/new-york/data-table";
+@source "./";
 
 @custom-variant dark (&:is(.dark *));
 

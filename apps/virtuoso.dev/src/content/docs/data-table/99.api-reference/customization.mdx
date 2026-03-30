@@ -20,6 +20,80 @@ Used for the custom components that accept the data table context prop.
 
 ---
 
+## DataTableComponents
+
+Component overrides for internal DOM elements of the data table.
+Each override receives the same props the default `<div>` would get, plus the table's `context` value.
+
+### Type Parameters
+
+| Type Parameter | Default type | Description |
+| ------ | ------ | ------ |
+| `Context` | `unknown` | The type of the context passed to the table. |
+
+### Properties
+
+#### Row?: `ComponentType`\<`object` & `RefAttributes`\<`HTMLDivElement`\> & `object`\>
+
+
+Override the element used for data rows (not group header rows).
+Must forward ref, style, children, and data attributes to the root element.
+
+***
+
+#### StickyColumnContainer?: `ComponentType`\<[`StickyColumnContainerComponentProps`](../customization/#stickycolumncontainercomponentprops) & `object`\>
+
+
+Override the sticky column container element (used for both left and right sticky columns,
+in both row cells and header cells). The `data-sticky` attribute indicates the side.
+
+***
+
+#### StickyHeader?: `ComponentType`\<`object` & `RefAttributes`\<`HTMLDivElement`\> & `object`\>
+
+
+Override the sticky header wrapper element.
+Must forward ref, style, and children to the root element.
+
+
+---
+
+## RowComponentProps
+
+> **RowComponentProps** = `object` & `React.RefAttributes`\<`HTMLDivElement`\>
+
+Props passed to the [Row](../customization/#row) component override.
+The component must forward `ref`, `style`, `children`, and data attributes to its root element.
+
+### Type Declaration
+
+#### children
+
+`React.ReactNode`
+
+#### data-index
+
+`number`
+
+#### data-known-size
+
+`number`
+
+#### data-table-element-role
+
+`string`
+
+#### data-testid
+
+`string`
+
+#### style
+
+`React.CSSProperties`
+
+
+---
+
 ## ScrollElementComponent
 
 > **ScrollElementComponent**\<`Context`\> = `React.ComponentType`\<`React.HTMLProps`\<`HTMLDivElement`\> & `object` & `React.RefAttributes`\<`HTMLDivElement`\>\>
@@ -31,4 +105,55 @@ The type of the component that can be used for the scroll element.
 | Type Parameter | Default type | Description |
 | ------ | ------ | ------ |
 | `Context` | `any` | The type of the context passed to the list. |
+
+
+---
+
+## StickyColumnContainerComponentProps
+
+Props passed to the [StickyColumnContainer](../customization/#stickycolumncontainer) component override.
+Used for both left and right sticky column containers in rows and headers.
+The `data-sticky` attribute indicates which side ("left" or "right").
+
+### Properties
+
+#### children
+
+`ReactNode`
+
+***
+
+#### data-sticky
+
+`"left"` \| `"right"`
+
+***
+
+#### style
+
+`CSSProperties`
+
+
+---
+
+## StickyHeaderComponentProps
+
+> **StickyHeaderComponentProps** = `object` & `React.RefAttributes`\<`HTMLDivElement`\>
+
+Props passed to the [StickyHeader](../customization/#stickyheader) component override.
+The component must forward `ref`, `style`, and `children` to its root element.
+
+### Type Declaration
+
+#### children
+
+`React.ReactNode`
+
+#### data-table-element-role
+
+`string`
+
+#### style
+
+`React.CSSProperties`
 

@@ -6,7 +6,9 @@ import type {
   ContextAwareComponent,
   FooterWrapperComponent,
   HeaderWrapperComponent,
+  RowComponentProps,
   ScrollElementComponent,
+  StickyColumnContainerComponentProps,
   StickyFooterWrapperComponent,
   StickyHeaderWrapperComponent,
 } from '../interfaces'
@@ -43,12 +45,13 @@ export const DefaultFooterWrapper: FooterWrapperComponent = React.forwardRef<HTM
   return <div {...props} ref={ref} />
 })
 
-export const DefaultStickyHeaderWrapper: StickyHeaderWrapperComponent = React.forwardRef<HTMLDivElement, { style: React.CSSProperties }>(
-  function DefaultStickyHeaderWrapper({ style, ...props }, ref) {
-    const mergedStyle = React.useMemo(() => ({ ...STICKY_TOP_STYLE, ...style }), [style])
-    return <div {...props} style={mergedStyle} ref={ref} />
-  }
-)
+export const DefaultStickyHeaderWrapper: StickyHeaderWrapperComponent = React.forwardRef<
+  HTMLDivElement,
+  { style: React.CSSProperties; context?: unknown }
+>(function DefaultStickyHeaderWrapper({ style, context: _context, ...props }, ref) {
+  const mergedStyle = React.useMemo(() => ({ ...STICKY_TOP_STYLE, ...style }), [style])
+  return <div {...props} style={mergedStyle} ref={ref} />
+})
 
 export const DefaultStickyFooterWrapper: StickyFooterWrapperComponent = React.forwardRef<HTMLDivElement, { style: React.CSSProperties }>(
   function DefaultStickyFooterWrapper({ style, ...props }, ref) {
@@ -57,7 +60,24 @@ export const DefaultStickyFooterWrapper: StickyFooterWrapperComponent = React.fo
   }
 )
 
+export type RowComponent = React.ComponentType<RowComponentProps & { context?: unknown }>
+export const DefaultRowComponent: RowComponent = React.forwardRef<HTMLDivElement, RowComponentProps & { context?: unknown }>(
+  function DefaultRowComponent({ context: _context, ...props }, ref) {
+    return <div {...props} ref={ref} />
+  }
+)
+
+export type StickyColumnContainerComponent = React.ComponentType<StickyColumnContainerComponentProps & { context?: unknown }>
+export const DefaultStickyColumnContainer: StickyColumnContainerComponent = React.forwardRef<
+  HTMLDivElement,
+  StickyColumnContainerComponentProps & { context?: unknown }
+>(function DefaultStickyColumnContainer({ context: _context, ...props }, ref) {
+  return <div {...props} ref={ref} />
+})
+
 export const headerWrapper$ = Cell<HeaderWrapperComponent>(DefaultHeaderWrapper)
 export const stickyHeaderWrapper$ = Cell<StickyHeaderWrapperComponent>(DefaultStickyHeaderWrapper)
 export const footerWrapper$ = Cell<FooterWrapperComponent>(DefaultFooterWrapper)
 export const stickyFooterWrapper$ = Cell<StickyFooterWrapperComponent>(DefaultStickyFooterWrapper)
+export const rowComponent$ = Cell<RowComponent>(DefaultRowComponent)
+export const stickyColumnContainer$ = Cell<StickyColumnContainerComponent>(DefaultStickyColumnContainer)

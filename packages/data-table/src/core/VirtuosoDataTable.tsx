@@ -16,6 +16,8 @@ import { scrollDirection$ } from '../scroll/state'
 import {
   DefaultFooterWrapper,
   DefaultHeaderWrapper,
+  DefaultRowComponent,
+  DefaultStickyColumnContainer,
   DefaultStickyFooterWrapper,
   DefaultStickyHeaderWrapper,
   emptyPlaceholder$,
@@ -23,7 +25,9 @@ import {
   footerWrapper$,
   header$,
   headerWrapper$,
+  rowComponent$,
   scrollElement$,
+  stickyColumnContainer$,
   stickyFooter$,
   stickyFooterWrapper$,
   stickyHeader$,
@@ -72,6 +76,7 @@ export const VirtuosoDataTable = React.forwardRef<VirtuosoDataTableMethods<unkno
       ScrollElement = 'div',
       increaseViewportBy = 0,
       columnOverscanCount = 0,
+      components,
       children,
       ...scrollerProps
     },
@@ -127,9 +132,11 @@ export const VirtuosoDataTable = React.forwardRef<VirtuosoDataTableMethods<unkno
             [emptyPlaceholder$]: EmptyPlaceholder,
             [scrollElement$]: ScrollElement,
             [stickyFooterWrapper$]: DefaultStickyFooterWrapper,
-            [stickyHeaderWrapper$]: DefaultStickyHeaderWrapper,
+            [stickyHeaderWrapper$]: components?.StickyHeader ?? DefaultStickyHeaderWrapper,
             [footerWrapper$]: DefaultFooterWrapper,
             [headerWrapper$]: DefaultHeaderWrapper,
+            [rowComponent$]: components?.Row ?? DefaultRowComponent,
+            [stickyColumnContainer$]: components?.StickyColumnContainer ?? DefaultStickyColumnContainer,
             [useWindowScroll$]: useWindowScroll,
             [customScrollParent$]: customScrollParent,
             [increaseViewportBy$]: increaseViewportBy,
@@ -151,6 +158,9 @@ export const VirtuosoDataTable = React.forwardRef<VirtuosoDataTableMethods<unkno
             [computeRowKey$]: computeRowKey,
             [emptyPlaceholder$]: EmptyPlaceholder,
             [columnOverscanCount$]: columnOverscanCount,
+            [stickyHeaderWrapper$]: components?.StickyHeader ?? DefaultStickyHeaderWrapper,
+            [rowComponent$]: components?.Row ?? DefaultRowComponent,
+            [stickyColumnContainer$]: components?.StickyColumnContainer ?? DefaultStickyColumnContainer,
           })
           e.singletonSub(onScroll$, onScroll)
           e.singletonSub(currentlyRenderedRows$, onRenderedDataChange)
@@ -166,6 +176,7 @@ export const VirtuosoDataTable = React.forwardRef<VirtuosoDataTableMethods<unkno
           columnOverscanCount,
           onScroll,
           onRenderedDataChange,
+          components,
         ]}
       >
         {children}

@@ -43,6 +43,10 @@ export type {
   ScrollerProps,
   VirtuosoDataTableProps,
   VirtuosoDataTableMethods,
+  DataTableComponents,
+  RowComponentProps,
+  StickyHeaderComponentProps,
+  StickyColumnContainerComponentProps,
 } from './interfaces'
 export { VirtuosoDataTable } from './core/VirtuosoDataTable'
 export { useEngineRef, useRemoteCellValue, useRemotePublisher, useRemoteCell } from '@virtuoso.dev/reactive-engine-react'
