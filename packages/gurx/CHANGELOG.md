@@ -5,7 +5,6 @@
 ### Patch Changes
 
 - [#1369](https://github.com/petyosi/react-virtuoso/pull/1369) [`5b57a93`](https://github.com/petyosi/react-virtuoso/commit/5b57a93ea047dbb9351bfd5786be496bc6ee9b14) Thanks [@petyosi](https://github.com/petyosi)! - Reduce per-publish CPU cost and fix memory leaks in the reactive engine
-
   - Cache `combineCells()` by source set to prevent orphaned graph nodes on repeated calls
   - Clean up `subMultiple()` synthetic nodes on unsubscribe
   - Fast-path `pub()` to skip object allocation for single-node publishes

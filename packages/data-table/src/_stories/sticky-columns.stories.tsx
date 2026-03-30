@@ -2,12 +2,10 @@ import type { CSSProperties } from 'react'
 
 import { usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
-import { Cell, setColumnSticky$, VirtuosoDataTable } from '..'
-import { Column } from '../columns/Column'
-import { ColumnHeader } from '../columns/ColumnHeader'
+import { Button } from '@/components/ui/button'
+import { DataTable, DataTableCell, DataTableColumn, DataTableColumnHeader, setColumnSticky$ } from '@/components/ui/data-table'
 
-import type { ColumnState } from '../columns/column-state'
-import type { ColumnHeaderCustomComponent } from '../columns/ColumnHeader'
+import type { ColumnHeaderCustomComponent, ColumnState } from '@/components/ui/data-table'
 
 const COLUMN_COUNT = 20
 const ITEM_COUNT = 100
@@ -26,131 +24,94 @@ const ITEMS = Array.from({ length: ITEM_COUNT }, (_, rowIndex) => {
   return row
 })
 
-const LIST_STYLE: CSSProperties = { height: 400, width: 600 }
-const HEADER_STYLE: CSSProperties = { fontWeight: 'bold', borderBottom: '1px solid #ccc', padding: '8px 12px' }
-const STICKY_HEADER_STYLE: CSSProperties = { ...HEADER_STYLE, background: '#f0f0f0' }
-
-const IdHeader: ColumnHeaderCustomComponent = ({ column }) => {
-  return <div style={STICKY_HEADER_STYLE}>ID {column.field}</div>
-}
+const TABLE_STYLE: CSSProperties = { height: 400, width: 600 }
 
 export function LeftStickyColumn() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
-      <Column field="id" sticky="left">
-        <ColumnHeader component={IdHeader} />
-        <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-      </Column>
+    <DataTable style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
+      <DataTableColumn field="id" sticky="left">
+        <DataTableColumnHeader>ID</DataTableColumnHeader>
+        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+      </DataTableColumn>
       {Array.from({ length: COLUMN_COUNT }, (_, i) => (
-        <Column key={`col${i}`} field={`col${i}`}>
-          <ColumnHeader>{() => <div style={HEADER_STYLE}>Column {i + 1}</div>}</ColumnHeader>
-          <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-        </Column>
+        <DataTableColumn key={`col${i}`} field={`col${i}`}>
+          <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+        </DataTableColumn>
       ))}
-    </VirtuosoDataTable>
+    </DataTable>
   )
 }
 
 export function RightStickyColumn() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <DataTable style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
       {Array.from({ length: COLUMN_COUNT }, (_, i) => (
-        <Column key={`col${i}`} field={`col${i}`}>
-          <ColumnHeader>{() => <div style={HEADER_STYLE}>Column {i + 1}</div>}</ColumnHeader>
-          <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-        </Column>
+        <DataTableColumn key={`col${i}`} field={`col${i}`}>
+          <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+        </DataTableColumn>
       ))}
-      <Column field="actions" sticky="right">
-        <ColumnHeader>{() => <div style={STICKY_HEADER_STYLE}>Actions</div>}</ColumnHeader>
-        <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-      </Column>
-    </VirtuosoDataTable>
+      <DataTableColumn field="actions" sticky="right">
+        <DataTableColumnHeader>Actions</DataTableColumnHeader>
+        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+      </DataTableColumn>
+    </DataTable>
   )
 }
 
 export function BothStickyColumns() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
-      <Column field="id" sticky="left">
-        <ColumnHeader>{() => <div style={STICKY_HEADER_STYLE}>ID</div>}</ColumnHeader>
-        <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-      </Column>
+    <DataTable style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
+      <DataTableColumn field="id" sticky="left">
+        <DataTableColumnHeader className="w-10 text-red-500 grow-0">ID</DataTableColumnHeader>
+        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+      </DataTableColumn>
       {Array.from({ length: COLUMN_COUNT }, (_, i) => (
-        <Column key={`col${i}`} field={`col${i}`}>
-          <ColumnHeader>{() => <div style={HEADER_STYLE}>Column {i + 1}</div>}</ColumnHeader>
-          <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-        </Column>
+        <DataTableColumn key={`col${i}`} field={`col${i}`}>
+          <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+        </DataTableColumn>
       ))}
-      <Column field="actions" sticky="right">
-        <ColumnHeader>{() => <div style={STICKY_HEADER_STYLE}>Actions</div>}</ColumnHeader>
-        <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-      </Column>
-    </VirtuosoDataTable>
+      <DataTableColumn field="actions" sticky="right">
+        <DataTableColumnHeader>Actions</DataTableColumnHeader>
+        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+      </DataTableColumn>
+    </DataTable>
   )
 }
 
 export function MultipleStickyColumns() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
-      <Column field="id" sticky="left">
-        <ColumnHeader>{() => <div style={STICKY_HEADER_STYLE}>ID</div>}</ColumnHeader>
-        <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-      </Column>
-      <Column field="name" sticky="left">
-        <ColumnHeader>{() => <div style={STICKY_HEADER_STYLE}>Name</div>}</ColumnHeader>
-        <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-      </Column>
-      <Column field="status" sticky="left">
-        <ColumnHeader>{() => <div style={STICKY_HEADER_STYLE}>Status</div>}</ColumnHeader>
-        <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-      </Column>
+    <DataTable style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
+      <DataTableColumn field="id" sticky="left">
+        <DataTableColumnHeader>ID</DataTableColumnHeader>
+        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+      </DataTableColumn>
+      <DataTableColumn field="name" sticky="left">
+        <DataTableColumnHeader>Name</DataTableColumnHeader>
+        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+      </DataTableColumn>
+      <DataTableColumn field="status" sticky="left">
+        <DataTableColumnHeader>Status</DataTableColumnHeader>
+        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+      </DataTableColumn>
       {Array.from({ length: COLUMN_COUNT }, (_, i) => (
-        <Column key={`col${i}`} field={`col${i}`}>
-          <ColumnHeader>{() => <div style={HEADER_STYLE}>Column {i + 1}</div>}</ColumnHeader>
-          <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-        </Column>
+        <DataTableColumn key={`col${i}`} field={`col${i}`}>
+          <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+        </DataTableColumn>
       ))}
-      <Column field="price" sticky="right">
-        <ColumnHeader>{() => <div style={STICKY_HEADER_STYLE}>Price</div>}</ColumnHeader>
-        <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-      </Column>
-      <Column field="actions" sticky="right">
-        <ColumnHeader>{() => <div style={STICKY_HEADER_STYLE}>Actions</div>}</ColumnHeader>
-        <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-      </Column>
-    </VirtuosoDataTable>
+      <DataTableColumn field="price" sticky="right">
+        <DataTableColumnHeader>Price</DataTableColumnHeader>
+        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+      </DataTableColumn>
+      <DataTableColumn field="actions" sticky="right">
+        <DataTableColumnHeader>Actions</DataTableColumnHeader>
+        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+      </DataTableColumn>
+    </DataTable>
   )
-}
-
-const INTERACTIVE_HEADER_STYLE: CSSProperties = {
-  ...HEADER_STYLE,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 4,
-}
-
-const STICKY_BUTTON_CONTAINER_STYLE: CSSProperties = {
-  display: 'flex',
-  gap: 4,
-}
-
-const BUTTON_STYLE: CSSProperties = {
-  fontSize: 10,
-  padding: '2px 6px',
-  cursor: 'pointer',
-}
-
-const ACTIVE_BUTTON_STYLE: CSSProperties = {
-  ...BUTTON_STYLE,
-  background: '#007bff',
-  color: 'white',
-  border: '1px solid #007bff',
-}
-
-const INACTIVE_BUTTON_STYLE: CSSProperties = {
-  ...BUTTON_STYLE,
-  background: 'white',
-  border: '1px solid #ccc',
 }
 
 const InteractiveStickyHeader: ColumnHeaderCustomComponent = ({ columnKey, column, columnState }) => {
@@ -161,7 +122,7 @@ const InteractiveStickyHeader: ColumnHeaderCustomComponent = ({ columnKey, colum
   }
 
   return (
-    <div style={INTERACTIVE_HEADER_STYLE}>
+    <div className="flex flex-col gap-1">
       <span>{column.field}</span>
       <StickyButtons columnState={columnState} onStickyChange={handleStickyChange} />
     </div>
@@ -176,21 +137,23 @@ function StickyButtons({
   onStickyChange: (sticky: 'left' | 'right' | undefined) => void
 }) {
   return (
-    <div style={STICKY_BUTTON_CONTAINER_STYLE}>
-      <button
-        type="button"
-        style={columnState.sticky === 'left' ? ACTIVE_BUTTON_STYLE : INACTIVE_BUTTON_STYLE}
+    <div className="flex gap-1">
+      <Button
+        size="sm"
+        variant={columnState.sticky === 'left' ? 'default' : 'outline'}
+        className="h-5 px-1.5 text-[10px]"
         onClick={() => onStickyChange(columnState.sticky === 'left' ? undefined : 'left')}
       >
         L
-      </button>
-      <button
-        type="button"
-        style={columnState.sticky === 'right' ? ACTIVE_BUTTON_STYLE : INACTIVE_BUTTON_STYLE}
+      </Button>
+      <Button
+        size="sm"
+        variant={columnState.sticky === 'right' ? 'default' : 'outline'}
+        className="h-5 px-1.5 text-[10px]"
         onClick={() => onStickyChange(columnState.sticky === 'right' ? undefined : 'right')}
       >
         R
-      </button>
+      </Button>
     </div>
   )
 }
@@ -203,57 +166,57 @@ export function WideContainerFewColumns() {
   }))
 
   return (
-    <VirtuosoDataTable style={{ height: 300, width: 600 }} data={{ data: items, groups: [] }}>
-      <Column field="col0" sticky="left">
-        <ColumnHeader>{() => <div style={{ ...HEADER_STYLE, width: 80 }}>Col 0</div>}</ColumnHeader>
-        <Cell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</Cell>
-      </Column>
-      <Column field="col1">
-        <ColumnHeader>{() => <div style={{ ...HEADER_STYLE, width: 80 }}>Col 1</div>}</ColumnHeader>
-        <Cell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</Cell>
-      </Column>
-      <Column field="col2">
-        <ColumnHeader>{() => <div style={{ ...HEADER_STYLE, width: 80 }}>Col 2</div>}</ColumnHeader>
-        <Cell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</Cell>
-      </Column>
-    </VirtuosoDataTable>
+    <DataTable style={{ height: 300, width: 600 }} data={{ data: items, groups: [] }}>
+      <DataTableColumn field="col0" sticky="left">
+        <DataTableColumnHeader className="w-20">Col 0</DataTableColumnHeader>
+        <DataTableCell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</DataTableCell>
+      </DataTableColumn>
+      <DataTableColumn field="col1">
+        <DataTableColumnHeader className="w-20">Col 1</DataTableColumnHeader>
+        <DataTableCell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</DataTableCell>
+      </DataTableColumn>
+      <DataTableColumn field="col2">
+        <DataTableColumnHeader className="w-20">Col 2</DataTableColumnHeader>
+        <DataTableCell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</DataTableCell>
+      </DataTableColumn>
+    </DataTable>
   )
 }
 
 export function ColumnOverscan() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }} columnOverscanCount={2}>
-      <Column field="id" sticky="left">
-        <ColumnHeader>{() => <div style={STICKY_HEADER_STYLE}>ID</div>}</ColumnHeader>
-        <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-      </Column>
+    <DataTable style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }} columnOverscanCount={2}>
+      <DataTableColumn field="id" sticky="left">
+        <DataTableColumnHeader>ID</DataTableColumnHeader>
+        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+      </DataTableColumn>
       {Array.from({ length: COLUMN_COUNT }, (_, i) => (
-        <Column key={`col${i}`} field={`col${i}`}>
-          <ColumnHeader>{() => <div style={HEADER_STYLE}>Column {i + 1}</div>}</ColumnHeader>
-          <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-        </Column>
+        <DataTableColumn key={`col${i}`} field={`col${i}`}>
+          <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+        </DataTableColumn>
       ))}
-      <Column field="actions" sticky="right">
-        <ColumnHeader>{() => <div style={STICKY_HEADER_STYLE}>Actions</div>}</ColumnHeader>
-        <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-      </Column>
-    </VirtuosoDataTable>
+      <DataTableColumn field="actions" sticky="right">
+        <DataTableColumnHeader>Actions</DataTableColumnHeader>
+        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+      </DataTableColumn>
+    </DataTable>
   )
 }
 
 export function InteractiveStickyColumn() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
-      <Column field="id" sticky="left">
-        <ColumnHeader component={InteractiveStickyHeader} />
-        <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-      </Column>
+    <DataTable style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
+      <DataTableColumn field="id" sticky="left">
+        <DataTableColumnHeader component={InteractiveStickyHeader} />
+        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+      </DataTableColumn>
       {Array.from({ length: COLUMN_COUNT }, (_, i) => (
-        <Column key={`col${i}`} field={`col${i}`}>
-          <ColumnHeader component={InteractiveStickyHeader} />
-          <Cell>{({ cellValue }) => String(cellValue)}</Cell>
-        </Column>
+        <DataTableColumn key={`col${i}`} field={`col${i}`}>
+          <DataTableColumnHeader component={InteractiveStickyHeader} />
+          <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+        </DataTableColumn>
       ))}
-    </VirtuosoDataTable>
+    </DataTable>
   )
 }

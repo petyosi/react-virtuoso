@@ -16,6 +16,7 @@ import {
   header$,
   headerWrapper$,
   NO_OVERFLOW_ANCHOR_STYLE,
+  stickyColumnContainer$,
   stickyFooter$,
   stickyFooterWrapper$,
   stickyHeader$,
@@ -88,6 +89,8 @@ function StickyHeaderContent() {
     columnWidths$
   )
   const hasHorizontalScroll = useCellValue(hasHorizontalScroll$)
+  const StickyContainer = useCellValue(stickyColumnContainer$)
+  const context = useCellValue(context$)
 
   const warnedEmptyGroups = React.useRef(new Set<string>())
 
@@ -114,7 +117,7 @@ function StickyHeaderContent() {
   return (
     <>
       {stickyColumnsState.leftColumns.length > 0 && (
-        <div style={LEFT_STICKY_CONTAINER_STYLE} data-sticky="left">
+        <StickyContainer style={LEFT_STICKY_CONTAINER_STYLE} data-sticky="left" context={context}>
           {leftTree.map((node) => (
             <HeaderNodeRenderer
               key={node.type === 'column' ? node.key : node.groupId}
@@ -127,7 +130,7 @@ function StickyHeaderContent() {
               overlaidByScrollbar={false}
             />
           ))}
-        </div>
+        </StickyContainer>
       )}
       <div style={SCROLLABLE_HEADER_CONTAINER_STYLE}>
         {scrollableTree.map((node) => (
@@ -144,7 +147,7 @@ function StickyHeaderContent() {
         ))}
       </div>
       {stickyColumnsState.rightColumns.length > 0 && (
-        <div style={RIGHT_STICKY_CONTAINER_STYLE} data-sticky="right">
+        <StickyContainer style={RIGHT_STICKY_CONTAINER_STYLE} data-sticky="right" context={context}>
           {rightTree.map((node, idx) => (
             <HeaderNodeRenderer
               key={node.type === 'column' ? node.key : node.groupId}
@@ -157,7 +160,7 @@ function StickyHeaderContent() {
               overlaidByScrollbar={hasHorizontalScroll && idx === rightTree.length - 1}
             />
           ))}
-        </div>
+        </StickyContainer>
       )}
     </>
   )
@@ -275,7 +278,12 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
     <TableLayoutRoot {...htmlProps} style={passedStyle}>
       <ScrollableRoot {...htmlProps} tableBodyRef={tableBodyRef}>
         {(totalCount === 0 || pendingScrollToInitialLocation) && EmptyPlaceholder ? <EmptyPlaceholder context={context} /> : null}
-        <StickyHeaderWrapper data-table-element-role={STICKY_HEADER_ROLE} ref={stickyHeaderRef} style={stickyHeaderWrapperStyle}>
+        <StickyHeaderWrapper
+          data-table-element-role={STICKY_HEADER_ROLE}
+          ref={stickyHeaderRef}
+          style={stickyHeaderWrapperStyle}
+          context={context}
+        >
           <StickyHeaderContent />
         </StickyHeaderWrapper>
         {Header && (

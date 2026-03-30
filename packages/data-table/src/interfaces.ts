@@ -123,13 +123,20 @@ export type HeaderWrapperComponent = React.ComponentType<
   } & React.RefAttributes<HTMLDivElement>
 >
 
+/**
+ * Props passed to the {@link DataTableComponents.StickyHeader | StickyHeader} component override.
+ * The component must forward `ref`, `style`, and `children` to its root element.
+ *
+ * @group Customization
+ */
+export type StickyHeaderComponentProps = {
+  style: React.CSSProperties
+  children: React.ReactNode
+  'data-table-element-role': string
+} & React.RefAttributes<HTMLDivElement>
+
 /** @internal */
-export type StickyHeaderWrapperComponent = React.ComponentType<
-  {
-    style: React.CSSProperties
-    children: React.ReactNode
-  } & React.RefAttributes<HTMLDivElement>
->
+export type StickyHeaderWrapperComponent = React.ComponentType<StickyHeaderComponentProps & { context?: unknown }>
 
 /** @internal */
 export type FooterWrapperComponent = React.ComponentType<
@@ -146,6 +153,60 @@ export type StickyFooterWrapperComponent = React.ComponentType<
     children: React.ReactNode
   } & React.RefAttributes<HTMLDivElement>
 >
+
+/**
+ * Props passed to the {@link DataTableComponents.Row | Row} component override.
+ * The component must forward `ref`, `style`, `children`, and data attributes to its root element.
+ *
+ * @group Customization
+ */
+export type RowComponentProps = {
+  style: React.CSSProperties
+  children: React.ReactNode
+  'data-testid': string
+  'data-table-element-role': string
+  'data-index': number
+  'data-known-size': number
+} & React.RefAttributes<HTMLDivElement>
+
+/**
+ * Props passed to the {@link DataTableComponents.StickyColumnContainer | StickyColumnContainer} component override.
+ * Used for both left and right sticky column containers in rows and headers.
+ * The `data-sticky` attribute indicates which side ("left" or "right").
+ *
+ * @group Customization
+ */
+export interface StickyColumnContainerComponentProps {
+  style: React.CSSProperties
+  children: React.ReactNode
+  'data-sticky': 'left' | 'right'
+}
+
+/**
+ * Component overrides for internal DOM elements of the data table.
+ * Each override receives the same props the default `<div>` would get, plus the table's `context` value.
+ *
+ * @typeParam Context - The type of the context passed to the table.
+ *
+ * @group Customization
+ */
+export interface DataTableComponents<Context = unknown> {
+  /**
+   * Override the element used for data rows (not group header rows).
+   * Must forward ref, style, children, and data attributes to the root element.
+   */
+  Row?: React.ComponentType<RowComponentProps & { context?: Context }>
+  /**
+   * Override the sticky header wrapper element.
+   * Must forward ref, style, and children to the root element.
+   */
+  StickyHeader?: React.ComponentType<StickyHeaderComponentProps & { context?: Context }>
+  /**
+   * Override the sticky column container element (used for both left and right sticky columns,
+   * in both row cells and header cells). The `data-sticky` attribute indicates the side.
+   */
+  StickyColumnContainer?: React.ComponentType<StickyColumnContainerComponentProps & { context?: Context }>
+}
 
 /**
  * Describes the location of the list relative to the viewport and the scroll element.
@@ -281,6 +342,12 @@ export interface VirtuosoDataTableProps<Data, Context, Group = unknown> extends 
    * Defaults to 0 (no overscan).
    */
   columnOverscanCount?: number
+
+  /**
+   * Component overrides for internal DOM elements like rows, sticky headers, and sticky column containers.
+   * See {@link DataTableComponents} for available slots.
+   */
+  components?: NoInfer<DataTableComponents<Context>>
 
   /**
    * Any children passed to the component.
