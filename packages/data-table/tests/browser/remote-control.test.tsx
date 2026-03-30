@@ -66,7 +66,7 @@ function readRange(container: HTMLElement, testId: string) {
 }
 
 function headerWidths(container: HTMLElement) {
-  return Array.from(container.querySelectorAll('[data-column-key]'), (cell) =>
+  return Array.from(container.querySelectorAll('[data-table-element-role="column-header"]'), (cell) =>
     Math.round((cell as HTMLElement).getBoundingClientRect().width)
   )
 }

@@ -27,7 +27,7 @@ const readySelector = '[data-testid=virtuoso-table-root][data-ready]'
 const leftStickySelector = '[data-sticky="left"]'
 const rightStickySelector = '[data-sticky="right"]'
 const scrollableCellsSelector = '[data-scrollable="true"]'
-const headerCellSelector = '[data-column-key]'
+const headerCellSelector = '[data-table-element-role="column-header"]'
 const stickyHeaderSelector = '[data-table-element-role="sticky-header"]'
 
 async function waitForReady(screen: Awaited<ReturnType<typeof render>>) {

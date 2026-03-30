@@ -21,9 +21,7 @@ const HEADER_GROUP_CHILDREN_STYLE: CSSProperties = {
   alignItems: 'flex-end',
 }
 
-const GROUP_HEADER_STYLE: CSSProperties = {
-  boxSizing: 'border-box',
-}
+const GROUP_HEADER_STYLE: CSSProperties = {}
 
 interface GroupedHeaderNode {
   type: 'column'

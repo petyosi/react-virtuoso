@@ -16,7 +16,7 @@ import {
   useVirtuosoLocation,
   useCurrentlyRenderedData,
 } from '@virtuoso.dev/data-table'
-
+import '@virtuoso.dev/data-table/styles.css'
 import { cn } from '@/lib/utils'
 
 import type {
@@ -42,7 +42,47 @@ import type {
   ColumnGroupHeaderCustomComponent,
   SetColumnStickyPayload,
   ReorderColumnsPayload,
+  DataTableComponents,
+  RowComponentProps,
+  StickyHeaderComponentProps,
+  StickyColumnContainerComponentProps,
 } from '@virtuoso.dev/data-table'
+
+const TableRow = React.forwardRef<HTMLDivElement, RowComponentProps & { context?: unknown }>(function TableRow(
+  { context: _context, ...props },
+  ref
+) {
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        'border-b border-transparent bg-clip-padding transition-colors hover:bg-muted/50',
+        'after:content-[""] after:absolute after:-bottom-px after:inset-x-0 after:h-px after:bg-border after:z-3'
+      )}
+      {...props}
+    />
+  )
+})
+
+const TableStickyHeader = React.forwardRef<HTMLDivElement, StickyHeaderComponentProps & { context?: unknown }>(function TableStickyHeader(
+  { context: _context, style, ...props },
+  ref
+) {
+  const mergedStyle = React.useMemo(() => ({ position: 'sticky' as const, top: 0, zIndex: 1, ...style }), [style])
+  return <div ref={ref} className="border-b border-border bg-background" style={mergedStyle} {...props} />
+})
+
+const TableStickyColumnContainer = React.forwardRef<HTMLDivElement, StickyColumnContainerComponentProps & { context?: unknown }>(
+  function TableStickyColumnContainer({ context: _context, ...props }, ref) {
+    return <div ref={ref} className="bg-background" {...props} />
+  }
+)
+
+const TABLE_COMPONENTS: DataTableComponents = {
+  Row: TableRow,
+  StickyHeader: TableStickyHeader,
+  StickyColumnContainer: TableStickyColumnContainer,
+}
 
 const DataTable = React.forwardRef<VirtuosoDataTableMethods, VirtuosoDataTableProps<unknown, unknown, unknown>>(
   ({ className, ...props }, ref) => {
@@ -51,21 +91,12 @@ const DataTable = React.forwardRef<VirtuosoDataTableMethods, VirtuosoDataTablePr
         ref={ref}
         className={cn(
           'relative w-full overflow-x-auto bg-background text-foreground text-sm',
-          // row styling: transparent border for spacing, ::after for visible border above sticky containers
-          '[&_[data-table-element-role=row]]:border-b [&_[data-table-element-role=row]]:border-transparent [&_[data-table-element-role=row]]:bg-clip-padding [&_[data-table-element-role=row]:hover]:bg-muted/50',
-          '[&_[data-table-element-role=row]]:after:content-[""] [&_[data-table-element-role=row]]:after:absolute [&_[data-table-element-role=row]]:after:-bottom-px [&_[data-table-element-role=row]]:after:inset-x-0 [&_[data-table-element-role=row]]:after:h-px [&_[data-table-element-role=row]]:after:bg-border [&_[data-table-element-role=row]]:after:z-3',
-          // sticky header styling
-          '[&_[data-table-element-role=sticky-header]]:border-b [&_[data-table-element-role=sticky-header]]:border-border [&_[data-table-element-role=sticky-header]]:bg-background',
-          // column group header border
-          '[&_[data-scope=colgroup]]:border-b [&_[data-scope=colgroup]]:border-border',
-          // group row styling
-          '[&_[data-group-row]]:bg-muted/50 [&_[data-group-row]]:font-medium',
-          // sticky column: background to prevent bleed-through
-          '[&_[data-sticky]]:bg-background',
-          // sticky column hover: opaque mix that matches the semi-transparent row hover
+          '**:data-[scope=colgroup]:border-b **:data-[scope=colgroup]:border-border',
+          '**:data-group-row:bg-muted/50 **:data-group-row:font-medium',
           '[&_[data-table-element-role=row]:hover_[data-sticky]]:bg-[color-mix(in_oklch,var(--color-muted)_50%,var(--color-background))]',
           className
         )}
+        components={TABLE_COMPONENTS}
         {...props}
       />
     )
@@ -83,28 +114,23 @@ function DataTableColumn(props: Column.Props) {
   return <Column {...props} />
 }
 
-type DataTableColumnHeaderProps =
-  | {
-      children: ColumnHeaderRenderFunction | React.ReactNode
-      className?: string
-    }
-  | {
-      component: ColumnHeaderCustomComponent
-      className?: string
-    }
+interface DataTableColumnHeaderProps {
+  children?: ColumnHeaderRenderFunction | React.ReactNode
+  component?: ColumnHeaderCustomComponent
+  className?: string
+}
 
 function DataTableColumnHeader(props: DataTableColumnHeaderProps) {
   const className = cn('flex h-10 items-center px-2 align-middle text-sm font-medium text-foreground whitespace-nowrap', props.className)
 
-  if ('children' in props) {
-    const userRender = props.children
-    return (
-      <ColumnHeader className={className}>{(params) => (typeof userRender === 'function' ? userRender(params) : userRender)}</ColumnHeader>
-    )
+  if (props.component) {
+    return <ColumnHeader className={className} component={props.component} />
   }
 
-  const UserComponent = props.component
-  return <ColumnHeader className={className} component={UserComponent} />
+  const userRender = props.children
+  return (
+    <ColumnHeader className={className}>{(params) => (typeof userRender === 'function' ? userRender(params) : userRender)}</ColumnHeader>
+  )
 }
 
 function DataTableCell(props: CellDefinitionProps) {
@@ -149,6 +175,10 @@ export {
   type ColumnGroupHeaderCustomComponent,
   type SetColumnStickyPayload,
   type ReorderColumnsPayload,
+  type DataTableComponents,
+  type RowComponentProps,
+  type StickyHeaderComponentProps,
+  type StickyColumnContainerComponentProps,
   // Re-export components and utilities
   GroupHeaderCell,
   ColumnGroup,
