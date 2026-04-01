@@ -1,7 +1,7 @@
 import { Cell, combine, filter, link, pipe, pub, scan, sub } from '@virtuoso.dev/gurx'
 
 import { data$, totalCount$ } from './data'
-import { listOffset$, scrollTop$, useWindowScroll$, visibleListHeight$ } from './dom'
+import { hasExternalScroller$, listOffset$, scrollTop$, visibleListHeight$ } from './dom'
 import { columnCount$, indexesInColumns$, initialItemCount$, offsetTrees$, sizeTrees$, totalHeights$ } from './masonry-sizes'
 import { empty, newTree } from './sizing/AATree'
 import { rangesWithinOffsets } from './sizing/rangesWithinOffsets'
@@ -49,7 +49,7 @@ export const masonryItemsState$ = Cell<MasonryItemsState<unknown>>({ columns: []
         indexesInColumns$,
         initialItemCount$,
         listOffset$,
-        useWindowScroll$
+        hasExternalScroller$
       ),
       scan(
         (
@@ -66,14 +66,14 @@ export const masonryItemsState$ = Cell<MasonryItemsState<unknown>>({ columns: []
             indexesInColumns,
             initialItemCount,
             listOffset,
-            useWindowScroll,
+            hasExternalScroller,
           ]
         ) => {
           if (totalCount === 0) {
             return current
           }
 
-          const listOffsetTop = useWindowScroll ? listOffset + scrollTop : 0
+          const listOffsetTop = hasExternalScroller ? listOffset + scrollTop : 0
           const viewportTop = Math.min(Math.max(scrollTop - listOffsetTop, 0), Math.max(...totalHeights) - visibleListHeight)
           const viewportBottom = viewportTop + visibleListHeight
 

@@ -117,8 +117,25 @@ export interface VirtuosoGridProps<Data, Context = unknown> extends GridRootProp
 
   /**
    * Pass a reference to a scrollable parent element, so that the grid won't wrap in its own.
+   * @deprecated Use {@link scrollElementRef} instead.
    */
   customScrollParent?: HTMLElement
+
+  /**
+   * Pass a ref to an external scrollable element to use as the scroll container
+   * instead of the component's built-in scroller. This replaces both `useWindowScroll` and `customScrollParent`.
+   *
+   * @example
+   * ```tsx
+   * const scrollerRef = useRef<HTMLDivElement>(null)
+   * return (
+   *   <div ref={scrollerRef} style={{ overflow: 'auto', height: '100vh' }}>
+   *     <VirtuosoGrid scrollElementRef={scrollerRef} totalCount={100} itemContent={(index) => <div>Item {index}</div>} />
+   *   </div>
+   * )
+   * ```
+   */
+  scrollElementRef?: React.RefObject<HTMLElement | null>
 
   /**
    * The data items to be rendered. If data is set, the total count will be inferred from the length of the array.
@@ -233,6 +250,7 @@ export interface VirtuosoGridProps<Data, Context = unknown> extends GridRootProp
 
   /**
    * Uses the document scroller rather than wrapping the grid in its own.
+   * @deprecated Use {@link scrollElementRef} instead.
    */
   useWindowScroll?: boolean
 }

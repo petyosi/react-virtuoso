@@ -248,9 +248,19 @@ const WindowViewport: React.FC<React.PropsWithChildren> = ({ children }) => {
 const GridRoot: React.FC<GridRootProps> = /*#__PURE__*/ React.memo(function GridRoot({ ...props }) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const customScrollParent = useEmitterValue('customScrollParent')
-  const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
-  const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
+  const scrollElementRef = useEmitterValue('scrollElementRef')
+  const publishCustomScrollParent = usePublisher('customScrollParent')
   const context = useEmitterValue('context')
+
+  useIsomorphicLayoutEffect(() => {
+    if (scrollElementRef?.current) {
+      publishCustomScrollParent(scrollElementRef.current)
+    }
+  }, [scrollElementRef, publishCustomScrollParent])
+
+  const hasExternalScroller = Boolean(customScrollParent || scrollElementRef?.current || useWindowScroll)
+  const TheScroller = hasExternalScroller ? WindowScroller : Scroller
+  const TheViewport = hasExternalScroller ? WindowViewport : Viewport
 
   return (
     <TheScroller {...props} {...contextPropIfNotDomElement(TheScroller, context)}>
@@ -286,6 +296,7 @@ const {
       itemClassName: 'itemClassName',
       useWindowScroll: 'useWindowScroll',
       customScrollParent: 'customScrollParent',
+      scrollElementRef: 'scrollElementRef',
       scrollerRef: 'scrollerRef',
       logLevel: 'logLevel',
       restoreStateFrom: 'restoreStateFrom',

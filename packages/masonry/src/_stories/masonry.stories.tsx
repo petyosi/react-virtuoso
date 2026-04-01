@@ -73,6 +73,7 @@ export const WindowExample = () => {
         style={{
           border: '1px solid black',
         }}
+        // oxlint-disable-next-line typescript-eslint(no-deprecated) -- example for deprecated prop
         useWindowScroll
       />
     </div>

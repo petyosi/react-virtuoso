@@ -131,8 +131,25 @@ export interface TableVirtuosoProps<Data, Context> extends Omit<VirtuosoProps<Da
 
   /**
    * Pass a reference to a scrollable parent element, so that the table won't wrap in its own.
+   * @deprecated Use {@link scrollElementRef} instead.
    */
   customScrollParent?: HTMLElement
+
+  /**
+   * Pass a ref to an external scrollable element to use as the scroll container
+   * instead of the component's built-in scroller. This replaces both `useWindowScroll` and `customScrollParent`.
+   *
+   * @example
+   * ```tsx
+   * const scrollerRef = useRef<HTMLDivElement>(null)
+   * return (
+   *   <div ref={scrollerRef} style={{ overflow: 'auto', height: '100vh' }}>
+   *     <TableVirtuoso scrollElementRef={scrollerRef} totalCount={100} fixedHeaderContent={() => <tr><th>Header</th></tr>} />
+   *   </div>
+   * )
+   * ```
+   */
+  scrollElementRef?: React.RefObject<HTMLElement | null>
 
   /**
    * The data items to be rendered. If data is set, the total count will be inferred from the length of the array.
@@ -309,6 +326,7 @@ export interface TableVirtuosoProps<Data, Context> extends Omit<VirtuosoProps<Da
   totalListHeightChanged?: (height: number) => void
   /**
    * Uses the document scroller rather than wrapping the list in its own.
+   * @deprecated Use {@link scrollElementRef} instead.
    */
   useWindowScroll?: boolean
 }

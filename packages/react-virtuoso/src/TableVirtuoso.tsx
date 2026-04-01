@@ -1,6 +1,7 @@
 import React from 'react'
 
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
+import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { listSystem } from './listSystem'
@@ -297,11 +298,20 @@ const WindowViewport: React.FC<React.PropsWithChildren> = ({ children }) => {
 const TableRoot: React.FC<TableRootProps> = /*#__PURE__*/ React.memo(function TableVirtuosoRoot(props) {
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const customScrollParent = useEmitterValue('customScrollParent')
+  const scrollElementRef = useEmitterValue('scrollElementRef')
+  const publishCustomScrollParent = usePublisher('customScrollParent')
   const fixedHeaderHeight = usePublisher('fixedHeaderHeight')
   const fixedFooterHeight = usePublisher('fixedFooterHeight')
   const fixedHeaderContent = useEmitterValue('fixedHeaderContent')
   const fixedFooterContent = useEmitterValue('fixedFooterContent')
   const context = useEmitterValue('context')
+
+  useIsomorphicLayoutEffect(() => {
+    if (scrollElementRef?.current) {
+      publishCustomScrollParent(scrollElementRef.current)
+    }
+  }, [scrollElementRef, publishCustomScrollParent])
+
   const theadRef = useSize(
     React.useMemo(() => u.compose(fixedHeaderHeight, (el) => correctItemSize(el, 'height')), [fixedHeaderHeight]),
     true,
@@ -312,8 +322,9 @@ const TableRoot: React.FC<TableRootProps> = /*#__PURE__*/ React.memo(function Ta
     true,
     useEmitterValue('skipAnimationFrameInResizeObserver')
   )
-  const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
-  const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
+  const hasExternalScroller = Boolean(customScrollParent || scrollElementRef?.current || useWindowScroll)
+  const TheScroller = hasExternalScroller ? WindowScroller : Scroller
+  const TheViewport = hasExternalScroller ? WindowViewport : Viewport
   const TheTable = useEmitterValue('TableComponent') as any
   const TheTHead = useEmitterValue('TableHeadComponent') as any
   const TheTFoot = useEmitterValue('TableFooterComponent') as any
@@ -391,6 +402,7 @@ const {
       alignToBottom: 'alignToBottom',
       useWindowScroll: 'useWindowScroll',
       customScrollParent: 'customScrollParent',
+      scrollElementRef: 'scrollElementRef',
       scrollerRef: 'scrollerRef',
       logLevel: 'logLevel',
     },

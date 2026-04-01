@@ -444,9 +444,19 @@ const ListRoot: React.FC<ListRootProps> = /*#__PURE__*/ React.memo(function Virt
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const showTopList = useEmitterValue('topItemsIndexes').length > 0
   const customScrollParent = useEmitterValue('customScrollParent')
+  const scrollElementRef = useEmitterValue('scrollElementRef')
+  const publishCustomScrollParent = usePublisher('customScrollParent')
   const context = useEmitterValue('context')
-  const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
-  const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
+
+  useIsomorphicLayoutEffect(() => {
+    if (scrollElementRef?.current) {
+      publishCustomScrollParent(scrollElementRef.current)
+    }
+  }, [scrollElementRef, publishCustomScrollParent])
+
+  const hasExternalScroller = Boolean(customScrollParent || scrollElementRef?.current || useWindowScroll)
+  const TheScroller = hasExternalScroller ? WindowScroller : Scroller
+  const TheViewport = hasExternalScroller ? WindowViewport : Viewport
   return (
     <TheScroller {...props} context={context}>
       {showTopList && (
@@ -503,6 +513,7 @@ export const {
       alignToBottom: 'alignToBottom',
       useWindowScroll: 'useWindowScroll',
       customScrollParent: 'customScrollParent',
+      scrollElementRef: 'scrollElementRef',
       scrollerRef: 'scrollerRef',
       logLevel: 'logLevel',
       horizontalDirection: 'horizontalDirection',

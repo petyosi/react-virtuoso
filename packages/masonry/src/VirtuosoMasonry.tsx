@@ -5,7 +5,16 @@ import { Realm, RealmContext, useCellValue, useCellValues, useRealm } from '@vir
 
 import { DefaultItemContent, itemContent$ } from './content'
 import { context$, data$ } from './data'
-import { listOffset$, scrollHeight$, scrollTop$, useWindowScroll$, viewportHeight$, viewportWidth$ } from './dom'
+import {
+  hasExternalScroller$,
+  listOffset$,
+  scrollElementRef$,
+  scrollHeight$,
+  scrollTop$,
+  useWindowScroll$,
+  viewportHeight$,
+  viewportWidth$,
+} from './dom'
 import { masonryItemsState$ } from './masonry-item-state'
 import { absoluteSizes$, columnCount$, indexesInColumns$, initialItemCount$, knownSizes$, masonryRanges$ } from './masonry-sizes'
 
@@ -70,8 +79,24 @@ export interface VirtuosoMasonryProps<Data, Context> extends ScrollerProps {
   ItemContent?: NoInfer<ItemContent<Data, Context>>
   /**
    * Set to true to make the component use the document scroller instead of creating an element with `overflow-y: auto`.
+   * @deprecated Use {@link scrollElementRef} instead.
    */
   useWindowScroll?: boolean
+  /**
+   * Pass a ref to an external scrollable element to use as the scroll container
+   * instead of the component's built-in scroller. This replaces `useWindowScroll`.
+   *
+   * @example
+   * ```tsx
+   * const scrollerRef = useRef<HTMLDivElement>(null)
+   * return (
+   *   <div ref={scrollerRef} style={{ overflow: 'auto', height: '100vh' }}>
+   *     <VirtuosoMasonry scrollElementRef={scrollerRef} columnCount={3} data={items} ItemContent={MyItem} />
+   *   </div>
+   * )
+   * ```
+   */
+  scrollElementRef?: React.RefObject<HTMLElement | null>
 }
 
 /**
@@ -83,7 +108,16 @@ export interface VirtuosoMasonryProps<Data, Context> extends ScrollerProps {
  */
 export const VirtuosoMasonry = forwardRef<Record<string, never>, VirtuosoMasonryProps<unknown, unknown>>(
   (
-    { columnCount, context, data, initialItemCount = 0, ItemContent = DefaultItemContent, useWindowScroll = false, ...scrollerProps },
+    {
+      columnCount,
+      context,
+      data,
+      initialItemCount = 0,
+      ItemContent = DefaultItemContent,
+      useWindowScroll = false, // oxlint-disable-line typescript-eslint(no-deprecated) -- backward compat
+      scrollElementRef,
+      ...scrollerProps
+    },
     ref
   ) => {
     const realm = useMemo(() => {
@@ -91,6 +125,7 @@ export const VirtuosoMasonry = forwardRef<Record<string, never>, VirtuosoMasonry
       r.register(indexesInColumns$)
       r.register(masonryItemsState$)
       r.register(knownSizes$)
+      r.register(hasExternalScroller$)
       r.pubIn({
         [columnCount$]: columnCount,
         [context$]: context,
@@ -98,6 +133,7 @@ export const VirtuosoMasonry = forwardRef<Record<string, never>, VirtuosoMasonry
         [initialItemCount$]: initialItemCount,
         [itemContent$]: ItemContent,
         [useWindowScroll$]: useWindowScroll,
+        [scrollElementRef$]: scrollElementRef,
       })
 
       return r
@@ -145,7 +181,7 @@ const VirtuosoScroller: React.FC<ScrollerProps> = ({ style: passedStyle, ...html
     return new ResizeObserver((entries) => {
       const length = entries.length
       const columnCount = realm.getValue(columnCount$)
-      const useWindowScroll = realm.getValue(useWindowScroll$)
+      const hasExternalScroller = realm.getValue(hasExternalScroller$)
 
       const results: SizeRange[][] = Array.from({ length: columnCount }, () => [])
       const absoluteSizes: Record<number, number> = {}
@@ -158,15 +194,35 @@ const VirtuosoScroller: React.FC<ScrollerProps> = ({ style: passedStyle, ...html
         const element = entry.target as HTMLDivElement
 
         if (element === scrollerRef.current) {
-          const theWindow = element.ownerDocument.defaultView!
+          const scrollRef = realm.getValue(scrollElementRef$)
+          const scrollParent = scrollRef?.current
 
-          pubPayload = {
-            ...pubPayload,
-            [scrollHeight$]: useWindowScroll ? theWindow.document.documentElement.scrollHeight : element.scrollHeight,
-            [scrollTop$]: useWindowScroll ? theWindow.scrollY : element.scrollTop,
-            [viewportHeight$]: useWindowScroll ? theWindow.innerHeight : entry.contentRect.height,
-            [viewportWidth$]: useWindowScroll ? theWindow.innerWidth : element.clientWidth,
-            ...(useWindowScroll ? {} : { [listOffset$]: entry.contentRect.top, [scrollHeight$]: element.scrollHeight }),
+          if (scrollParent) {
+            pubPayload = {
+              ...pubPayload,
+              [scrollHeight$]: scrollParent.scrollHeight,
+              [scrollTop$]: scrollParent.scrollTop,
+              [viewportHeight$]: scrollParent.clientHeight,
+              [viewportWidth$]: scrollParent.clientWidth,
+            }
+          } else if (hasExternalScroller) {
+            const theWindow = element.ownerDocument.defaultView!
+            pubPayload = {
+              ...pubPayload,
+              [scrollHeight$]: theWindow.document.documentElement.scrollHeight,
+              [scrollTop$]: theWindow.scrollY,
+              [viewportHeight$]: theWindow.innerHeight,
+              [viewportWidth$]: theWindow.innerWidth,
+            }
+          } else {
+            pubPayload = {
+              ...pubPayload,
+              [scrollHeight$]: element.scrollHeight,
+              [scrollTop$]: element.scrollTop,
+              [viewportHeight$]: entry.contentRect.height,
+              [viewportWidth$]: element.clientWidth,
+              [listOffset$]: entry.contentRect.top,
+            }
           }
           continue
         }
@@ -280,9 +336,36 @@ const VirtuosoScroller: React.FC<ScrollerProps> = ({ style: passedStyle, ...html
     [observer, onScroll]
   )
 
-  const [itemsState, ItemContent, useWindowScroll] = useCellValues(masonryItemsState$, itemContent$, useWindowScroll$)
+  const [itemsState, ItemContent, useWindowScroll, scrollElementRef] = useCellValues(
+    masonryItemsState$,
+    itemContent$,
+    useWindowScroll$,
+    scrollElementRef$
+  )
+  const hasExternalScroller = useWindowScroll || (scrollElementRef?.current !== undefined && scrollElementRef?.current !== null)
 
   useEffect(() => {
+    if (scrollElementRef?.current) {
+      const scrollParent = scrollElementRef.current
+
+      const handleExternalScroll = () => {
+        realm.pubIn({
+          [listOffset$]: scrollerRef.current?.getBoundingClientRect().top ?? 0,
+          [scrollHeight$]: scrollParent.scrollHeight,
+          [scrollTop$]: scrollParent.scrollTop,
+          [viewportHeight$]: scrollParent.clientHeight,
+        })
+      }
+      scrollParent.addEventListener('scroll', handleExternalScroll)
+      const resizeObserver = new ResizeObserver(handleExternalScroll)
+      resizeObserver.observe(scrollParent)
+      handleExternalScroll()
+      return () => {
+        scrollParent.removeEventListener('scroll', handleExternalScroll)
+        resizeObserver.disconnect()
+      }
+    }
+
     if (useWindowScroll) {
       const theWin = scrollerRef.current?.ownerDocument.defaultView!
 
@@ -301,9 +384,9 @@ const VirtuosoScroller: React.FC<ScrollerProps> = ({ style: passedStyle, ...html
       }
     }
     return undefined
-  }, [useWindowScroll, realm])
+  }, [useWindowScroll, scrollElementRef, realm])
 
-  const builtInStyle: CSSProperties = useWindowScroll
+  const builtInStyle: CSSProperties = hasExternalScroller
     ? {
         boxSizing: 'border-box',
         display: 'flex',

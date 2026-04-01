@@ -1,3 +1,5 @@
+import type React from 'react'
+
 import { domIOSystem } from './domIOSystem'
 import * as u from './urx'
 
@@ -9,6 +11,7 @@ export const windowScrollerSystem = u.system(([{ scrollContainerState, scrollTo 
   const windowScrollTo = u.stream<ScrollToOptions>()
   const useWindowScroll = u.statefulStream(false)
   const customScrollParent = u.statefulStream<HTMLElement | undefined>(undefined)
+  const scrollElementRef = u.statefulStream<React.RefObject<HTMLElement | null> | undefined>(undefined)
 
   u.connect(
     u.pipe(
@@ -40,6 +43,7 @@ export const windowScrollerSystem = u.system(([{ scrollContainerState, scrollTo 
 
   return {
     customScrollParent,
+    scrollElementRef,
     // config
     useWindowScroll,
 
