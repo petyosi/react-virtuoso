@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.18.4
+
+### Patch Changes
+
+- [#1375](https://github.com/petyosi/react-virtuoso/pull/1375) [`620b260`](https://github.com/petyosi/react-virtuoso/commit/620b260d9c3674e4fb5b812699774a0af6bd649d) Thanks [@marcospassos](https://github.com/marcospassos)! - Fix `atBottomStateChange` in `useWindowScroll` lists when the Virtuoso instance is rendered below other page content.
+
 ## 4.18.3
 
 ### Patch Changes
