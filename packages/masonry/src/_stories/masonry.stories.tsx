@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { VirtuosoMasonry } from '../VirtuosoMasonry'
 
@@ -76,6 +76,39 @@ export const WindowExample = () => {
         // oxlint-disable-next-line typescript-eslint(no-deprecated) -- example for deprecated prop
         useWindowScroll
       />
+    </div>
+  )
+}
+
+export const ScrollElementRefExample = () => {
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const data = useMemo(() => {
+    return Array.from({ length: 1000 }, (_, index) => index)
+  }, [])
+  return (
+    <div>
+      <div
+        ref={scrollerRef}
+        style={{
+          border: '2px solid blue',
+          height: '80vh',
+          overflow: 'auto',
+        }}
+      >
+        <div style={{ background: '#eee', padding: 16 }}>
+          <h2 style={{ margin: 0 }}>Header inside scroll container</h2>
+          <p style={{ margin: '8px 0 0' }}>This header scrolls with the masonry grid below.</p>
+        </div>
+        <VirtuosoMasonry
+          columnCount={3}
+          data={data}
+          ItemContent={ItemContent}
+          scrollElementRef={scrollerRef}
+          style={{
+            border: '1px solid black',
+          }}
+        />
+      </div>
     </div>
   )
 }
