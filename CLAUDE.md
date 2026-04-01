@@ -54,6 +54,7 @@ After docs changes: run `pnpm lint` from the app directory or root.
 
 **DO NOT EDIT** the following auto-generated directories:
 
+- `apps/virtuoso.dev/src/content/docs/data-table/`
 - `apps/virtuoso.dev/src/content/docs/react-virtuoso/`
 - `apps/virtuoso.dev/src/content/docs/masonry/`
 - `apps/virtuoso.dev/src/content/docs/gurx/`
@@ -63,6 +64,7 @@ These are auto-synced from source files + TypeDoc API via the `docsSync` integra
 
 **To edit package documentation**, modify the source files in each package:
 
+- **data-table**: `packages/data-table/docs/*.md`
 - **react-virtuoso**: `packages/react-virtuoso/README.md` or `packages/react-virtuoso/docs/*.md`
 - **masonry**: `packages/masonry/README.md` or `packages/masonry/docs/*.md`
 - **gurx**: `packages/gurx/README.md` or `packages/gurx/docs/*.md`
