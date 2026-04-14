@@ -1,5 +1,13 @@
 # react-virtuoso
 
+## 4.18.5
+
+### Patch Changes
+
+- [#1388](https://github.com/petyosi/react-virtuoso/pull/1388) [`5871779`](https://github.com/petyosi/react-virtuoso/commit/5871779a7e5e422ed8980ce5ed231858ce06a8d9) Thanks [@petyosi](https://github.com/petyosi)! - Fix useSyncExternalStore detection for React 19+
+
+  The version check used `startsWith('18')` which excluded React 19, causing it to fall back to the legacy useState+useLayoutEffect subscription path. This could cause tearing issues in concurrent rendering scenarios. Changed to `parseInt(React.version) >= 18` to correctly use useSyncExternalStore for React 18 and above.
+
 ## 4.18.4
 
 ### Patch Changes
