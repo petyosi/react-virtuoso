@@ -9,7 +9,6 @@ import {
   columnWidths$,
   columns$,
   columnsState$,
-  reorderColumns$,
   resizeColumn$,
   scrollToRow$,
   setColumnSticky$,
@@ -19,6 +18,7 @@ import {
   viewportRange$,
   VirtuosoDataTable,
 } from '../../src'
+import { reorderColumns$ } from '../../src/features/column-reorder'
 
 import type { ColumnInfo, EngineRef, EngineSource } from '../../src'
 

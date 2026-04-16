@@ -15,6 +15,34 @@
           "type": "registry:component"
         }
       ]
+    },
+    {
+      "name": "data-table-draggable-header",
+      "type": "registry:component",
+      "title": "Data Table Draggable Header",
+      "description": "Drag-to-reorder column header for the data table. Pairs with the column-reorder feature module.",
+      "dependencies": ["@virtuoso.dev/data-table"],
+      "registryDependencies": ["data-table"],
+      "files": [
+        {
+          "path": "registry/new-york/data-table/column-reorder/draggable-header.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "data-table-draggable-group-header",
+      "type": "registry:component",
+      "title": "Data Table Draggable Group Header",
+      "description": "Drag-to-reorder column group header that moves an entire group of columns at once.",
+      "dependencies": ["@virtuoso.dev/data-table"],
+      "registryDependencies": ["data-table", "data-table-draggable-header"],
+      "files": [
+        {
+          "path": "registry/new-york/data-table/column-reorder/draggable-group-header.tsx",
+          "type": "registry:component"
+        }
+      ]
     }
   ]
 }

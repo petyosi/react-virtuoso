@@ -6,16 +6,7 @@ export {
   type GroupHeaderRenderFunction,
   type GroupHeaderCustomComponent,
 } from './rows/GroupHeaderCell'
-export {
-  Column,
-  type ColumnInfo,
-  columns$,
-  columnWidths$,
-  setColumnSticky$,
-  type SetColumnStickyPayload,
-  reorderColumns$,
-  type ReorderColumnsPayload,
-} from './columns/Column'
+export { Column, type ColumnInfo, columns$, columnWidths$, setColumnSticky$, type SetColumnStickyPayload } from './columns/Column'
 export { ColumnGroup, type ColumnGroupInfo } from './columns/ColumnGroup'
 export {
   ColumnGroupHeader,
@@ -49,7 +40,14 @@ export type {
   StickyColumnContainerComponentProps,
 } from './interfaces'
 export { VirtuosoDataTable } from './core/VirtuosoDataTable'
-export { useEngineRef, useRemoteCellValue, useRemotePublisher, useRemoteCell } from '@virtuoso.dev/reactive-engine-react'
+export {
+  useCellValue,
+  useEngineRef,
+  usePublisher,
+  useRemoteCell,
+  useRemoteCellValue,
+  useRemotePublisher,
+} from '@virtuoso.dev/reactive-engine-react'
 export type { EngineRef, EngineSource } from '@virtuoso.dev/reactive-engine-react'
 export { localSource } from './model/local-source'
 export { remoteSource, defaultOffsetViewportHandler, defaultAppendViewportHandler } from './model/remote-source'

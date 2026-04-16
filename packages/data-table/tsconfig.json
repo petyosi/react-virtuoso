@@ -4,8 +4,10 @@
   "compilerOptions": {
     "paths": {
       "@/components/ui/data-table": ["../../apps/virtuoso.dev/registry/new-york/data-table/data-table"],
+      "@/components/ui/data-table/column-reorder": ["../../apps/virtuoso.dev/registry/new-york/data-table/column-reorder/index.ts"],
       "@/*": ["../../apps/virtuoso.dev/src/*"],
-      "@virtuoso.dev/data-table": ["./src/index.ts"]
+      "@virtuoso.dev/data-table": ["./src/index.ts"],
+      "@virtuoso.dev/data-table/column-reorder": ["./src/features/column-reorder/index.ts"]
     }
   },
   "include": ["src", "tests", "vite.config.ts", "vitest.config.ts"]

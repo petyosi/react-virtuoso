@@ -20,11 +20,19 @@ export default inLadle
       resolve: {
         alias: [
           {
+            find: '@/components/ui/data-table/column-reorder',
+            replacement: resolve(import.meta.dirname, '../../apps/virtuoso.dev/registry/new-york/data-table/column-reorder/index.ts'),
+          },
+          {
             find: '@/components/ui/data-table',
             replacement: resolve(import.meta.dirname, '../../apps/virtuoso.dev/registry/new-york/data-table/data-table.tsx'),
           },
           { find: '@/', replacement: `${resolve(import.meta.dirname, '../../apps/virtuoso.dev/src')}/` },
           { find: '@virtuoso.dev/data-table/styles.css', replacement: resolve(import.meta.dirname, 'src/styles.css') },
+          {
+            find: '@virtuoso.dev/data-table/column-reorder',
+            replacement: resolve(import.meta.dirname, 'src/features/column-reorder/index.ts'),
+          },
           { find: '@virtuoso.dev/data-table', replacement: resolve(import.meta.dirname, 'src/index.ts') },
         ],
       },
@@ -60,9 +68,11 @@ export default inLadle
       build: {
         minify: true,
         lib: {
-          entry: resolve(import.meta.dirname, 'src/index.ts'),
+          entry: {
+            index: resolve(import.meta.dirname, 'src/index.ts'),
+            'column-reorder': resolve(import.meta.dirname, 'src/features/column-reorder/index.ts'),
+          },
           formats: ['es'],
-          fileName: 'index',
         },
         rollupOptions: {
           output: {

@@ -11,11 +11,11 @@ import {
   ColumnGroup,
   ColumnGroupHeader,
   setColumnSticky$,
-  reorderColumns$,
   useVirtuosoMethods,
   useVirtuosoLocation,
   useCurrentlyRenderedData,
 } from '@virtuoso.dev/data-table'
+import { reorderColumns$ } from '@virtuoso.dev/data-table/column-reorder'
 import '@virtuoso.dev/data-table/styles.css'
 import { cn } from '@/lib/utils'
 
@@ -41,12 +41,12 @@ import type {
   ColumnGroupHeaderRenderFunction,
   ColumnGroupHeaderCustomComponent,
   SetColumnStickyPayload,
-  ReorderColumnsPayload,
   DataTableComponents,
   RowComponentProps,
   StickyHeaderComponentProps,
   StickyColumnContainerComponentProps,
 } from '@virtuoso.dev/data-table'
+import type { ReorderColumnsPayload } from '@virtuoso.dev/data-table/column-reorder'
 
 const TableRow = React.forwardRef<HTMLDivElement, RowComponentProps & { context?: unknown }>(function TableRow(
   { context: _context, ...props },
