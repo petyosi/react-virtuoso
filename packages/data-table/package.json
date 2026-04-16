@@ -44,6 +44,12 @@
         "default": "./dist/index.js"
       }
     },
+    "./column-reorder": {
+      "import": {
+        "types": "./dist/column-reorder.d.ts",
+        "default": "./dist/column-reorder.js"
+      }
+    },
     "./styles.css": "./dist/styles.css"
   },
   "publishConfig": {

@@ -62,53 +62,6 @@ e.changeWith(columns$, setColumnSticky$, (columns, { key, sticky }) => {
   return next
 })
 
-/**
- * Payload for moving one column before or after another.
- *
- * @group Remote Control
- */
-export interface ReorderColumnsPayload {
-  sourceKey: string
-  targetKey: string
-  position: 'before' | 'after'
-}
-
-/**
- * Remote action that reorders columns.
- *
- * @group Remote Control
- */
-export const reorderColumns$ = Stream<ReorderColumnsPayload>()
-
-e.changeWith(columns$, reorderColumns$, (columns, { sourceKey, targetKey, position }) => {
-  if (sourceKey === targetKey) {
-    return columns
-  }
-  const sourceEntry = columns.get(sourceKey)
-  if (!sourceEntry || !columns.has(targetKey)) {
-    return columns
-  }
-
-  const newMap = new Map<string, ColumnInfo>()
-  for (const [key, info] of columns) {
-    if (key === sourceKey) {
-      continue
-    }
-    if (key === targetKey) {
-      if (position === 'before') {
-        newMap.set(sourceKey, sourceEntry)
-        newMap.set(key, info)
-      } else {
-        newMap.set(key, info)
-        newMap.set(sourceKey, sourceEntry)
-      }
-    } else {
-      newMap.set(key, info)
-    }
-  }
-  return newMap
-})
-
 export function useColumnId() {
   return useContext(ColumnIdContext)
 }

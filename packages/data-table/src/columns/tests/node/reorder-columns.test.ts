@@ -1,7 +1,8 @@
 import { Engine } from '@virtuoso.dev/reactive-engine-core'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { columns$, reorderColumns$ } from '../../Column'
+import { reorderColumns$ } from '../../../features/column-reorder'
+import { columns$ } from '../../Column'
 
 import type { ColumnInfo } from '../../Column'
 
