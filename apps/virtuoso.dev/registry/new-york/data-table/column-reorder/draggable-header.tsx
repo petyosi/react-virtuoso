@@ -76,8 +76,12 @@ const DraggableHeader: ColumnHeaderCustomComponent = ({ columnKey, column, colum
         endColumnDrag()
       }}
     >
-      {dropPosition === 'before' && <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-primary z-[1]" />}
-      {dropPosition === 'after' && <div className="absolute top-0 bottom-0 right-0 w-[3px] bg-primary z-[1]" />}
+      {dropPosition === 'before' && (
+        <div className="pointer-events-none absolute top-1/2 left-0 z-[1] h-4 w-[2px] -translate-x-1/2 -translate-y-1/2 bg-primary" />
+      )}
+      {dropPosition === 'after' && (
+        <div className="pointer-events-none absolute top-1/2 right-0 z-[1] h-4 w-[2px] translate-x-1/2 -translate-y-1/2 bg-primary" />
+      )}
       <span
         draggable
         onDragStart={(ev) => {
