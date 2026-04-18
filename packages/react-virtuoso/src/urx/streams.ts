@@ -173,7 +173,7 @@ export function stream<T>(): Stream<T> {
         })
         return
       case RESET:
-        subscriptions.splice(0, subscriptions.length)
+        subscriptions.splice(0)
         return
       case SUBSCRIBE:
         subscriptions.push(arg as Subscription<T>)

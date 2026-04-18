@@ -183,7 +183,7 @@ describe('offset mode auto-fetch on scroll', () => {
 
     function TestComponent() {
       const model = useMemo(() => {
-        const m = remoteSource<Item, { sort?: string }>({
+        const m = remoteSource<Item>({
           fetch,
           initialParams: {},
           pageSize: PAGE_SIZE,
@@ -216,7 +216,7 @@ describe('offset mode auto-fetch on scroll', () => {
 
     await expect
       .poll(() => {
-        return fetch.mock.calls.some((c) => (c[0] as FetchParams<{ sort?: string }>).params.sort === 'name')
+        return fetch.mock.calls.some((c) => c[0].params.sort === 'name')
       })
       .toBe(true)
   })

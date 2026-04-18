@@ -149,7 +149,7 @@ describe('offset mode viewportChange', () => {
 
   it('fetches after param change invalidates ranges', async () => {
     const { fetch } = createMockFetch(100)
-    const model = remoteSource<Item, { sort?: string }>({
+    const model = remoteSource<Item>({
       fetch,
       initialParams: {},
       pageSize: 20,

@@ -12,7 +12,9 @@ export function isJsxName(name: string): boolean {
 
 export async function getExports(file: string): Promise<Export[]> {
   const src = await readFile(file, 'utf8')
-  return parseExports(src, isJsxName).map((p) => {
-    return { ...p, file }
-  })
+  const exports: Export[] = []
+  for (const parsedExport of parseExports(src, isJsxName)) {
+    exports.push({ ...parsedExport, file })
+  }
+  return exports
 }

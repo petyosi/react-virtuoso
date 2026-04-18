@@ -9,7 +9,7 @@ type Filename = string
 export class Exports {
   readonly exports: Partial<Record<Filename, Export[]>> = {}
   private file: string
-  private nameFilter: NameFilter
+  private readonly nameFilter: NameFilter
 
   constructor(file: string, nameFilter: NameFilter) {
     this.file = file
@@ -24,9 +24,10 @@ export class Exports {
     let exports = this.exports[this.file]
     if (!exports) {
       const src = await readFile(this.file, 'utf8')
-      exports = parseExports(src, this.nameFilter).map((p) => {
-        return { ...p, file: this.file }
-      })
+      exports = []
+      for (const parsedExport of parseExports(src, this.nameFilter)) {
+        exports.push({ ...parsedExport, file: this.file })
+      }
       this.exports[this.file] = exports
     }
 

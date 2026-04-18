@@ -239,8 +239,7 @@ describe('cancelSmoothScroll', () => {
 
       tableRef.current!.cancelSmoothScroll()
 
-      expect(cancelAnimationFrameSpy).toHaveBeenCalledOnce()
-      expect(cancelAnimationFrameSpy).toHaveBeenCalledWith(1)
+      expect(cancelAnimationFrameSpy).toHaveBeenCalledExactlyOnceWith(1)
       expect(queuedAnimationFrames.size).toBe(0)
 
       await delay(50)

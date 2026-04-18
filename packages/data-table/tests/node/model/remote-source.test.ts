@@ -69,8 +69,7 @@ describe(remoteSource, () => {
     // Items beyond the first page are undefined (placeholder)
     expect(asyncResult.data.at(20)).toBeUndefined()
 
-    expect(fetch).toHaveBeenCalledOnce()
-    expect(fetch).toHaveBeenCalledWith(
+    expect(fetch).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
         offset: 0,
         limit: 20,
@@ -80,7 +79,7 @@ describe(remoteSource, () => {
 
   it('sort action updates params and re-fetches', async () => {
     const { fetch, calls } = createMockFetch(50)
-    const model = remoteSource<Item, { sortBy?: string }>({
+    const model = remoteSource<Item>({
       fetch,
       initialParams: {},
       pageSize: 10,
@@ -112,7 +111,7 @@ describe(remoteSource, () => {
 
   it('filter action invalidates ranges and re-fetches', async () => {
     const { fetch } = createMockFetch(100)
-    const model = remoteSource<Item, { filter?: string }>({
+    const model = remoteSource<Item>({
       fetch,
       initialParams: {},
       pageSize: 10,
@@ -150,7 +149,7 @@ describe(remoteSource, () => {
       return { rows: makeItems(0, 10), totalCount: 100 }
     })
 
-    const model = remoteSource<Item, { sort?: string }>({
+    const model = remoteSource<Item>({
       fetch,
       initialParams: {},
       pageSize: 10,

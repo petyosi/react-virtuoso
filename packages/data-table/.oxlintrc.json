@@ -19,8 +19,11 @@
     "unicorn/no-unreadable-array-destructuring": "off",
     "unicorn/prefer-global-this": "off",
     "vitest/no-importing-vitest-globals": "off",
+    "vitest/prefer-strict-boolean-matchers": "off",
     "vitest/prefer-called-times": "off",
-    "vitest/prefer-to-be-truthy": "off"
+    "vitest/prefer-to-be-truthy": "off",
+    "vitest/require-mock-type-parameters": "off",
+    "jest/prefer-ending-with-an-expect": "off"
   },
   "overrides": [
     {
@@ -28,10 +31,9 @@
       "rules": {
         "react-perf/jsx-no-new-function-as-prop": "off",
         "react-perf/jsx-no-new-object-as-prop": "off",
-        "vitest/max-expect": ["error", { "max": 20 }],
         "jest/require-hook": "error"
       }
     }
   ],
-  "ignorePatterns": ["registry/"]
+  "ignorePatterns": [".ladle/", "registry/"]
 }

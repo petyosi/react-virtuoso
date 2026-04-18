@@ -27,8 +27,13 @@
     {
       "files": ["**/*.astro"],
       "rules": {
-        "typescript/no-unused-vars": "off",
-        "import/no-unused-modules": "off"
+        "typescript/no-unused-vars": "off"
+      }
+    },
+    {
+      "files": ["src/plugins/common/shortHash.ts"],
+      "rules": {
+        "unicorn/number-literal-case": "off"
       }
     }
   ]

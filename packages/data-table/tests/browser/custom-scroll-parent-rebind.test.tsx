@@ -83,8 +83,8 @@ test('CustomScrollParentWrapper rebinds listeners when customScrollParent prop c
 
     const resolvedA = document.querySelector('[data-testid="parent-a"]') as HTMLElement
     const resolvedB = document.querySelector('[data-testid="parent-b"]') as HTMLElement
-    expect(resolvedA).toBeTruthy()
-    expect(resolvedB).toBeTruthy()
+    expect(resolvedA).not.toBeNull()
+    expect(resolvedB).not.toBeNull()
 
     const listenersOnABeforeSwitch = scrollListeners.get(resolvedA) ?? 0
     expect(listenersOnABeforeSwitch).toBeGreaterThan(0)

@@ -32,7 +32,7 @@ export class Engine {
   public readonly id?: string | undefined
   public isDisposed = false
   private readonly calledInits = new Set<NodeInit<unknown>>()
-  private childEngines: Engine[] = []
+  private readonly childEngines: Engine[] = []
   private readonly combinedCells: CombinedCellRecord[] = []
   private readonly definitionRegistry = new Set<symbol>()
   private readonly disposeCallbacks = new Set<() => void>()

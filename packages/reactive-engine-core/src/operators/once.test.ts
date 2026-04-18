@@ -294,7 +294,7 @@ describe('once operator', () => {
 
     // Publish large objects that should be ignored
     for (let i = 0; i < 100; i++) {
-      eng.pub(source, { data: new Array(1000).fill(i) })
+      eng.pub(source, { data: Array.from({ length: 1000 }).fill(i) })
     }
 
     expect(history).toEqual([firstValue])

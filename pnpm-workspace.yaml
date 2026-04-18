@@ -5,6 +5,15 @@ packages:
 
 strictPeerDependencies: false
 
+minimumReleaseAge: 10080
+minimumReleaseAgeExclude:
+  - oxlint
+  - oxfmt
+  - oxlint-tsgolint
+  - '@oxlint/*'
+  - '@oxfmt/*'
+  - '@oxlint-tsgolint/*'
+
 catalog:
   typescript: ^5.9.3
 
@@ -20,9 +29,9 @@ catalog:
   playwright: ^1.58.2
   '@vitest/browser': ^4.0.16
   '@vitest/browser-playwright': ^4.0.16
-  oxlint: ^1.55.0
-  oxfmt: ^0.40.0
-  oxlint-tsgolint: ^0.16.0
+  oxlint: ^1.60.0
+  oxfmt: ^0.45.0
+  oxlint-tsgolint: ^0.21.1
   tiny-invariant: ^1.3.3
   '@testing-library/react': ^16.3.2
   '@testing-library/jest-dom': ^6.9.1
