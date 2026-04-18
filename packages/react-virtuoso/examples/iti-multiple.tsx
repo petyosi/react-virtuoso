@@ -3,29 +3,25 @@ import { Virtuoso } from '../src'
 const itemContent = (index: number) => <div style={{ background: 'white', height: index % 2 ? 30 : 20 }}>Item {index}</div>
 
 export function App() {
-  const data = Array(50)
-    .fill(undefined)
-    .map((_, i) => i)
+  const data = Array.from({ length: 50 }, (_, i) => i)
 
   return (
     <div className="App">
       <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
-        {Array(20)
-          .fill(undefined)
-          .map((_, i) => (
-            <Virtuoso
-              data={data}
-              //initialScrollTop={200}
-              initialTopMostItemIndex={5}
-              itemContent={(_, i) => <div style={{ backgroundColor: i === 0 ? 'red' : 'transparent' }}>{i}</div>}
-              key={i}
-              style={{
-                border: '2px black solid',
-                flex: 1,
-                height: 400,
-              }}
-            />
-          ))}
+        {Array.from({ length: 20 }, (_, i) => i).map((i) => (
+          <Virtuoso
+            data={data}
+            //initialScrollTop={200}
+            initialTopMostItemIndex={5}
+            itemContent={(_, i) => <div style={{ backgroundColor: i === 0 ? 'red' : 'transparent' }}>{i}</div>}
+            key={i}
+            style={{
+              border: '2px black solid',
+              flex: 1,
+              height: 400,
+            }}
+          />
+        ))}
       </div>
     </div>
   )

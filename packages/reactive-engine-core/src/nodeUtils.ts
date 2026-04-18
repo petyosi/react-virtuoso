@@ -127,7 +127,7 @@ export function debug<T>(node$: NodeRef<T>, label?: string): () => void {
   // Try to extract location from stack trace if no label provided
   if (nodeLabel === undefined) {
     try {
-      const stack = new Error().stack
+      const stack = new Error('debug stack capture').stack
       if (stack !== undefined) {
         nodeLabel = extractCallerLocation(stack) ?? undefined
       }

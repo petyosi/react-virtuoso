@@ -53,7 +53,7 @@ describe('remote source error propagation', () => {
         return Promise.reject(new Error('Server error: 500 Internal Server Error'))
       })
 
-      const model = remoteSource<Item, { sort?: string }>({
+      const model = remoteSource<Item>({
         fetch,
         initialParams: {},
         pageSize: 20,
@@ -230,7 +230,7 @@ describe('remote source error propagation', () => {
         return { rows: makeItems(0, 10), totalCount: 10 }
       })
 
-      const model = remoteSource<Item, { sort?: string }>({
+      const model = remoteSource<Item>({
         fetch,
         initialParams: {},
         pageSize: 10,
@@ -268,7 +268,7 @@ describe('remote source error propagation', () => {
         return { rows: makeItems(0, 10), totalCount: 100 }
       })
 
-      const model = remoteSource<Item, { sort?: string }>({
+      const model = remoteSource<Item>({
         fetch,
         initialParams: {},
         pageSize: 10,

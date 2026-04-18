@@ -82,10 +82,10 @@ export default function useScrollTop(
   )
 
   React.useEffect(() => {
-    const localRef = customScrollParent ? customScrollParent : scrollerRef.current!
+    const localRef = customScrollParent ?? scrollerRef.current!
 
     clearHorizontalScrollDirectionCache(localRef)
-    scrollerRefCallback(customScrollParent ? customScrollParent : scrollerRef.current)
+    scrollerRefCallback(customScrollParent ?? scrollerRef.current)
     handler({ suppressFlushSync: true, target: localRef } as unknown as Event)
     localRef.addEventListener('scroll', handler, { passive: true })
 

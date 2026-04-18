@@ -20,7 +20,7 @@ test.describe('list with scroll seek placeholders', () => {
 
     const [width, height, containerPaddingTop, text, color] = await page.evaluate(() => {
       const container = document.querySelector('[data-testid=virtuoso-item-list]')!
-      const item = container.getElementsByTagName('div')[0] as HTMLElement
+      const item = container.querySelectorAll('div')[0] as HTMLElement
       return [item.offsetWidth, item.offsetHeight, (container as HTMLElement).style.paddingTop, item.textContent, item.style.color]
     })
 

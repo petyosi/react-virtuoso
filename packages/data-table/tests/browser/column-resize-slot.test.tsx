@@ -39,8 +39,8 @@ test('resizes a column through the slot-mounted handle', async () => {
   const firstHeader = headers[0]
   const handle = firstHeader?.querySelector<HTMLElement>('[data-table-element-role="resize-handle"]')
 
-  expect(firstHeader).toBeTruthy()
-  expect(handle).toBeTruthy()
+  expect(firstHeader).not.toBeNull()
+  expect(handle).not.toBeNull()
 
   const headerElements = [...headers]
   const firstHeaderRect = firstHeader!.getBoundingClientRect()
@@ -80,8 +80,8 @@ test('double clicking the resize handle clears the width override', async () => 
   const firstHeader = headers[0]
   const handle = firstHeader?.querySelector<HTMLElement>('[data-table-element-role="resize-handle"]')
 
-  expect(firstHeader).toBeTruthy()
-  expect(handle).toBeTruthy()
+  expect(firstHeader).not.toBeNull()
+  expect(handle).not.toBeNull()
 
   await expect
     .poll(() => [...headers].reduce((sum, header) => sum + Math.round(header.getBoundingClientRect().width), 0), { timeout: 2000 })

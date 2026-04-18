@@ -120,7 +120,7 @@ describe('cancel', () => {
         return promise
       })
 
-      const model = remoteSource<{ id: number }, { sort?: string }>({
+      const model = remoteSource<{ id: number }>({
         fetch: fetchFn,
         initialParams: {},
         pageSize: 10,

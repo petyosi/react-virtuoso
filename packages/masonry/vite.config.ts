@@ -7,7 +7,7 @@ import { defineConfig } from 'vitest/config'
 const inLadle = process.env.LADLE === 'true'
 
 const define = {
-  PACKAGE_TIMESTAMP: new Date().getTime(),
+  PACKAGE_TIMESTAMP: Date.now(),
 }
 // https://vitejs.dev/config/
 export default inLadle

@@ -783,7 +783,7 @@ export class Realm {
       this.execute(keys, values)
       return
     }
-    const ids = new Array<symbol>(keys.length)
+    const ids = Array.from<symbol>({ length: keys.length })
     let remapped = false
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i]!

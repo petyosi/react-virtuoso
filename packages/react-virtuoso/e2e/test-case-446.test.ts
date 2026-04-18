@@ -12,7 +12,7 @@ test.describe('list with a long last item', () => {
   test('starts from item with index 10', async ({ page }) => {
     const firstItemIndex = await page.evaluate(() => {
       const listContainer = document.querySelector('[data-testid=virtuoso-item-list]')!
-      return (listContainer as HTMLElement).firstElementChild!.getAttribute('data-item-index')
+      return ((listContainer as HTMLElement).firstElementChild as HTMLElement).dataset.itemIndex
     })
     expect(firstItemIndex).toBe('10')
   })

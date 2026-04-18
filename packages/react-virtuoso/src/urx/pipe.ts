@@ -346,7 +346,7 @@ export function withLatestFrom<T, R1, R2, R3, R4, R5, R6, R7>(
   ...s: [Emitter<R1>, Emitter<R2>, Emitter<R3>, Emitter<R4>, Emitter<R5>, Emitter<R6>, Emitter<R7>]
 ): Operator<T, [T, R1, R2, R3, R4, R5, R6, R7]> // prettier-ignore
 export function withLatestFrom(...sources: Emitter<any>[]): Operator<any, any> {
-  const values = new Array(sources.length)
+  const values = Array.from({ length: sources.length })
   let called = 0
   let pendingCall: (() => void) | null = null
   const allCalled = 2 ** sources.length - 1

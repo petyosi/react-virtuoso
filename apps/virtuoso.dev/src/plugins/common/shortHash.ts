@@ -5,6 +5,7 @@ export function shortHash(data: string): string {
   let h2 = 0x41c6ce57 ^ seed
 
   for (let ch: number, i = 0; i < str.length; i++) {
+    // oxlint-disable-next-line unicorn/prefer-code-point -- the hash intentionally operates on UTF-16 code units
     ch = str.charCodeAt(i)
     h1 = Math.imul(h1 ^ ch, 2654435761)
     h2 = Math.imul(h2 ^ ch, 1597334677)
@@ -13,6 +14,7 @@ export function shortHash(data: string): string {
   h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909)
   h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909)
 
+  // oxlint-disable-next-line unicorn/prefer-math-trunc -- the hash needs unsigned 32-bit coercion
   const h3 = 4294967296 * (2097151 & h2) + (h1 >>> 0)
   return `t${h3.toString(32)}`
 }

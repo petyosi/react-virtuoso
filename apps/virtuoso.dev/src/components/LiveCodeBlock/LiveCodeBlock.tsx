@@ -35,7 +35,7 @@ function configureMonacoWorkers() {
   }
 
   self.MonacoEnvironment = {
-    getWorker: function (_workerId: string, label: string) {
+    getWorker(_workerId: string, label: string) {
       if (label === 'typescript' || label === 'javascript') {
         return new Worker(new URL('monaco-editor/esm/vs/language/typescript/ts.worker.js', import.meta.url), { type: 'module' })
       }
@@ -175,11 +175,11 @@ const IframePortal: React.FC<{ children: React.ReactNode; theme: Theme }> = ({ c
         --color-ring: var(--ring);
       }
     `
-    doc.head.appendChild(themeStyle)
+    doc.head.append(themeStyle)
 
     const script = doc.createElement('script')
     script.textContent = tailwindBrowserInlineScript
-    doc.head.appendChild(script)
+    doc.head.append(script)
   }, [iFrameEl])
 
   return (

@@ -118,10 +118,15 @@ export default function MessageListHeroDemo() {
               }
 
               setData((current) => {
+                const nextData = [...(current?.data ?? [])]
+                const botMessageIndex = nextData.findIndex((message) => message.key === botMessage.key)
+                if (botMessageIndex !== -1) {
+                  const currentBotMessage = nextData[botMessageIndex]!
+                  nextData[botMessageIndex] = { ...currentBotMessage, text: `${currentBotMessage.text} ${randPhrase()}` }
+                }
+
                 return {
-                  data: (current?.data ?? []).map((message) => {
-                    return message.key === botMessage.key ? { ...message, text: message.text + ' ' + randPhrase() } : message
-                  }),
+                  data: nextData,
                   scrollModifier: {
                     behavior: 'smooth',
                     type: 'items-change',

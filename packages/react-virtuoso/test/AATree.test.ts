@@ -84,7 +84,7 @@ describe('AATree', () => {
 
   it('preserves decreasing sequence', () => {
     const numbers = range(0, RANGE_END)
-    const tree = numbersToAATree([...numbers].reverse())
+    const tree = numbersToAATree(numbers.toReversed())
 
     expect(isInvariant(tree)).toStrictEqual(true)
     expect(AA.keys(tree)).toEqual(numbers)

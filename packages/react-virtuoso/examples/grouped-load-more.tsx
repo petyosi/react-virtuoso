@@ -32,7 +32,13 @@ const sortUser = (a: User, b: User) => {
 }
 
 const useGroupedUsers = (count: number) => {
-  const allUsers = useMemo(() => new Array(count).fill(true).map(getUser).sort(sortUser), [count])
+  const allUsers = useMemo(
+    () =>
+      Array.from({ length: count }, () => true)
+        .map(getUser)
+        .sort(sortUser),
+    [count]
+  )
 
   const loadedCount = useRef(0)
   const loadedUsers = useRef<User[]>([])

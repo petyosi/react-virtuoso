@@ -158,7 +158,7 @@ export const followOutputSystem = u.system(
         u.combineLatest(u.pipe(tcOrDataChange, u.skip(1)), didMount),
         u.withLatestFrom(u.duc(scrollIntoViewOnChange), scrolledToInitialItem, scrollingInProgress, context),
         u.map(([[totalCount, didMount], scrollIntoViewOnChange, scrolledToInitialItem, scrollingInProgress, context]) => {
-          return didMount && scrolledToInitialItem && scrollIntoViewOnChange?.({ context, totalCount: totalCount, scrollingInProgress })
+          return didMount && scrolledToInitialItem && scrollIntoViewOnChange?.({ context, totalCount, scrollingInProgress })
         }),
         u.filter((viewLocation) => Boolean(viewLocation)),
         u.throttleTime(0)

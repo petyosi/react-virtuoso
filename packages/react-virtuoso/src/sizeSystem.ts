@@ -103,7 +103,7 @@ function insertRanges(sizeTree: AANode<number>, ranges: SizeRange[]) {
 }
 
 function isGroupLocation(location: FlatOrGroupedLocation): location is { groupIndex: number } {
-  return typeof (location as any).groupIndex !== 'undefined'
+  return (location as { groupIndex?: number }).groupIndex !== undefined
 }
 
 function offsetComparator({ offset: itemOffset }: OffsetPoint, offset: number) {

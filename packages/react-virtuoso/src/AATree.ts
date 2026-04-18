@@ -189,7 +189,7 @@ function adjust<T>(node: NonNilAANode<T>): NonNilAANode<T> {
     if (!empty(l) && !empty(l.r)) {
       return clone(l.r, {
         l: clone(l, { r: l.r.l }),
-        lvl: lvl,
+        lvl,
         r: clone(node, {
           l: l.r.r,
           lvl: lvl - 1,

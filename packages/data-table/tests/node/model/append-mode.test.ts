@@ -140,7 +140,7 @@ describe('remoteSource append mode', () => {
     const page1 = Array.from({ length: 5 }, (_, i) => ({ id: i, name: `item-${i}` }))
     const { fetch, calls, resetPageIndex } = createMockAppendFetch([page1, page1])
 
-    const model = remoteSource<Item, { filter?: string }>({
+    const model = remoteSource<Item>({
       mode: 'append',
       fetch,
       initialParams: {},

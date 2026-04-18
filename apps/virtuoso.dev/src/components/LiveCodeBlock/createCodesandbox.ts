@@ -5,7 +5,7 @@ interface CodeSandboxResponse {
 }
 
 function escapeRegExp(value: string) {
-  return value.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return value.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)
 }
 
 function dirname(path: string) {
@@ -79,6 +79,7 @@ export async function createSandbox(files: Record<string, string>, packages: str
   const externalPackages = packages.filter((pkg) => !pkg.startsWith('@/'))
   const { files: resolvedLocalFiles, packages: localPackages } = resolveLocalFiles(packages)
   const sandboxDependencies = [...new Set([...externalPackages, ...localPackages])]
+  const sandboxDependencyVersions = Object.fromEntries(sandboxDependencies.map((pkg) => [pkg, 'latest']))
   const sandboxFiles: Record<string, { content: string }> = {
     'package.json': {
       content: JSON.stringify(
@@ -89,7 +90,7 @@ export async function createSandbox(files: Record<string, string>, packages: str
             react: '18.2.0',
             'react-dom': '18.2.0',
             'react-scripts': '5.0.1',
-            ...sandboxDependencies.reduce((acc, pkg) => ({ ...acc, [pkg]: 'latest' }), {}),
+            ...sandboxDependencyVersions,
           },
           description: 'An example forked from the docs of https://virtuoso.dev/',
           devDependencies: {

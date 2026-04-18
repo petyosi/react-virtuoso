@@ -56,9 +56,9 @@ export function withLatestFrom<I, T1, T2, T3, T4, T5, T6, T7>(
 export function withLatestFrom<I, T1, T2, T3, T4, T5, T6, T7, T8>(
   ...nodes: [Out<T1>, Out<T2>, Out<T3>, Out<T4>, Out<T5>, Out<T6>, Out<T7>, Out<T8>]
 ): (source: Out<I>) => NodeRef<[I, T1, T2, T3, T4, T5, T6, T7, T8]> // prettier-ignore
-export function withLatestFrom<I>(...nodes: Out[]) {
-  return ((source, r) => {
-    const sink = r.signalInstance()
+export function withLatestFrom<I>(...nodes: Out[]): Operator<I, unknown[]> {
+  return (source, r) => {
+    const sink = r.signalInstance<unknown[]>()
     r.connect({
       map:
         (done) =>
@@ -70,8 +70,7 @@ export function withLatestFrom<I>(...nodes: Out[]) {
       sources: [source],
     })
     return sink
-    // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion)
-  }) as Operator<I, unknown[]>
+  }
 }
 
 /**

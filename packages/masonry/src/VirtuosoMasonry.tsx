@@ -120,7 +120,7 @@ export const VirtuosoMasonry = forwardRef<Record<string, never>, VirtuosoMasonry
       </RealmContext.Provider>
     )
   }
-  // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- generic forwardRef pattern requires cast
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- generic forwardRef pattern requires cast
 ) as <Data, Context>(props: VirtuosoMasonryProps<Data, Context> & { ref?: NoInfer<React.Ref<Record<string, never>>> }) => React.ReactElement
 
 // @ts-expect-error not typing this
@@ -137,7 +137,7 @@ const VirtuosoScroller: React.FC<ScrollerProps> = ({ style: passedStyle, ...html
   const [observer] = useState(() => {
     if (typeof ResizeObserver === 'undefined') {
       if (typeof window !== 'undefined') {
-        throw new Error('ResizeObserver not found. Please ensure that you have a polyfill installed.')
+        throw new TypeError('ResizeObserver not found. Please ensure that you have a polyfill installed.')
       }
       return SSRObserverShim
     }
@@ -150,7 +150,7 @@ const VirtuosoScroller: React.FC<ScrollerProps> = ({ style: passedStyle, ...html
       const results: SizeRange[][] = Array.from({ length: columnCount }, () => [])
       const absoluteSizes: Record<number, number> = {}
 
-      let pubPayload = {}
+      const pubPayload: Record<symbol, unknown> = {}
 
       for (let i = 0; i < length; i++) {
         const entry = entries[i]!
@@ -160,22 +160,19 @@ const VirtuosoScroller: React.FC<ScrollerProps> = ({ style: passedStyle, ...html
         if (element === scrollerRef.current) {
           const theWindow = element.ownerDocument.defaultView!
 
-          pubPayload = {
-            ...pubPayload,
-            [scrollHeight$]: useWindowScroll ? theWindow.document.documentElement.scrollHeight : element.scrollHeight,
-            [scrollTop$]: useWindowScroll ? theWindow.scrollY : element.scrollTop,
-            [viewportHeight$]: useWindowScroll ? theWindow.innerHeight : entry.contentRect.height,
-            [viewportWidth$]: useWindowScroll ? theWindow.innerWidth : element.clientWidth,
-            ...(useWindowScroll ? {} : { [listOffset$]: entry.contentRect.top, [scrollHeight$]: element.scrollHeight }),
+          pubPayload[scrollHeight$] = useWindowScroll ? theWindow.document.documentElement.scrollHeight : element.scrollHeight
+          pubPayload[scrollTop$] = useWindowScroll ? theWindow.scrollY : element.scrollTop
+          pubPayload[viewportHeight$] = useWindowScroll ? theWindow.innerHeight : entry.contentRect.height
+          pubPayload[viewportWidth$] = useWindowScroll ? theWindow.innerWidth : element.clientWidth
+          if (!useWindowScroll) {
+            pubPayload[listOffset$] = entry.contentRect.top
+            pubPayload[scrollHeight$] = element.scrollHeight
           }
           continue
         }
         if (element.dataset.role === 'column') {
           if (scrollerRef.current) {
-            pubPayload = {
-              ...pubPayload,
-              [scrollHeight$]: scrollerRef.current.scrollHeight,
-            }
+            pubPayload[scrollHeight$] = scrollerRef.current.scrollHeight
           }
           continue
         }
@@ -199,24 +196,18 @@ const VirtuosoScroller: React.FC<ScrollerProps> = ({ style: passedStyle, ...html
 
         const lastResult = columnResults[columnResults.length - 1]
         if (columnResults.length === 0 || lastResult!.size !== size || lastResult!.endIndex !== index - 1) {
-          columnResults.push({ endIndex: index, size: size, startIndex: index })
+          columnResults.push({ endIndex: index, size, startIndex: index })
         } else {
           columnResults[columnResults.length - 1]!.endIndex++
         }
       }
 
       if (results.some((columnResult) => columnResult.length > 0)) {
-        pubPayload = {
-          ...pubPayload,
-          [masonryRanges$]: results,
-        }
+        pubPayload[masonryRanges$] = results
       }
 
       if (Object.keys(absoluteSizes).length > 0) {
-        pubPayload = {
-          ...pubPayload,
-          [absoluteSizes$]: absoluteSizes,
-        }
+        pubPayload[absoluteSizes$] = absoluteSizes
       }
 
       realm.pubIn(pubPayload)

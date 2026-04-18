@@ -483,7 +483,8 @@ export function useRemoteCell<T>(cell: NodeRef<T>, engineSource: EngineSource): 
  * @category React Hooks and Components
  */
 export interface RemoteCellValuesOptions<T extends unknown[]> {
-  cells: { [K in keyof T]: Out<T[K]> }
+  // oxlint-disable-next-line typescript/no-unnecessary-type-arguments -- mapped tuple cell types need the explicit item type
+  cells: { [K in keyof T]: NodeRef<T[K]> }
   engineSource: EngineSource
 }
 

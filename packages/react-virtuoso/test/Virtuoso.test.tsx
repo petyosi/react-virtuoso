@@ -16,12 +16,12 @@ describe('Virtuoso', () => {
   beforeEach(() => {
     // setup a DOM element as a render target
     container = document.createElement('div')
-    document.body.appendChild(container)
+    document.body.append(container)
   })
 
   afterEach(() => {
     // cleanup on exiting
-    document.body.removeChild(container)
+    container.remove()
   })
 
   it('renders a probe item initially', () => {
