@@ -8,7 +8,7 @@ import type { ColumnInfo } from './Column'
 import type { ColumnState } from './column-state'
 import type { ColumnGroupInfo } from './ColumnGroup'
 import type { ColumnGroupHeaderCustomComponent, ColumnGroupHeaderRenderFunction } from './ColumnGroupHeader'
-import type { ColumnHeaderCustomComponent, ColumnHeaderRenderFunction } from './ColumnHeader'
+import type { ColumnHeaderEntry } from './ColumnHeader'
 
 const HEADER_GROUP_STYLE: CSSProperties = {
   display: 'flex',
@@ -172,14 +172,7 @@ function GroupHeaderRenderer({ groupId, group, columnKeys, totalWidth, renderer,
 interface HeaderNodeRendererProps {
   node: HeaderNode
   columns: Map<string, ColumnInfo>
-  columnHeaders: Map<
-    string,
-    {
-      type: 'function' | 'component'
-      renderer: ColumnHeaderRenderFunction | ColumnHeaderCustomComponent
-      className?: string
-    }
-  >
+  columnHeaders: Map<string, ColumnHeaderEntry>
   columnGroupHeaders: Map<
     string,
     {

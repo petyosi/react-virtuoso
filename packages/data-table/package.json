@@ -50,6 +50,12 @@
         "default": "./dist/column-reorder.js"
       }
     },
+    "./column-resize": {
+      "import": {
+        "types": "./dist/column-resize.d.ts",
+        "default": "./dist/column-resize.js"
+      }
+    },
     "./styles.css": "./dist/styles.css"
   },
   "publishConfig": {

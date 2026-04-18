@@ -1,12 +1,13 @@
 import type { CSSProperties } from 'react'
 
-import { DraggableGroupHeader, DraggableHeader } from '@/components/ui/data-table/column-reorder'
+import { DraggableGroupHeader, ReorderDropZone, ReorderGrip } from '@/components/ui/data-table/column-reorder'
 
 import { Cell, VirtuosoDataTable } from '..'
 import { Column } from '../columns/Column'
 import { ColumnGroup } from '../columns/ColumnGroup'
 import { ColumnGroupHeader } from '../columns/ColumnGroupHeader'
 import { ColumnHeader } from '../columns/ColumnHeader'
+import { HeaderOverlay, HeaderStart } from '../columns/header-slots/slots'
 
 import type { ColumnGroupHeaderCustomComponent } from '../columns/ColumnGroupHeader'
 
@@ -28,13 +29,18 @@ const ITEMS = Array.from({ length: ITEM_COUNT }, (_, rowIndex) => {
 })
 
 const LIST_STYLE: CSSProperties = { height: 400, width: 700 }
+const BASE_HEADER_CLASSNAME = 'flex h-10 items-center px-3 text-sm font-medium text-foreground whitespace-nowrap'
 
 export function BasicColumnReorder() {
   return (
     <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
       {Array.from({ length: COLUMN_COUNT }, (_, i) => (
         <Column key={`col${i}`} field={`col${i}`}>
-          <ColumnHeader component={DraggableHeader} />
+          <ColumnHeader className={BASE_HEADER_CLASSNAME}>
+            <HeaderStart component={ReorderGrip} />
+            <HeaderOverlay component={ReorderDropZone} />
+            {({ column }) => column.field}
+          </ColumnHeader>
           <Cell>{({ cellValue }) => String(cellValue)}</Cell>
         </Column>
       ))}
@@ -46,27 +52,47 @@ export function ReorderWithStickyColumns() {
   return (
     <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
       <Column field="id" sticky="left">
-        <ColumnHeader component={DraggableHeader} />
+        <ColumnHeader className={BASE_HEADER_CLASSNAME}>
+          <HeaderStart component={ReorderGrip} />
+          <HeaderOverlay component={ReorderDropZone} />
+          {({ column }) => column.field}
+        </ColumnHeader>
         <Cell>{({ cellValue }) => String(cellValue)}</Cell>
       </Column>
       <Column field="name" sticky="left">
-        <ColumnHeader component={DraggableHeader} />
+        <ColumnHeader className={BASE_HEADER_CLASSNAME}>
+          <HeaderStart component={ReorderGrip} />
+          <HeaderOverlay component={ReorderDropZone} />
+          {({ column }) => column.field}
+        </ColumnHeader>
         <Cell>{({ cellValue }) => String(cellValue)}</Cell>
       </Column>
 
       {Array.from({ length: COLUMN_COUNT }, (_, i) => (
         <Column key={`col${i}`} field={`col${i}`}>
-          <ColumnHeader component={DraggableHeader} />
+          <ColumnHeader className={BASE_HEADER_CLASSNAME}>
+            <HeaderStart component={ReorderGrip} />
+            <HeaderOverlay component={ReorderDropZone} />
+            {({ column }) => column.field}
+          </ColumnHeader>
           <Cell>{({ cellValue }) => String(cellValue)}</Cell>
         </Column>
       ))}
 
       <Column field="price" sticky="right">
-        <ColumnHeader component={DraggableHeader} />
+        <ColumnHeader className={BASE_HEADER_CLASSNAME}>
+          <HeaderStart component={ReorderGrip} />
+          <HeaderOverlay component={ReorderDropZone} />
+          {({ column }) => column.field}
+        </ColumnHeader>
         <Cell>{({ cellValue }) => String(cellValue)}</Cell>
       </Column>
       <Column field="actions" sticky="right">
-        <ColumnHeader component={DraggableHeader} />
+        <ColumnHeader className={BASE_HEADER_CLASSNAME}>
+          <HeaderStart component={ReorderGrip} />
+          <HeaderOverlay component={ReorderDropZone} />
+          {({ column }) => column.field}
+        </ColumnHeader>
         <Cell>{({ cellValue }) => String(cellValue)}</Cell>
       </Column>
     </VirtuosoDataTable>
@@ -99,18 +125,30 @@ export function ReorderWithColumnGroups() {
   return (
     <VirtuosoDataTable style={LIST_STYLE} data={{ data: items, groups: [] }}>
       <Column field="id">
-        <ColumnHeader component={DraggableHeader} />
+        <ColumnHeader className={BASE_HEADER_CLASSNAME}>
+          <HeaderStart component={ReorderGrip} />
+          <HeaderOverlay component={ReorderDropZone} />
+          {({ column }) => column.field}
+        </ColumnHeader>
         <Cell>{({ cellValue }) => String(cellValue)}</Cell>
       </Column>
 
       <ColumnGroup>
         <ColumnGroupHeader component={PersonalGroupHeader} />
         <Column field="firstName">
-          <ColumnHeader component={DraggableHeader} />
+          <ColumnHeader className={BASE_HEADER_CLASSNAME}>
+            <HeaderStart component={ReorderGrip} />
+            <HeaderOverlay component={ReorderDropZone} />
+            {({ column }) => column.field}
+          </ColumnHeader>
           <Cell>{({ cellValue }) => String(cellValue)}</Cell>
         </Column>
         <Column field="lastName">
-          <ColumnHeader component={DraggableHeader} />
+          <ColumnHeader className={BASE_HEADER_CLASSNAME}>
+            <HeaderStart component={ReorderGrip} />
+            <HeaderOverlay component={ReorderDropZone} />
+            {({ column }) => column.field}
+          </ColumnHeader>
           <Cell>{({ cellValue }) => String(cellValue)}</Cell>
         </Column>
       </ColumnGroup>
@@ -118,22 +156,38 @@ export function ReorderWithColumnGroups() {
       <ColumnGroup>
         <ColumnGroupHeader component={AddressGroupHeader} />
         <Column field="street">
-          <ColumnHeader component={DraggableHeader} />
+          <ColumnHeader className={BASE_HEADER_CLASSNAME}>
+            <HeaderStart component={ReorderGrip} />
+            <HeaderOverlay component={ReorderDropZone} />
+            {({ column }) => column.field}
+          </ColumnHeader>
           <Cell>{({ cellValue }) => String(cellValue)}</Cell>
         </Column>
         <Column field="city">
-          <ColumnHeader component={DraggableHeader} />
+          <ColumnHeader className={BASE_HEADER_CLASSNAME}>
+            <HeaderStart component={ReorderGrip} />
+            <HeaderOverlay component={ReorderDropZone} />
+            {({ column }) => column.field}
+          </ColumnHeader>
           <Cell>{({ cellValue }) => String(cellValue)}</Cell>
         </Column>
         <Column field="zip">
-          <ColumnHeader component={DraggableHeader} />
+          <ColumnHeader className={BASE_HEADER_CLASSNAME}>
+            <HeaderStart component={ReorderGrip} />
+            <HeaderOverlay component={ReorderDropZone} />
+            {({ column }) => column.field}
+          </ColumnHeader>
           <Cell>{({ cellValue }) => String(cellValue)}</Cell>
         </Column>
       </ColumnGroup>
 
       {Array.from({ length: 5 }, (_, i) => (
         <Column key={`col${i}`} field={`col${i}`}>
-          <ColumnHeader component={DraggableHeader} />
+          <ColumnHeader className={BASE_HEADER_CLASSNAME}>
+            <HeaderStart component={ReorderGrip} />
+            <HeaderOverlay component={ReorderDropZone} />
+            {({ column }) => column.field}
+          </ColumnHeader>
           <Cell>{({ cellValue }) => String(cellValue)}</Cell>
         </Column>
       ))}

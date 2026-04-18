@@ -6,6 +6,10 @@ import {
   VirtuosoDataTable,
   Column,
   ColumnHeader,
+  HeaderEdge,
+  HeaderEnd,
+  HeaderOverlay,
+  HeaderStart,
   Cell,
   GroupHeaderCell,
   ColumnGroup,
@@ -24,9 +28,13 @@ import type {
   VirtuosoDataTableMethods,
   CellRenderParams,
   CellRenderFunction,
+  ColumnHeaderChildren,
   ColumnHeaderRenderParams,
   ColumnHeaderRenderFunction,
   ColumnHeaderCustomComponent,
+  HeaderSlotRenderParams,
+  HeaderSlotRenderFunction,
+  HeaderSlotCustomComponent,
   ColumnState,
   ColumnInfo,
   TableData,
@@ -115,7 +123,7 @@ function DataTableColumn(props: Column.Props) {
 }
 
 interface DataTableColumnHeaderProps {
-  children?: ColumnHeaderRenderFunction | React.ReactNode
+  children?: unknown
   component?: ColumnHeaderCustomComponent
   className?: string
 }
@@ -127,10 +135,22 @@ function DataTableColumnHeader(props: DataTableColumnHeaderProps) {
     return <ColumnHeader className={className} component={props.component} />
   }
 
-  const userRender = props.children
-  return (
-    <ColumnHeader className={className}>{(params) => (typeof userRender === 'function' ? userRender(params) : userRender)}</ColumnHeader>
-  )
+  if (
+    props.children === null ||
+    props.children === undefined ||
+    typeof props.children === 'string' ||
+    typeof props.children === 'number' ||
+    typeof props.children === 'function'
+  ) {
+    const userRender = props.children
+    return (
+      <ColumnHeader className={className}>
+        {(params: ColumnHeaderRenderParams) => (typeof userRender === 'function' ? userRender(params) : userRender)}
+      </ColumnHeader>
+    )
+  }
+
+  return <ColumnHeader className={className}>{props.children as ColumnHeaderChildren}</ColumnHeader>
 }
 
 function DataTableCell(props: CellDefinitionProps) {
@@ -157,9 +177,13 @@ export {
   type VirtuosoDataTableMethods,
   type CellRenderParams,
   type CellRenderFunction,
+  type ColumnHeaderChildren,
   type ColumnHeaderRenderParams,
   type ColumnHeaderRenderFunction,
   type ColumnHeaderCustomComponent,
+  type HeaderSlotRenderParams,
+  type HeaderSlotRenderFunction,
+  type HeaderSlotCustomComponent,
   type ColumnState,
   type ColumnInfo,
   type TableData,
@@ -183,6 +207,10 @@ export {
   GroupHeaderCell,
   ColumnGroup,
   ColumnGroupHeader,
+  HeaderStart,
+  HeaderEnd,
+  HeaderEdge,
+  HeaderOverlay,
   setColumnSticky$,
   reorderColumns$,
   useVirtuosoMethods,

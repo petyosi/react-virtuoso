@@ -67,7 +67,7 @@ The feature does **not** ship React components. UI components live in the shadcn
 
 6. **Demonstrate** the wiring in `packages/data-table/src/_stories/<name>.stories.tsx`, importing the registry components via the `@/` Ladle alias so the story exercises the same code path real consumers will use.
 
-See `column-reorder/index.ts` for a worked example.
+See `column-reorder/index.ts` and `column-resize/index.ts` for worked examples of the pattern.
 
 ## Why model in package, UI in registry
 
