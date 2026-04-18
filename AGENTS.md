@@ -13,8 +13,11 @@ If a rule here appears to conflict with `package.json`, the actual filesystem, o
 - Internal working artifacts belong in Notion, not in repo markdown files.
   - Use Notion for PRPs, plans, clarifications, execution notes, verification notes, prompts, investigations, reports, audits, and exported findings that are not product docs.
   - Do not create or keep repo markdown artifacts in folders like `plans/`, `prompts/`, `reports/`, or similar ad hoc locations.
+  - Create new internal artifacts from the shared Notion template at `https://www.notion.so/3461834d8eff81318a4cccaf19b0de51` instead of creating free-form pages from scratch.
+  - The template's visual settings such as `Small text` and `Full width` are maintained manually in Notion. Preserve them by duplicating the template when possible.
   - If the user asks for a PRP workflow, create or update the artifact in Notion instead of creating `plans/*.md`.
   - If the user asks for a report or findings export, prefer a Notion page unless they explicitly ask for a repo file.
+  - Set a page icon that matches the artifact type or content when creating the page. Prefer clear, stable icons such as `📗` for PRPs/plans, `📊` for reports, `🔎` for investigations, `✍️` for prompts, and `🛠️` for execution notes.
   - If an existing markdown file looks ambiguous, ask before deleting or migrating it.
 - Never use `data-testid` as a styling hook. It is reserved for tests. Use semantic attributes such as `data-table-element-role` instead.
 
