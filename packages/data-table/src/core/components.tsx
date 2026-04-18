@@ -6,6 +6,7 @@ import type {
   ContextAwareComponent,
   FooterWrapperComponent,
   HeaderWrapperComponent,
+  LoadingComponentProps,
   RowComponentProps,
   ScrollElementComponent,
   StickyColumnContainerComponentProps,
@@ -18,6 +19,9 @@ export const stickyHeader$ = Cell<ContextAwareComponent | null>(null)
 export const footer$ = Cell<ContextAwareComponent | null>(null)
 export const stickyFooter$ = Cell<ContextAwareComponent | null>(null)
 export const emptyPlaceholder$ = Cell<ContextAwareComponent | null>(null)
+export const loadingPlaceholder$ = Cell<React.ComponentType<LoadingComponentProps> | null>(null)
+export const loadingOverlay$ = Cell<React.ComponentType<LoadingComponentProps> | null>(null)
+export const loadingFooter$ = Cell<React.ComponentType<LoadingComponentProps> | null>(null)
 export const scrollElement$ = Cell<ScrollElementComponent | 'div'>('div')
 
 const STICKY_TOP_STYLE = {

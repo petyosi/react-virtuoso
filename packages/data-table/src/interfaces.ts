@@ -104,6 +104,45 @@ export type ContextAwareComponent<Context = any> = React.ComponentType<{
 }>
 
 /**
+ * Status for a loading state segment.
+ *
+ * @group State
+ */
+export type DataTableLoadingStatus = 'idle' | 'loading' | 'error'
+
+/**
+ * A single loading state segment.
+ *
+ * @group State
+ */
+export interface DataTableLoadingSegment {
+  status: DataTableLoadingStatus
+  errorMessage: string | null
+}
+
+/**
+ * Semantic loading state exposed by the data table.
+ *
+ * @group State
+ */
+export interface DataTableLoadingState {
+  initial: DataTableLoadingSegment
+  refresh: DataTableLoadingSegment
+  start: DataTableLoadingSegment
+  end: DataTableLoadingSegment
+}
+
+/**
+ * Props passed to loading UI component slots.
+ *
+ * @group Customization
+ */
+export interface LoadingComponentProps<Context = unknown> {
+  context: Context
+  loadingState: DataTableLoadingState
+}
+
+/**
  * The type of the component that can be used for the scroll element.
  * @typeParam Context - The type of the context passed to the list.
  *
@@ -206,6 +245,18 @@ export interface DataTableComponents<Context = unknown> {
    * in both row cells and header cells). The `data-sticky` attribute indicates the side.
    */
   StickyColumnContainer?: React.ComponentType<StickyColumnContainerComponentProps & { context?: Context }>
+  /**
+   * Override the placeholder rendered while the table is awaiting its first resolved dataset.
+   */
+  LoadingPlaceholder?: React.ComponentType<LoadingComponentProps<Context>>
+  /**
+   * Override the loading overlay rendered above the table body during refreshes.
+   */
+  LoadingOverlay?: React.ComponentType<LoadingComponentProps<Context>>
+  /**
+   * Override the measured footer rendered for end-of-list loading and error states.
+   */
+  LoadingFooter?: React.ComponentType<LoadingComponentProps<Context>>
 }
 
 /**

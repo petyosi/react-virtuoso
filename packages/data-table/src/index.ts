@@ -19,14 +19,18 @@ export { totalWidth$, columnCount$ } from './columns/column-sizes'
 export { columnsState$, stickyColumnsState$, columnItemsState$ } from './columns/column-state'
 export type { ColumnState, ColumnsStateMap, StickyColumnsState, ColumnItem, ColumnItemsState } from './columns/column-state'
 export { columnWidthOverrides$ } from './columns/column-width-overrides'
-export { useVirtuosoLocation, useCurrentlyRenderedData, useVirtuosoMethods } from './core/hooks'
+export { useVirtuosoLocation, useCurrentlyRenderedData, useVirtuosoLoadingState, useVirtuosoMethods } from './core/hooks'
 export type {
   TableData,
+  DataTableLoadingSegment,
+  DataTableLoadingState,
+  DataTableLoadingStatus,
   ScrollBehavior,
   RowLocationWithAlign,
   RowLocation,
   Row,
   ContextAwareComponent,
+  LoadingComponentProps,
   ScrollElementComponent,
   ListScrollLocation,
   BezierFunction,
@@ -39,6 +43,7 @@ export type {
   StickyColumnContainerComponentProps,
 } from './interfaces'
 export { VirtuosoDataTable } from './core/VirtuosoDataTable'
+export { loadingState$ } from './core/loading'
 export {
   useCellValue,
   useEngineRef,
@@ -65,6 +70,9 @@ export type {
   AppendViewportAction,
   ParamTransformer,
   RemoteActionConfig,
+  RemoteSourceLoadingEvent,
+  RemoteSourceLoadingPhase,
+  RemoteSourceLoadingReason,
 } from './model/remote-source'
 export { viewportRange$, currentlyRenderedRows$ } from './rows/row-state'
 export type { ViewportRange } from './rows/row-state'

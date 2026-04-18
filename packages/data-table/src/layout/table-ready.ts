@@ -35,11 +35,9 @@ if (process.env.NODE_ENV !== 'production') {
       }
       if (shouldWarn) {
         warnTimer = setTimeout(() => {
-          if (e.getValue(viewportHeight$) === 0 && e.getValue(totalCount$) > 0) {
-            console.warn(
-              '[VirtuosoDataTable] Container element has zero height. No rows will render. Set a height on the container element or use useWindowScroll.'
-            )
-          }
+          console.warn(
+            '[VirtuosoDataTable] Container element has zero height. No rows will render. Set a height on the container element or use useWindowScroll.'
+          )
         }, 2000)
       }
     }

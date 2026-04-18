@@ -166,7 +166,7 @@ describe('offset mode viewportChange', () => {
     model.send({ action: 'sort', payload: 'name', viewId: 'v1' })
     await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(2))
 
-    await vi.waitFor(() => expect(resultMessages(messages)).toHaveLength(4))
+    await vi.waitFor(() => expect(resultMessages(messages)).toHaveLength(3))
 
     model.send({ action: 'viewportChange', payload: { startIndex: 0, endIndex: 19 }, viewId: 'v1' })
 

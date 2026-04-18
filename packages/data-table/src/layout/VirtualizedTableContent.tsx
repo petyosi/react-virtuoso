@@ -15,15 +15,18 @@ import {
   footerWrapper$,
   header$,
   headerWrapper$,
+  loadingFooter$,
+  loadingOverlay$,
+  loadingPlaceholder$,
   NO_OVERFLOW_ANCHOR_STYLE,
   stickyColumnContainer$,
   stickyFooter$,
   stickyFooterWrapper$,
-  stickyHeader$,
   stickyHeaderWrapper$,
 } from '../core/components'
 import { computeRowKey$ } from '../core/content'
 import { context$, totalCount$ } from '../core/data'
+import { loadingState$ } from '../core/loading'
 import { accumulateSizeRange } from '../resize/accumulate-size-range'
 import { useResizeObserver } from '../resize/resize-observer-singleton'
 import { FOOTER_ROLE, HEADER_ROLE, TABLE_BODY_ROLE, STICKY_FOOTER_ROLE, STICKY_HEADER_ROLE } from '../resize/resize-observing'
@@ -34,6 +37,7 @@ import {
   customScrollParent$,
   deviation$,
   emptyRenderCycle$,
+  headerHeight$,
   hasHorizontalScroll$,
   tableBodyCssTransition$,
   tableBodyForceBottomSpace$,
@@ -169,31 +173,19 @@ function StickyHeaderContent() {
 export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passedStyle, ...htmlProps }) => {
   const engine = useEngine()
 
-  const [
-    Header,
-    _StickyHeader,
-    HeaderWrapper,
-    StickyHeaderWrapper,
-    Footer,
-    StickyFooter,
-    FooterWrapper,
-    StickyFooterWrapper,
-    EmptyPlaceholder,
-    customScrollParent,
-    { rows, stickyStartItems, stickyStartTops },
-  ] = useCellValues(
-    header$,
-    stickyHeader$,
-    headerWrapper$,
-    stickyHeaderWrapper$,
-    footer$,
-    stickyFooter$,
-    footerWrapper$,
-    stickyFooterWrapper$,
-    emptyPlaceholder$,
-    customScrollParent$,
-    rowsState$
-  )
+  const Header = useCellValue(header$)
+  const HeaderWrapper = useCellValue(headerWrapper$)
+  const StickyHeaderWrapper = useCellValue(stickyHeaderWrapper$)
+  const Footer = useCellValue(footer$)
+  const StickyFooter = useCellValue(stickyFooter$)
+  const FooterWrapper = useCellValue(footerWrapper$)
+  const StickyFooterWrapper = useCellValue(stickyFooterWrapper$)
+  const EmptyPlaceholder = useCellValue(emptyPlaceholder$)
+  const LoadingPlaceholder = useCellValue(loadingPlaceholder$)
+  const LoadingOverlay = useCellValue(loadingOverlay$)
+  const LoadingFooter = useCellValue(loadingFooter$)
+  const customScrollParent = useCellValue(customScrollParent$)
+  const { rows, stickyStartItems, stickyStartTops } = useCellValue(rowsState$)
 
   const columnWidthsCssVars = useCellValue(columnWidthsCssVars$)
 
@@ -209,6 +201,8 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
   const totalHeight = useCellValue(totalHeight$)
   const useWindowScroll = useCellValue(useWindowScroll$)
   const pendingScrollToInitialLocation = useCellValue(pendingScrollToInitialLocation$)
+  const loadingState = useCellValue(loadingState$)
+  const headerHeight = useCellValue(headerHeight$)
 
   const tableBodyRef = React.useRef<HTMLElement | null>(null)
 
@@ -259,12 +253,32 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
   )
 
   const stickyHeaderWrapperStyle = STICKY_HEADER_WRAPPER_BASE_STYLE
+  const showInitialLoadingPlaceholder = LoadingPlaceholder !== null && loadingState.initial.status !== 'idle'
+  const showEmptyPlaceholder =
+    (totalCount === 0 || pendingScrollToInitialLocation) &&
+    EmptyPlaceholder !== null &&
+    !(showInitialLoadingPlaceholder || loadingState.initial.status === 'loading')
+  const loadingOverlayStyle = useMemo(
+    () =>
+      ({
+        position: 'absolute',
+        top: headerHeight,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        zIndex: 3,
+        pointerEvents: 'none',
+      }) satisfies CSSProperties,
+    [headerHeight]
+  )
 
   const stickyHeaderRef = useResizeObserver()
   const headerRef = useResizeObserver()
   const tableBodyCallbackRef = useResizeObserver()
   const footerRef = useResizeObserver()
   const stickyFooterRef = useResizeObserver()
+  const showLoadingFooter = LoadingFooter !== null && loadingState.end.status !== 'idle'
+  const showFooter = Footer !== null || showLoadingFooter
 
   const theTableBodyCallbackRef = useCallback(
     (el: HTMLElement | null) => {
@@ -277,7 +291,7 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
   return (
     <TableLayoutRoot {...htmlProps} style={passedStyle}>
       <ScrollableRoot {...htmlProps} tableBodyRef={tableBodyRef}>
-        {(totalCount === 0 || pendingScrollToInitialLocation) && EmptyPlaceholder ? <EmptyPlaceholder context={context} /> : null}
+        {showEmptyPlaceholder ? <EmptyPlaceholder context={context} /> : null}
         <StickyHeaderWrapper
           data-table-element-role={STICKY_HEADER_ROLE}
           ref={stickyHeaderRef}
@@ -296,6 +310,7 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
             data-table-element-role={TABLE_BODY_ROLE}
             ref={theTableBodyCallbackRef}
             data-testid="virtuoso-table-body"
+            aria-busy={loadingState.refresh.status === 'loading' || undefined}
             style={tableBodyStyle}
           >
             {stickyStartItems.map((stickyRow, idx) => {
@@ -322,10 +337,15 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
               )
             })}
           </div>
+        ) : showInitialLoadingPlaceholder ? (
+          <div aria-busy={loadingState.initial.status === 'loading' || undefined} data-table-element-role={TABLE_BODY_ROLE}>
+            <LoadingPlaceholder context={context} loadingState={loadingState} />
+          </div>
         ) : null}
-        {Footer && (
+        {showFooter && (
           <FooterWrapper data-table-element-role={FOOTER_ROLE} ref={footerRef} style={NO_OVERFLOW_ANCHOR_STYLE}>
-            <Footer context={context} />
+            {Footer ? <Footer context={context} /> : null}
+            {showLoadingFooter ? <LoadingFooter context={context} loadingState={loadingState} /> : null}
           </FooterWrapper>
         )}
         {StickyFooter && (
@@ -334,6 +354,11 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
           </StickyFooterWrapper>
         )}
       </ScrollableRoot>
+      {LoadingOverlay && loadingState.refresh.status !== 'idle' && (
+        <div style={loadingOverlayStyle}>
+          <LoadingOverlay context={context} loadingState={loadingState} />
+        </div>
+      )}
       <ScrollbarOverlay />
     </TableLayoutRoot>
   )
