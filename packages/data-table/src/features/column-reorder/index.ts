@@ -147,4 +147,16 @@ e.changeWith(columnDragState$, beginColumnDrag$, (_state, { sourceKeys, sourceSt
 
 e.changeWith(columnDragState$, endColumnDrag$, () => INITIAL_DRAG_STATE)
 
-e.changeWith(columnDragState$, setColumnDropTarget$, (state, dropTarget) => ({ ...state, dropTarget }))
+e.changeWith(columnDragState$, setColumnDropTarget$, (state, dropTarget) => {
+  if (dropTarget === null) {
+    return state.dropTarget === null ? state : { ...state, dropTarget: null }
+  }
+
+  // Native drag events can still arrive after `dragend`/`drop`; ignore them
+  // once the drag has already been torn down so the marker cannot reappear.
+  if (state.sourceKeys === null) {
+    return state
+  }
+
+  return { ...state, dropTarget }
+})
