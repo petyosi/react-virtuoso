@@ -4,6 +4,7 @@ import { useCellValue, useEngine } from '@virtuoso.dev/reactive-engine-react'
 
 import { currentlyRenderedRows$ } from '../rows/row-state'
 import { scrollLocation$ } from '../scroll/dom'
+import { loadingState$ } from './loading'
 import { virtuosoApiObject } from './virtuosoApiObject'
 
 /**
@@ -23,6 +24,15 @@ export function useVirtuosoLocation() {
  */
 export function useCurrentlyRenderedData<Data>(): Data[] {
   return useCellValue(currentlyRenderedRows$) as Data[]
+}
+
+/**
+ * Lets you access the current semantic loading state of the data table from its child components.
+ *
+ * @group Hooks
+ */
+export function useVirtuosoLoadingState() {
+  return useCellValue(loadingState$)
 }
 
 /**

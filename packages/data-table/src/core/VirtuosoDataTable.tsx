@@ -25,6 +25,9 @@ import {
   footerWrapper$,
   header$,
   headerWrapper$,
+  loadingFooter$,
+  loadingOverlay$,
+  loadingPlaceholder$,
   rowComponent$,
   scrollElement$,
   stickyColumnContainer$,
@@ -35,6 +38,7 @@ import {
 } from './components'
 import { computeRowKey$, defaultComputeRowKey } from './content'
 import { context$, groupLevelMap$, groupStickyConfig$ } from './data'
+import { loadingState$ } from './loading'
 import { virtuosoApiObject } from './virtuosoApiObject'
 
 import type { VirtuosoDataTableMethods, VirtuosoDataTableProps } from '../interfaces'
@@ -114,6 +118,7 @@ export const VirtuosoDataTable = React.forwardRef<VirtuosoDataTableMethods<unkno
           e.register(groupStickyConfig$)
           e.register(groupLevelMap$)
           e.register(viewportRange$)
+          e.register(loadingState$)
 
           const model = externalModel ?? localSource({ data: [...data.data], groups: data.groups })
           if (!externalModel) {
@@ -130,6 +135,9 @@ export const VirtuosoDataTable = React.forwardRef<VirtuosoDataTableMethods<unkno
             [stickyHeader$]: null,
             [stickyFooter$]: null,
             [emptyPlaceholder$]: EmptyPlaceholder,
+            [loadingPlaceholder$]: components?.LoadingPlaceholder ?? null,
+            [loadingOverlay$]: components?.LoadingOverlay ?? null,
+            [loadingFooter$]: components?.LoadingFooter ?? null,
             [scrollElement$]: ScrollElement,
             [stickyFooterWrapper$]: DefaultStickyFooterWrapper,
             [stickyHeaderWrapper$]: components?.StickyHeader ?? DefaultStickyHeaderWrapper,
@@ -157,6 +165,9 @@ export const VirtuosoDataTable = React.forwardRef<VirtuosoDataTableMethods<unkno
             [increaseViewportBy$]: increaseViewportBy,
             [computeRowKey$]: computeRowKey,
             [emptyPlaceholder$]: EmptyPlaceholder,
+            [loadingPlaceholder$]: components?.LoadingPlaceholder ?? null,
+            [loadingOverlay$]: components?.LoadingOverlay ?? null,
+            [loadingFooter$]: components?.LoadingFooter ?? null,
             [columnOverscanCount$]: columnOverscanCount,
             [stickyHeaderWrapper$]: components?.StickyHeader ?? DefaultStickyHeaderWrapper,
             [rowComponent$]: components?.Row ?? DefaultRowComponent,

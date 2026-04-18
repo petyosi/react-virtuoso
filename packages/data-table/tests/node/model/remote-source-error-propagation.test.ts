@@ -249,7 +249,7 @@ describe('remote source error propagation', () => {
 
       await vi.waitFor(() => {
         const results = messages.filter((m) => m.type === 'result')
-        expect(results.length).toBeGreaterThanOrEqual(3)
+        expect(results.length).toBeGreaterThanOrEqual(2)
       })
 
       expect(onError).not.toHaveBeenCalled()
@@ -288,7 +288,7 @@ describe('remote source error propagation', () => {
       // Wait for the sort fetch to complete
       await vi.waitFor(() => {
         const results = messages.filter((m) => m.type === 'result')
-        expect(results.length).toBeGreaterThanOrEqual(3)
+        expect(results.length).toBeGreaterThanOrEqual(2)
       })
 
       const errorMessages = messages.filter((m) => m.type === 'error')

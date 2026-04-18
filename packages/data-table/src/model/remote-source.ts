@@ -1,6 +1,14 @@
 import { createModel } from './model-core'
 
-import type { AsyncErrorEmitter, AsyncResultEmitter, ConcurrencyStrategy, DataModelHandle, DataResult, FrameAdapter } from './types'
+import type {
+  AsyncErrorEmitter,
+  AsyncResultEmitter,
+  ConcurrencyStrategy,
+  DataModelHandle,
+  DataResult,
+  EventEmitter,
+  FrameAdapter,
+} from './types'
 
 /**
  * Parameters for an offset-based fetch request.
@@ -45,6 +53,32 @@ export interface AppendFetchResult<T> {
   rows: T[]
   hasMore: boolean
   cursor: unknown
+}
+
+/**
+ * Loading reasons emitted by `remoteSource()`.
+ *
+ * @group Data Models
+ */
+export type RemoteSourceLoadingReason = 'initial' | 'refresh' | 'end' | 'viewport'
+
+/**
+ * Loading lifecycle phase emitted by `remoteSource()`.
+ *
+ * @group Data Models
+ */
+export type RemoteSourceLoadingPhase = 'start' | 'success' | 'error' | 'cancel'
+
+/**
+ * Event payload emitted by `remoteSource()` through the model event channel.
+ *
+ * @group Data Models
+ */
+export interface RemoteSourceLoadingEvent {
+  kind: 'loading'
+  reason: RemoteSourceLoadingReason
+  phase: RemoteSourceLoadingPhase
+  errorMessage?: string
 }
 
 /**
@@ -157,6 +191,7 @@ interface OffsetViewData<T> {
   totalCount: number
   loadedRanges: LoadedRange[]
   abortController: AbortController | null
+  abortReason: RemoteSourceLoadingReason | null
   viewportAbortControllers: Set<AbortController>
   pendingViewportFetches: Set<string>
 }
@@ -167,6 +202,7 @@ interface AppendViewData<T> {
   hasMore: boolean
   fetching: boolean
   abortController: AbortController | null
+  abortReason: RemoteSourceLoadingReason | null
 }
 
 function isRangeLoaded<T>(vd: OffsetViewData<T>, offset: number, limit: number): boolean {
@@ -206,6 +242,21 @@ function abortAppendInFlight<T>(vd: AppendViewData<T>) {
     vd.abortController = null
   }
   vd.fetching = false
+}
+
+function emitLoadingEvent(
+  emit: EventEmitter | null,
+  viewId: string,
+  reason: RemoteSourceLoadingReason,
+  phase: RemoteSourceLoadingPhase,
+  errorMessage?: string
+) {
+  emit?.(viewId, {
+    kind: 'loading',
+    reason,
+    phase,
+    ...(errorMessage ? { errorMessage } : {}),
+  } satisfies RemoteSourceLoadingEvent)
 }
 
 /**
@@ -261,6 +312,7 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
   const requestAbortMap = new Map<string, AbortController>()
   let asyncEmit: AsyncResultEmitter<T> | null = null
   let asyncErrorEmit: AsyncErrorEmitter | null = null
+  let asyncEventEmit: EventEmitter | null = null
 
   function getViewData(viewId: string): OffsetViewData<T> {
     let vd = viewDataMap.get(viewId)
@@ -270,6 +322,7 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
         totalCount: 0,
         loadedRanges: [],
         abortController: null,
+        abortReason: null,
         viewportAbortControllers: new Set(),
         pendingViewportFetches: new Set(),
       }
@@ -297,15 +350,25 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
     return { data, groups: [] }
   }
 
-  async function doFetch(viewId: string, offset: number, limit: number, requestId?: string) {
-    const vd = getViewData(viewId)
+  function cancelMainFetch(viewId: string, vd: OffsetViewData<T>) {
+    if (vd.abortController && vd.abortReason !== null) {
+      emitLoadingEvent(asyncEventEmit, viewId, vd.abortReason, 'cancel')
+    }
     abortOffsetInFlight(vd)
+    vd.abortReason = null
+  }
+
+  async function doFetch(viewId: string, offset: number, limit: number, reason: RemoteSourceLoadingReason, requestId?: string) {
+    const vd = getViewData(viewId)
+    cancelMainFetch(viewId, vd)
 
     const controller = new AbortController()
     vd.abortController = controller
+    vd.abortReason = reason
     if (requestId) {
       requestAbortMap.set(requestId, controller)
     }
+    emitLoadingEvent(asyncEventEmit, viewId, reason, 'start')
 
     try {
       const result = await config.fetch({
@@ -325,11 +388,16 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
       }
       addLoadedRange(vd, offset, result.rows.length)
       vd.abortController = null
+      vd.abortReason = null
 
+      emitLoadingEvent(asyncEventEmit, viewId, reason, 'success')
       asyncEmit?.(viewId, buildResult(vd), requestId)
     } catch (error) {
       if (!controller.signal.aborted) {
         const err = error instanceof Error ? error : new Error(String(error))
+        vd.abortController = null
+        vd.abortReason = null
+        emitLoadingEvent(asyncEventEmit, viewId, reason, 'error', err.message)
         config.onError?.(err)
         asyncErrorEmit?.(viewId, err.message, requestId)
       }
@@ -385,7 +453,7 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
   const adapter: FrameAdapter<T> = {
     handleHandshake(viewId: string): DataResult<T> {
       const vd = getViewData(viewId)
-      void doFetch(viewId, 0, pageSize)
+      void doFetch(viewId, 0, pageSize, 'initial')
       return buildResult(vd)
     },
 
@@ -397,6 +465,10 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
       asyncErrorEmit = emitter
     },
 
+    setEventEmitter(emitter: EventEmitter) {
+      asyncEventEmit = emitter
+    },
+
     getActionStrategy(action: string) {
       return actions[action]?.strategy
     },
@@ -406,7 +478,7 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
         const { offset, limit } = payload as { offset: number; limit: number }
         const vd = getViewData(viewId)
         if (!isRangeLoaded(vd, offset, limit)) {
-          void doFetch(viewId, offset, limit, requestId)
+          void doFetch(viewId, offset, limit, 'viewport', requestId)
         }
         return null
       }
@@ -444,16 +516,24 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
       currentParams = actionConfig.handler({ payload, params: currentParams })
 
       const vd = getViewData(viewId)
-      abortOffsetInFlight(vd)
+      cancelMainFetch(viewId, vd)
       invalidateOffsetRanges(vd)
 
-      void doFetch(viewId, 0, pageSize, requestId)
-      return buildResult(vd)
+      void doFetch(viewId, 0, pageSize, 'refresh', requestId)
+      return null
     },
 
     handleCancel(_viewId: string, requestId: string) {
       const controller = requestAbortMap.get(requestId)
       if (controller) {
+        for (const [viewId, vd] of viewDataMap) {
+          if (vd.abortController === controller && vd.abortReason !== null) {
+            emitLoadingEvent(asyncEventEmit, viewId, vd.abortReason, 'cancel')
+            vd.abortController = null
+            vd.abortReason = null
+            break
+          }
+        }
         controller.abort()
         requestAbortMap.delete(requestId)
       }
@@ -462,14 +542,14 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
     handleDisconnect(viewId: string) {
       const vd = viewDataMap.get(viewId)
       if (vd) {
-        abortOffsetInFlight(vd)
+        cancelMainFetch(viewId, vd)
         viewDataMap.delete(viewId)
       }
     },
 
     destroy() {
-      for (const [, vd] of viewDataMap) {
-        abortOffsetInFlight(vd)
+      for (const [viewId, vd] of viewDataMap) {
+        cancelMainFetch(viewId, vd)
       }
       viewDataMap.clear()
       for (const [, controller] of requestAbortMap) {
@@ -492,24 +572,33 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
   const requestAbortMap = new Map<string, AbortController>()
   let asyncEmit: AsyncResultEmitter<T> | null = null
   let asyncErrorEmit: AsyncErrorEmitter | null = null
+  let asyncEventEmit: EventEmitter | null = null
 
   function getViewData(viewId: string): AppendViewData<T> {
     let vd = viewDataMap.get(viewId)
     if (!vd) {
-      vd = { data: [], cursor: undefined, hasMore: true, fetching: false, abortController: null }
+      vd = { data: [], cursor: undefined, hasMore: true, fetching: false, abortController: null, abortReason: null }
       viewDataMap.set(viewId, vd)
     }
     return vd
   }
 
-  function resetView(vd: AppendViewData<T>) {
+  function cancelAppendFetch(viewId: string, vd: AppendViewData<T>) {
+    if (vd.abortController && vd.abortReason !== null) {
+      emitLoadingEvent(asyncEventEmit, viewId, vd.abortReason, 'cancel')
+    }
     abortAppendInFlight(vd)
+    vd.abortReason = null
+  }
+
+  function resetView(viewId: string, vd: AppendViewData<T>) {
+    cancelAppendFetch(viewId, vd)
     vd.data = []
     vd.cursor = undefined
     vd.hasMore = true
   }
 
-  async function doFetch(viewId: string, requestId?: string) {
+  async function doFetch(viewId: string, reason: RemoteSourceLoadingReason, requestId?: string) {
     const vd = getViewData(viewId)
     if (vd.fetching || !vd.hasMore) {
       if (requestId) {
@@ -521,9 +610,11 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
     vd.fetching = true
     const controller = new AbortController()
     vd.abortController = controller
+    vd.abortReason = reason
     if (requestId) {
       requestAbortMap.set(requestId, controller)
     }
+    emitLoadingEvent(asyncEventEmit, viewId, reason, 'start')
 
     try {
       const result = await config.fetch({
@@ -541,16 +632,19 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
       vd.cursor = result.cursor
       vd.hasMore = result.hasMore
 
+      emitLoadingEvent(asyncEventEmit, viewId, reason, 'success')
       asyncEmit?.(viewId, buildAppendResult(vd), requestId)
     } catch (error) {
       if (!controller.signal.aborted) {
         const err = error instanceof Error ? error : new Error(String(error))
+        emitLoadingEvent(asyncEventEmit, viewId, reason, 'error', err.message)
         config.onError?.(err)
         asyncErrorEmit?.(viewId, err.message, requestId)
       }
     } finally {
       vd.fetching = false
       vd.abortController = null
+      vd.abortReason = null
       if (requestId) {
         requestAbortMap.delete(requestId)
       }
@@ -560,7 +654,7 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
   const adapter: FrameAdapter<T> = {
     handleHandshake(viewId: string): DataResult<T> {
       const vd = getViewData(viewId)
-      void doFetch(viewId)
+      void doFetch(viewId, 'initial')
       return buildAppendResult(vd)
     },
 
@@ -572,6 +666,10 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
       asyncErrorEmit = emitter
     },
 
+    setEventEmitter(emitter: EventEmitter) {
+      asyncEventEmit = emitter
+    },
+
     getActionStrategy(action: string) {
       if (action === 'loadMore') {
         return 'deduplicate'
@@ -581,7 +679,7 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
 
     handleAction(viewId: string, action: string, payload: unknown, requestId?: string): DataResult<T> | null {
       if (action === 'loadMore') {
-        void doFetch(viewId, requestId)
+        void doFetch(viewId, 'end', requestId)
         return null
       }
 
@@ -602,7 +700,7 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
         }
         const result = config.onViewportChange(context)
         if (result && 'loadMore' in result) {
-          void doFetch(viewId)
+          void doFetch(viewId, 'end')
         }
         return null
       }
@@ -615,14 +713,23 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
       currentParams = actionConfig.handler({ payload, params: currentParams })
 
       const vd = getViewData(viewId)
-      resetView(vd)
-      void doFetch(viewId, requestId)
-      return buildAppendResult(vd)
+      resetView(viewId, vd)
+      void doFetch(viewId, 'refresh', requestId)
+      return null
     },
 
     handleCancel(_viewId: string, requestId: string) {
       const controller = requestAbortMap.get(requestId)
       if (controller) {
+        for (const [viewId, vd] of viewDataMap) {
+          if (vd.abortController === controller && vd.abortReason !== null) {
+            emitLoadingEvent(asyncEventEmit, viewId, vd.abortReason, 'cancel')
+            vd.abortController = null
+            vd.abortReason = null
+            vd.fetching = false
+            break
+          }
+        }
         controller.abort()
         requestAbortMap.delete(requestId)
       }
@@ -631,14 +738,14 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
     handleDisconnect(viewId: string) {
       const vd = viewDataMap.get(viewId)
       if (vd) {
-        abortAppendInFlight(vd)
+        cancelAppendFetch(viewId, vd)
         viewDataMap.delete(viewId)
       }
     },
 
     destroy() {
-      for (const [, vd] of viewDataMap) {
-        abortAppendInFlight(vd)
+      for (const [viewId, vd] of viewDataMap) {
+        cancelAppendFetch(viewId, vd)
       }
       viewDataMap.clear()
       for (const [, controller] of requestAbortMap) {
