@@ -44,7 +44,7 @@ const ALL_ITEMS: Item[] = Array.from({ length: 500 }, (_, i) => ({
 
 const PLACEHOLDER: Item = { id: -1, name: 'Loading...', category: '' }
 const LIST_STYLE: CSSProperties = { height: 400 }
-const TABLE_CLASS_NAME = 'rounded-xl border'
+const TABLE_CLASS_NAME = 'rounded-xl'
 const PAGE_SIZE = 20
 const TOTAL_ITEMS = 100
 

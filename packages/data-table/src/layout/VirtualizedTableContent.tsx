@@ -39,6 +39,10 @@ import {
   emptyRenderCycle$,
   headerHeight$,
   hasHorizontalScroll$,
+  scrollableFooterHeight$,
+  scrollableHeaderHeight$,
+  stickyFooterHeight$,
+  stickyHeaderHeight$,
   tableBodyCssTransition$,
   tableBodyForceBottomSpace$,
   tableBodyMarginTop$,
@@ -288,20 +292,60 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
     [tableBodyCallbackRef]
   )
 
+  const stickyHeaderCallbackRef = useCallback(
+    (el: HTMLElement | null) => {
+      stickyHeaderRef(el)
+      if (el === null) {
+        engine.pub(stickyHeaderHeight$, 0)
+      }
+    },
+    [engine, stickyHeaderRef]
+  )
+
+  const headerCallbackRef = useCallback(
+    (el: HTMLElement | null) => {
+      headerRef(el)
+      if (el === null) {
+        engine.pub(scrollableHeaderHeight$, 0)
+      }
+    },
+    [engine, headerRef]
+  )
+
+  const footerCallbackRef = useCallback(
+    (el: HTMLElement | null) => {
+      footerRef(el)
+      if (el === null) {
+        engine.pub(scrollableFooterHeight$, 0)
+      }
+    },
+    [engine, footerRef]
+  )
+
+  const stickyFooterCallbackRef = useCallback(
+    (el: HTMLElement | null) => {
+      stickyFooterRef(el)
+      if (el === null) {
+        engine.pub(stickyFooterHeight$, 0)
+      }
+    },
+    [engine, stickyFooterRef]
+  )
+
   return (
     <TableLayoutRoot {...htmlProps} style={passedStyle}>
       <ScrollableRoot {...htmlProps} tableBodyRef={tableBodyRef}>
         {showEmptyPlaceholder ? <EmptyPlaceholder context={context} /> : null}
         <StickyHeaderWrapper
           data-table-element-role={STICKY_HEADER_ROLE}
-          ref={stickyHeaderRef}
+          ref={stickyHeaderCallbackRef}
           style={stickyHeaderWrapperStyle}
           context={context}
         >
           <StickyHeaderContent />
         </StickyHeaderWrapper>
         {Header && (
-          <HeaderWrapper data-table-element-role={HEADER_ROLE} ref={headerRef} style={NO_OVERFLOW_ANCHOR_STYLE}>
+          <HeaderWrapper data-table-element-role={HEADER_ROLE} ref={headerCallbackRef} style={NO_OVERFLOW_ANCHOR_STYLE}>
             <Header context={context} />
           </HeaderWrapper>
         )}
@@ -343,13 +387,13 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
           </div>
         ) : null}
         {showFooter && (
-          <FooterWrapper data-table-element-role={FOOTER_ROLE} ref={footerRef} style={NO_OVERFLOW_ANCHOR_STYLE}>
+          <FooterWrapper data-table-element-role={FOOTER_ROLE} ref={footerCallbackRef} style={NO_OVERFLOW_ANCHOR_STYLE}>
             {Footer ? <Footer context={context} /> : null}
             {showLoadingFooter ? <LoadingFooter context={context} loadingState={loadingState} /> : null}
           </FooterWrapper>
         )}
         {StickyFooter && (
-          <StickyFooterWrapper data-table-element-role={STICKY_FOOTER_ROLE} ref={stickyFooterRef} style={NO_OVERFLOW_ANCHOR_STYLE}>
+          <StickyFooterWrapper data-table-element-role={STICKY_FOOTER_ROLE} ref={stickyFooterCallbackRef} style={NO_OVERFLOW_ANCHOR_STYLE}>
             <StickyFooter context={context} />
           </StickyFooterWrapper>
         )}
