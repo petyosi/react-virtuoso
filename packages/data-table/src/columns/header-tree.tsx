@@ -199,7 +199,17 @@ function HeaderGroupNodeRenderer({
   const totalWidth = descendantKeys.reduce((sum, key) => sum + (columnWidths.get(key) ?? 0), 0)
   const groupHeader = columnGroupHeaders.get(node.groupId)
 
-  const groupStyle = useMemo<CSSProperties>(() => ({ ...HEADER_GROUP_STYLE, flex: descendantKeys.length }), [descendantKeys.length])
+  const groupStyle = useMemo<CSSProperties>(
+    () => ({
+      ...HEADER_GROUP_STYLE,
+      width: totalWidth,
+      minWidth: totalWidth,
+      flexBasis: totalWidth,
+      flexGrow: 0,
+      flexShrink: 0,
+    }),
+    [totalWidth]
+  )
 
   return (
     <div style={groupStyle} data-column-group={node.groupId}>

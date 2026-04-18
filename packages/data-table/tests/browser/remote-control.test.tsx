@@ -18,7 +18,7 @@ import {
   VirtuosoDataTable,
 } from '../../src'
 import { reorderColumns$ } from '../../src/features/column-reorder'
-import { resizeColumn$ } from '../../src/features/column-resize'
+import { resizeColumn$, resetColumnWidthOverrides$ } from '../../src/features/column-resize'
 
 import type { ColumnInfo, EngineRef, EngineSource } from '../../src'
 
@@ -183,6 +183,40 @@ function ResizeControls({ engineSource }: { engineSource: EngineSource }) {
   )
 }
 
+function ResetWidthControls({ engineSource }: { engineSource: EngineSource }) {
+  const columns = useRemoteCellValue(columns$, engineSource)
+  const overrides = useRemoteCellValue(columnWidthOverrides$, engineSource)
+  const resizeColumn = useRemotePublisher(resizeColumn$, engineSource)
+  const resetColumnWidthOverrides = useRemotePublisher(resetColumnWidthOverrides$, engineSource)
+  const nameKey = findColumnKey(columns, 'name')
+  const statusKey = findColumnKey(columns, 'status')
+
+  return (
+    <div>
+      <div data-testid="override-count">{overrides?.size ?? 0}</div>
+      <button
+        data-testid="seed-overrides"
+        onClick={() => {
+          if (nameKey && statusKey) {
+            resizeColumn({ key: nameKey, width: 240 })
+            resizeColumn({ key: statusKey, width: 260 })
+          }
+        }}
+      >
+        seed
+      </button>
+      <button
+        data-testid="reset-overrides"
+        onClick={() => {
+          resetColumnWidthOverrides()
+        }}
+      >
+        reset
+      </button>
+    </div>
+  )
+}
+
 function ReadControls({ engineSource }: { engineSource: EngineSource }) {
   const columns = useRemoteCellValue(columns$, engineSource)
   const widths = useRemoteCellValue(columnWidths$, engineSource)
@@ -294,6 +328,19 @@ test('remote scroll to row via engineRef updates the viewport range', async () =
   await screen.getByTestId('scroll-to-40').click()
 
   await expect.poll(() => readRange(screen.container, 'viewport-range').start).toBeGreaterThanOrEqual(40)
+})
+
+test('remote reset clears all column width overrides via engineRef', async () => {
+  const screen = await render(<EngineRefHarness>{(engineRef) => <ResetWidthControls engineSource={engineRef} />}</EngineRefHarness>)
+
+  await waitForReady(screen)
+  await expect.poll(() => readWidth(screen.container, 'override-count')).toBe(0)
+
+  await screen.getByTestId('seed-overrides').click()
+  await expect.poll(() => readWidth(screen.container, 'override-count')).toBe(2)
+
+  await screen.getByTestId('reset-overrides').click()
+  await expect.poll(() => readWidth(screen.container, 'override-count')).toBe(0)
 })
 
 test('engineId-based remote access works for sibling controls', async () => {
