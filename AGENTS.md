@@ -1,58 +1,96 @@
 # AGENTS.md
 
-This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
+Repo-specific guidance for agents working in `react-virtuoso`.
+
+Use this file for repo-specific navigation, validation, and documentation rules only. Keep it short, concrete, and limited to information that helps an agent make better decisions in this repository.
+
+If a rule here appears to conflict with `package.json`, the actual filesystem, or a more specific instruction file in scope, trust the repo state and the more specific instruction.
+
+## High-Signal Rules
+
+- This is a `pnpm` workspaces monorepo. Prefer running commands from the repo root unless you need package-local scope.
+- Root `pnpm lint` does **not** run type checking. Run `pnpm typecheck` separately when you need type validation.
+- Internal working artifacts belong in Notion, not in repo markdown files.
+  - Use Notion for PRPs, plans, clarifications, execution notes, verification notes, prompts, investigations, reports, audits, and exported findings that are not product docs.
+  - Do not create or keep repo markdown artifacts in folders like `plans/`, `prompts/`, `reports/`, or similar ad hoc locations.
+  - If the user asks for a PRP workflow, create or update the artifact in Notion instead of creating `plans/*.md`.
+  - If the user asks for a report or findings export, prefer a Notion page unless they explicitly ask for a repo file.
+  - If an existing markdown file looks ambiguous, ask before deleting or migrating it.
+- Never use `data-testid` as a styling hook. It is reserved for tests. Use semantic attributes such as `data-table-element-role` instead.
 
 ## NPM Registry Queries
 
-This project uses `devEngines.packageManager` with `"onFail": "error"` in `package.json`, which causes `pnpm info` and `pnpm view` to fail because they delegate to npm, and npm 11 rejects the request. To check package versions, run npm from outside the project directory:
+This repo uses `devEngines.packageManager` with `"onFail": "error"` in the root `package.json`. `pnpm info` and `pnpm view` can fail because they delegate to npm and npm 11 rejects the request in this setup.
+
+Use npm from outside the repo instead:
 
 ```bash
 (cd /tmp && npm info <package> version)
 ```
 
-## Build Commands
+## Workspace Layout
 
-This is a pnpm workspaces monorepo. Run commands from the root or within specific workspace packages.
+### Main packages
 
-### Root-level commands
+- `packages/data-table` - virtualized data table package; currently the most active package in this repo
+- `packages/react-virtuoso` - main virtualization library
+- `packages/message-list` - chat/message list package
+- `packages/masonry` - masonry layout package
+- `packages/gurx` - reactive state library used by older Virtuoso internals
+- `packages/reactive-engine-*` - lower-level engine packages used by `data-table`
 
-Run from repository root for all packages:
+### Apps and examples
 
-- Build all: `pnpm build`
-- Lint all (includes type checking): `pnpm lint`
-- Format all: `pnpm format` (oxfmt)
-- Format check: `pnpm format:check`
-- Test all: `pnpm test`
-- E2E tests all: `pnpm e2e`
-- Markdown lint: `pnpm lint:md` / fix: `pnpm lint:md:fix`
-- Full CI: `pnpm ci` (setup, build, lint, lint:md, test, e2e)
-- Release: `pnpm release` (build + publish with changesets)
-- Add changeset: `pnpm changeset-add`
-- Dev docs site: `pnpm dev:docs`
+- `apps/virtuoso.dev` - Astro/Starlight docs site
+- `examples` - separate workspace for shared Ladle/integration examples
+- `packages/react-virtuoso/examples` - example pages used by `packages/react-virtuoso/e2e`
 
-### react-virtuoso package (packages/react-virtuoso/)
+## Commands
 
-- Build: `pnpm run build` (uses vite)
-- Test: `pnpm run test` (vitest)
-- Test watch: `pnpm run test:watch`
-- Run single test: `pnpm vitest <test-file-path>` or `pnpm vitest -t "<test-name>"`
-- E2E tests: `pnpm run e2e` (playwright)
-- Lint (includes type checking): `pnpm run lint`
-- Format: `pnpm run format` (oxfmt)
-- Format check: `pnpm run format:check`
-- Dev/preview examples: `pnpm run ladle` (launches Ladle server for browsing examples/ folder)
+### Root
 
-### virtuoso.dev docs app (apps/virtuoso.dev/)
+- `pnpm build` - build all workspaces
+- `pnpm typecheck` - run type checking across workspaces
+- `pnpm lint` - run package lint scripts across workspaces
+- `pnpm format` - format with `oxfmt`
+- `pnpm format:check` - check formatting with `oxfmt`
+- `pnpm test` - run workspace test scripts
+- `pnpm e2e` - run workspace e2e scripts
+- `pnpm lint:md` / `pnpm lint:md:fix` - markdown lint / fix
+- `pnpm ci` - full CI sequence: setup, build, typecheck, lint, markdown lint, test, e2e
+- `pnpm dev:docs` - start the docs site
+- `pnpm changeset-add` - add a changeset
 
-- Dev server: `pnpm run dev`
-- Build: `pnpm run build`
-- Format: `pnpm run format` (oxfmt + Prettier for .astro files)
+### `packages/data-table`
 
-After docs changes: run `pnpm lint` from the app directory or root.
+- `pnpm build` - `tsc && vite build`
+- `pnpm typecheck` - `tsgo -b --noEmit`
+- `pnpm lint` - `oxlint --type-aware --type-check`
+- `pnpm test` - `vitest run --browser.headless`
+- `pnpm check` - `format:check + lint + typecheck`
+- `pnpm dev` - run Ladle serve mode
+- `pnpm dev:build` / `pnpm dev:preview` - Ladle build / preview
 
-**IMPORTANT - Documentation Locations:**
+### `packages/react-virtuoso`
 
-**DO NOT EDIT** the following auto-generated directories:
+- `pnpm build` - Vite build
+- `pnpm typecheck` - `tsgo --noEmit`
+- `pnpm lint` - `oxlint --type-aware --type-check`
+- `pnpm test` - Vitest
+- `pnpm test:watch` - Vitest watch
+- `pnpm e2e` - Playwright
+- `pnpm ladle` - preview examples in Ladle
+
+### `apps/virtuoso.dev`
+
+- `pnpm dev` - Astro dev server
+- `pnpm build` - `shadcn build && astro build`
+- `pnpm lint` - `oxlint --type-aware --type-check && astro check`
+- `pnpm format` / `pnpm format:check` - `oxfmt` plus Prettier for `.astro`
+
+## Documentation Workflow
+
+The docs site contains generated package docs. Do not edit the generated content under:
 
 - `apps/virtuoso.dev/src/content/docs/data-table/`
 - `apps/virtuoso.dev/src/content/docs/react-virtuoso/`
@@ -60,212 +98,38 @@ After docs changes: run `pnpm lint` from the app directory or root.
 - `apps/virtuoso.dev/src/content/docs/gurx/`
 - `apps/virtuoso.dev/src/content/docs/message-list/`
 
-These are auto-synced from source files + TypeDoc API via the `docsSync` integration. Any edits will be overwritten.
+Edit the source docs in the package instead:
 
-**To edit package documentation**, modify the source files in each package:
+- `packages/data-table/README.md` and `packages/data-table/docs/*.md`
+- `packages/react-virtuoso/README.md` and `packages/react-virtuoso/docs/*.md`
+- `packages/message-list/README.md` and `packages/message-list/docs/*.md`
+- `packages/masonry/README.md`
+- `packages/gurx/README.md`
 
-- **data-table**: `packages/data-table/docs/*.md`
-- **react-virtuoso**: `packages/react-virtuoso/README.md` or `packages/react-virtuoso/docs/*.md`
-- **masonry**: `packages/masonry/README.md` or `packages/masonry/docs/*.md`
-- **gurx**: `packages/gurx/README.md` or `packages/gurx/docs/*.md`
-- **message-list**: `packages/message-list/README.md` or `packages/message-list/docs/*.md`
+After product docs changes:
 
-## Monorepo Structure
+- run `pnpm lint:md` from the repo root
+- if docs-site content or registry code changed, run `pnpm --filter @virtuoso.dev/virtuoso.dev lint`
 
-```text
-packages/
-  react-virtuoso/    - Main virtualization library
-  gurx/             - urx state management (fork/variant)
-  masonry/          - Masonry layout component
-  message-list/     - Chat/message list component
-  tooling/          - Shared build tooling
+## Validation Guidance
 
-apps/
-  virtuoso.dev/     - Starlight/Astro documentation site
+Choose the narrowest validation that matches the change:
 
-examples/            - Ladle stories for testing/development
-```
+- `packages/data-table` code changes: start with `pnpm check && pnpm test` in `packages/data-table`
+- `packages/react-virtuoso` code changes: run `pnpm lint && pnpm typecheck && pnpm test`, add `pnpm e2e` when behavior changes
+- docs-only markdown changes: run `pnpm lint:md`
+- docs site or registry changes: run `pnpm --filter @virtuoso.dev/virtuoso.dev lint`
+- broad cross-package changes: run root `pnpm typecheck && pnpm lint && pnpm test`
 
-## Architecture
+## Architecture Notes
 
-### State Management: urx System
-
-The codebase uses **urx**, a custom reactive state management system built on streams/observables. Core concepts:
-
-- **Systems**: Stateful data-processing machines composed of streams
-- **Streams**: Can be stateless (signals) or stateful (depots that persist values)
-- **Depots**: Implicit state maintained in stateful streams, transformers (combineLatest), or operators (withLatestFrom, scan)
-- **Input/Output**: Systems receive input via input streams, process via transformers/operators, emit via output streams
-
-Key urx files: `src/urx/` directory contains:
-
-- `system.ts` - System creation and composition
-- `streams.ts` - Stream primitives
-- `pipe.ts` - Stream operators and transformers
-- `actions.ts` - Publishing/emitting
-- `transformers.ts` - Stream transformation utilities
-
-### Component Architecture
-
-The virtualization logic is split into modular systems in `src/`:
-
-**Core Systems:**
-
-- `listSystem.ts` - Composes all feature systems into the main list system
-- `sizeSystem.ts` - Tracks and manages item sizes (critical for variable-height items)
-- `listStateSystem.ts` - Manages visible item ranges and scrolling state
-- `domIOSystem.ts` - DOM measurements and interactions
-
-**Feature Systems:**
-
-- `groupedListSystem.ts` - Grouped lists with sticky headers
-- `scrollToIndexSystem.ts` - Programmatic scroll positioning
-- `followOutputSystem.ts` - Auto-scroll for chat/feed UIs
-- `initialTopMostItemIndexSystem.ts` - Initial scroll position
-- `scrollSeekSystem.ts` - Placeholder rendering during fast scrolling
-- `windowScrollerSystem.ts` - Window-scrolling mode
-- And many more in `src/*System.ts` files
-
-**React Integration:**
-
-- `react-urx/` - Bridges urx systems to React components
-- `Virtuoso.tsx` - Main list component
-- `VirtuosoGrid.tsx` - Grid layout component
-- `TableVirtuoso.tsx` - Table virtualization component
-- Component interfaces in `component-interfaces/`
-
-### Size Calculation
-
-Variable-sized items work automatically via `sizeSystem.ts`:
-
-- Uses ResizeObserver for measurements
-- Maintains size ranges and estimates
-- No manual height specification needed
-- `correctItemSize()` utility in `utils/` handles size corrections
-
-### E2E Testing
-
-E2E tests in `packages/react-virtuoso/e2e/`:
-
-- Test files: `*.test.ts` (Playwright tests)
-- Example pages: `examples/*.tsx` (rendered in browser for tests)
-- Use Ladle (`pnpm run ladle`) to preview examples during development
-
-## Code Style
-
-- Never use `data-testid` attributes for CSS styling selectors. `data-testid` is reserved for testing only. Use `data-table-element-role` or other semantic data attributes for styling hooks.
-- TypeScript with strong typing; avoid `any`
-- oxfmt: 140 char width, single quotes, no semicolons
-- Naming: camelCase for variables/functions, PascalCase for components
-- Imports: React first, external libs, then internal modules
-- Functional components with hooks preferred
-- Use urx system patterns for state management
-- Error handling: prefer early returns
-
-## Markdown Style Guide
-
-When writing or editing markdown documentation:
-
-### Formatting Rules
-
-- Headings: ATX-style (`# Heading` not `Heading\n=======`)
-- Code blocks: Always use fenced blocks with language specifiers
-
-```typescript
-const foo = 'bar'
-```
-
-- Lists: Use `-` for unordered lists, indent nested items by 2 spaces
-- Emphasis: Use `_single underscore_` for emphasis, `**double asterisk**` for strong
-- Links: Prefer inline links `[text](url)` for readability
-
-### Content Guidelines
-
-- Start with clear, descriptive headings (H1 for title, H2 for major sections)
-- Use code blocks for all code examples, terminal commands, and file paths
-- Include language identifiers in fenced code blocks (`typescript`, `bash`, `json`)
-- Break long paragraphs into shorter ones (3-5 sentences max)
-- Use tables for structured data comparison
-- Add blank lines before and after headings, lists, code blocks, and tables
-
-### Special Cases
-
-- Inline HTML allowed for badges, complex layouts, or special formatting
-- Bare URLs allowed in reference sections and changelogs
-- Line length not enforced (practical for existing docs)
-- Multiple H1 headings allowed (document sections)
-
-### Linting
-
-- Run `pnpm lint:md` to check markdown files
-- Run `pnpm lint:md:fix` to auto-fix issues
-- Pre-commit hooks automatically lint staged .md files
-- Configuration: `.markdownlint.json` and `.markdownlintignore`
-- If necessary, use `markdownlint` CLI directly, but prefer pnpm scripts
-
-## Code Change Checklist
-
-After making code changes, run these commands to verify quality:
-
-### Required (always run)
-
-- `pnpm lint` - Lint and type check (oxlint --type-aware --type-check)
-- `pnpm format` - Format code with oxfmt
-- `pnpm test` - Run unit tests (vitest)
-
-### Conditionally Required
-
-- `pnpm lint:md` - If editing markdown files
-- `pnpm lint:md:fix` - Auto-fix markdown issues
-- `pnpm run e2e` - For UI/behavior changes (Playwright tests)
-- `pnpm run ladle` - To visually inspect component changes
-
-### Quick Full Validation
-
-- `pnpm ci` - Run complete CI pipeline (setup, build, lint, lint:md, test, e2e)
-- `pnpm format:check` - Check if files are formatted without modifying them
-
-### Fixing Issues
-
-Format issues are auto-fixed by `pnpm format`. oxlint issues must be fixed manually. Configure your editor to:
-
-- Format on save using oxfmt (140 char width, single quotes, no semicolons)
-- Show oxlint warnings/errors
-
-Pre-commit hooks will block commits if lint (which includes type checking) fails.
-
-## Development Workflow
-
-1. Make changes in `packages/react-virtuoso/src/`
-2. Run `pnpm format && pnpm lint && pnpm test`
-3. Check examples with `pnpm run ladle` if UI changes
-4. Run `pnpm e2e` for end-to-end validation if needed
-5. Add changeset with `pnpm changeset-add` for versioned changes
+- `packages/react-virtuoso` uses the custom `urx` stream/state system under `packages/react-virtuoso/src/urx`. If you touch its internals, follow existing `*System.ts` and `react-urx/` patterns.
+- `packages/data-table` is a separate package built on the `reactive-engine-*` workspaces. When working there, prefer matching existing engine/cell/stream patterns instead of borrowing directly from `react-virtuoso` internals.
 
 ## Git Hooks
 
-This project uses [lefthook](https://github.com/evilmartians/lefthook) for git hooks.
-
-### Pre-commit Checks
-
-On every commit, the following checks run automatically on staged files:
-
-- **Code formatting**: Formats `.ts/.tsx/.js/.jsx` files with oxfmt and `.astro` files with prettier; changes are auto-staged via `stage_fixed`
-- **Markdown linting**: Validates .md files with markdownlint
-- **Code linting**: Validates code files with oxlint
-
-### Skipping Hooks
-
-If you need to skip hooks (e.g., WIP commits):
+This repo uses `lefthook`. Pre-commit hooks format and lint staged files. If you need to skip them for a WIP commit:
 
 ```bash
-LEFTHOOK=0 git commit -m "WIP: work in progress"
-# Or use git commit --no-verify (not recommended)
+LEFTHOOK=0 git commit -m "WIP: ..."
 ```
-
-### Hook Management
-
-- Configuration: `lefthook.json`
-- Install hooks: `pnpm exec lefthook install`
-- Uninstall hooks: `pnpm exec lefthook uninstall`
-- Run manually: `pnpm exec lefthook run pre-commit`
