@@ -24,6 +24,10 @@ export default inLadle
             replacement: resolve(import.meta.dirname, '../../apps/virtuoso.dev/registry/new-york/data-table/column-reorder/index.ts'),
           },
           {
+            find: '@/components/ui/data-table/column-resize',
+            replacement: resolve(import.meta.dirname, '../../apps/virtuoso.dev/registry/new-york/data-table/column-resize/index.ts'),
+          },
+          {
             find: '@/components/ui/data-table',
             replacement: resolve(import.meta.dirname, '../../apps/virtuoso.dev/registry/new-york/data-table/data-table.tsx'),
           },
@@ -32,6 +36,10 @@ export default inLadle
           {
             find: '@virtuoso.dev/data-table/column-reorder',
             replacement: resolve(import.meta.dirname, 'src/features/column-reorder/index.ts'),
+          },
+          {
+            find: '@virtuoso.dev/data-table/column-resize',
+            replacement: resolve(import.meta.dirname, 'src/features/column-resize/index.ts'),
           },
           { find: '@virtuoso.dev/data-table', replacement: resolve(import.meta.dirname, 'src/index.ts') },
         ],
@@ -71,6 +79,7 @@ export default inLadle
           entry: {
             index: resolve(import.meta.dirname, 'src/index.ts'),
             'column-reorder': resolve(import.meta.dirname, 'src/features/column-reorder/index.ts'),
+            'column-resize': resolve(import.meta.dirname, 'src/features/column-resize/index.ts'),
           },
           formats: ['es'],
         },

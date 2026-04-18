@@ -18,8 +18,7 @@ export {
 export { totalWidth$, columnCount$ } from './columns/column-sizes'
 export { columnsState$, stickyColumnsState$, columnItemsState$ } from './columns/column-state'
 export type { ColumnState, ColumnsStateMap, StickyColumnsState, ColumnItem, ColumnItemsState } from './columns/column-state'
-export { resizeColumn$, columnWidthOverrides$ } from './columns/column-resize'
-export type { ResizeColumnPayload } from './columns/column-resize'
+export { columnWidthOverrides$ } from './columns/column-width-overrides'
 export { useVirtuosoLocation, useCurrentlyRenderedData, useVirtuosoMethods } from './core/hooks'
 export type {
   TableData,
@@ -82,10 +81,13 @@ export type {
 export {
   ColumnHeader,
   type ColumnHeaderProps,
+  type ColumnHeaderChildren,
   type ColumnHeaderRenderParams,
   type ColumnHeaderRenderFunction,
   type ColumnHeaderCustomComponent,
 } from './columns/ColumnHeader'
+export { HeaderStart, HeaderEnd, HeaderEdge, HeaderOverlay } from './columns/header-slots/slots'
+export type { HeaderSlotRenderParams, HeaderSlotRenderFunction, HeaderSlotCustomComponent } from './columns/header-slots/registry'
 export {
   unstableEnableRowRenderEvents$,
   unstableRowRender$,

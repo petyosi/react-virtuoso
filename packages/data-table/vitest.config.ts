@@ -4,6 +4,13 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@virtuoso.dev/data-table/column-reorder': new URL('src/features/column-reorder/index.ts', import.meta.url).pathname,
+      '@virtuoso.dev/data-table/column-resize': new URL('src/features/column-resize/index.ts', import.meta.url).pathname,
+      '@virtuoso.dev/data-table': new URL('src/index.ts', import.meta.url).pathname,
+    },
+  },
   test: {
     projects: [
       {
