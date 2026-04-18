@@ -72,6 +72,7 @@ function DraggableGroupHeader({ label, columnKeys, stickyGroup }: DraggableGroup
         const rect = ev.currentTarget.getBoundingClientRect()
         const position = ev.clientX < rect.left + rect.width / 2 ? 'before' : 'after'
         const anchorKey = position === 'before' ? columnKeys[0]! : columnKeys.at(-1)!
+        setColumnDropTarget(null)
         reorderColumnGroup({ sourceKeys: dragState.sourceKeys, targetKey: anchorKey, position })
         endColumnDrag()
       }}
