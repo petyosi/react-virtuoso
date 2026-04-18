@@ -14,6 +14,10 @@ interface Item {
   name: string
 }
 
+interface FilterParams {
+  filter?: string
+}
+
 function createEngine() {
   const engine = new Engine()
   engine.register(viewportRange$)
@@ -23,11 +27,12 @@ function createEngine() {
 
 describe('bridgeModelToEngine loading state', () => {
   it('derives initial and refresh loading state from remote source events', async () => {
-    const fetch = vi.fn(async (params: AppendFetchParams<{ filter?: string }>) => {
+    const fetch = vi.fn(async (params: AppendFetchParams) => {
       await delay(20)
+      const filterParams = params.params as FilterParams
       const rows = Array.from({ length: params.limit }, (_, index) => ({
         id: index,
-        name: params.params.filter ? `${params.params.filter}-${index}` : `item-${index}`,
+        name: filterParams.filter ? `${filterParams.filter}-${index}` : `item-${index}`,
       }))
 
       return {
@@ -37,7 +42,7 @@ describe('bridgeModelToEngine loading state', () => {
       }
     })
 
-    const model = remoteSource<Item, { filter?: string }>({
+    const model = remoteSource<Item>({
       mode: 'append',
       fetch,
       initialParams: {},
