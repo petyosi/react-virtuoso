@@ -1,6 +1,6 @@
 'use client'
 
-import type { CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
 
 import { usePublisher } from '@virtuoso.dev/data-table'
 import { clearColumnWidthOverride$, resizeColumn$ } from '@virtuoso.dev/data-table/column-resize'
@@ -26,8 +26,6 @@ const HANDLE_LINE_STYLE: CSSProperties = {
   position: 'absolute',
   left: '50%',
   top: '50%',
-  width: 2,
-  height: 16,
   borderRadius: 9999,
   transform: 'translate(-50%, -50%)',
 }
@@ -35,11 +33,13 @@ const HANDLE_LINE_STYLE: CSSProperties = {
 export const ResizeHandle: HeaderSlotCustomComponent = ({ columnKey, headerRef }) => {
   const resizeColumn = usePublisher(resizeColumn$)
   const clearColumnWidthOverride = usePublisher(clearColumnWidthOverride$)
+  const [isResizing, setIsResizing] = useState(false)
 
   return (
     <div
       data-table-element-role="resize-handle"
-      className="flex cursor-col-resize touch-none items-stretch"
+      data-resizing={isResizing ? 'true' : undefined}
+      className="group flex cursor-col-resize touch-none items-stretch"
       style={HANDLE_STYLE}
       onDoubleClick={(event) => {
         event.preventDefault()
@@ -53,6 +53,7 @@ export const ResizeHandle: HeaderSlotCustomComponent = ({ columnKey, headerRef }
         }
 
         const startX = event.clientX
+        setIsResizing(true)
 
         const handlePointerMove = (moveEvent: PointerEvent) => {
           resizeColumn({
@@ -61,16 +62,23 @@ export const ResizeHandle: HeaderSlotCustomComponent = ({ columnKey, headerRef }
           })
         }
 
-        const handlePointerUp = () => {
+        const handlePointerEnd = () => {
+          setIsResizing(false)
           document.removeEventListener('pointermove', handlePointerMove)
-          document.removeEventListener('pointerup', handlePointerUp)
+          document.removeEventListener('pointerup', handlePointerEnd)
+          document.removeEventListener('pointercancel', handlePointerEnd)
         }
 
         document.addEventListener('pointermove', handlePointerMove)
-        document.addEventListener('pointerup', handlePointerUp, { once: true })
+        document.addEventListener('pointerup', handlePointerEnd, { once: true })
+        document.addEventListener('pointercancel', handlePointerEnd, { once: true })
       }}
     >
-      <div className="bg-border" style={HANDLE_LINE_STYLE} />
+      <div
+        data-resizing={isResizing ? 'true' : undefined}
+        className="pointer-events-none absolute h-4 w-0.5 rounded-full bg-border opacity-80 transition-[height,width,background-color,opacity] duration-150 ease-out group-hover:h-5 group-hover:bg-foreground/30 group-hover:opacity-100 data-[resizing=true]:h-6 data-[resizing=true]:w-[3px] data-[resizing=true]:bg-primary data-[resizing=true]:opacity-100"
+        style={HANDLE_LINE_STYLE}
+      />
     </div>
   )
 }
