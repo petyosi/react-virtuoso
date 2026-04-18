@@ -1,8 +1,9 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 import { usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { DataTable, DataTableCell, DataTableColumn, DataTableColumnHeader, setColumnSticky$ } from '@/components/ui/data-table'
 
 import type { ColumnHeaderCustomComponent, ColumnState } from '@/components/ui/data-table'
@@ -26,91 +27,123 @@ const ITEMS = Array.from({ length: ITEM_COUNT }, (_, rowIndex) => {
 
 const TABLE_STYLE: CSSProperties = { height: 400, width: 600 }
 
+function StoryFrame({ title, description, children }: { title: string; description: string; children: ReactNode }) {
+  return (
+    <Card className="w-fit max-w-full">
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  )
+}
+
 export function LeftStickyColumn() {
   return (
-    <DataTable style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
-      <DataTableColumn field="id" sticky="left">
-        <DataTableColumnHeader>ID</DataTableColumnHeader>
-        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
-      </DataTableColumn>
-      {Array.from({ length: COLUMN_COUNT }, (_, i) => (
-        <DataTableColumn key={`col${i}`} field={`col${i}`}>
-          <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
+    <StoryFrame
+      title="Left Sticky Column"
+      description="Pins the first column while the remaining columns scroll horizontally inside the shadcn card shell."
+    >
+      <DataTable className="rounded-xl" style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
+        <DataTableColumn field="id" sticky="left">
+          <DataTableColumnHeader>ID</DataTableColumnHeader>
           <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
         </DataTableColumn>
-      ))}
-    </DataTable>
+        {Array.from({ length: COLUMN_COUNT }, (_, i) => (
+          <DataTableColumn key={`col${i}`} field={`col${i}`}>
+            <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
+            <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+          </DataTableColumn>
+        ))}
+      </DataTable>
+    </StoryFrame>
   )
 }
 
 export function RightStickyColumn() {
   return (
-    <DataTable style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
-      {Array.from({ length: COLUMN_COUNT }, (_, i) => (
-        <DataTableColumn key={`col${i}`} field={`col${i}`}>
-          <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
+    <StoryFrame
+      title="Right Sticky Column"
+      description="Pins the trailing actions column while the rest of the table remains scrollable inside a card wrapper."
+    >
+      <DataTable className="rounded-xl" style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
+        {Array.from({ length: COLUMN_COUNT }, (_, i) => (
+          <DataTableColumn key={`col${i}`} field={`col${i}`}>
+            <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
+            <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+          </DataTableColumn>
+        ))}
+        <DataTableColumn field="actions" sticky="right">
+          <DataTableColumnHeader>Actions</DataTableColumnHeader>
           <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
         </DataTableColumn>
-      ))}
-      <DataTableColumn field="actions" sticky="right">
-        <DataTableColumnHeader>Actions</DataTableColumnHeader>
-        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
-      </DataTableColumn>
-    </DataTable>
+      </DataTable>
+    </StoryFrame>
   )
 }
 
 export function BothStickyColumns() {
   return (
-    <DataTable style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
-      <DataTableColumn field="id" sticky="left">
-        <DataTableColumnHeader className="w-10 text-red-500 grow-0">ID</DataTableColumnHeader>
-        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
-      </DataTableColumn>
-      {Array.from({ length: COLUMN_COUNT }, (_, i) => (
-        <DataTableColumn key={`col${i}`} field={`col${i}`}>
-          <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
+    <StoryFrame
+      title="Both Sticky Columns"
+      description="Pins the leading identifier and trailing actions columns while the center columns scroll normally."
+    >
+      <DataTable className="rounded-xl" style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
+        <DataTableColumn field="id" sticky="left">
+          <DataTableColumnHeader className="w-10 text-red-500 grow-0">ID</DataTableColumnHeader>
           <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
         </DataTableColumn>
-      ))}
-      <DataTableColumn field="actions" sticky="right">
-        <DataTableColumnHeader>Actions</DataTableColumnHeader>
-        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
-      </DataTableColumn>
-    </DataTable>
+        {Array.from({ length: COLUMN_COUNT }, (_, i) => (
+          <DataTableColumn key={`col${i}`} field={`col${i}`}>
+            <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
+            <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+          </DataTableColumn>
+        ))}
+        <DataTableColumn field="actions" sticky="right">
+          <DataTableColumnHeader>Actions</DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+        </DataTableColumn>
+      </DataTable>
+    </StoryFrame>
   )
 }
 
 export function MultipleStickyColumns() {
   return (
-    <DataTable style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
-      <DataTableColumn field="id" sticky="left">
-        <DataTableColumnHeader>ID</DataTableColumnHeader>
-        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
-      </DataTableColumn>
-      <DataTableColumn field="name" sticky="left">
-        <DataTableColumnHeader>Name</DataTableColumnHeader>
-        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
-      </DataTableColumn>
-      <DataTableColumn field="status" sticky="left">
-        <DataTableColumnHeader>Status</DataTableColumnHeader>
-        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
-      </DataTableColumn>
-      {Array.from({ length: COLUMN_COUNT }, (_, i) => (
-        <DataTableColumn key={`col${i}`} field={`col${i}`}>
-          <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
+    <StoryFrame
+      title="Multiple Sticky Columns"
+      description="Keeps several columns pinned on both edges to exercise the full sticky-column layout inside the same shadcn frame."
+    >
+      <DataTable className="rounded-xl" style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
+        <DataTableColumn field="id" sticky="left">
+          <DataTableColumnHeader>ID</DataTableColumnHeader>
           <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
         </DataTableColumn>
-      ))}
-      <DataTableColumn field="price" sticky="right">
-        <DataTableColumnHeader>Price</DataTableColumnHeader>
-        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
-      </DataTableColumn>
-      <DataTableColumn field="actions" sticky="right">
-        <DataTableColumnHeader>Actions</DataTableColumnHeader>
-        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
-      </DataTableColumn>
-    </DataTable>
+        <DataTableColumn field="name" sticky="left">
+          <DataTableColumnHeader>Name</DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+        </DataTableColumn>
+        <DataTableColumn field="status" sticky="left">
+          <DataTableColumnHeader>Status</DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+        </DataTableColumn>
+        {Array.from({ length: COLUMN_COUNT }, (_, i) => (
+          <DataTableColumn key={`col${i}`} field={`col${i}`}>
+            <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
+            <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+          </DataTableColumn>
+        ))}
+        <DataTableColumn field="price" sticky="right">
+          <DataTableColumnHeader>Price</DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+        </DataTableColumn>
+        <DataTableColumn field="actions" sticky="right">
+          <DataTableColumnHeader>Actions</DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+        </DataTableColumn>
+      </DataTable>
+    </StoryFrame>
   )
 }
 
@@ -166,57 +199,72 @@ export function WideContainerFewColumns() {
   }))
 
   return (
-    <DataTable style={{ height: 300, width: 600 }} data={{ data: items, groups: [] }}>
-      <DataTableColumn field="col0" sticky="left">
-        <DataTableColumnHeader className="w-20">Col 0</DataTableColumnHeader>
-        <DataTableCell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</DataTableCell>
-      </DataTableColumn>
-      <DataTableColumn field="col1">
-        <DataTableColumnHeader className="w-20">Col 1</DataTableColumnHeader>
-        <DataTableCell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</DataTableCell>
-      </DataTableColumn>
-      <DataTableColumn field="col2">
-        <DataTableColumnHeader className="w-20">Col 2</DataTableColumnHeader>
-        <DataTableCell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</DataTableCell>
-      </DataTableColumn>
-    </DataTable>
+    <StoryFrame
+      title="Wide Container Few Columns"
+      description="Shows a small table inside the same card wrapper to verify sticky behavior without horizontal crowding."
+    >
+      <DataTable className="rounded-xl" style={{ height: 300, width: 600 }} data={{ data: items, groups: [] }}>
+        <DataTableColumn field="col0" sticky="left">
+          <DataTableColumnHeader className="w-20">Col 0</DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</DataTableCell>
+        </DataTableColumn>
+        <DataTableColumn field="col1">
+          <DataTableColumnHeader className="w-20">Col 1</DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</DataTableCell>
+        </DataTableColumn>
+        <DataTableColumn field="col2">
+          <DataTableColumnHeader className="w-20">Col 2</DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</DataTableCell>
+        </DataTableColumn>
+      </DataTable>
+    </StoryFrame>
   )
 }
 
 export function ColumnOverscan() {
   return (
-    <DataTable style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }} columnOverscanCount={2}>
-      <DataTableColumn field="id" sticky="left">
-        <DataTableColumnHeader>ID</DataTableColumnHeader>
-        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
-      </DataTableColumn>
-      {Array.from({ length: COLUMN_COUNT }, (_, i) => (
-        <DataTableColumn key={`col${i}`} field={`col${i}`}>
-          <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
+    <StoryFrame
+      title="Column Overscan"
+      description="Exercises sticky columns with extra horizontal overscan while keeping the story chrome identical to the other shadcn examples."
+    >
+      <DataTable className="rounded-xl" style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }} columnOverscanCount={2}>
+        <DataTableColumn field="id" sticky="left">
+          <DataTableColumnHeader>ID</DataTableColumnHeader>
           <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
         </DataTableColumn>
-      ))}
-      <DataTableColumn field="actions" sticky="right">
-        <DataTableColumnHeader>Actions</DataTableColumnHeader>
-        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
-      </DataTableColumn>
-    </DataTable>
+        {Array.from({ length: COLUMN_COUNT }, (_, i) => (
+          <DataTableColumn key={`col${i}`} field={`col${i}`}>
+            <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
+            <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+          </DataTableColumn>
+        ))}
+        <DataTableColumn field="actions" sticky="right">
+          <DataTableColumnHeader>Actions</DataTableColumnHeader>
+          <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+        </DataTableColumn>
+      </DataTable>
+    </StoryFrame>
   )
 }
 
 export function InteractiveStickyColumn() {
   return (
-    <DataTable style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
-      <DataTableColumn field="id" sticky="left">
-        <DataTableColumnHeader component={InteractiveStickyHeader} />
-        <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
-      </DataTableColumn>
-      {Array.from({ length: COLUMN_COUNT }, (_, i) => (
-        <DataTableColumn key={`col${i}`} field={`col${i}`}>
+    <StoryFrame
+      title="Interactive Sticky Column"
+      description="Lets you toggle sticky state from the header controls while keeping the shadcn layout chrome consistent."
+    >
+      <DataTable className="rounded-xl" style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
+        <DataTableColumn field="id" sticky="left">
           <DataTableColumnHeader component={InteractiveStickyHeader} />
           <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
         </DataTableColumn>
-      ))}
-    </DataTable>
+        {Array.from({ length: COLUMN_COUNT }, (_, i) => (
+          <DataTableColumn key={`col${i}`} field={`col${i}`}>
+            <DataTableColumnHeader component={InteractiveStickyHeader} />
+            <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+          </DataTableColumn>
+        ))}
+      </DataTable>
+    </StoryFrame>
   )
 }

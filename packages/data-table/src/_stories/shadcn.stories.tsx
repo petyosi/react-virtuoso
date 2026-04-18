@@ -113,7 +113,7 @@ export function ShadcnInteractiveDataTable() {
         <CardDescription>Drag the grip to reorder columns. Drag the divider to resize. Double-click the divider to reset.</CardDescription>
       </CardHeader>
       <CardContent>
-        <DataTable className="rounded-xl border" data={{ data: ALL_ITEMS, groups: [] }} style={INTERACTIVE_TABLE_STYLE}>
+        <DataTable className="rounded-xl" data={{ data: ALL_ITEMS, groups: [] }} style={INTERACTIVE_TABLE_STYLE}>
           <DataTableColumn field="id">
             <DataTableColumnHeader>
               <HeaderStart component={ReorderGrip} />
