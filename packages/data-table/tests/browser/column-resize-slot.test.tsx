@@ -53,8 +53,10 @@ test('resizes a column through the slot-mounted handle', async () => {
   const initialWidths = headerElements.map((header) => Math.round(header.getBoundingClientRect().width))
   const initialTotalWidth = initialWidths.reduce((sum, width) => sum + width, 0)
   handle!.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: handleRect.left + 1, pointerId: 1 }))
+  await expect.poll(() => handle?.dataset.resizing).toBe('true')
   document.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: handleRect.left + 70, pointerId: 1 }))
   document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: handleRect.left + 70, pointerId: 1 }))
+  await expect.poll(() => handle?.dataset.resizing).toBeUndefined()
 
   await expect.poll(() => Math.round(firstHeader!.getBoundingClientRect().width), { timeout: 2000 }).toBeGreaterThan(initialWidths[0]! + 20)
   await expect
