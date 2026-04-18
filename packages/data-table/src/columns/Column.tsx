@@ -4,7 +4,10 @@ import { createContext, useContext, useId, useLayoutEffect } from 'react'
 import { Cell, Stream, e } from '@virtuoso.dev/reactive-engine-core'
 import { usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
+import { viewportWidth$ } from '../scroll/dom'
 import { columnCount$, columnRanges$ } from './column-sizes'
+import { computeAutoFillColumnWidths } from './column-width-distribution'
+import { columnWidthOverrides$ } from './column-width-overrides'
 import { ColumnGroupIdContext } from './ColumnGroup'
 import { createRegistryCell } from './registry'
 
@@ -106,28 +109,80 @@ export function Column({ children, field, sticky }: Column.Props) {
 
 export const columnEntries$ = Stream<ResizeObserverEntry[]>()
 
-export const columnWidths$ = Cell<Map<string, number>>(new Map())
+export const measuredColumnWidths$ = Cell<Map<string, number>>(new Map())
 
-e.changeWith(columnWidths$, columnEntries$, (widths, entries) => {
+function readInlineSize(entry: ResizeObserverEntry) {
+  const borderBoxSize = entry.borderBoxSize as ResizeObserverSize | ResizeObserverSize[] | undefined
+  const size = Array.isArray(borderBoxSize) ? borderBoxSize[0] : borderBoxSize
+  return size?.inlineSize ?? entry.contentRect.width
+}
+
+e.changeWith(measuredColumnWidths$, columnEntries$, (widths, entries) => {
   const next = new Map(widths)
   for (const entry of entries) {
     const target = entry.target as HTMLElement
-    next.set(target.dataset.columnKey ?? '', entry.borderBoxSize[0]!.inlineSize)
+    const key = target.dataset.columnKey
+    if (!key) {
+      continue
+    }
+    next.set(key, readInlineSize(entry))
   }
   return next
 })
 
+export const columnBaseWidths$ = Cell<Map<string, number>>(new Map())
+
 e.link(
   e.pipe(
-    columnEntries$,
-    e.withLatestFrom(columns$),
-    e.map(([entries, columns]) => {
-      const keys = [...columns.keys()]
+    e.combine(columns$, measuredColumnWidths$, columnWidthOverrides$),
+    e.map(([columns, measuredWidths, overrides]) => {
+      const next = new Map<string, number>()
+      for (const key of columns.keys()) {
+        const baseWidth = overrides.get(key) ?? measuredWidths.get(key)
+        if (baseWidth !== undefined) {
+          next.set(key, baseWidth)
+        }
+      }
+      return next
+    })
+  ),
+  columnBaseWidths$
+)
+
+export const columnWidths$ = Cell<Map<string, number>>(new Map())
+
+e.changeWith(
+  columnWidths$,
+  e.combine(columns$, columnBaseWidths$, columnWidthOverrides$, viewportWidth$),
+  (currentWidths, [columns, baseWidths, overrides, viewportWidth]) => {
+    if (![...columns.keys()].every((key) => baseWidths.has(key))) {
+      return new Map([...currentWidths].filter(([key]) => columns.has(key)))
+    }
+
+    if (overrides.size === 0) {
+      return computeAutoFillColumnWidths([...columns.entries()], baseWidths, viewportWidth)
+    }
+
+    const realizedWidths = new Map<string, number>()
+    for (const key of columns.keys()) {
+      realizedWidths.set(key, overrides.get(key) ?? currentWidths.get(key) ?? baseWidths.get(key) ?? 0)
+    }
+    return realizedWidths
+  }
+)
+
+e.link(
+  e.pipe(
+    e.combine(columns$, columnWidths$),
+    e.filter(([columns, widths]) => {
+      return columns.size > 0 && [...columns.keys()].every((key) => (widths.get(key) ?? 0) > 0)
+    }),
+    e.map(([columns, widths]) => {
       const ranges: SizeRange[] = []
-      for (const entry of entries) {
-        const target = entry.target as HTMLElement
-        const index = keys.indexOf(target.dataset.columnKey ?? '')
-        ranges.push({ startIndex: index, endIndex: index, size: entry.borderBoxSize[0]!.inlineSize })
+      let index = 0
+      for (const key of columns.keys()) {
+        ranges.push({ startIndex: index, endIndex: index, size: widths.get(key) ?? 0 })
+        index += 1
       }
       return ranges
     })

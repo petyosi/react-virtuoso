@@ -3,7 +3,17 @@ import { useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { DataTable, DataTableCell, DataTableColumn, DataTableColumnHeader } from '@/components/ui/data-table'
+import {
+  DataTable,
+  DataTableCell,
+  DataTableColumn,
+  DataTableColumnHeader,
+  HeaderEdge,
+  HeaderOverlay,
+  HeaderStart,
+} from '@/components/ui/data-table'
+import { ReorderDropZone, ReorderGrip } from '@/components/ui/data-table/column-reorder'
+import { ResizeHandle } from '@/components/ui/data-table/column-resize'
 
 interface User {
   id: number
@@ -22,6 +32,7 @@ const ALL_ITEMS: User[] = Array.from({ length: 200 }, (_, i) => ({
 }))
 
 const TABLE_STYLE: CSSProperties = { height: 400 }
+const INTERACTIVE_TABLE_STYLE: CSSProperties = { height: 420 }
 
 export function ShadcnDataTable() {
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all')
@@ -73,6 +84,85 @@ export function ShadcnDataTable() {
 
           <DataTableColumn field="status">
             <DataTableColumnHeader>Status</DataTableColumnHeader>
+            <DataTableCell>
+              {({ cellValue }) => {
+                const active = cellValue === 'active'
+                return (
+                  <span
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                      active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}
+                  >
+                    {String(cellValue)}
+                  </span>
+                )
+              }}
+            </DataTableCell>
+          </DataTableColumn>
+        </DataTable>
+      </CardContent>
+    </Card>
+  )
+}
+
+export function ShadcnInteractiveDataTable() {
+  return (
+    <Card className="w-full max-w-5xl">
+      <CardHeader>
+        <CardTitle>Accounts</CardTitle>
+        <CardDescription>Drag the grip to reorder columns. Drag the divider to resize. Double-click the divider to reset.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <DataTable className="rounded-xl border" data={{ data: ALL_ITEMS, groups: [] }} style={INTERACTIVE_TABLE_STYLE}>
+          <DataTableColumn field="id">
+            <DataTableColumnHeader>
+              <HeaderStart component={ReorderGrip} />
+              <HeaderOverlay component={ReorderDropZone} />
+              <HeaderEdge component={ResizeHandle} />
+              {() => 'ID'}
+            </DataTableColumnHeader>
+            <DataTableCell>
+              {({ cellValue }) => <span className="text-muted-foreground tabular-nums">{String(cellValue)}</span>}
+            </DataTableCell>
+          </DataTableColumn>
+
+          <DataTableColumn field="name">
+            <DataTableColumnHeader>
+              <HeaderStart component={ReorderGrip} />
+              <HeaderOverlay component={ReorderDropZone} />
+              <HeaderEdge component={ResizeHandle} />
+              {() => 'Name'}
+            </DataTableColumnHeader>
+            <DataTableCell>{({ cellValue }) => <span className="font-medium">{String(cellValue)}</span>}</DataTableCell>
+          </DataTableColumn>
+
+          <DataTableColumn field="email">
+            <DataTableColumnHeader>
+              <HeaderStart component={ReorderGrip} />
+              <HeaderOverlay component={ReorderDropZone} />
+              <HeaderEdge component={ResizeHandle} />
+              {() => 'Email'}
+            </DataTableColumnHeader>
+            <DataTableCell>{({ cellValue }) => <span className="text-muted-foreground">{String(cellValue)}</span>}</DataTableCell>
+          </DataTableColumn>
+
+          <DataTableColumn field="role">
+            <DataTableColumnHeader>
+              <HeaderStart component={ReorderGrip} />
+              <HeaderOverlay component={ReorderDropZone} />
+              <HeaderEdge component={ResizeHandle} />
+              {() => 'Role'}
+            </DataTableColumnHeader>
+            <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
+          </DataTableColumn>
+
+          <DataTableColumn field="status">
+            <DataTableColumnHeader>
+              <HeaderStart component={ReorderGrip} />
+              <HeaderOverlay component={ReorderDropZone} />
+              <HeaderEdge component={ResizeHandle} />
+              {() => 'Status'}
+            </DataTableColumnHeader>
             <DataTableCell>
               {({ cellValue }) => {
                 const active = cellValue === 'active'

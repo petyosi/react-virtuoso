@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 import { render } from 'vitest-browser-react'
+import { userEvent } from 'vitest/browser'
 
 import { ResizeHandle } from '../../../../apps/virtuoso.dev/registry/new-york/data-table/column-resize/resize-handle'
 import { Cell, Column, ColumnHeader, HeaderEdge, VirtuosoDataTable } from '../../src'
@@ -41,6 +42,48 @@ test('resizes a column through the slot-mounted handle', async () => {
   expect(firstHeader).toBeTruthy()
   expect(handle).toBeTruthy()
 
+  const headerElements = [...headers]
+  const firstHeaderRect = firstHeader!.getBoundingClientRect()
+  const handleRect = handle!.getBoundingClientRect()
+  expect(handleRect.left).toBeLessThan(firstHeaderRect.right)
+  expect(handleRect.right).toBeGreaterThan(firstHeaderRect.right)
+  await expect
+    .poll(() => headerElements.reduce((sum, header) => sum + Math.round(header.getBoundingClientRect().width), 0), { timeout: 2000 })
+    .toBeGreaterThan(COLUMN_WIDTH * headerElements.length)
+  const initialWidths = headerElements.map((header) => Math.round(header.getBoundingClientRect().width))
+  const initialTotalWidth = initialWidths.reduce((sum, width) => sum + width, 0)
+  handle!.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: handleRect.left + 1, pointerId: 1 }))
+  document.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: handleRect.left + 70, pointerId: 1 }))
+  document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: handleRect.left + 70, pointerId: 1 }))
+
+  await expect.poll(() => Math.round(firstHeader!.getBoundingClientRect().width), { timeout: 2000 }).toBeGreaterThan(initialWidths[0]! + 20)
+  await expect
+    .poll(
+      () =>
+        headerElements
+          .map((header) => Math.round(header.getBoundingClientRect().width))
+          .slice(1)
+          .every((width, index) => width === initialWidths[index + 1]),
+      { timeout: 2000 }
+    )
+    .toBe(true)
+  await expect
+    .poll(() => headerElements.reduce((sum, header) => sum + Math.round(header.getBoundingClientRect().width), 0), { timeout: 2000 })
+    .toBeGreaterThan(initialTotalWidth)
+})
+
+test('double clicking the resize handle clears the width override', async () => {
+  const screen = await render(<TestTable />)
+  const headers = screen.container.querySelectorAll<HTMLElement>('[data-table-element-role="column-header"]')
+  const firstHeader = headers[0]
+  const handle = firstHeader?.querySelector<HTMLElement>('[data-table-element-role="resize-handle"]')
+
+  expect(firstHeader).toBeTruthy()
+  expect(handle).toBeTruthy()
+
+  await expect
+    .poll(() => [...headers].reduce((sum, header) => sum + Math.round(header.getBoundingClientRect().width), 0), { timeout: 2000 })
+    .toBeGreaterThan(COLUMN_WIDTH * headers.length)
   const initialWidth = Math.round(firstHeader!.getBoundingClientRect().width)
   const handleRect = handle!.getBoundingClientRect()
   handle!.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: handleRect.left + 1, pointerId: 1 }))
@@ -48,4 +91,8 @@ test('resizes a column through the slot-mounted handle', async () => {
   document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: handleRect.left + 70, pointerId: 1 }))
 
   await expect.poll(() => Math.round(firstHeader!.getBoundingClientRect().width), { timeout: 2000 }).toBeGreaterThan(initialWidth + 20)
+
+  await userEvent.dblClick(handle!)
+
+  await expect.poll(() => Math.round(firstHeader!.getBoundingClientRect().width), { timeout: 2000 }).toBe(initialWidth)
 })

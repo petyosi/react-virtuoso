@@ -1,6 +1,5 @@
 @layer virtuoso {
   [data-table-element-role='column-header'] {
-    flex-grow: 1;
     min-width: 1px;
     box-sizing: border-box;
   }

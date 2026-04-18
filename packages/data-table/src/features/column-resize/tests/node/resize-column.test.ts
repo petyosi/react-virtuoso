@@ -2,7 +2,7 @@ import { Engine } from '@virtuoso.dev/reactive-engine-core'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { columnWidthOverrides$ } from '../../../../columns/column-width-overrides'
-import { resizeColumn$ } from '../../index'
+import { clearColumnWidthOverride$, resizeColumn$, resetColumnWidthOverrides$ } from '../../index'
 
 describe('column resize feature', () => {
   let engine!: Engine
@@ -44,5 +44,33 @@ describe('column resize feature', () => {
         ['name', 280],
       ])
     )
+  })
+
+  it('clears a single width override', () => {
+    engine.pub(
+      columnWidthOverrides$,
+      new Map([
+        ['name', 180],
+        ['status', 220],
+      ])
+    )
+
+    engine.pub(clearColumnWidthOverride$, { key: 'name' })
+
+    expect(engine.getValue(columnWidthOverrides$)).toStrictEqual(new Map([['status', 220]]))
+  })
+
+  it('clears all width overrides', () => {
+    engine.pub(
+      columnWidthOverrides$,
+      new Map([
+        ['name', 180],
+        ['status', 220],
+      ])
+    )
+
+    engine.pub(resetColumnWidthOverrides$)
+
+    expect(engine.getValue(columnWidthOverrides$)).toStrictEqual(new Map())
   })
 })
