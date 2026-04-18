@@ -10,6 +10,10 @@ interface Item {
   id: number
 }
 
+interface FilterParams {
+  filter?: string
+}
+
 function collectMessages(model: { subscribe: (fn: (msg: MessageEnvelope) => void) => () => void }) {
   const messages: MessageEnvelope[] = []
   model.subscribe((msg) => messages.push(msg))
@@ -53,7 +57,7 @@ describe('remoteSource loading events', () => {
   })
 
   it('emits cancel for the superseded initial fetch and starts refresh for action-driven re-fetch', async () => {
-    const fetch = vi.fn(async (params: FetchParams<{ sort?: string }>) => {
+    const fetch = vi.fn(async (params: FetchParams) => {
       await delay(20)
       if (params.signal.aborted) {
         throw new Error('aborted')
@@ -64,7 +68,7 @@ describe('remoteSource loading events', () => {
       }
     })
 
-    const model = remoteSource<Item, { sort?: string }>({
+    const model = remoteSource<Item>({
       fetch,
       initialParams: {},
       pageSize: 10,
@@ -92,19 +96,20 @@ describe('remoteSource loading events', () => {
   })
 
   it('keeps the last resolved result visible while an append refresh is in flight', async () => {
-    const fetch = vi.fn(async (params: AppendFetchParams<{ filter?: string }>) => {
+    const fetch = vi.fn(async (params: AppendFetchParams) => {
       await delay(20)
+      const filterParams = params.params as FilterParams
       return {
         rows: Array.from({ length: params.limit }, (_, index) => ({
           id: index,
-          name: params.params.filter ? `${params.params.filter}-${index}` : `item-${index}`,
+          name: filterParams.filter ? `${filterParams.filter}-${index}` : `item-${index}`,
         })),
         hasMore: false,
         cursor: null,
       }
     })
 
-    const model = remoteSource<Item, { filter?: string }>({
+    const model = remoteSource<Item>({
       mode: 'append',
       fetch,
       initialParams: {},

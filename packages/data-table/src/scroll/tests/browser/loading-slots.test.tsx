@@ -26,6 +26,10 @@ interface Item {
   name: string
 }
 
+interface FilterParams {
+  filter?: string
+}
+
 function LoadingOverlay({ loadingState }: LoadingComponentProps) {
   return <div data-testid="loading-overlay">{loadingState.refresh.status}</div>
 }
@@ -98,11 +102,12 @@ describe('loading slots', () => {
 
   test('refresh overlay appears during action-driven re-fetch and clears on success', async () => {
     let modelHandle: DataModelHandle<Item>
-    const fetch = vi.fn(async (params: AppendFetchParams<{ filter?: string }>) => {
+    const fetch = vi.fn(async (params: AppendFetchParams) => {
       await delay(25)
+      const filterParams = params.params as FilterParams
       const base = Array.from({ length: 20 }, (_, index) => ({
         id: index,
-        name: params.params.filter ? `${params.params.filter}-${index}` : `item-${index}`,
+        name: filterParams.filter ? `${filterParams.filter}-${index}` : `item-${index}`,
       }))
       return {
         rows: base.slice((params.cursor as number | undefined) ?? 0, ((params.cursor as number | undefined) ?? 0) + params.limit),
@@ -113,7 +118,7 @@ describe('loading slots', () => {
 
     function TestComponent() {
       const model = useMemo(() => {
-        const nextModel = remoteSource<Item, { filter?: string }>({
+        const nextModel = remoteSource<Item>({
           mode: 'append',
           fetch,
           initialParams: {},
