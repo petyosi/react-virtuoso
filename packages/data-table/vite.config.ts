@@ -41,6 +41,10 @@ export default inLadle
             find: '@virtuoso.dev/data-table/column-resize',
             replacement: resolve(import.meta.dirname, 'src/features/column-resize/index.ts'),
           },
+          {
+            find: '@virtuoso.dev/data-table/state-persistence',
+            replacement: resolve(import.meta.dirname, 'src/features/state-persistence/index.tsx'),
+          },
           { find: '@virtuoso.dev/data-table', replacement: resolve(import.meta.dirname, 'src/index.ts') },
         ],
       },
@@ -80,6 +84,7 @@ export default inLadle
             index: resolve(import.meta.dirname, 'src/index.ts'),
             'column-reorder': resolve(import.meta.dirname, 'src/features/column-reorder/index.ts'),
             'column-resize': resolve(import.meta.dirname, 'src/features/column-resize/index.ts'),
+            'state-persistence': resolve(import.meta.dirname, 'src/features/state-persistence/index.tsx'),
           },
           formats: ['es'],
         },

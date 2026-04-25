@@ -56,6 +56,12 @@
         "default": "./dist/column-resize.js"
       }
     },
+    "./state-persistence": {
+      "import": {
+        "types": "./dist/state-persistence.d.ts",
+        "default": "./dist/state-persistence.js"
+      }
+    },
     "./styles.css": "./dist/styles.css"
   },
   "publishConfig": {

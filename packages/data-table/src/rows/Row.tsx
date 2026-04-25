@@ -3,7 +3,7 @@ import React from 'react'
 import { useCellValue, useEngine } from '@virtuoso.dev/reactive-engine-react'
 
 import { cellClassNames$, cellRenderers$, CellRenderer } from '../columns/Cell'
-import { columns$ } from '../columns/Column'
+import { columns$, columnWidths$ } from '../columns/Column'
 import { columnItemsState$, columnsState$, EMPTY_COLUMN_STATE, stickyColumnsState$ } from '../columns/column-state'
 import { rowComponent$, stickyColumnContainer$ } from '../core/components'
 import { context$, groupIndexSet$, groupLevelMap$ } from '../core/data'
@@ -36,24 +36,26 @@ const ROW_BASE_STYLE: React.CSSProperties = {
   display: 'flex',
 }
 
-const COLUMN_CELL_BASE_STYLE: React.CSSProperties = {}
+function gridTemplateColumns(columns: { key: string; size: number }[], columnWidths: Map<string, number>) {
+  return columns.map((column) => `${columnWidths.get(column.key) ?? column.size}px`).join(' ')
+}
 
 const LEFT_STICKY_CONTAINER_STYLE: React.CSSProperties = {
   position: 'sticky',
   left: 0,
   zIndex: 2,
-  display: 'flex',
+  display: 'grid',
 }
 
 const RIGHT_STICKY_CONTAINER_STYLE: React.CSSProperties = {
   position: 'sticky',
   right: 0,
   zIndex: 2,
-  display: 'flex',
+  display: 'grid',
 }
 
 const SCROLLABLE_CELLS_CONTAINER_STYLE: React.CSSProperties = {
-  display: 'flex',
+  display: 'grid',
 }
 
 // Sticky and scrollable cell sections are separate memoized components so that
@@ -93,22 +95,19 @@ function useUnstableRowRenderEvent({
 const StickyLeftCells = React.memo<RowCellSectionProps>(function StickyLeftCells({ row, sticky }) {
   const stickyState = useCellValue(stickyColumnsState$)
   const columns = useCellValue(columns$)
+  const columnWidths = useCellValue(columnWidths$)
   const cellClassNames = useCellValue(cellClassNames$)
   const cellRenderers = useCellValue(cellRenderers$)
   const columnsState = useCellValue(columnsState$)
   const StickyContainer = useCellValue(stickyColumnContainer$)
   const context = useCellValue(context$)
 
-  const leftStickyCellStyles = React.useMemo(
-    () =>
-      stickyState.leftColumns.map((col) => ({
-        key: col.key,
-        style: {
-          ...COLUMN_CELL_BASE_STYLE,
-          width: col.size,
-        },
-      })),
-    [stickyState.leftColumns]
+  const leftStickyCellsContainerStyle = React.useMemo<React.CSSProperties>(
+    () => ({
+      ...LEFT_STICKY_CONTAINER_STYLE,
+      gridTemplateColumns: gridTemplateColumns(stickyState.leftColumns, columnWidths),
+    }),
+    [columnWidths, stickyState.leftColumns]
   )
 
   useUnstableRowRenderEvent({
@@ -116,28 +115,22 @@ const StickyLeftCells = React.memo<RowCellSectionProps>(function StickyLeftCells
     sticky,
     group: false,
     section: 'sticky-left',
-    disabled: leftStickyCellStyles.length === 0,
+    disabled: stickyState.leftColumns.length === 0,
   })
 
-  if (leftStickyCellStyles.length === 0) {
+  if (stickyState.leftColumns.length === 0) {
     return null
   }
 
   return (
-    <StickyContainer style={LEFT_STICKY_CONTAINER_STYLE} data-sticky="left" context={context}>
-      {leftStickyCellStyles.map((col) => {
+    <StickyContainer style={leftStickyCellsContainerStyle} data-sticky="left" context={context}>
+      {stickyState.leftColumns.map((col) => {
         const column = columns.get(col.key)
         if (!column) {
           return null
         }
         return (
-          <div
-            key={col.key}
-            className={cellClassNames.get(col.key)}
-            data-table-element-role="cell"
-            data-column-key={col.key}
-            style={col.style}
-          >
+          <div key={col.key} className={cellClassNames.get(col.key)} data-table-element-role="cell" data-column-key={col.key}>
             <CellRenderer
               columnKey={col.key}
               column={column}
@@ -156,6 +149,7 @@ const StickyLeftCells = React.memo<RowCellSectionProps>(function StickyLeftCells
 const ScrollableCells = React.memo<RowCellSectionProps>(function ScrollableCells({ row, sticky }) {
   const columnItemsState = useCellValue(columnItemsState$)
   const columns = useCellValue(columns$)
+  const columnWidths = useCellValue(columnWidths$)
   const cellClassNames = useCellValue(cellClassNames$)
   const cellRenderers = useCellValue(cellRenderers$)
   const columnsState = useCellValue(columnsState$)
@@ -163,22 +157,11 @@ const ScrollableCells = React.memo<RowCellSectionProps>(function ScrollableCells
   const scrollableCellsContainerStyle = React.useMemo<React.CSSProperties>(
     () => ({
       ...SCROLLABLE_CELLS_CONTAINER_STYLE,
+      gridTemplateColumns: gridTemplateColumns(columnItemsState.columns, columnWidths),
       marginLeft: columnItemsState.paddingStart,
       marginRight: columnItemsState.paddingEnd,
     }),
-    [columnItemsState.paddingStart, columnItemsState.paddingEnd]
-  )
-
-  const columnCellStyles = React.useMemo(
-    () =>
-      columnItemsState.columns.map((col) => ({
-        key: col.key,
-        style: {
-          ...COLUMN_CELL_BASE_STYLE,
-          width: col.size,
-        },
-      })),
-    [columnItemsState.columns]
+    [columnItemsState.columns, columnItemsState.paddingEnd, columnItemsState.paddingStart, columnWidths]
   )
 
   useUnstableRowRenderEvent({
@@ -186,24 +169,18 @@ const ScrollableCells = React.memo<RowCellSectionProps>(function ScrollableCells
     sticky,
     group: false,
     section: 'scrollable',
-    disabled: columnCellStyles.length === 0,
+    disabled: columnItemsState.columns.length === 0,
   })
 
   return (
     <div style={scrollableCellsContainerStyle} data-scrollable="true">
-      {columnCellStyles.map((col) => {
+      {columnItemsState.columns.map((col) => {
         const column = columns.get(col.key)
         if (!column) {
           return null
         }
         return (
-          <div
-            key={col.key}
-            className={cellClassNames.get(col.key)}
-            data-table-element-role="cell"
-            data-column-key={col.key}
-            style={col.style}
-          >
+          <div key={col.key} className={cellClassNames.get(col.key)} data-table-element-role="cell" data-column-key={col.key}>
             <CellRenderer
               columnKey={col.key}
               column={column}
@@ -222,6 +199,7 @@ const ScrollableCells = React.memo<RowCellSectionProps>(function ScrollableCells
 const StickyRightCells = React.memo<RowCellSectionProps>(function StickyRightCells({ row, sticky }) {
   const stickyState = useCellValue(stickyColumnsState$)
   const columns = useCellValue(columns$)
+  const columnWidths = useCellValue(columnWidths$)
   const cellClassNames = useCellValue(cellClassNames$)
   const cellRenderers = useCellValue(cellRenderers$)
   const columnsState = useCellValue(columnsState$)
@@ -229,16 +207,12 @@ const StickyRightCells = React.memo<RowCellSectionProps>(function StickyRightCel
   const StickyContainer = useCellValue(stickyColumnContainer$)
   const context = useCellValue(context$)
 
-  const rightStickyCellStyles = React.useMemo(
-    () =>
-      stickyState.rightColumns.map((col) => ({
-        key: col.key,
-        style: {
-          ...COLUMN_CELL_BASE_STYLE,
-          width: col.size,
-        },
-      })),
-    [stickyState.rightColumns]
+  const rightStickyCellsContainerStyle = React.useMemo<React.CSSProperties>(
+    () => ({
+      ...RIGHT_STICKY_CONTAINER_STYLE,
+      gridTemplateColumns: gridTemplateColumns(stickyState.rightColumns, columnWidths),
+    }),
+    [columnWidths, stickyState.rightColumns]
   )
 
   useUnstableRowRenderEvent({
@@ -246,29 +220,23 @@ const StickyRightCells = React.memo<RowCellSectionProps>(function StickyRightCel
     sticky,
     group: false,
     section: 'sticky-right',
-    disabled: rightStickyCellStyles.length === 0,
+    disabled: stickyState.rightColumns.length === 0,
   })
 
-  if (rightStickyCellStyles.length === 0) {
+  if (stickyState.rightColumns.length === 0) {
     return null
   }
 
   return (
-    <StickyContainer style={RIGHT_STICKY_CONTAINER_STYLE} data-sticky="right" context={context}>
-      {rightStickyCellStyles.map((col, index) => {
+    <StickyContainer style={rightStickyCellsContainerStyle} data-sticky="right" context={context}>
+      {stickyState.rightColumns.map((col, index) => {
         const column = columns.get(col.key)
         if (!column) {
           return null
         }
-        const isLast = index === rightStickyCellStyles.length - 1
+        const isLast = index === stickyState.rightColumns.length - 1
         return (
-          <div
-            key={col.key}
-            className={cellClassNames.get(col.key)}
-            data-table-element-role="cell"
-            data-column-key={col.key}
-            style={col.style}
-          >
+          <div key={col.key} className={cellClassNames.get(col.key)} data-table-element-role="cell" data-column-key={col.key}>
             <CellRenderer
               columnKey={col.key}
               column={column}

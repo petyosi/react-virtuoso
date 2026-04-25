@@ -218,7 +218,8 @@ describe('sticky columns', () => {
     const scrollableContainer = firstRow.querySelector(scrollableCellsSelector) as HTMLElement
 
     const stickyCellContainer = leftStickyContainer.querySelector(':scope > div') as HTMLElement
-    expect(stickyCellContainer.style.width).toBe(`${NARROW_HEADER_WIDTH}px`)
+    expect(stickyCellContainer.style.width).toBe('')
+    expect(stickyCellContainer.getBoundingClientRect().width).toBe(NARROW_HEADER_WIDTH)
 
     const scrollableCells = scrollableContainer.querySelectorAll(':scope > div')
     expect(scrollableCells[0]?.textContent).toBe('R0C1')
