@@ -8,6 +8,7 @@ export default defineConfig({
     alias: {
       '@virtuoso.dev/data-table/column-reorder': new URL('src/features/column-reorder/index.ts', import.meta.url).pathname,
       '@virtuoso.dev/data-table/column-resize': new URL('src/features/column-resize/index.ts', import.meta.url).pathname,
+      '@virtuoso.dev/data-table/state-persistence': new URL('src/features/state-persistence/index.tsx', import.meta.url).pathname,
       '@virtuoso.dev/data-table': new URL('src/index.ts', import.meta.url).pathname,
     },
   },

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { clearColumnWidthOverride$ } from '../../../features/column-resize'
 import { viewportWidth$ } from '../../../scroll/dom'
 import { columnBaseWidths$, columns$, columnWidths$, measuredColumnWidths$ } from '../../Column'
+import { columnRanges$, columnSizeState$ } from '../../column-sizes'
 import { columnWidthOverrides$ } from '../../column-width-overrides'
 
 describe('column width state', () => {
@@ -16,6 +17,8 @@ describe('column width state', () => {
     engine.register(columnWidthOverrides$)
     engine.register(columnBaseWidths$)
     engine.register(columnWidths$)
+    engine.register(columnRanges$)
+    engine.register(columnSizeState$)
     engine.register(viewportWidth$)
   })
 
@@ -58,6 +61,38 @@ describe('column width state', () => {
       new Map([
         ['name', 180],
         ['status', 150],
+      ])
+    )
+  })
+
+  it('uses current viewport defaults for non-overridden columns when restored widths arrive before initial sizing', () => {
+    engine.pub(
+      columns$,
+      new Map([
+        ['id', { field: 'id' }],
+        ['name', { field: 'name' }],
+        ['status', { field: 'status' }],
+        ['city', { field: 'city' }],
+      ])
+    )
+    engine.pub(columnWidthOverrides$, new Map([['id', 400]]))
+    engine.pub(
+      measuredColumnWidths$,
+      new Map([
+        ['id', 80],
+        ['name', 50],
+        ['status', 60],
+        ['city', 40],
+      ])
+    )
+    engine.pub(viewportWidth$, 820)
+
+    expect(engine.getValue(columnWidths$)).toStrictEqual(
+      new Map([
+        ['id', 400],
+        ['name', 197.5],
+        ['status', 207.5],
+        ['city', 187.5],
       ])
     )
   })

@@ -151,16 +151,58 @@ e.link(
 
 export const columnWidths$ = Cell<Map<string, number>>(new Map())
 
+function hasCompleteWidths(columns: Map<string, ColumnInfo>, widths: Map<string, number>) {
+  return [...columns.keys()].every((key) => (widths.get(key) ?? 0) > 0)
+}
+
+function nonOverriddenWidthsUseBaseWidths(
+  columns: Map<string, ColumnInfo>,
+  currentWidths: Map<string, number>,
+  baseWidths: Map<string, number>,
+  overrides: Map<string, number>
+) {
+  return [...columns.keys()].every((key) => overrides.has(key) || currentWidths.get(key) === baseWidths.get(key))
+}
+
+function computeInitialColumnWidthsWithOverrides(
+  columns: Map<string, ColumnInfo>,
+  baseWidths: Map<string, number>,
+  defaultBaseWidths: Map<string, number>,
+  overrides: Map<string, number>,
+  viewportWidth: number
+) {
+  const realizedWidths = computeAutoFillColumnWidths([...columns.entries()], defaultBaseWidths, viewportWidth)
+
+  for (const key of columns.keys()) {
+    const override = overrides.get(key)
+    if (override !== undefined) {
+      realizedWidths.set(key, override)
+    } else if (!realizedWidths.has(key)) {
+      realizedWidths.set(key, baseWidths.get(key) ?? 0)
+    }
+  }
+
+  return realizedWidths
+}
+
 e.changeWith(
   columnWidths$,
-  e.combine(columns$, columnBaseWidths$, columnWidthOverrides$, viewportWidth$),
-  (currentWidths, [columns, baseWidths, overrides, viewportWidth]) => {
+  e.combine(columns$, columnBaseWidths$, measuredColumnWidths$, columnWidthOverrides$, viewportWidth$),
+  (currentWidths, [columns, baseWidths, measuredWidths, overrides, viewportWidth]) => {
     if (![...columns.keys()].every((key) => baseWidths.has(key))) {
       return new Map([...currentWidths].filter(([key]) => columns.has(key)))
     }
 
     if (overrides.size === 0) {
       return computeAutoFillColumnWidths([...columns.entries()], baseWidths, viewportWidth)
+    }
+
+    if (
+      !hasCompleteWidths(columns, currentWidths) ||
+      (nonOverriddenWidthsUseBaseWidths(columns, currentWidths, baseWidths, overrides) &&
+        [...columns.keys()].reduce((sum, key) => sum + (currentWidths.get(key) ?? 0), 0) < viewportWidth)
+    ) {
+      return computeInitialColumnWidthsWithOverrides(columns, baseWidths, measuredWidths, overrides, viewportWidth)
     }
 
     const realizedWidths = new Map<string, number>()

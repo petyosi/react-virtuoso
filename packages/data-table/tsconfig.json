@@ -9,7 +9,8 @@
       "@/*": ["../../apps/virtuoso.dev/src/*"],
       "@virtuoso.dev/data-table": ["./src/index.ts"],
       "@virtuoso.dev/data-table/column-reorder": ["./src/features/column-reorder/index.ts"],
-      "@virtuoso.dev/data-table/column-resize": ["./src/features/column-resize/index.ts"]
+      "@virtuoso.dev/data-table/column-resize": ["./src/features/column-resize/index.ts"],
+      "@virtuoso.dev/data-table/state-persistence": ["./src/features/state-persistence/index.tsx"]
     }
   },
   "include": ["src", "tests", "vite.config.ts", "vitest.config.ts"]
