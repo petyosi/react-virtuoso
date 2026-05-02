@@ -1,9 +1,10 @@
 // oxlint-disable require-hook
 import { Cell, Stream, e } from '@virtuoso.dev/reactive-engine-core'
 
-import { columns$ } from '../../columns/Column'
+import { columnDeclarationOrder$, columns$ } from '../../columns/Column'
 
 import type { ColumnInfo } from '../../columns/Column'
+import type { DataTableStatePersistenceAdapter } from '../state-persistence'
 
 /**
  * Payload for moving one column before or after another.
@@ -56,6 +57,158 @@ function reorderOne(columns: Map<string, ColumnInfo>, payload: ReorderColumnsPay
 e.changeWith(columns$, reorderColumns$, reorderOne)
 
 /**
+ * Serializable column order state keyed by stable column field names.
+ *
+ * @group Remote Control
+ */
+export interface ColumnOrderPersistenceState {
+  version: 1
+  fields: string[]
+}
+
+/**
+ * Remote action that restores serialized column order state into the current
+ * runtime column order.
+ *
+ * @group Remote Control
+ */
+export const restoreColumnOrderState$ = Stream<ColumnOrderPersistenceState>()
+
+/**
+ * Remote action that resets the current runtime column order back to component
+ * declaration order.
+ *
+ * @group Remote Control
+ */
+export const resetColumnOrder$ = Stream<string[]>()
+
+function isColumnOrderPersistenceState(state: ColumnOrderPersistenceState | null | undefined): state is ColumnOrderPersistenceState {
+  return state?.version === 1 && Array.isArray(state.fields)
+}
+
+function sameColumnOrder(left: Map<string, ColumnInfo>, right: Map<string, ColumnInfo>) {
+  if (left.size !== right.size) {
+    return false
+  }
+
+  const leftKeys = [...left.keys()]
+  const rightKeys = [...right.keys()]
+  return leftKeys.every((key, index) => key === rightKeys[index])
+}
+
+function appendField(fields: string[], seenFields: Set<string>, field: string) {
+  if (!seenFields.has(field)) {
+    seenFields.add(field)
+    fields.push(field)
+  }
+}
+
+/**
+ * Converts persisted field-keyed column order into a runtime column map for
+ * the currently registered columns.
+ *
+ * @group Remote Control
+ */
+export function columnsFromColumnOrderState(
+  columns: Map<string, ColumnInfo>,
+  state: ColumnOrderPersistenceState | null | undefined
+): Map<string, ColumnInfo> {
+  if (!isColumnOrderPersistenceState(state)) {
+    return columns
+  }
+
+  const availableByField = new Map<string, [string, ColumnInfo][]>()
+  for (const entry of columns) {
+    const fieldEntries = availableByField.get(entry[1].field)
+    if (fieldEntries) {
+      fieldEntries.push(entry)
+    } else {
+      availableByField.set(entry[1].field, [entry])
+    }
+  }
+
+  const next = new Map<string, ColumnInfo>()
+  const usedKeys = new Set<string>()
+  const restoredFields = new Set<string>()
+
+  for (const field of state.fields) {
+    if (restoredFields.has(field)) {
+      continue
+    }
+    restoredFields.add(field)
+
+    const entries = availableByField.get(field)
+    const entry = entries?.find(([key]) => !usedKeys.has(key))
+    if (entry) {
+      next.set(entry[0], entry[1])
+      usedKeys.add(entry[0])
+    }
+  }
+
+  for (const [key, column] of columns) {
+    if (!usedKeys.has(key)) {
+      next.set(key, column)
+    }
+  }
+
+  return sameColumnOrder(columns, next) ? columns : next
+}
+
+/**
+ * Reorders the current column map by runtime declaration order.
+ *
+ * @group Remote Control
+ */
+export function columnsFromDeclarationOrder(columns: Map<string, ColumnInfo>, declarationOrder: string[]): Map<string, ColumnInfo> {
+  const next = new Map<string, ColumnInfo>()
+
+  for (const key of declarationOrder) {
+    const column = columns.get(key)
+    if (column) {
+      next.set(key, column)
+    }
+  }
+
+  for (const [key, column] of columns) {
+    if (!next.has(key)) {
+      next.set(key, column)
+    }
+  }
+
+  return sameColumnOrder(columns, next) ? columns : next
+}
+
+/**
+ * Converts runtime column order into serializable field-keyed state while
+ * preserving saved fields that are not currently registered.
+ *
+ * @group Remote Control
+ */
+export function columnOrderStateFromColumns(
+  columns: Map<string, ColumnInfo>,
+  previous?: ColumnOrderPersistenceState | null
+): ColumnOrderPersistenceState {
+  const fields: string[] = []
+  const seenFields = new Set<string>()
+  const currentFields = new Set<string>()
+
+  for (const column of columns.values()) {
+    currentFields.add(column.field)
+    appendField(fields, seenFields, column.field)
+  }
+
+  if (isColumnOrderPersistenceState(previous)) {
+    for (const field of previous.fields) {
+      if (!currentFields.has(field)) {
+        appendField(fields, seenFields, field)
+      }
+    }
+  }
+
+  return { version: 1, fields }
+}
+
+/**
  * Payload for moving a contiguous group of columns before or after a target.
  * Used to drag whole column groups while preserving the relative order of the
  * grouped columns.
@@ -88,6 +241,71 @@ e.changeWith(columns$, reorderColumnGroup$, (columns, { sourceKeys, targetKey, p
   }
   return next
 })
+
+/**
+ * Creates a state persistence adapter for column order.
+ *
+ * @group Remote Control
+ */
+export function columnOrderPersistenceAdapter(): DataTableStatePersistenceAdapter<ColumnOrderPersistenceState> {
+  return {
+    key: 'columnOrder',
+    capture(engine, previous) {
+      return columnOrderStateFromColumns(engine.getValue(columns$), previous)
+    },
+    restore(engine, state) {
+      engine.register(restoreColumnOrderState$)
+      engine.register(resetColumnOrder$)
+      if (state) {
+        engine.pub(columns$, columnsFromColumnOrderState(engine.getValue(columns$), state))
+        engine.pub(restoreColumnOrderState$, state)
+      } else {
+        const declarationOrder = engine.getValue(columnDeclarationOrder$)
+        engine.pub(columns$, columnsFromDeclarationOrder(engine.getValue(columns$), declarationOrder))
+        engine.pub(resetColumnOrder$, declarationOrder)
+      }
+    },
+    subscribe(engine, onChange) {
+      const unsubscribeColumn = engine.sub(reorderColumns$, onChange)
+      const unsubscribeGroup = engine.sub(reorderColumnGroup$, onChange)
+      const unsubscribeRestore = engine.sub(restoreColumnOrderState$, onChange)
+      const unsubscribeReset = engine.sub(resetColumnOrder$, onChange)
+      return () => {
+        unsubscribeColumn()
+        unsubscribeGroup()
+        unsubscribeRestore()
+        unsubscribeReset()
+      }
+    },
+    subscribeRestore(engine, onChange) {
+      let skipRestoreForCurrentReorder = false
+
+      const markUserReorder = () => {
+        skipRestoreForCurrentReorder = true
+        queueMicrotask(() => {
+          skipRestoreForCurrentReorder = false
+        })
+      }
+
+      const unsubscribeColumn = engine.sub(reorderColumns$, markUserReorder)
+      const unsubscribeGroup = engine.sub(reorderColumnGroup$, markUserReorder)
+      const unsubscribeColumns = engine.sub(columns$, () => {
+        if (skipRestoreForCurrentReorder) {
+          skipRestoreForCurrentReorder = false
+          return
+        }
+
+        onChange()
+      })
+
+      return () => {
+        unsubscribeColumn()
+        unsubscribeGroup()
+        unsubscribeColumns()
+      }
+    },
+  }
+}
 
 /**
  * Reactive drag-coordination state shared between the grip and drop-zone UIs.
@@ -160,3 +378,6 @@ e.changeWith(columnDragState$, setColumnDropTarget$, (state, dropTarget) => {
 
   return { ...state, dropTarget }
 })
+
+e.changeWith(columns$, restoreColumnOrderState$, columnsFromColumnOrderState)
+e.changeWith(columns$, resetColumnOrder$, columnsFromDeclarationOrder)

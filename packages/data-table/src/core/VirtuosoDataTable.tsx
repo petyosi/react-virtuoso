@@ -2,6 +2,7 @@ import React from 'react'
 
 import { EngineProvider } from '@virtuoso.dev/reactive-engine-react'
 
+import { columnDeclarationOrder$ } from '../columns/Column'
 import { columnItemsState$, columnOverscanCount$ } from '../columns/column-state'
 import { VirtualizedTableContent } from '../layout/VirtualizedTableContent'
 import { localSource } from '../model/local-source'
@@ -109,6 +110,7 @@ export const VirtuosoDataTable = React.forwardRef<VirtuosoDataTableMethods<unkno
         // oxlint-disable-next-line jsx-no-new-function-as-prop
         initFn={(e) => {
           e.register(rowsState$)
+          e.register(columnDeclarationOrder$)
           e.register(columnItemsState$)
           e.register(dataTableStructureEntries$)
           e.register(scrollToPending$)
