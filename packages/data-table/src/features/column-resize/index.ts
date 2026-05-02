@@ -134,6 +134,7 @@ export function columnWidthPersistenceAdapter(): DataTableStatePersistenceAdapte
       return columnWidthStateFromOverrides(engine.getValue(columns$), engine.getValue(columnWidthOverrides$), previous)
     },
     restore(engine, state) {
+      engine.register(restoreColumnWidthState$)
       engine.pub(restoreColumnWidthState$, state ?? { version: 1, widths: {} })
     },
     subscribe(engine, onChange) {

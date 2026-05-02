@@ -1,11 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { remoteSource } from '@virtuoso.dev/data-table'
+import { columnOrderPersistenceAdapter } from '@virtuoso.dev/data-table/column-reorder'
 import { columnWidthPersistenceAdapter } from '@virtuoso.dev/data-table/column-resize'
 import { DataTableStatePersistence } from '@virtuoso.dev/data-table/state-persistence'
 
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { DataTable, DataTableCell, DataTableColumn, DataTableColumnHeader, HeaderEdge } from '@/components/ui/data-table'
+import {
+  DataTable,
+  DataTableCell,
+  DataTableColumn,
+  DataTableColumnHeader,
+  HeaderEdge,
+  HeaderOverlay,
+  HeaderStart,
+} from '@/components/ui/data-table'
+import { ReorderDropZone, ReorderGrip } from '@/components/ui/data-table/column-reorder'
 import { ResizeHandle } from '@/components/ui/data-table/column-resize'
 
 import type { DataModelHandle, DataResult, MessageEnvelope } from '@virtuoso.dev/data-table'
@@ -22,7 +33,7 @@ interface DemoParams {
   dataset: DatasetKey
 }
 
-const STORAGE_KEY = 'virtuoso:data-table:column-width-persistence'
+const STORAGE_KEY = 'virtuoso:data-table:column-state-persistence'
 
 const DATASETS: Record<DatasetKey, Dataset> = {
   people: {
@@ -126,7 +137,7 @@ export function PersistentColumnWidthsWithRemoteSchema() {
       }),
     []
   )
-  const persistenceAdapters = useMemo(() => [columnWidthPersistenceAdapter()], [])
+  const persistenceAdapters = useMemo(() => [columnOrderPersistenceAdapter(), columnWidthPersistenceAdapter()], [])
   const fields = useDiscoveredFields(model)
 
   const switchDataset = useCallback(
@@ -144,35 +155,22 @@ export function PersistentColumnWidthsWithRemoteSchema() {
   return (
     <Card className="w-full max-w-6xl">
       <CardHeader>
-        <CardTitle>Persistent Column Widths</CardTitle>
+        <CardTitle>Persistent Column State</CardTitle>
         <CardDescription>
-          Resize columns, switch datasets, and reload the story. Widths are saved by field name and restored only when matching columns are
-          present.
+          Reorder and resize columns, switch datasets, and reload the story. State is saved by field name and restored only when matching
+          columns are present.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
           {(Object.keys(DATASETS) as DatasetKey[]).map((key) => (
-            <button
-              key={key}
-              className={
-                dataset === key
-                  ? 'inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground shadow-xs'
-                  : 'inline-flex h-8 items-center justify-center rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground'
-              }
-              type="button"
-              onClick={() => switchDataset(key)}
-            >
+            <Button key={key} size="sm" type="button" variant={dataset === key ? 'default' : 'outline'} onClick={() => switchDataset(key)}>
               {DATASETS[key].label}
-            </button>
+            </Button>
           ))}
-          <button
-            className="inline-flex h-8 items-center justify-center rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
-            type="button"
-            onClick={reset}
-          >
-            Reset saved widths
-          </button>
+          <Button size="sm" type="button" variant="outline" onClick={reset}>
+            Reset saved state
+          </Button>
         </div>
 
         <div className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">
@@ -184,6 +182,8 @@ export function PersistentColumnWidthsWithRemoteSchema() {
           {fields.map((field) => (
             <DataTableColumn key={field} field={field}>
               <DataTableColumnHeader className="min-w-32">
+                <HeaderStart component={ReorderGrip} />
+                <HeaderOverlay component={ReorderDropZone} />
                 <HeaderEdge component={ResizeHandle} />
                 {() => field}
               </DataTableColumnHeader>

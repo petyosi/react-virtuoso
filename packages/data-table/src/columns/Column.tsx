@@ -30,6 +30,22 @@ const { cell$: columns$, register$: columnRegister$ } = createRegistryCell<Colum
 export { columns$ }
 
 /**
+ * Runtime column keys in component declaration order. Unlike {@link columns$},
+ * this is not affected by user-driven column reorder operations.
+ *
+ * @group Remote Control
+ */
+export const columnDeclarationOrder$ = Cell<string[]>([])
+
+e.changeWith(columnDeclarationOrder$, columnRegister$, (order, payload) => {
+  if (payload.type === 'add') {
+    return order.includes(payload.id) ? order : [...order, payload.id]
+  }
+
+  return order.filter((id) => id !== payload.id)
+})
+
+/**
  * Payload for changing the sticky side of a column.
  *
  * @group Remote Control

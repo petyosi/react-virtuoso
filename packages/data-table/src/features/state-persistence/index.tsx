@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { useEngine } from '@virtuoso.dev/reactive-engine-react'
+import { useEngine, useIsomorphicLayoutEffect } from '@virtuoso.dev/reactive-engine-react'
 
 import type { Engine } from '@virtuoso.dev/reactive-engine-core'
 
@@ -114,7 +114,7 @@ export function DataTableStatePersistence({
   const skipSaveKeysRef = React.useRef(new Set<string>())
   const writeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  React.useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const pendingSaveKeys = pendingSaveKeysRef.current
     const shouldReset = resetKeyRef.current !== resetKey
     resetKeyRef.current = resetKey
