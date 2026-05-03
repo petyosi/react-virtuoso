@@ -42,6 +42,10 @@ export default inLadle
             replacement: resolve(import.meta.dirname, 'src/features/column-resize/index.ts'),
           },
           {
+            find: '@virtuoso.dev/data-table/column-visibility',
+            replacement: resolve(import.meta.dirname, 'src/features/column-visibility/index.ts'),
+          },
+          {
             find: '@virtuoso.dev/data-table/state-persistence',
             replacement: resolve(import.meta.dirname, 'src/features/state-persistence/index.tsx'),
           },
@@ -84,6 +88,7 @@ export default inLadle
             index: resolve(import.meta.dirname, 'src/index.ts'),
             'column-reorder': resolve(import.meta.dirname, 'src/features/column-reorder/index.ts'),
             'column-resize': resolve(import.meta.dirname, 'src/features/column-resize/index.ts'),
+            'column-visibility': resolve(import.meta.dirname, 'src/features/column-visibility/index.ts'),
             'state-persistence': resolve(import.meta.dirname, 'src/features/state-persistence/index.tsx'),
           },
           formats: ['es'],

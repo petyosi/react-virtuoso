@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react'
 
 import { useCellValue, useCellValues, useEngine } from '@virtuoso.dev/reactive-engine-react'
 
-import { columns$, columnWidths$, columnWidthsCssVars$ } from '../columns/Column'
+import { columns$, columnVisibilityOverrides$, columnWidths$, columnWidthsCssVars$, visibleColumnsFromColumns } from '../columns/Column'
 import { columnsState$, stickyColumnsState$ } from '../columns/column-state'
 import { columnGroups$ } from '../columns/ColumnGroup'
 import { columnGroupHeaders$ } from '../columns/ColumnGroupHeader'
@@ -87,8 +87,9 @@ const SCROLLABLE_HEADER_CONTAINER_STYLE: CSSProperties = {
 }
 
 function StickyHeaderContent() {
-  const [columns, columnHeaders, stickyColumnsState, columnsState, columnGroups, columnGroupHeaders, columnWidths] = useCellValues(
+  const [declaredColumns, columnVisibilityOverrides, columnHeaders, stickyColumnsState, columnsState, columnGroups, columnGroupHeaders, columnWidths] = useCellValues(
     columns$,
+    columnVisibilityOverrides$,
     columnHeaders$,
     stickyColumnsState$,
     columnsState$,
@@ -99,6 +100,10 @@ function StickyHeaderContent() {
   const hasHorizontalScroll = useCellValue(hasHorizontalScroll$)
   const StickyContainer = useCellValue(stickyColumnContainer$)
   const context = useCellValue(context$)
+  const columns = useMemo(
+    () => visibleColumnsFromColumns(declaredColumns, columnVisibilityOverrides),
+    [declaredColumns, columnVisibilityOverrides]
+  )
 
   const warnedEmptyGroups = React.useRef(new Set<string>())
 

@@ -3,7 +3,7 @@ import { Cell, e } from '@virtuoso.dev/reactive-engine-core'
 
 import { scrollLeft$, viewportWidth$ } from '../scroll/dom'
 import { itemsWithinOffsets } from '../sizing/itemsWithinOffsets'
-import { columns$, columnWidths$ } from './Column'
+import { columnWidths$, visibleColumns$ } from './Column'
 import { columnCount$, columnSizeState$, totalWidth$ } from './column-sizes'
 import { columnGroups$ } from './ColumnGroup'
 import { getEffectiveSticky } from './header-tree'
@@ -101,7 +101,7 @@ e.link(
 
 e.link(
   e.pipe(
-    e.combine(columns$, columnWidths$, columnGroups$),
+    e.combine(visibleColumns$, columnWidths$, columnGroups$),
     e.map(([columnsMap, widths, groups]) => {
       const leftColumns: ColumnItem[] = []
       const rightColumns: ColumnItem[] = []
@@ -153,7 +153,7 @@ e.link(
       columnSizeState$,
       columnCount$,
       totalWidth$,
-      columns$,
+      visibleColumns$,
       columnOverscanCount$,
       stickyColumnsState$
     ),
