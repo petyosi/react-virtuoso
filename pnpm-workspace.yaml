@@ -23,12 +23,12 @@ catalog:
   '@types/react': ^19.2.7
   '@types/react-dom': ^19.2.3
   '@types/node': ^22.19.1
-  vitest: ^4.0.16
+  vitest: ^4.1.5
   '@vitejs/plugin-react': ^4.7.0
   vite-plugin-dts: ^4.5.4
   playwright: ^1.58.2
-  '@vitest/browser': ^4.0.16
-  '@vitest/browser-playwright': ^4.0.16
+  '@vitest/browser': ^4.1.5
+  '@vitest/browser-playwright': ^4.1.5
   oxlint: ^1.60.0
   oxfmt: ^0.45.0
   oxlint-tsgolint: ^0.21.1

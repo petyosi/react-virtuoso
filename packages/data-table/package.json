@@ -83,6 +83,8 @@
     "dev:build": "LADLE=true ladle build",
     "dev:preview": "LADLE=true ladle preview",
     "test": "vitest run --browser.headless",
+    "test:all": "VITEST_SLOW=true vitest run --browser.headless",
+    "test:slow": "VITEST_SLOW=true vitest run --browser.headless --tags-filter=slow",
     "typecheck": "tsgo -b --noEmit",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck",
     "knip": "cd ../.. && knip --workspace packages/data-table"
