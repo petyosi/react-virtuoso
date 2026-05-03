@@ -3,7 +3,7 @@ import React from 'react'
 import { useCellValue, useEngine } from '@virtuoso.dev/reactive-engine-react'
 
 import { cellClassNames$, cellRenderers$, CellRenderer } from '../columns/Cell'
-import { columns$, columnWidths$ } from '../columns/Column'
+import { columnWidths$, visibleColumns$ } from '../columns/Column'
 import { columnItemsState$, columnsState$, EMPTY_COLUMN_STATE, stickyColumnsState$ } from '../columns/column-state'
 import { rowComponent$, stickyColumnContainer$ } from '../core/components'
 import { context$, groupIndexSet$, groupLevelMap$ } from '../core/data'
@@ -94,7 +94,7 @@ function useUnstableRowRenderEvent({
 
 const StickyLeftCells = React.memo<RowCellSectionProps>(function StickyLeftCells({ row, sticky }) {
   const stickyState = useCellValue(stickyColumnsState$)
-  const columns = useCellValue(columns$)
+  const columns = useCellValue(visibleColumns$)
   const columnWidths = useCellValue(columnWidths$)
   const cellClassNames = useCellValue(cellClassNames$)
   const cellRenderers = useCellValue(cellRenderers$)
@@ -148,7 +148,7 @@ const StickyLeftCells = React.memo<RowCellSectionProps>(function StickyLeftCells
 
 const ScrollableCells = React.memo<RowCellSectionProps>(function ScrollableCells({ row, sticky }) {
   const columnItemsState = useCellValue(columnItemsState$)
-  const columns = useCellValue(columns$)
+  const columns = useCellValue(visibleColumns$)
   const columnWidths = useCellValue(columnWidths$)
   const cellClassNames = useCellValue(cellClassNames$)
   const cellRenderers = useCellValue(cellRenderers$)
@@ -198,7 +198,7 @@ const ScrollableCells = React.memo<RowCellSectionProps>(function ScrollableCells
 
 const StickyRightCells = React.memo<RowCellSectionProps>(function StickyRightCells({ row, sticky }) {
   const stickyState = useCellValue(stickyColumnsState$)
-  const columns = useCellValue(columns$)
+  const columns = useCellValue(visibleColumns$)
   const columnWidths = useCellValue(columnWidths$)
   const cellClassNames = useCellValue(cellClassNames$)
   const cellRenderers = useCellValue(cellRenderers$)

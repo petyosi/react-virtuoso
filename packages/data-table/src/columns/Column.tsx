@@ -24,10 +24,39 @@ export interface ColumnInfo {
   field: string
   sticky?: 'left' | 'right'
   groupId?: string
+  visible?: boolean
 }
 
 const { cell$: columns$, register$: columnRegister$ } = createRegistryCell<ColumnInfo>()
 export { columns$ }
+
+/**
+ * Runtime visibility overrides keyed by column key. When no override exists,
+ * the column's declarative `visible` prop is used.
+ *
+ * @group State
+ */
+export const columnVisibilityOverrides$ = Cell<Map<string, boolean>>(new Map())
+
+/**
+ * Runtime columns that currently participate in rendering, layout, measurement,
+ * virtualization, and sticky positioning.
+ *
+ * @group State
+ */
+export function visibleColumnsFromColumns(columns: Map<string, ColumnInfo>, visibilityOverrides: Map<string, boolean>) {
+  return new Map([...columns].filter(([key, column]) => visibilityOverrides.get(key) ?? column.visible !== false))
+}
+
+export const visibleColumns$ = Cell<Map<string, ColumnInfo>>(new Map())
+
+e.link(
+  e.pipe(
+    e.combine(columns$, columnVisibilityOverrides$),
+    e.map(([columns, visibilityOverrides]) => visibleColumnsFromColumns(columns, visibilityOverrides))
+  ),
+  visibleColumns$
+)
 
 /**
  * Runtime column keys in component declaration order. Unlike {@link columns$},
@@ -94,6 +123,7 @@ export namespace Column {
   export interface Props extends ColumnInfo {
     children?: React.ReactNode
     sticky?: 'left' | 'right'
+    visible?: boolean
   }
 }
 
@@ -102,7 +132,7 @@ export namespace Column {
  *
  * @group Components
  */
-export function Column({ children, field, sticky }: Column.Props) {
+export function Column({ children, field, sticky, visible }: Column.Props) {
   const colId = useId()
   const groupId = useContext(ColumnGroupIdContext) || undefined
   const columnRegister = usePublisher(columnRegister$)
@@ -115,11 +145,14 @@ export function Column({ children, field, sticky }: Column.Props) {
     if (groupId) {
       info.groupId = groupId
     }
+    if (visible === false) {
+      info.visible = false
+    }
     columnRegister({ type: 'add', id: colId, value: info })
     return () => {
       columnRegister({ type: 'remove', id: colId })
     }
-  }, [columnRegister, colId, field, sticky, groupId])
+  }, [columnRegister, colId, field, sticky, groupId, visible])
   return <ColumnIdContext.Provider value={colId}>{children}</ColumnIdContext.Provider>
 }
 
@@ -150,7 +183,7 @@ export const columnBaseWidths$ = Cell<Map<string, number>>(new Map())
 
 e.link(
   e.pipe(
-    e.combine(columns$, measuredColumnWidths$, columnWidthOverrides$),
+    e.combine(visibleColumns$, measuredColumnWidths$, columnWidthOverrides$),
     e.map(([columns, measuredWidths, overrides]) => {
       const next = new Map<string, number>()
       for (const key of columns.keys()) {
@@ -203,7 +236,7 @@ function computeInitialColumnWidthsWithOverrides(
 
 e.changeWith(
   columnWidths$,
-  e.combine(columns$, columnBaseWidths$, measuredColumnWidths$, columnWidthOverrides$, viewportWidth$),
+  e.combine(visibleColumns$, columnBaseWidths$, measuredColumnWidths$, columnWidthOverrides$, viewportWidth$),
   (currentWidths, [columns, baseWidths, measuredWidths, overrides, viewportWidth]) => {
     if (![...columns.keys()].every((key) => baseWidths.has(key))) {
       return new Map([...currentWidths].filter(([key]) => columns.has(key)))
@@ -231,7 +264,7 @@ e.changeWith(
 
 e.link(
   e.pipe(
-    e.combine(columns$, columnWidths$),
+    e.combine(visibleColumns$, columnWidths$),
     e.filter(([columns, widths]) => {
       return columns.size > 0 && [...columns.keys()].every((key) => (widths.get(key) ?? 0) > 0)
     }),
@@ -250,7 +283,7 @@ e.link(
 
 e.link(
   e.pipe(
-    columns$,
+    visibleColumns$,
     e.map((columns) => columns.size)
   ),
   columnCount$

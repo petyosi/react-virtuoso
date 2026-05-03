@@ -1,7 +1,7 @@
 // oxlint-disable require-hook
 import { Cell, Stream, e } from '@virtuoso.dev/reactive-engine-core'
 
-import { columnDeclarationOrder$, columns$ } from '../../columns/Column'
+import { columnDeclarationOrder$, columns$, columnVisibilityOverrides$, visibleColumns$, visibleColumnsFromColumns } from '../../columns/Column'
 
 import type { ColumnInfo } from '../../columns/Column'
 import type { DataTableStatePersistenceAdapter } from '../state-persistence'
@@ -254,15 +254,17 @@ export function columnOrderPersistenceAdapter(): DataTableStatePersistenceAdapte
       return columnOrderStateFromColumns(engine.getValue(columns$), previous)
     },
     restore(engine, state) {
-      engine.register(restoreColumnOrderState$)
-      engine.register(resetColumnOrder$)
       if (state) {
-        engine.pub(columns$, columnsFromColumnOrderState(engine.getValue(columns$), state))
+        const nextColumns = columnsFromColumnOrderState(engine.getValue(columns$), state)
         engine.pub(restoreColumnOrderState$, state)
+        engine.pub(columns$, nextColumns)
+        engine.pub(visibleColumns$, visibleColumnsFromColumns(nextColumns, engine.getValue(columnVisibilityOverrides$)))
       } else {
         const declarationOrder = engine.getValue(columnDeclarationOrder$)
-        engine.pub(columns$, columnsFromDeclarationOrder(engine.getValue(columns$), declarationOrder))
+        const nextColumns = columnsFromDeclarationOrder(engine.getValue(columns$), declarationOrder)
         engine.pub(resetColumnOrder$, declarationOrder)
+        engine.pub(columns$, nextColumns)
+        engine.pub(visibleColumns$, visibleColumnsFromColumns(nextColumns, engine.getValue(columnVisibilityOverrides$)))
       }
     },
     subscribe(engine, onChange) {

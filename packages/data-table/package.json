@@ -56,6 +56,12 @@
         "default": "./dist/column-resize.js"
       }
     },
+    "./column-visibility": {
+      "import": {
+        "types": "./dist/column-visibility.d.ts",
+        "default": "./dist/column-visibility.js"
+      }
+    },
     "./state-persistence": {
       "import": {
         "types": "./dist/state-persistence.d.ts",

@@ -15,13 +15,16 @@ import {
   HeaderEdge,
   HeaderOverlay,
   HeaderStart,
+  useCellValue,
   useEngineRef,
+  usePublisher,
   useRemoteCellValue,
   useRemotePublisher,
   VirtuosoDataTable,
 } from '../../src'
 import { columnOrderPersistenceAdapter, reorderColumns$ } from '../../src/features/column-reorder'
 import { columnWidthPersistenceAdapter } from '../../src/features/column-resize'
+import { columnVisibilityPersistenceAdapter, columnVisibilityState$, setColumnVisibility$ } from '../../src/features/column-visibility'
 import { DataTableStatePersistence } from '../../src/features/state-persistence'
 
 import type { ColumnInfo } from '../../src'
@@ -32,6 +35,8 @@ const ROW_HEIGHT = 32
 const COLUMN_WIDTH = 160
 const PERSISTENCE_ADAPTERS = [columnWidthPersistenceAdapter()]
 const COMBINED_PERSISTENCE_ADAPTERS = [columnOrderPersistenceAdapter(), columnWidthPersistenceAdapter()]
+const FULL_PERSISTENCE_ADAPTERS = [columnVisibilityPersistenceAdapter(), columnOrderPersistenceAdapter(), columnWidthPersistenceAdapter()]
+const VISIBILITY_PERSISTENCE_ADAPTERS = [columnVisibilityPersistenceAdapter()]
 
 const ITEMS = Array.from({ length: 20 }, (_, index) => ({
   name: `Product ${index + 1}`,
@@ -53,6 +58,18 @@ function readSavedColumnOrder(storage: Map<string, string>, key: string) {
   }
 
   return parsed.features?.columnOrder?.fields?.join(',') ?? ''
+}
+
+function readSavedColumnVisibility(storage: Map<string, string>, key: string) {
+  const parsed = JSON.parse(storage.get(key)!) as {
+    features?: {
+      columnVisibility?: {
+        visibility?: Record<string, boolean>
+      }
+    }
+  }
+
+  return parsed.features?.columnVisibility?.visibility ?? {}
 }
 
 function TestTable() {
@@ -108,6 +125,144 @@ function CombinedPersistentTestTable({ storage }: { storage: DataTableStatePersi
         </Column>
       ))}
     </VirtuosoDataTable>
+  )
+}
+
+function HiddenColumnTestTable() {
+  return (
+    <VirtuosoDataTable style={{ height: 320, width: 520 }} data={{ data: ITEMS, groups: [] }}>
+      <Column field="name">
+        <ColumnHeader className="flex h-10 items-center px-3 text-sm font-medium whitespace-nowrap">
+          {({ column }) => (
+            <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT, display: 'flex', alignItems: 'center' }}>{column.field}</div>
+          )}
+        </ColumnHeader>
+        <Cell>{({ cellValue }) => <div style={{ width: COLUMN_WIDTH, height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
+      </Column>
+      <Column field="status" visible={false}>
+        <ColumnHeader className="flex h-10 items-center px-3 text-sm font-medium whitespace-nowrap">
+          {({ column }) => (
+            <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT, display: 'flex', alignItems: 'center' }}>{column.field}</div>
+          )}
+        </ColumnHeader>
+        <Cell>{({ cellValue }) => <div style={{ width: COLUMN_WIDTH, height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
+      </Column>
+      <Column field="region">
+        <ColumnHeader className="flex h-10 items-center px-3 text-sm font-medium whitespace-nowrap">
+          {({ column }) => (
+            <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT, display: 'flex', alignItems: 'center' }}>{column.field}</div>
+          )}
+        </ColumnHeader>
+        <Cell>{({ cellValue }) => <div style={{ width: COLUMN_WIDTH, height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
+      </Column>
+    </VirtuosoDataTable>
+  )
+}
+
+function VisibilityPicker() {
+  const columns = useCellValue(columns$)
+  const visibility = useCellValue(columnVisibilityState$)
+  const setColumnVisibility = usePublisher(setColumnVisibility$)
+
+  return (
+    <div>
+      {[...columns].map(([key, column]) => {
+        const visible = visibility.get(key) ?? column.visible !== false
+        return (
+          <button
+            key={key}
+            data-testid={`toggle-${column.field}`}
+            type="button"
+            onClick={() => setColumnVisibility({ key, visible: !visible })}
+          >
+            {column.field}:{visible ? 'visible' : 'hidden'}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function FullPersistentTestTable({ storage }: { storage: DataTableStatePersistenceStorage }) {
+  const [resetKey, setResetKey] = useState(0)
+
+  return (
+    <div>
+      <button data-testid="reset-state" type="button" onClick={() => setResetKey((key) => key + 1)}>
+        reset
+      </button>
+      <VirtuosoDataTable style={{ height: 320, width: 520 }} data={{ data: ITEMS, groups: [] }}>
+        <DataTableStatePersistence
+          adapters={FULL_PERSISTENCE_ADAPTERS}
+          debounceMs={0}
+          resetKey={resetKey}
+          storage={storage}
+          storageKey="test-full-state"
+        />
+        <VisibilityPicker />
+        {(['name', 'status', 'region'] as const).map((field) => (
+          <Column key={field} field={field}>
+            <ColumnHeader className="flex h-10 items-center px-3 text-sm font-medium whitespace-nowrap">
+              <HeaderStart component={ReorderGrip} />
+              <HeaderOverlay component={ReorderDropZone} />
+              <HeaderEdge component={ResizeHandle} />
+              {({ column }) => (
+                <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT, display: 'flex', alignItems: 'center' }}>{column.field}</div>
+              )}
+            </ColumnHeader>
+            <Cell>{({ cellValue }) => <div style={{ width: COLUMN_WIDTH, height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
+          </Column>
+        ))}
+      </VirtuosoDataTable>
+    </div>
+  )
+}
+
+const PEOPLE_ITEMS = Array.from({ length: 12 }, (_, index) => ({
+  name: `User ${index + 1}`,
+  status: index % 2 === 0 ? 'Active' : 'Paused',
+  city: ['Sofia', 'Berlin', 'Madrid'][index % 3]!,
+}))
+
+const ORDER_ITEMS = Array.from({ length: 12 }, (_, index) => ({
+  name: `Order ${index + 1}`,
+  status: index % 2 === 0 ? 'Open' : 'Paid',
+  total: `$${100 + index * 10}`,
+}))
+
+function PartialSchemaVisibilityTestTable({ storage }: { storage: DataTableStatePersistenceStorage }) {
+  const [dataset, setDataset] = useState<'orders' | 'people'>('people')
+  const fields = dataset === 'people' ? (['name', 'status', 'city'] as const) : (['name', 'status', 'total'] as const)
+  const data: Record<string, string>[] = dataset === 'people' ? PEOPLE_ITEMS : ORDER_ITEMS
+
+  return (
+    <div>
+      <button data-testid="show-orders" type="button" onClick={() => setDataset('orders')}>
+        orders
+      </button>
+      <button data-testid="show-people" type="button" onClick={() => setDataset('people')}>
+        people
+      </button>
+      <VirtuosoDataTable style={{ height: 320, width: 520 }} data={{ data, groups: [] }}>
+        <DataTableStatePersistence
+          adapters={VISIBILITY_PERSISTENCE_ADAPTERS}
+          debounceMs={0}
+          storage={storage}
+          storageKey="test-partial-visibility"
+        />
+        <VisibilityPicker />
+        {fields.map((field) => (
+          <Column key={field} field={field}>
+            <ColumnHeader className="flex h-10 items-center px-3 text-sm font-medium whitespace-nowrap">
+              {({ column }) => (
+                <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT, display: 'flex', alignItems: 'center' }}>{column.field}</div>
+              )}
+            </ColumnHeader>
+            <Cell>{({ cellValue }) => <div style={{ width: COLUMN_WIDTH, height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
+          </Column>
+        ))}
+      </VirtuosoDataTable>
+    </div>
   )
 }
 
@@ -375,6 +530,188 @@ test('restores column order and width persistence together', async () => {
   await expect.poll(() => Math.round(headers[0]!.getBoundingClientRect().width), { timeout: 2000 }).toBe(280)
   await expect.poll(() => Math.round(cells[0]!.getBoundingClientRect().width), { timeout: 2000 }).toBe(280)
   expect(cells[0]!.hasAttribute('style')).toBeFalsy()
+})
+
+test('does not render declaratively hidden columns', async () => {
+  const screen = await render(<HiddenColumnTestTable />)
+
+  await expect.poll(() => headerOrder(screen.container), { timeout: 2000 }).toBe('name,region')
+  expect([...screen.container.querySelectorAll<HTMLElement>('[data-table-element-role="cell"]')].some((cell) => cell.textContent === 'Active')).toBeFalsy()
+})
+
+test('restores column visibility with order and width persistence', async () => {
+  const storage = new Map<string, string>([
+    [
+      'test-full-state',
+      JSON.stringify({
+        version: 1,
+        features: {
+          columnVisibility: {
+            version: 1,
+            visibility: {
+              status: false,
+            },
+          },
+          columnOrder: {
+            version: 1,
+            fields: ['region', 'name', 'status'],
+          },
+          columnWidths: {
+            version: 1,
+            widths: {
+              region: 260,
+            },
+          },
+        },
+      }),
+    ],
+  ])
+
+  const screen = await render(
+    <FullPersistentTestTable
+      storage={{
+        getItem: (key) => storage.get(key) ?? null,
+        removeItem: (key) => {
+          storage.delete(key)
+        },
+        setItem: (key, value) => {
+          storage.set(key, value)
+        },
+      }}
+    />
+  )
+
+  await expect.poll(() => headerOrder(screen.container), { timeout: 2000 }).toBe('region,name')
+  const firstHeader = screen.container.querySelector<HTMLElement>('[data-table-element-role="column-header"]')
+  await expect.poll(() => Math.round(firstHeader!.getBoundingClientRect().width), { timeout: 2000 }).toBe(260)
+
+  await userEvent.click(screen.getByTestId('toggle-status'))
+
+  await expect.poll(() => headerOrder(screen.container), { timeout: 2000 }).toBe('region,name,status')
+})
+
+test('reset state restores column visibility with order and width state', async () => {
+  const storage = new Map<string, string>([
+    [
+      'test-full-state',
+      JSON.stringify({
+        version: 1,
+        features: {
+          columnVisibility: {
+            version: 1,
+            visibility: {
+              status: false,
+            },
+          },
+          columnOrder: {
+            version: 1,
+            fields: ['region', 'name', 'status'],
+          },
+          columnWidths: {
+            version: 1,
+            widths: {
+              region: 260,
+            },
+          },
+        },
+      }),
+    ],
+  ])
+
+  const screen = await render(
+    <FullPersistentTestTable
+      storage={{
+        getItem: (key) => storage.get(key) ?? null,
+        removeItem: (key) => {
+          storage.delete(key)
+        },
+        setItem: (key, value) => {
+          storage.set(key, value)
+        },
+      }}
+    />
+  )
+
+  await expect.poll(() => headerOrder(screen.container), { timeout: 2000 }).toBe('region,name')
+
+  await userEvent.click(screen.getByTestId('reset-state'))
+
+  await expect.poll(() => headerOrder(screen.container), { timeout: 2000 }).toBe('name,status,region')
+  expect(storage.has('test-full-state')).toBeFalsy()
+})
+
+test('hiding a resized column keeps remaining headers and cells aligned', async () => {
+  const storage = new Map<string, string>()
+  const screen = await render(
+    <FullPersistentTestTable
+      storage={{
+        getItem: (key) => storage.get(key) ?? null,
+        removeItem: (key) => {
+          storage.delete(key)
+        },
+        setItem: (key, value) => {
+          storage.set(key, value)
+        },
+      }}
+    />
+  )
+
+  await expect.poll(() => headerOrder(screen.container), { timeout: 2000 }).toBe('name,status,region')
+
+  const firstHeader = screen.container.querySelector<HTMLElement>('[data-table-element-role="column-header"]')
+  const handle = firstHeader?.querySelector<HTMLElement>('[data-table-element-role="resize-handle"]')
+  expect(firstHeader).not.toBeNull()
+  expect(handle).not.toBeNull()
+
+  const handleRect = handle!.getBoundingClientRect()
+  handle!.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: handleRect.left + 1, pointerId: 1 }))
+  document.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: handleRect.left + 80, pointerId: 1 }))
+  document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: handleRect.left + 80, pointerId: 1 }))
+  await expect.poll(() => Math.round(firstHeader!.getBoundingClientRect().width), { timeout: 2000 }).toBeGreaterThan(COLUMN_WIDTH + 20)
+
+  await userEvent.click(screen.getByTestId('toggle-name'))
+
+  await expect.poll(() => headerOrder(screen.container), { timeout: 2000 }).toBe('status,region')
+  const statusHeader = [...screen.container.querySelectorAll<HTMLElement>('[data-table-element-role="column-header"]')][0]
+  const statusCell = [...screen.container.querySelectorAll<HTMLElement>('[data-table-element-role="cell"]')][0]
+  expect(statusHeader).toBeDefined()
+  expect(statusCell).toBeDefined()
+  await expect
+    .poll(() => Math.round(statusHeader!.getBoundingClientRect().width), { timeout: 2000 })
+    .toBe(Math.round(statusCell!.getBoundingClientRect().width))
+})
+
+test('column visibility persistence survives partial schema switches', async () => {
+  const storage = new Map<string, string>()
+  const screen = await render(
+    <PartialSchemaVisibilityTestTable
+      storage={{
+        getItem: (key) => storage.get(key) ?? null,
+        removeItem: (key) => {
+          storage.delete(key)
+        },
+        setItem: (key, value) => {
+          storage.set(key, value)
+        },
+      }}
+    />
+  )
+
+  await expect.poll(() => headerOrder(screen.container), { timeout: 2000 }).toBe('name,status,city')
+
+  await userEvent.click(screen.getByTestId('toggle-city'))
+
+  await expect.poll(() => headerOrder(screen.container), { timeout: 2000 }).toBe('name,status')
+  await expect.poll(() => readSavedColumnVisibility(storage, 'test-partial-visibility').city, { timeout: 2000 }).toBe(false)
+
+  await userEvent.click(screen.getByTestId('show-orders'))
+
+  await expect.poll(() => headerOrder(screen.container), { timeout: 2000 }).toBe('name,status,total')
+  await expect.poll(() => readSavedColumnVisibility(storage, 'test-partial-visibility').city, { timeout: 2000 }).toBe(false)
+
+  await userEvent.click(screen.getByTestId('show-people'))
+
+  await expect.poll(() => headerOrder(screen.container), { timeout: 2000 }).toBe('name,status')
 })
 
 test('saves the first reorder after persisted state is restored for dynamic columns', async () => {

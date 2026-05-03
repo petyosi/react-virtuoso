@@ -6,7 +6,16 @@ export {
   type GroupHeaderRenderFunction,
   type GroupHeaderCustomComponent,
 } from './rows/GroupHeaderCell'
-export { Column, type ColumnInfo, columns$, columnWidths$, setColumnSticky$, type SetColumnStickyPayload } from './columns/Column'
+export {
+  Column,
+  type ColumnInfo,
+  columnVisibilityOverrides$,
+  columns$,
+  columnWidths$,
+  setColumnSticky$,
+  type SetColumnStickyPayload,
+  visibleColumns$,
+} from './columns/Column'
 export { ColumnGroup, type ColumnGroupInfo } from './columns/ColumnGroup'
 export {
   ColumnGroupHeader,
