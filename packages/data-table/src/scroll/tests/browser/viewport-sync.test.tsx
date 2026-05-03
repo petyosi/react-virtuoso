@@ -125,6 +125,7 @@ describe('offset mode auto-fetch on scroll', () => {
     await expect.poll(() => fetch.mock.calls.length).toBe(1)
 
     const scroller = screen.container.querySelector(scrollerSelector) as HTMLElement
+    expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight)
     scroller.scrollTop = 100 * ROW_HEIGHT
 
     await expect

@@ -2,6 +2,9 @@ import react from '@vitejs/plugin-react'
 import { playwright } from '@vitest/browser-playwright'
 import { defineConfig } from 'vitest/config'
 
+const includeSlowTests = process.env.CI === 'true' || process.env.VITEST_SLOW === 'true'
+const slowBrowserTestFiles = ['**/grouped-large-multilevel-scroll-gap.test.tsx']
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -13,6 +16,8 @@ export default defineConfig({
     },
   },
   test: {
+    strictTags: true,
+    tags: [{ name: 'slow', description: 'Slow browser stress tests.' }],
     projects: [
       {
         extends: true,
@@ -30,6 +35,7 @@ export default defineConfig({
         test: {
           name: 'browser',
           include: ['**/tests/browser/**/*.{test,spec}.{ts,tsx}'],
+          ...(includeSlowTests ? {} : { exclude: slowBrowserTestFiles }),
           setupFiles: ['./src/tests/browser/setup.ts'],
           browser: {
             enabled: true,
