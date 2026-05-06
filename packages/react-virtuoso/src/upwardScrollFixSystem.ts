@@ -27,6 +27,9 @@ export const upwardScrollFixSystem = u.system(
     { log },
     { recalcInProgress },
   ]) => {
+    const pendingPrependCorrection = u.statefulStream(false)
+    u.connect(u.pipe(beforeUnshiftWith, u.mapTo(true)), pendingPrependCorrection)
+
     const deviationOffset = u.streamFromEmitter(
       u.pipe(
         listState,
@@ -53,9 +56,9 @@ export const upwardScrollFixSystem = u.system(
           [0, [], 0, 0] as UpwardFixState
         ),
         u.filter(([amount]) => amount !== 0),
-        u.withLatestFrom(scrollTop, scrollDirection, scrollingInProgress, isAtBottom, log, recalcInProgress),
-        u.filter(([, scrollTop, scrollDirection, scrollingInProgress, , , recalcInProgress]) => {
-          return !recalcInProgress && !scrollingInProgress && scrollTop !== 0 && scrollDirection === UP
+        u.withLatestFrom(scrollTop, scrollDirection, scrollingInProgress, isAtBottom, log, recalcInProgress, pendingPrependCorrection),
+        u.filter(([, scrollTop, scrollDirection, scrollingInProgress, , , recalcInProgress, pendingPrependCorrection]) => {
+          return !recalcInProgress && !scrollingInProgress && scrollTop !== 0 && (scrollDirection === UP || pendingPrependCorrection)
         }),
         u.map(([[amount], , , , , log]) => {
           log('Upward scrolling compensation', { amount }, LogLevel.DEBUG)
@@ -74,13 +77,19 @@ export const upwardScrollFixSystem = u.system(
       }
     }
 
-    u.subscribe(u.pipe(deviationOffset, u.withLatestFrom(deviation, isScrolling)), ([offset, deviationAmount, isScrolling]) => {
-      if (isScrolling && isMobileSafari()) {
-        u.publish(deviation, deviationAmount - offset)
-      } else {
-        scrollByWith(-offset)
+    u.subscribe(
+      u.pipe(deviationOffset, u.withLatestFrom(deviation, isScrolling, pendingPrependCorrection)),
+      ([offset, deviationAmount, isScrolling, isPendingPrependCorrection]) => {
+        if (isPendingPrependCorrection) {
+          u.publish(pendingPrependCorrection, false)
+        }
+        if (isScrolling && isMobileSafari()) {
+          u.publish(deviation, deviationAmount - offset)
+        } else {
+          scrollByWith(-offset)
+        }
       }
-    })
+    )
 
     // this hack is only necessary for mobile safari which does not support scrollBy while scrolling is in progress.
     // when the browser stops scrolling, restore the position and reset the glitching
