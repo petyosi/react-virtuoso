@@ -13,6 +13,9 @@ const CONTAINER_WIDTH = 300
 const COLUMN_WIDTH = 150
 
 interface DataItem {
+  a?: string
+  b?: string
+  c?: string
   name: string
 }
 
@@ -100,6 +103,65 @@ describe('grouped data', () => {
 
     const scrollableArea = groupRow.querySelector('[data-scrollable="true"]')
     expect(scrollableArea).toBeNull()
+  })
+
+  test('group header row spans the full scrollable table width', async () => {
+    const tableData = {
+      data: [
+        { groupName: 'Group 1' },
+        { name: 'Item 1', a: 'A1', b: 'B1', c: 'C1' },
+        { name: 'Item 2', a: 'A2', b: 'B2', c: 'C2' },
+        { name: 'Item 3', a: 'A3', b: 'B3', c: 'C3' },
+      ],
+      groups: [{ index: 0, level: 0 }],
+    }
+
+    const screen = await render(
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={tableData}>
+        <GroupHeaderCell>
+          {({ row }) => (
+            <div style={{ height: ROW_HEIGHT }} data-testid="group-header">
+              {(row.data as GroupItem).groupName}
+            </div>
+          )}
+        </GroupHeaderCell>
+        {['name', 'a', 'b', 'c'].map((field) => (
+          <Column key={field} field={field}>
+            <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>{field}</div>}</ColumnHeader>
+            <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue ?? '')}</div>}</Cell>
+          </Column>
+        ))}
+      </VirtuosoDataTable>
+    )
+
+    await waitForReady(screen)
+
+    const groupRow = screen.container.querySelector(groupRowSelector) as HTMLElement
+    expect(groupRow).not.toBeNull()
+    await expect.poll(() => Math.round(groupRow.getBoundingClientRect().width)).toBe(COLUMN_WIDTH * 4)
+  })
+
+  test('measures padded group header row by rendered border-box height', async () => {
+    const tableData = buildGroupedData([3])
+
+    const screen = await render(
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={tableData}>
+        <style>{`.padded-group-row { padding-block: 8px; line-height: 20px; }`}</style>
+        <GroupHeaderCell className="padded-group-row">{({ row }) => (row.data as GroupItem).groupName}</GroupHeaderCell>
+        <Column field="name">
+          <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Name</div>}</ColumnHeader>
+          <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue ?? '')}</div>}</Cell>
+        </Column>
+      </VirtuosoDataTable>
+    )
+
+    await waitForReady(screen)
+
+    const groupRow = screen.container.querySelector(groupRowSelector) as HTMLElement
+    expect(groupRow).not.toBeNull()
+    await expect.poll(() => Number(groupRow.dataset.knownSize)).toBeGreaterThan(0)
+
+    expect(Number(groupRow.dataset.knownSize)).toBe(Math.round(groupRow.getBoundingClientRect().height))
   })
 
   test('regular data rows render with column layout', async () => {

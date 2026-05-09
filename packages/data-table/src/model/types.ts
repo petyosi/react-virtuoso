@@ -25,6 +25,27 @@ export interface DataResult<T = unknown, G = never> {
 }
 
 /**
+ * Serializable model state used by model-backed persistence adapters.
+ *
+ * @group Data Models
+ */
+export interface ModelPersistenceState {
+  version: 1
+  actions: Record<string, unknown>
+}
+
+/**
+ * Optional persistence capability exposed by data models.
+ *
+ * @group Data Models
+ */
+export interface DataModelPersistenceCapability<State = ModelPersistenceState> {
+  capture(viewId: string, previous: State | null): State
+  restore(viewId: string, state: State | null): void
+  subscribe(viewId: string, onChange: () => void): () => void
+}
+
+/**
  * The handle exposed by local and remote data models.
  *
  * @group Data Models
@@ -33,6 +54,7 @@ export interface DataModelHandle<T = unknown> {
   send(msg: { action: string; payload?: unknown; viewId?: string; requestId?: string }): void
   subscribe(listener: (msg: MessageEnvelope) => void): () => void
   destroy(): void
+  persistence?: DataModelPersistenceCapability
   setData?(data: T[], groups?: { index: number; level: number }[]): void
 }
 

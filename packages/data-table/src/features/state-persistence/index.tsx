@@ -2,6 +2,9 @@ import * as React from 'react'
 
 import { useEngine, useIsomorphicLayoutEffect } from '@virtuoso.dev/reactive-engine-react'
 
+import { dataModel$, dataModelViewId$ } from '../../model/model-bridge'
+
+import type { DataModelHandle, ModelPersistenceState } from '../../model/types'
 import type { Engine } from '@virtuoso.dev/reactive-engine-core'
 
 /**
@@ -28,16 +31,27 @@ export interface DataTableStatePersistenceStorage {
 }
 
 /**
+ * Context passed to state persistence feature adapters.
+ *
+ * @group State Persistence
+ */
+export interface DataTableStatePersistenceContext {
+  engine: Engine
+  model: DataModelHandle | null
+  viewId: string
+}
+
+/**
  * Feature adapter consumed by {@link DataTableStatePersistence}.
  *
  * @group State Persistence
  */
 export interface DataTableStatePersistenceAdapter<State = unknown> {
   key: string
-  capture(engine: Engine, previous: State | null): State
-  restore(engine: Engine, state: State | null): void
-  subscribe(engine: Engine, onChange: () => void): () => void
-  subscribeRestore?: (engine: Engine, onChange: () => void) => () => void
+  capture(context: DataTableStatePersistenceContext, previous: State | null): State
+  restore(context: DataTableStatePersistenceContext, state: State | null): void
+  subscribe(context: DataTableStatePersistenceContext, onChange: () => void): () => void
+  subscribeRestore?: (context: DataTableStatePersistenceContext, onChange: () => void) => () => void
 }
 
 /**
@@ -93,6 +107,37 @@ function removeState(storage: DataTableStatePersistenceStorage | null, storageKe
   storage?.removeItem(storageKey)
 }
 
+function noop() {
+  // empty
+}
+
+function emptyModelPersistenceState(previous?: ModelPersistenceState | null): ModelPersistenceState {
+  return previous?.version === 1 && typeof previous.actions === 'object' && previous.actions !== null
+    ? { version: 1, actions: { ...previous.actions } }
+    : { version: 1, actions: {} }
+}
+
+/**
+ * Creates a state persistence adapter for the active data model rendered by
+ * the table.
+ *
+ * @group State Persistence
+ */
+export function modelStatePersistenceAdapter(): DataTableStatePersistenceAdapter<ModelPersistenceState> {
+  return {
+    key: 'model',
+    capture({ model, viewId }, previous) {
+      return model?.persistence?.capture(viewId, previous) ?? emptyModelPersistenceState(previous)
+    },
+    restore({ model, viewId }, state) {
+      model?.persistence?.restore(viewId, state ?? null)
+    },
+    subscribe({ model, viewId }, onChange) {
+      return model?.persistence?.subscribe(viewId, onChange) ?? noop
+    },
+  }
+}
+
 /**
  * Zero-render child component that persists data-table state through opt-in
  * feature adapters.
@@ -115,6 +160,11 @@ export function DataTableStatePersistence({
   const writeTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useIsomorphicLayoutEffect(() => {
+    const createContext = (): DataTableStatePersistenceContext => ({
+      engine,
+      model: engine.getValue(dataModel$),
+      viewId: engine.getValue(dataModelViewId$),
+    })
     const pendingSaveKeys = pendingSaveKeysRef.current
     const shouldReset = resetKeyRef.current !== resetKey
     resetKeyRef.current = resetKey
@@ -128,11 +178,11 @@ export function DataTableStatePersistence({
     onStateChange?.(persistedState)
 
     const restoreAdapter = <State,>(adapter: DataTableStatePersistenceAdapter<State>, state: DataTablePersistenceState) => {
-      adapter.restore(engine, (state.features[adapter.key] ?? null) as State | null)
+      adapter.restore(createContext(), (state.features[adapter.key] ?? null) as State | null)
     }
 
     const captureAdapter = <State,>(adapter: DataTableStatePersistenceAdapter<State>, state: DataTablePersistenceState) => {
-      return adapter.capture(engine, (state.features[adapter.key] ?? null) as State | null)
+      return adapter.capture(createContext(), (state.features[adapter.key] ?? null) as State | null)
     }
 
     const adapterByKey = new Map(adapters.map((adapter) => [adapter.key, adapter]))
@@ -179,13 +229,14 @@ export function DataTableStatePersistence({
     const restoreFeatureState = <State,>(adapter: DataTableStatePersistenceAdapter<State>) => {
       const nextState = readState(storage, storageKey)
       skipSaveKeysRef.current.add(adapter.key)
-      adapter.restore(engine, (nextState.features[adapter.key] ?? null) as State | null)
+      adapter.restore(createContext(), (nextState.features[adapter.key] ?? null) as State | null)
       onStateChange?.(nextState)
     }
 
     const unsubscribes = adapters.flatMap((adapter) => {
-      const unsubscribeSave = adapter.subscribe(engine, () => writeFeatureState(adapter))
-      const unsubscribeRestore = adapter.subscribeRestore?.(engine, () => restoreFeatureState(adapter))
+      const context = createContext()
+      const unsubscribeSave = adapter.subscribe(context, () => writeFeatureState(adapter))
+      const unsubscribeRestore = adapter.subscribeRestore?.(context, () => restoreFeatureState(adapter))
       return unsubscribeRestore ? [unsubscribeSave, unsubscribeRestore] : [unsubscribeSave]
     })
 

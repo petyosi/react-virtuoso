@@ -6,7 +6,7 @@ import { columnDeclarationOrder$, columns$ } from '../columns/Column'
 import { columnItemsState$, columnOverscanCount$ } from '../columns/column-state'
 import { VirtualizedTableContent } from '../layout/VirtualizedTableContent'
 import { localSource } from '../model/local-source'
-import { bridgeModelToEngine } from '../model/model-bridge'
+import { bridgeModelToEngine, dataModel$, dataModelViewId$ } from '../model/model-bridge'
 import { dataTableStructureEntries$ } from '../resize/resize-observing'
 import { currentlyRenderedRows$, rowsState$, viewportRange$ } from '../rows/row-state'
 import { atBottomState$ } from '../scroll/at-bottom'
@@ -122,11 +122,17 @@ export const VirtuosoDataTable = React.forwardRef<VirtuosoDataTableMethods<unkno
           e.register(groupLevelMap$)
           e.register(viewportRange$)
           e.register(loadingState$)
+          e.register(dataModel$)
+          e.register(dataModelViewId$)
 
           const model = externalModel ?? localSource({ data: [...data.data], groups: data.groups })
           if (!externalModel) {
             implicitModelRef.current = model
           }
+          e.pubIn({
+            [dataModel$]: model,
+            [dataModelViewId$]: 'default',
+          })
           bridgeModelToEngine(model, e, 'default')
 
           e.pubIn({

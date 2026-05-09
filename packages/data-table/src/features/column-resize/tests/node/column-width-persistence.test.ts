@@ -26,6 +26,10 @@ describe('column width persistence', () => {
     engine.register(columnWidthOverrides$)
   })
 
+  function persistenceContext() {
+    return { engine, model: null, viewId: 'default' }
+  }
+
   it('applies matching saved field widths to runtime column keys', () => {
     const columns = columnMap([
       ['runtime-name', 'name'],
@@ -219,7 +223,7 @@ describe('column width persistence', () => {
     )
 
     expect(
-      adapter.capture(engine, {
+      adapter.capture(persistenceContext(), {
         version: 1,
         widths: {
           name: 220,
@@ -246,7 +250,7 @@ describe('column width persistence', () => {
     )
     engine.pub(columnWidthOverrides$, new Map([['runtime-city', 190]]))
 
-    adapter.restore(engine, {
+    adapter.restore(persistenceContext(), {
       version: 1,
       widths: {
         name: 260,
@@ -261,8 +265,8 @@ describe('column width persistence', () => {
     const adapter = columnWidthPersistenceAdapter()
     const onWidthChange = vi.fn()
     const onColumnChange = vi.fn()
-    const unsubscribeWidths = adapter.subscribe(engine, onWidthChange)
-    const unsubscribeColumns = adapter.subscribeRestore!(engine, onColumnChange)
+    const unsubscribeWidths = adapter.subscribe(persistenceContext(), onWidthChange)
+    const unsubscribeColumns = adapter.subscribeRestore!(persistenceContext(), onColumnChange)
 
     engine.pub(columnWidthOverrides$, new Map([['runtime-name', 260]]))
     engine.pub(columns$, columnMap([['runtime-name', 'name']]))

@@ -34,6 +34,12 @@ export const ROW_ROLE = 'row'
 
 export const dataTableStructureEntries$ = createResizeObserverSignal(() => true)
 
+function readBorderBoxBlockSize(entry: ResizeObserverEntry, element: HTMLElement) {
+  const borderBoxSize = entry.borderBoxSize as ResizeObserverSize | ResizeObserverSize[] | undefined
+  const size = Array.isArray(borderBoxSize) ? borderBoxSize[0] : borderBoxSize
+  return size?.blockSize ?? element.getBoundingClientRect().height
+}
+
 e.singletonSub(dataTableStructureEntries$, (entries) => {
   const { length } = entries
 
@@ -57,28 +63,28 @@ e.singletonSub(dataTableStructureEntries$, (entries) => {
     if (elementRole === HEADER_ROLE) {
       pubPayload = {
         ...pubPayload,
-        [scrollableHeaderHeight$]: entry.contentRect.height,
+        [scrollableHeaderHeight$]: readBorderBoxBlockSize(entry, element),
       }
       continue
     }
     if (elementRole === STICKY_HEADER_ROLE) {
       pubPayload = {
         ...pubPayload,
-        [stickyHeaderHeight$]: entry.contentRect.height,
+        [stickyHeaderHeight$]: readBorderBoxBlockSize(entry, element),
       }
       continue
     }
     if (elementRole === FOOTER_ROLE) {
       pubPayload = {
         ...pubPayload,
-        [scrollableFooterHeight$]: entry.contentRect.height,
+        [scrollableFooterHeight$]: readBorderBoxBlockSize(entry, element),
       }
       continue
     }
     if (elementRole === STICKY_FOOTER_ROLE) {
       pubPayload = {
         ...pubPayload,
-        [stickyFooterHeight$]: entry.contentRect.height,
+        [stickyFooterHeight$]: readBorderBoxBlockSize(entry, element),
       }
       continue
     }
@@ -130,7 +136,7 @@ e.singletonSub(dataTableStructureEntries$, (entries) => {
     }
 
     if (elementRole === ROW_ROLE) {
-      accumulateSizeRange(results, element, entry.contentRect.height)
+      accumulateSizeRange(results, element, readBorderBoxBlockSize(entry, element))
     }
   }
 

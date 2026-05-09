@@ -2,10 +2,27 @@ import { data$, groupIndices$ } from '../core/data'
 import { EMPTY_LOADING_STATE, loadingState$ } from '../core/loading'
 import { viewportRange$ } from '../rows/row-state'
 
+import { Cell } from '@virtuoso.dev/reactive-engine-core'
+
 import type { DataTableLoadingState } from '../interfaces'
 import type { RemoteSourceLoadingEvent, RemoteSourceLoadingReason } from './remote-source'
 import type { DataModelHandle, DataResult, MessageEnvelope } from './types'
 import type { Engine } from '@virtuoso.dev/reactive-engine-core'
+
+/**
+ * Active data model used by the table. Internal persistence adapters read this
+ * instead of accepting a model instance directly.
+ *
+ * @group Data Models
+ */
+export const dataModel$ = Cell<DataModelHandle | null>(null)
+
+/**
+ * Active data model view id used by the table.
+ *
+ * @group Data Models
+ */
+export const dataModelViewId$ = Cell<string>('default')
 
 function cloneLoadingState(): DataTableLoadingState {
   return {

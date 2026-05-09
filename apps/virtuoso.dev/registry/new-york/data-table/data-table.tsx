@@ -44,6 +44,7 @@ import type {
   RowLocation,
   ListScrollLocation,
   Row,
+  GroupHeaderCellProps,
   GroupHeaderRenderParams,
   GroupHeaderRenderFunction,
   GroupHeaderCustomComponent,
@@ -169,7 +170,7 @@ const DataTable = React.forwardRef<VirtuosoDataTableMethods, VirtuosoDataTablePr
         className={cn(
           'relative w-full overflow-x-auto bg-background text-foreground text-sm',
           '**:data-[scope=colgroup]:border-b **:data-[scope=colgroup]:border-border',
-          '**:data-group-row:bg-muted/50 **:data-group-row:font-medium',
+          '**:data-group-row:bg-muted **:data-group-row:font-medium',
           '[&_[data-table-element-role=row]:hover_[data-sticky]]:bg-[color-mix(in_oklch,var(--color-muted)_50%,var(--color-background))]',
           className
         )}
@@ -236,11 +237,22 @@ interface CellDefinitionProps {
   className?: string
 }
 
+function DataTableGroupHeader(props: GroupHeaderCellProps) {
+  const className = cn('border-b bg-muted px-2 py-2 text-sm font-medium text-foreground', props.className)
+
+  if ('component' in props) {
+    return <GroupHeaderCell className={className} component={props.component} />
+  }
+
+  return <GroupHeaderCell className={className}>{props.children}</GroupHeaderCell>
+}
+
 export {
   DataTable,
   DataTableColumn,
   DataTableColumnHeader,
   DataTableCell,
+  DataTableGroupHeader,
   // Re-export types
   type VirtuosoDataTableProps,
   type VirtuosoDataTableMethods,

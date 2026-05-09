@@ -140,15 +140,15 @@ export function columnVisibilityStateFromColumns(
 export function columnVisibilityPersistenceAdapter(): DataTableStatePersistenceAdapter<ColumnVisibilityPersistenceState> {
   return {
     key: 'columnVisibility',
-    capture(engine, previous) {
+    capture({ engine }, previous) {
       return columnVisibilityStateFromColumns(engine.getValue(columns$), engine.getValue(columnVisibilityOverrides$), previous)
     },
-    restore(engine, state) {
+    restore({ engine }, state) {
       const nextOverrides = columnVisibilityOverridesFromState(engine.getValue(columns$), state)
       engine.pub(restoreColumnVisibilityState$, state ?? { version: 1, visibility: {} })
       engine.pub(columnVisibilityOverrides$, nextOverrides)
     },
-    subscribe(engine, onChange) {
+    subscribe({ engine }, onChange) {
       const unsubscribeVisibility = engine.sub(columnVisibilityOverrides$, onChange)
       const unsubscribeRestore = engine.sub(restoreColumnVisibilityState$, onChange)
       const unsubscribeReset = engine.sub(resetColumnVisibility$, onChange)
@@ -158,7 +158,7 @@ export function columnVisibilityPersistenceAdapter(): DataTableStatePersistenceA
         unsubscribeReset()
       }
     },
-    subscribeRestore(engine, onChange) {
+    subscribeRestore({ engine }, onChange) {
       const unsubscribeColumns = engine.sub(columns$, onChange)
 
       return () => {
