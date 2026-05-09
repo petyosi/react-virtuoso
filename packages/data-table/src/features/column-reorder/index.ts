@@ -250,10 +250,10 @@ e.changeWith(columns$, reorderColumnGroup$, (columns, { sourceKeys, targetKey, p
 export function columnOrderPersistenceAdapter(): DataTableStatePersistenceAdapter<ColumnOrderPersistenceState> {
   return {
     key: 'columnOrder',
-    capture(engine, previous) {
+    capture({ engine }, previous) {
       return columnOrderStateFromColumns(engine.getValue(columns$), previous)
     },
-    restore(engine, state) {
+    restore({ engine }, state) {
       if (state) {
         const nextColumns = columnsFromColumnOrderState(engine.getValue(columns$), state)
         engine.pub(restoreColumnOrderState$, state)
@@ -267,7 +267,7 @@ export function columnOrderPersistenceAdapter(): DataTableStatePersistenceAdapte
         engine.pub(visibleColumns$, visibleColumnsFromColumns(nextColumns, engine.getValue(columnVisibilityOverrides$)))
       }
     },
-    subscribe(engine, onChange) {
+    subscribe({ engine }, onChange) {
       const unsubscribeColumn = engine.sub(reorderColumns$, onChange)
       const unsubscribeGroup = engine.sub(reorderColumnGroup$, onChange)
       const unsubscribeRestore = engine.sub(restoreColumnOrderState$, onChange)
@@ -279,7 +279,7 @@ export function columnOrderPersistenceAdapter(): DataTableStatePersistenceAdapte
         unsubscribeReset()
       }
     },
-    subscribeRestore(engine, onChange) {
+    subscribeRestore({ engine }, onChange) {
       let skipRestoreForCurrentReorder = false
 
       const markUserReorder = () => {

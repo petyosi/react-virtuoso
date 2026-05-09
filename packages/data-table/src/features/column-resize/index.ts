@@ -130,16 +130,16 @@ export function columnWidthStateFromOverrides(
 export function columnWidthPersistenceAdapter(): DataTableStatePersistenceAdapter<ColumnWidthPersistenceState> {
   return {
     key: 'columnWidths',
-    capture(engine, previous) {
+    capture({ engine }, previous) {
       return columnWidthStateFromOverrides(engine.getValue(columns$), engine.getValue(columnWidthOverrides$), previous)
     },
-    restore(engine, state) {
+    restore({ engine }, state) {
       engine.pub(restoreColumnWidthState$, state ?? { version: 1, widths: {} })
     },
-    subscribe(engine, onChange) {
+    subscribe({ engine }, onChange) {
       return engine.sub(columnWidthOverrides$, onChange)
     },
-    subscribeRestore(engine, onChange) {
+    subscribeRestore({ engine }, onChange) {
       return engine.sub(columns$, onChange)
     },
   }

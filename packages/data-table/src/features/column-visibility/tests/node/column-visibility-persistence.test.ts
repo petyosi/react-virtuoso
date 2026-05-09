@@ -52,6 +52,10 @@ describe('column visibility persistence', () => {
     engine.register(stickyColumnsState$)
   })
 
+  function persistenceContext() {
+    return { engine, model: null, viewId: 'default' }
+  }
+
   it('defaults columns to visible when no valid state is available', () => {
     const columns = columnMap([
       ['runtime-id', 'id'],
@@ -245,7 +249,7 @@ describe('column visibility persistence', () => {
       ])
     )
 
-    adapter.restore(engine, {
+    adapter.restore(persistenceContext(), {
       version: 1,
       visibility: {
         status: false,
@@ -259,8 +263,8 @@ describe('column visibility persistence', () => {
     const adapter = columnVisibilityPersistenceAdapter()
     const onSave = vi.fn()
     const onRestore = vi.fn()
-    const unsubscribeSave = adapter.subscribe(engine, onSave)
-    const unsubscribeRestore = adapter.subscribeRestore!(engine, onRestore)
+    const unsubscribeSave = adapter.subscribe(persistenceContext(), onSave)
+    const unsubscribeRestore = adapter.subscribeRestore!(persistenceContext(), onRestore)
 
     engine.pub(
       columns$,

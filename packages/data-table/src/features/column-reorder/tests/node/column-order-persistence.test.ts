@@ -33,6 +33,10 @@ describe('column order persistence', () => {
     engine.register(columnDeclarationOrder$)
   })
 
+  function persistenceContext() {
+    return { engine, model: null, viewId: 'default' }
+  }
+
   it('restores matching saved fields before new current fields', () => {
     const columns = columnMap([
       ['runtime-id', 'id'],
@@ -147,7 +151,7 @@ describe('column order persistence', () => {
 
     engine.pub(reorderColumns$, { sourceKey: 'runtime-status', targetKey: 'runtime-id', position: 'before' })
 
-    expect(adapter.capture(engine, null)).toStrictEqual({
+    expect(adapter.capture(persistenceContext(), null)).toStrictEqual({
       version: 1,
       fields: ['status', 'id', 'name'],
     })
@@ -171,7 +175,7 @@ describe('column order persistence', () => {
       position: 'after',
     })
 
-    expect(adapter.capture(engine, null)).toStrictEqual({
+    expect(adapter.capture(persistenceContext(), null)).toStrictEqual({
       version: 1,
       fields: ['id', 'city', 'firstName', 'lastName'],
     })
@@ -181,8 +185,8 @@ describe('column order persistence', () => {
     const adapter = columnOrderPersistenceAdapter()
     const onSave = vi.fn()
     const onRestore = vi.fn()
-    const unsubscribeSave = adapter.subscribe(engine, onSave)
-    const unsubscribeRestore = adapter.subscribeRestore!(engine, onRestore)
+    const unsubscribeSave = adapter.subscribe(persistenceContext(), onSave)
+    const unsubscribeRestore = adapter.subscribeRestore!(persistenceContext(), onRestore)
 
     engine.pub(
       columns$,
@@ -226,7 +230,7 @@ describe('column order persistence', () => {
   it('notifies the save subscription when persisted order is restored', () => {
     const adapter = columnOrderPersistenceAdapter()
     const onSave = vi.fn()
-    const unsubscribeSave = adapter.subscribe(engine, onSave)
+    const unsubscribeSave = adapter.subscribe(persistenceContext(), onSave)
 
     engine.pub(
       columns$,
@@ -265,7 +269,7 @@ describe('column order persistence', () => {
     engine.pub(columnDeclarationOrder$, ['runtime-id', 'runtime-name', 'runtime-status'])
     engine.pub(reorderColumns$, { sourceKey: 'runtime-status', targetKey: 'runtime-id', position: 'before' })
 
-    adapter.restore(engine, null)
+    adapter.restore(persistenceContext(), null)
 
     expect(fields(engine.getValue(columns$))).toStrictEqual(['id', 'name', 'status'])
   })
@@ -273,7 +277,7 @@ describe('column order persistence', () => {
   it('notifies the save subscription when column order is reset', () => {
     const adapter = columnOrderPersistenceAdapter()
     const onSave = vi.fn()
-    const unsubscribeSave = adapter.subscribe(engine, onSave)
+    const unsubscribeSave = adapter.subscribe(persistenceContext(), onSave)
 
     engine.pub(resetColumnOrder$, ['runtime-id'])
 

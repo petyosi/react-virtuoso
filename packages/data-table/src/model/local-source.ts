@@ -1,6 +1,15 @@
 import { createModel } from './model-core'
+import {
+  capturePersistedAction,
+  emptyModelPersistenceState,
+  isModelPersistenceState,
+  notifyModelPersistenceSubscribers,
+  persistedActionIsEmpty,
+  persistenceKeyForAction,
+} from './persistence'
 
-import type { ConcurrencyStrategy, DataModelHandle, DataResult, FrameAdapter } from './types'
+import type { AsyncResultEmitter, ConcurrencyStrategy, DataModelHandle, DataResult, FrameAdapter, ModelPersistenceState } from './types'
+import type { ModelActionPersistenceConfig } from './persistence'
 
 /**
  * The result of a local pipeline stage.
@@ -31,6 +40,7 @@ export type SourceMutator<T> = (params: { source: T[]; payload: unknown }) => T[
 export interface PipelineActionConfig<T, G = never> {
   stage: string
   handler: PipelineHandler<T, G>
+  persistence?: ModelActionPersistenceConfig
   strategy?: ConcurrencyStrategy
 }
 
@@ -76,6 +86,8 @@ export function localSource<T, G = never>(config: LocalSourceConfig<T, G>): Data
   let currentGroups = config.groups ?? []
   const pipeline = config.pipeline ?? []
   const actions = config.actions ?? {}
+  const persistenceSubscribers = new Set<() => void>()
+  let asyncEmit: AsyncResultEmitter<T, G> | null = null
 
   const viewStates = new Map<string, ViewPipelineState<T, G>>()
 
@@ -145,6 +157,70 @@ export function localSource<T, G = never>(config: LocalSourceConfig<T, G>): Data
     return pipeline.indexOf(stageName)
   }
 
+  function persistentPipelineActions() {
+    return Object.entries(actions).filter((entry): entry is [string, PipelineActionConfig<T, G>] => {
+      const actionConfig = entry[1]
+      return isPipelineAction(actionConfig) && Boolean(actionConfig.persistence)
+    })
+  }
+
+  function capturePersistenceState(viewId: string, previous: ModelPersistenceState | null): ModelPersistenceState {
+    const state = getViewState(viewId)
+    const next = emptyModelPersistenceState(previous)
+
+    for (const [action, actionConfig] of persistentPipelineActions()) {
+      const key = persistenceKeyForAction(action, actionConfig.persistence)
+      if (!key || !actionConfig.persistence) {
+        continue
+      }
+
+      delete next.actions[key]
+
+      const stageIndex = getStageIndex(actionConfig.stage)
+      if (stageIndex === -1) {
+        continue
+      }
+
+      const payload = state.stagePayloads[stageIndex]
+      const persisted = capturePersistedAction(action, payload, payload, actionConfig.persistence)
+      if (!persistedActionIsEmpty(persisted, actionConfig.persistence)) {
+        next.actions[key] = persisted
+      }
+    }
+
+    return next
+  }
+
+  function restorePersistenceState(viewId: string, persistedState: ModelPersistenceState | null) {
+    const state = getViewState(viewId)
+    const validState = isModelPersistenceState(persistedState) ? persistedState : null
+
+    for (const [action, actionConfig] of persistentPipelineActions()) {
+      const key = persistenceKeyForAction(action, actionConfig.persistence)
+      const stageIndex = getStageIndex(actionConfig.stage)
+      if (!key || !actionConfig.persistence || stageIndex === -1) {
+        continue
+      }
+
+      let payload: unknown
+      if (validState && Object.hasOwn(validState.actions, key)) {
+        const persisted = validState.actions[key]
+        payload =
+          typeof actionConfig.persistence === 'object' && actionConfig.persistence.restore
+            ? actionConfig.persistence.restore({ action, persisted, state: undefined })
+            : persisted
+      }
+
+      state.stagePayloads[stageIndex] = payload
+    }
+
+    invalidateAllStages(viewId)
+    const result = computeResult(viewId)
+    state.lastPipelineResult = result
+    asyncEmit?.(viewId, result)
+    notifyModelPersistenceSubscribers(persistenceSubscribers)
+  }
+
   function computeResult(viewId: string): DataResult<T, G> {
     if (pipeline.length === 0) {
       return { data: sourceData, groups: currentGroups }
@@ -170,6 +246,10 @@ export function localSource<T, G = never>(config: LocalSourceConfig<T, G>): Data
       return computeResult(viewId)
     },
 
+    setAsyncEmitter(emitter: AsyncResultEmitter<T, G>) {
+      asyncEmit = emitter
+    },
+
     getActionStrategy(action: string) {
       return actions[action]?.strategy
     },
@@ -188,6 +268,9 @@ export function localSource<T, G = never>(config: LocalSourceConfig<T, G>): Data
 
         const state = getViewState(viewId)
         state.stagePayloads[stageIndex] = payload
+        if (actionConfig.persistence) {
+          notifyModelPersistenceSubscribers(persistenceSubscribers)
+        }
         const result = runPipeline(viewId, stageIndex)
         state.lastPipelineResult = result
         return result
@@ -205,6 +288,20 @@ export function localSource<T, G = never>(config: LocalSourceConfig<T, G>): Data
   }
 
   const model = createModel(adapter)
+  model.persistence = {
+    capture(viewId, previous) {
+      return capturePersistenceState(viewId, previous)
+    },
+    restore(viewId, state) {
+      restorePersistenceState(viewId, state)
+    },
+    subscribe(_viewId, onChange) {
+      persistenceSubscribers.add(onChange)
+      return () => {
+        persistenceSubscribers.delete(onChange)
+      }
+    },
+  }
 
   model.setData = (data: T[], groups?: { index: number; level: number }[]) => {
     sourceData = data

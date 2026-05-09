@@ -64,7 +64,16 @@ export {
 export type { EngineRef, EngineSource } from '@virtuoso.dev/reactive-engine-react'
 export { localSource } from './model/local-source'
 export { remoteSource, defaultOffsetViewportHandler, defaultAppendViewportHandler } from './model/remote-source'
-export type { DataModelHandle, DataResult, MessageEnvelope, ConcurrencyStrategy, EventEmitter } from './model/types'
+export type {
+  DataModelHandle,
+  DataModelPersistenceCapability,
+  DataResult,
+  MessageEnvelope,
+  ModelPersistenceState,
+  ConcurrencyStrategy,
+  EventEmitter,
+} from './model/types'
+export type { ModelActionPersistenceConfig } from './model/persistence'
 export type {
   FetchParams,
   FetchResult,

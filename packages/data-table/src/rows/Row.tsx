@@ -4,6 +4,7 @@ import { useCellValue, useEngine } from '@virtuoso.dev/reactive-engine-react'
 
 import { cellClassNames$, cellRenderers$, CellRenderer } from '../columns/Cell'
 import { columnWidths$, visibleColumns$ } from '../columns/Column'
+import { totalWidth$ } from '../columns/column-sizes'
 import { columnItemsState$, columnsState$, EMPTY_COLUMN_STATE, stickyColumnsState$ } from '../columns/column-state'
 import { rowComponent$, stickyColumnContainer$ } from '../core/components'
 import { context$, groupIndexSet$, groupLevelMap$ } from '../core/data'
@@ -11,7 +12,7 @@ import { unstableEnableRowRenderEvents$, unstableRowRender$ } from '../debug/row
 import { resizeObserverSingleton$ } from '../resize/resize-observer-singleton'
 import { ROW_ROLE } from '../resize/resize-observing'
 import { ranges$ } from '../resize/sizes'
-import { hasHorizontalScroll$ } from '../scroll/dom'
+import { hasHorizontalScroll$, viewportWidth$ } from '../scroll/dom'
 import { VirtuosoDataTableTestingContext } from '../VirtuosoDataTableTestingContext'
 import { groupHeaderRenderer$ } from './GroupHeaderCell'
 
@@ -257,6 +258,8 @@ const NonMemoRow: React.FC<RowProps> = ({ row, sticky, stickyTop, stickyZIndex }
   const groupIndexSet = useCellValue(groupIndexSet$)
   const groupLevelMap = useCellValue(groupLevelMap$)
   const groupHeaderRendererEntry = useCellValue(groupHeaderRenderer$)
+  const totalWidth = useCellValue(totalWidth$)
+  const viewportWidth = useCellValue(viewportWidth$)
   const RowComponent = useCellValue(rowComponent$)
   const context = useCellValue(context$)
   const testingContext = React.useContext(VirtuosoDataTableTestingContext)
@@ -279,7 +282,7 @@ const NonMemoRow: React.FC<RowProps> = ({ row, sticky, stickyTop, stickyZIndex }
             },
           ])
         }
-        observer?.observe(el)
+        observer?.observe(el, { box: 'border-box' })
       } else if (ref.current) {
         observer?.unobserve(ref.current)
         ref.current = null
@@ -302,6 +305,7 @@ const NonMemoRow: React.FC<RowProps> = ({ row, sticky, stickyTop, stickyZIndex }
   })
 
   const rowStyle = React.useMemo<React.CSSProperties>(() => {
+    const groupRowWidth = Math.max(totalWidth, viewportWidth)
     if (sticky) {
       return {
         ...ROW_BASE_STYLE,
@@ -309,6 +313,7 @@ const NonMemoRow: React.FC<RowProps> = ({ row, sticky, stickyTop, stickyZIndex }
         top: stickyTop,
         zIndex: stickyZIndex ?? 3,
         boxSizing: 'border-box',
+        ...(isGroupRow ? { width: groupRowWidth } : {}),
       }
     }
     return {
@@ -316,8 +321,9 @@ const NonMemoRow: React.FC<RowProps> = ({ row, sticky, stickyTop, stickyZIndex }
       top: row.offset,
       ...(isGroupRow ? { zIndex: 4 } : {}),
       boxSizing: 'border-box',
+      ...(isGroupRow ? { width: groupRowWidth } : {}),
     }
-  }, [row.offset, sticky, stickyTop, stickyZIndex, isGroupRow])
+  }, [row.offset, sticky, stickyTop, stickyZIndex, isGroupRow, totalWidth, viewportWidth])
 
   const groupHeaderContent = React.useMemo(() => {
     if (!isGroupRow || !groupHeaderRendererEntry) {

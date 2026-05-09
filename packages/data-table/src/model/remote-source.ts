@@ -1,4 +1,12 @@
 import { createModel } from './model-core'
+import {
+  capturePersistedAction,
+  emptyModelPersistenceState,
+  isModelPersistenceState,
+  notifyModelPersistenceSubscribers,
+  persistedActionIsEmpty,
+  persistenceKeyForAction,
+} from './persistence'
 
 import type {
   AsyncErrorEmitter,
@@ -8,7 +16,9 @@ import type {
   DataResult,
   EventEmitter,
   FrameAdapter,
+  ModelPersistenceState,
 } from './types'
+import type { ModelActionPersistenceConfig } from './persistence'
 
 /**
  * Parameters for an offset-based fetch request.
@@ -28,6 +38,7 @@ export interface FetchParams<Params = Record<string, unknown>> {
  * @group Data Models
  */
 export interface FetchResult<T> {
+  groups?: { index: number; level: number }[]
   rows: T[]
   totalCount: number
 }
@@ -53,6 +64,7 @@ export interface AppendFetchResult<T> {
   rows: T[]
   hasMore: boolean
   cursor: unknown
+  groups?: { index: number; level: number }[]
 }
 
 /**
@@ -95,6 +107,7 @@ export type ParamTransformer<Params> = (ctx: { payload: unknown; params: Params 
  */
 export interface RemoteActionConfig<Params> {
   handler: ParamTransformer<Params>
+  persistence?: ModelActionPersistenceConfig<unknown, Params>
   strategy?: ConcurrencyStrategy
 }
 
@@ -188,6 +201,7 @@ interface LoadedRange {
 
 interface OffsetViewData<T> {
   sparseData: (T | undefined)[]
+  groups: { index: number; level: number }[]
   totalCount: number
   loadedRanges: LoadedRange[]
   abortController: AbortController | null
@@ -198,6 +212,7 @@ interface OffsetViewData<T> {
 
 interface AppendViewData<T> {
   data: T[]
+  groups: { index: number; level: number }[]
   cursor: unknown
   hasMore: boolean
   fetching: boolean
@@ -217,6 +232,7 @@ function isRangeLoaded<T>(vd: OffsetViewData<T>, offset: number, limit: number):
 function invalidateOffsetRanges<T>(vd: OffsetViewData<T>) {
   vd.loadedRanges = []
   vd.sparseData = []
+  vd.groups = []
   vd.totalCount = 0
 }
 
@@ -233,7 +249,7 @@ function abortOffsetInFlight<T>(vd: OffsetViewData<T>) {
 }
 
 function buildAppendResult<T>(vd: AppendViewData<T>): DataResult<T> {
-  return { data: [...vd.data], groups: [] }
+  return { data: [...vd.data], groups: vd.groups }
 }
 
 function abortAppendInFlight<T>(vd: AppendViewData<T>) {
@@ -310,6 +326,8 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
 
   const viewDataMap = new Map<string, OffsetViewData<T>>()
   const requestAbortMap = new Map<string, AbortController>()
+  const persistedActionStates = new Map<string, unknown>()
+  const persistenceSubscribers = new Set<() => void>()
   let asyncEmit: AsyncResultEmitter<T> | null = null
   let asyncErrorEmit: AsyncErrorEmitter | null = null
   let asyncEventEmit: EventEmitter | null = null
@@ -319,6 +337,7 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
     if (!vd) {
       vd = {
         sparseData: [],
+        groups: [],
         totalCount: 0,
         loadedRanges: [],
         abortController: null,
@@ -347,7 +366,88 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
 
   function buildResult(vd: OffsetViewData<T>): DataResult<T> {
     const data: T[] = Array.from({ length: vd.totalCount }, (_, i) => vd.sparseData[i] ?? (placeholder as T))
-    return { data, groups: [] }
+    return { data, groups: vd.groups }
+  }
+
+  function updatePersistedActionState(action: string, payload: unknown, params: Params) {
+    const actionConfig = actions[action]
+    const persistence = actionConfig?.persistence
+    const key = persistenceKeyForAction(action, persistence)
+    if (!key || !persistence) {
+      return
+    }
+
+    const persisted = capturePersistedAction(action, payload, params, persistence)
+    if (persistedActionIsEmpty(persisted, persistence)) {
+      persistedActionStates.delete(key)
+    } else {
+      persistedActionStates.set(key, persisted)
+    }
+    notifyModelPersistenceSubscribers(persistenceSubscribers)
+  }
+
+  function capturePersistenceState(previous: ModelPersistenceState | null): ModelPersistenceState {
+    const next = emptyModelPersistenceState(previous)
+    for (const [action, actionConfig] of Object.entries(actions)) {
+      const key = persistenceKeyForAction(action, actionConfig.persistence)
+      if (key) {
+        delete next.actions[key]
+      }
+    }
+
+    for (const [key, value] of persistedActionStates) {
+      next.actions[key] = value
+    }
+
+    return next
+  }
+
+  function restoreParamsFromPersistenceState(state: ModelPersistenceState | null): Params {
+    if (!isModelPersistenceState(state)) {
+      persistedActionStates.clear()
+      return config.initialParams
+    }
+
+    let params = config.initialParams
+    persistedActionStates.clear()
+
+    for (const [action, actionConfig] of Object.entries(actions)) {
+      const persistence = actionConfig.persistence
+      const key = persistenceKeyForAction(action, persistence)
+      if (!key || !persistence || !Object.hasOwn(state.actions, key)) {
+        continue
+      }
+
+      const persisted = state.actions[key]
+      if (typeof persistence === 'object' && persistence.restore) {
+        params = persistence.restore({ action, persisted, state: params })
+      } else {
+        params = actionConfig.handler({ payload: persisted, params })
+      }
+
+      if (!persistedActionIsEmpty(persisted, persistence)) {
+        persistedActionStates.set(key, persisted)
+      }
+    }
+
+    return params
+  }
+
+  function restorePersistenceState(viewId: string, state: ModelPersistenceState | null) {
+    currentParams = restoreParamsFromPersistenceState(state)
+
+    if (viewDataMap.size === 0) {
+      notifyModelPersistenceSubscribers(persistenceSubscribers)
+      return
+    }
+
+    for (const [activeViewId, vd] of viewDataMap) {
+      cancelMainFetch(activeViewId, vd)
+      invalidateOffsetRanges(vd)
+      void doFetch(activeViewId, 0, pageSize, activeViewId === viewId ? 'refresh' : 'initial')
+    }
+
+    notifyModelPersistenceSubscribers(persistenceSubscribers)
   }
 
   function cancelMainFetch(viewId: string, vd: OffsetViewData<T>) {
@@ -383,6 +483,9 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
       }
 
       vd.totalCount = result.totalCount
+      if (result.groups) {
+        vd.groups = result.groups
+      }
       for (let i = 0; i < result.rows.length; i++) {
         vd.sparseData[offset + i] = result.rows[i]
       }
@@ -432,6 +535,9 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
       }
 
       vd.totalCount = result.totalCount
+      if (result.groups) {
+        vd.groups = result.groups
+      }
       for (let i = 0; i < result.rows.length; i++) {
         vd.sparseData[offset + i] = result.rows[i]
       }
@@ -514,6 +620,7 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
       }
 
       currentParams = actionConfig.handler({ payload, params: currentParams })
+      updatePersistedActionState(action, payload, currentParams)
 
       const vd = getViewData(viewId)
       cancelMainFetch(viewId, vd)
@@ -559,7 +666,22 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
     },
   }
 
-  return createModel(adapter)
+  const model = createModel(adapter)
+  model.persistence = {
+    capture(_viewId, previous) {
+      return capturePersistenceState(previous)
+    },
+    restore(viewId, state) {
+      restorePersistenceState(viewId, state)
+    },
+    subscribe(_viewId, onChange) {
+      persistenceSubscribers.add(onChange)
+      return () => {
+        persistenceSubscribers.delete(onChange)
+      }
+    },
+  }
+  return model
 }
 
 // Append mode implementation
@@ -570,14 +692,81 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
 
   const viewDataMap = new Map<string, AppendViewData<T>>()
   const requestAbortMap = new Map<string, AbortController>()
+  const persistedActionStates = new Map<string, unknown>()
+  const persistenceSubscribers = new Set<() => void>()
   let asyncEmit: AsyncResultEmitter<T> | null = null
   let asyncErrorEmit: AsyncErrorEmitter | null = null
   let asyncEventEmit: EventEmitter | null = null
 
+  function updatePersistedActionState(action: string, payload: unknown, params: Params) {
+    const actionConfig = actions[action]
+    const persistence = actionConfig?.persistence
+    const key = persistenceKeyForAction(action, persistence)
+    if (!key || !persistence) {
+      return
+    }
+
+    const persisted = capturePersistedAction(action, payload, params, persistence)
+    if (persistedActionIsEmpty(persisted, persistence)) {
+      persistedActionStates.delete(key)
+    } else {
+      persistedActionStates.set(key, persisted)
+    }
+    notifyModelPersistenceSubscribers(persistenceSubscribers)
+  }
+
+  function capturePersistenceState(previous: ModelPersistenceState | null): ModelPersistenceState {
+    const next = emptyModelPersistenceState(previous)
+
+    for (const [action, actionConfig] of Object.entries(actions)) {
+      const key = persistenceKeyForAction(action, actionConfig.persistence)
+      if (key) {
+        delete next.actions[key]
+      }
+    }
+
+    for (const [key, value] of persistedActionStates) {
+      next.actions[key] = value
+    }
+
+    return next
+  }
+
+  function restoreParamsFromPersistenceState(state: ModelPersistenceState | null): Params {
+    if (!isModelPersistenceState(state)) {
+      persistedActionStates.clear()
+      return config.initialParams
+    }
+
+    let params = config.initialParams
+    persistedActionStates.clear()
+
+    for (const [action, actionConfig] of Object.entries(actions)) {
+      const persistence = actionConfig.persistence
+      const key = persistenceKeyForAction(action, persistence)
+      if (!key || !persistence || !Object.hasOwn(state.actions, key)) {
+        continue
+      }
+
+      const persisted = state.actions[key]
+      if (typeof persistence === 'object' && persistence.restore) {
+        params = persistence.restore({ action, persisted, state: params })
+      } else {
+        params = actionConfig.handler({ payload: persisted, params })
+      }
+
+      if (!persistedActionIsEmpty(persisted, persistence)) {
+        persistedActionStates.set(key, persisted)
+      }
+    }
+
+    return params
+  }
+
   function getViewData(viewId: string): AppendViewData<T> {
     let vd = viewDataMap.get(viewId)
     if (!vd) {
-      vd = { data: [], cursor: undefined, hasMore: true, fetching: false, abortController: null, abortReason: null }
+      vd = { data: [], groups: [], cursor: undefined, hasMore: true, fetching: false, abortController: null, abortReason: null }
       viewDataMap.set(viewId, vd)
     }
     return vd
@@ -594,6 +783,7 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
   function resetView(viewId: string, vd: AppendViewData<T>) {
     cancelAppendFetch(viewId, vd)
     vd.data = []
+    vd.groups = []
     vd.cursor = undefined
     vd.hasMore = true
   }
@@ -629,6 +819,9 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
       }
 
       vd.data.push(...result.rows)
+      if (result.groups) {
+        vd.groups = result.groups
+      }
       vd.cursor = result.cursor
       vd.hasMore = result.hasMore
 
@@ -649,6 +842,22 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
         requestAbortMap.delete(requestId)
       }
     }
+  }
+
+  function restorePersistenceState(viewId: string, state: ModelPersistenceState | null) {
+    currentParams = restoreParamsFromPersistenceState(state)
+
+    if (viewDataMap.size === 0) {
+      notifyModelPersistenceSubscribers(persistenceSubscribers)
+      return
+    }
+
+    for (const [activeViewId, vd] of viewDataMap) {
+      resetView(activeViewId, vd)
+      void doFetch(activeViewId, activeViewId === viewId ? 'refresh' : 'initial')
+    }
+
+    notifyModelPersistenceSubscribers(persistenceSubscribers)
   }
 
   const adapter: FrameAdapter<T> = {
@@ -711,6 +920,7 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
       }
 
       currentParams = actionConfig.handler({ payload, params: currentParams })
+      updatePersistedActionState(action, payload, currentParams)
 
       const vd = getViewData(viewId)
       resetView(viewId, vd)
@@ -755,7 +965,22 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
     },
   }
 
-  return createModel(adapter)
+  const model = createModel(adapter)
+  model.persistence = {
+    capture(_viewId, previous) {
+      return capturePersistenceState(previous)
+    },
+    restore(viewId, state) {
+      restorePersistenceState(viewId, state)
+    },
+    subscribe(_viewId, onChange) {
+      persistenceSubscribers.add(onChange)
+      return () => {
+        persistenceSubscribers.delete(onChange)
+      }
+    },
+  }
+  return model
 }
 
 /**
