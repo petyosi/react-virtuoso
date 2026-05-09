@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { LogLevel } from '../loggerSystem'
+import { getLogicalScrollLeft } from '../utils/horizontalScroll'
 import { useSizeWithElRef } from './useSize'
 
 import type { ScrollContainerState, SizeFunction, SizeRange } from '../interfaces'
@@ -31,18 +32,6 @@ export default function useChangedListContentsSizes(
         theWindow = scrollableElement.ownerDocument.defaultView!
       }
 
-      const scrollTop = customScrollParent
-        ? horizontalDirection
-          ? customScrollParent.scrollLeft
-          : customScrollParent.scrollTop
-        : windowScrolling
-          ? horizontalDirection
-            ? theWindow.scrollX || theWindow.document.documentElement.scrollLeft
-            : theWindow.scrollY || theWindow.document.documentElement.scrollTop
-          : horizontalDirection
-            ? scrollableElement.scrollLeft
-            : scrollableElement.scrollTop
-
       const scrollHeight = customScrollParent
         ? horizontalDirection
           ? customScrollParent.scrollWidth
@@ -66,6 +55,18 @@ export default function useChangedListContentsSizes(
           : horizontalDirection
             ? scrollableElement.offsetWidth
             : scrollableElement.offsetHeight
+
+      const scrollTop = customScrollParent
+        ? horizontalDirection
+          ? getLogicalScrollLeft(customScrollParent, customScrollParent.scrollLeft)
+          : customScrollParent.scrollTop
+        : windowScrolling
+          ? horizontalDirection
+            ? getLogicalScrollLeft(theWindow, theWindow.scrollX || theWindow.document.documentElement.scrollLeft)
+            : theWindow.scrollY || theWindow.document.documentElement.scrollTop
+          : horizontalDirection
+            ? getLogicalScrollLeft(scrollableElement, scrollableElement.scrollLeft)
+            : scrollableElement.scrollTop
 
       scrollContainerStateCallback({
         scrollHeight,
