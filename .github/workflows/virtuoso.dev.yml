@@ -2,7 +2,7 @@ name: Deploy Docs Site
 
 on:
   push:
-    branches: ['master']
+    branches: ['main']
 
   workflow_dispatch:
 

@@ -188,5 +188,5 @@ export default function App() {
 
 - [Documentation](https://virtuoso.dev/message-list/)
 - [API Reference](https://virtuoso.dev/message-list/api-reference/)
-- [Contributing](https://github.com/petyosi/react-virtuoso/blob/master/CONTRIBUTING.md)
+- [Contributing](https://github.com/petyosi/react-virtuoso/blob/main/CONTRIBUTING.md)
 - [Changelog](./CHANGELOG.md)

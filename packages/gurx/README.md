@@ -1,6 +1,6 @@
 # Gurx
 
-[![npm version](https://img.shields.io/npm/v/@virtuoso.dev/gurx.svg)](https://www.npmjs.com/package/@virtuoso.dev/gurx) [![npm downloads](https://img.shields.io/npm/dm/@virtuoso.dev/gurx.svg)](https://www.npmjs.com/package/@virtuoso.dev/gurx) [![license](https://img.shields.io/npm/l/@virtuoso.dev/gurx.svg)](https://github.com/petyosi/react-virtuoso/blob/master/LICENSE) [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@virtuoso.dev/gurx.svg)](https://www.npmjs.com/package/@virtuoso.dev/gurx) [![npm downloads](https://img.shields.io/npm/dm/@virtuoso.dev/gurx.svg)](https://www.npmjs.com/package/@virtuoso.dev/gurx) [![license](https://img.shields.io/npm/l/@virtuoso.dev/gurx.svg)](https://github.com/petyosi/react-virtuoso/blob/main/LICENSE) [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
 A TypeScript-native reactive state management library for complex web applications and components that do not have the symmetry of the store object and the component tree.
 
@@ -162,6 +162,6 @@ The README is meant to give you a breath-first overview of the library. More det
 
 - [Documentation](https://virtuoso.dev/gurx/)
 - [API Reference](https://virtuoso.dev/gurx/api-reference/)
-- [Contributing](https://github.com/petyosi/react-virtuoso/blob/master/CONTRIBUTING.md)
+- [Contributing](https://github.com/petyosi/react-virtuoso/blob/main/CONTRIBUTING.md)
 - [Changelog](./CHANGELOG.md)
 - [License](./LICENSE)
