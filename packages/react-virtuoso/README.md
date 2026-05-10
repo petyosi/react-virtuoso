@@ -1,6 +1,6 @@
 # React Virtuoso
 
-[![npm version](https://img.shields.io/npm/v/react-virtuoso.svg)](https://www.npmjs.com/package/react-virtuoso) [![npm downloads](https://img.shields.io/npm/dm/react-virtuoso.svg)](https://www.npmjs.com/package/react-virtuoso) [![license](https://img.shields.io/npm/l/react-virtuoso.svg)](https://github.com/petyosi/react-virtuoso/blob/master/LICENSE) [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/react-virtuoso.svg)](https://www.npmjs.com/package/react-virtuoso) [![npm downloads](https://img.shields.io/npm/dm/react-virtuoso.svg)](https://www.npmjs.com/package/react-virtuoso) [![license](https://img.shields.io/npm/l/react-virtuoso.svg)](https://github.com/petyosi/react-virtuoso/blob/main/LICENSE) [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
 React components for efficiently rendering large lists, grids, and tables with virtualization.
 
@@ -264,6 +264,6 @@ A few more common problems are present in the [troubleshooting section](https://
 - [Documentation](https://virtuoso.dev/react-virtuoso/)
 - [API Reference](https://virtuoso.dev/react-virtuoso/api-reference/)
 - [Examples](https://virtuoso.dev/react-virtuoso/)
-- [Contributing](https://github.com/petyosi/react-virtuoso/blob/master/CONTRIBUTING.md)
+- [Contributing](https://github.com/petyosi/react-virtuoso/blob/main/CONTRIBUTING.md)
 - [Changelog](./CHANGELOG.md)
 - [License](./LICENSE)

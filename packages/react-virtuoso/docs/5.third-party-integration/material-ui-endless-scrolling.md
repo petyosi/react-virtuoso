@@ -12,4 +12,4 @@ The example displays 500 records grouped by name, using the [List components fro
 
 The implementation uses `GroupedVirtuoso` with custom MUI components passed through the `components` prop. The `List` component maps to MUI's `List`, `Item` maps to `ListItem`, and `Group` maps to `ListSubheader` for sticky group headers. Each component wrapper forwards the required props and refs while applying MUI-specific styling. The `groupCounts` array defines how many items belong to each group, and the `groupContent` and `itemContent` render props handle the actual content rendering with `ListItemAvatar` and `ListItemText`.
 
-View the [example source code on GitHub](https://github.com/petyosi/react-virtuoso/blob/master/examples/react-virtuoso/mui-list.stories.tsx).
+View the [example source code on GitHub](https://github.com/petyosi/react-virtuoso/blob/main/examples/react-virtuoso/mui-list.stories.tsx).

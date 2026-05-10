@@ -1,6 +1,6 @@
 # Virtuoso Masonry
 
-[![npm version](https://img.shields.io/npm/v/@virtuoso.dev/masonry.svg)](https://www.npmjs.com/package/@virtuoso.dev/masonry) [![npm downloads](https://img.shields.io/npm/dm/@virtuoso.dev/masonry.svg)](https://www.npmjs.com/package/@virtuoso.dev/masonry) [![license](https://img.shields.io/npm/l/@virtuoso.dev/masonry.svg)](https://github.com/petyosi/react-virtuoso/blob/master/LICENSE) [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@virtuoso.dev/masonry.svg)](https://www.npmjs.com/package/@virtuoso.dev/masonry) [![npm downloads](https://img.shields.io/npm/dm/@virtuoso.dev/masonry.svg)](https://www.npmjs.com/package/@virtuoso.dev/masonry) [![license](https://img.shields.io/npm/l/@virtuoso.dev/masonry.svg)](https://github.com/petyosi/react-virtuoso/blob/main/LICENSE) [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
 A virtualized masonry layout component for React that arranges items in a grid with varying heights.
 
@@ -104,6 +104,6 @@ export default function App() {
 
 - [Documentation](https://virtuoso.dev/masonry/)
 - [API Reference](https://virtuoso.dev/masonry/api-reference/)
-- [Contributing](https://github.com/petyosi/react-virtuoso/blob/master/CONTRIBUTING.md)
+- [Contributing](https://github.com/petyosi/react-virtuoso/blob/main/CONTRIBUTING.md)
 - [Changelog](./CHANGELOG.md)
 - [License](./LICENSE)

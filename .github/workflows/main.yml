@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   release:
@@ -84,7 +84,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           gh pr merge --squash --auto "${{ steps.changesets.outputs.pullRequestNumber }}"
-
 
       - name: Upload Playwright report
         if: failure()

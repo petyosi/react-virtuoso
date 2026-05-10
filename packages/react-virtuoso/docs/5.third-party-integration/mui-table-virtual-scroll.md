@@ -17,4 +17,4 @@ See the [press to load more example](../press-to-load-more/) for an example usag
 
 The implementation maps each `TableVirtuoso` slot to its MUI equivalent: `Scroller` wraps with `TableContainer` and `Paper`, `Table` uses MUI's `Table` with `borderCollapse: 'separate'` to prevent border rendering issues during scrolling, and `TableBody`, `TableHead`, and `TableRow` use their MUI counterparts directly. The `fixedHeaderContent` prop renders the sticky header with `TableCell` components, while `itemContent` renders each row's cells.
 
-View the [example source code on GitHub](https://github.com/petyosi/react-virtuoso/blob/master/examples/react-virtuoso/mui-table.stories.tsx).
+View the [example source code on GitHub](https://github.com/petyosi/react-virtuoso/blob/main/examples/react-virtuoso/mui-table.stories.tsx).
