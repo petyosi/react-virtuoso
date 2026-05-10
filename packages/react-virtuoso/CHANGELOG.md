@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.18.7
+
+### Patch Changes
+
+- [#1399](https://github.com/petyosi/react-virtuoso/pull/1399) [`1fca093`](https://github.com/petyosi/react-virtuoso/commit/1fca093bc7bfbd2c8c65db968eb2d473713f63ea) Thanks [@petyosi](https://github.com/petyosi)! - Fix horizontal Virtuoso item positioning and scrolling in RTL layouts.
+
 ## 4.18.6
 
 ### Patch Changes
