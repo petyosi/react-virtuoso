@@ -128,7 +128,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
           ? {
               display: 'inline-block',
               height: '100%',
-              marginInlineStart: deviation !== 0 ? deviation : alignToBottom ? 'auto' : 0,
+              marginInlineStart: deviation === 0 ? (alignToBottom ? 'auto' : 0) : deviation,
               paddingInlineEnd: listState.offsetBottom,
               paddingInlineStart: listState.offsetTop,
               whiteSpace: 'nowrap',

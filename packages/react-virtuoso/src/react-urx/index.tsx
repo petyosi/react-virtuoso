@@ -299,7 +299,7 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
     return value
   }
 
-  const useEmitterValue = parseInt(React.version) >= 18 ? useEmitterValue18 : useEmitterValueLegacy
+  const useEmitterValue = parseInt(React.version, 10) >= 18 ? useEmitterValue18 : useEmitterValueLegacy
 
   const useEmitter = <K extends keyof S, V = S[K] extends Stream<infer R> ? R : never>(key: K, callback: (value: V) => void) => {
     const context = React.useContext(Context)
