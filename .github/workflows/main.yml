@@ -5,28 +5,35 @@ on:
     branches:
       - main
 
+permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
-      id-token: write
+      contents: write # Update release commits/tags and publish packages with trusted publishing.
+      pull-requests: write # Create or update the Changesets release pull request.
+      id-token: write # Request the npm OIDC token for trusted publishing.
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
         with:
           version: 10.24.0
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: 24.x
           cache: pnpm
@@ -43,7 +50,7 @@ jobs:
         run: echo "version=$(pnpm --filter react-virtuoso exec playwright --version | head -1)" >> $GITHUB_OUTPUT
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
@@ -67,7 +74,7 @@ jobs:
 
       - name: Create Release Pull Request or Publish
         id: changesets
-        uses: changesets/action@v1
+        uses: changesets/action@63a615b9cd06ba9a3e6d13796c7fbcb080a60a0b # v1
         with:
           publish: pnpm release
         env:
@@ -82,12 +89,16 @@ jobs:
         if: steps.changesets.outputs.hasChangesets == 'true' && steps.changesets.outputs.pullRequestNumber != '' && steps.major.outputs.found == 'false'
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          PULL_REQUEST_NUMBER: ${{ steps.changesets.outputs.pullRequestNumber }}
         run: |
-          gh pr merge --squash --auto "${{ steps.changesets.outputs.pullRequestNumber }}"
+          case "$PULL_REQUEST_NUMBER" in
+            ''|*[!0-9]*) echo "Invalid pull request number: $PULL_REQUEST_NUMBER"; exit 1 ;;
+          esac
+          gh pr merge --squash --auto "$PULL_REQUEST_NUMBER"
 
       - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: playwright-report-release
           path: packages/react-virtuoso/playwright-report/
