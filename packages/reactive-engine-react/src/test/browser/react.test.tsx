@@ -169,6 +169,43 @@ describe('Remote hooks', () => {
       await expect.element(screen.getByTestId('remote-value')).toHaveTextContent('remote-value')
     })
 
+    it('preserves function-valued cells', async () => {
+      const remoteCell$ = Cell<(value: number) => number>((value) => value + 1)
+
+      const RemoteComponent = () => {
+        const value = useRemoteCellValue(remoteCell$, ENGINE_ID)
+        const publish = useRemotePublisher(remoteCell$, ENGINE_ID)
+        return (
+          <div>
+            <span data-testid="remote-value">{value ? value(2) : 'loading'}</span>
+            <button
+              data-testid="replace-fn"
+              onClick={() => {
+                publish((nextValue) => nextValue + 3)
+              }}
+            >
+              Replace
+            </button>
+          </div>
+        )
+      }
+
+      const screen = await render(
+        <>
+          <EngineProvider engineId={ENGINE_ID} initFn={noop}>
+            <div>Engine mounted</div>
+          </EngineProvider>
+          <RemoteComponent />
+        </>
+      )
+
+      await expect.element(screen.getByTestId('remote-value')).toHaveTextContent('3')
+
+      await screen.getByTestId('replace-fn').click()
+
+      await expect.element(screen.getByTestId('remote-value')).toHaveTextContent('5')
+    })
+
     it('returns undefined again after engine unmounts', async () => {
       const remoteCell$ = Cell('remote-value')
 

@@ -58,8 +58,18 @@ export const scrollOverlayContentHeight$ = DerivedCell(
 export const stickyFooterHeight$ = Cell(0)
 export const scrollableFooterHeight$ = Cell(0)
 
+/**
+ * Remote cell that holds the current table scroller element.
+ *
+ * @group Remote Control
+ */
 export const scrollerElement$ = Cell<HTMLDivElement | null>(null)
 
+/**
+ * Remote action that cancels the active smooth scroll animation, if any.
+ *
+ * @group Remote Control
+ */
 export const cancelSmoothScroll$ = Trigger()
 
 export const increaseViewportBy$ = Cell(0)

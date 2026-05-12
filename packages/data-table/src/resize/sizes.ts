@@ -1,10 +1,11 @@
 import { Cell, DerivedCell, e, Stream } from '@virtuoso.dev/reactive-engine-core'
 
 import { data$, groupIndices$, groupIndexSet$, totalCount$ } from '../core/data'
+import { findMaxKeyValue } from '../sizing/AATree'
 import { computeTotalSize } from '../sizing/offsetOf'
 import { EMPTY_SIZE_STATE, updateSizeState } from '../sizing/SizeState'
 
-import type { SizeRange } from '../interfaces'
+import type { ItemHeightFunction, SizeRange } from '../interfaces'
 
 export const recalcInProgress$ = Cell(false)
 
@@ -60,5 +61,29 @@ export const totalHeight$ = DerivedCell(
   e.pipe(
     e.combine(totalCount$, sizeState$),
     e.map(([totalCount, sizeState]) => computeTotalSize(totalCount, sizeState))
+  )
+)
+
+const DEFAULT_ITEM_HEIGHT: ItemHeightFunction = () => 0
+
+/**
+ * Remote cell that contains a function for resolving the measured height of a data item.
+ *
+ * @group Remote Control
+ */
+export const itemHeight$ = DerivedCell<ItemHeightFunction>(
+  DEFAULT_ITEM_HEIGHT,
+  e.pipe(
+    e.combine(data$, sizeState$),
+    e.map(([data, { sizeTree }]) => {
+      const getItemHeight: ItemHeightFunction = (item) => {
+        const index = data?.indexOf(item) ?? -1
+        if (index === -1) {
+          return 0
+        }
+        return findMaxKeyValue(sizeTree, index)[1] ?? 0
+      }
+      return getItemHeight
+    })
   )
 )

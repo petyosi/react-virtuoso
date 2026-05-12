@@ -1,7 +1,7 @@
 import { Engine } from '@virtuoso.dev/reactive-engine-core'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { ranges$, sizeState$, totalHeight$ } from '../../../resize/sizes'
+import { itemHeight$, ranges$, sizeState$, totalHeight$ } from '../../../resize/sizes'
 import { data$, totalCount$ } from '../../data'
 
 const HUNDRED_ITEMS = Array.from({ length: 100 }, (_, i) => i)
@@ -11,6 +11,7 @@ describe('data logic', () => {
     e = new Engine()
     e.register(sizeState$)
     e.register(totalHeight$)
+    e.register(itemHeight$)
     e.register(data$)
     e.register(totalCount$)
   })
@@ -57,5 +58,20 @@ describe('data logic', () => {
 
     const heightAfter = e.getValue(totalHeight$)
     expect(heightAfter).toBe(30 * 102)
+  })
+
+  it('resolves the known item height from the current size state', () => {
+    e.pub(data$, HUNDRED_ITEMS)
+    e.pub(ranges$, [
+      {
+        size: 32,
+        startIndex: 0,
+        endIndex: 4,
+      },
+    ])
+
+    const itemHeight = e.getValue(itemHeight$)
+    expect(itemHeight(HUNDRED_ITEMS[2])).toBe(32)
+    expect(itemHeight(9999)).toBe(0)
   })
 })

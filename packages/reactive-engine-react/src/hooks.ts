@@ -183,7 +183,9 @@ function useCellValueWithState<T>(cell: Out<T>): T {
   const [value, setValue] = React.useState(() => engine.getValue(cell))
 
   useIsomorphicLayoutEffect(() => {
-    return engine.sub(cell, setValue)
+    return engine.sub(cell, (nextValue) => {
+      setValue(() => nextValue)
+    })
   }, [engine, cell])
 
   return value
@@ -403,12 +405,14 @@ export function useRemoteCellValue<T>(cell: Out<T>, engineSource: EngineSource):
 
   useIsomorphicLayoutEffect(() => {
     if (!engine) {
-      setValue(undefined)
+      setValue(() => undefined)
       return
     }
     engine.register(cell)
-    setValue(engine.getValue(cell))
-    return engine.sub(cell, setValue)
+    setValue(() => engine.getValue(cell))
+    return engine.sub(cell, (nextValue) => {
+      setValue(() => nextValue)
+    })
   }, [engine, cell])
 
   return value
