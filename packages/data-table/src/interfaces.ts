@@ -133,6 +133,15 @@ export interface DataTableLoadingState {
 }
 
 /**
+ * Resolves the measured height of a data item. Returns `0` when the item is not part of the
+ * current table data or has not been measured yet.
+ *
+ * @typeParam Data - The type of the data items in the table.
+ * @group Remote Control
+ */
+export type ItemHeightFunction<Data = any> = (item: Data) => number
+
+/**
  * Props passed to loading UI component slots.
  *
  * @group Customization
@@ -404,37 +413,4 @@ export interface VirtuosoDataTableProps<Data, Context, Group = unknown> extends 
    * Any children passed to the component.
    */
   children?: React.ReactNode
-}
-
-/**
- * The imperative API of the data table component. You can access it with a `ref`, or by using the {@link useVirtuosoMethods | `useVirtuosoMethods()`} hook from a child component.
- * @typeParam Data - The type of the data items in the table.
- *
- * @group Imperative API
- */
-export interface VirtuosoDataTableMethods<Data = any> {
-  /**
-   * Scrolls the table to the specified row. See {@link RowLocation} for possible location details. Passing a number scrolls to the row at the specified index aligned to the top.
-   */
-  scrollToRow: (location: RowLocation) => void
-  /**
-   * Scrolls the specified row into view if necessary. See {@link RowLocation} for possible location details. Passing a number scrolls to the row at the specified index.
-   */
-  scrollIntoView: (location: RowLocation) => void
-  /**
-   * Lets you obtain a reference to the component's scroller DOM element.
-   */
-  scrollerElement: () => HTMLDivElement | null
-  /**
-   * Retrieves the current scroll location
-   */
-  getScrollLocation: () => ListScrollLocation
-  /**
-   * Cancels the current smooth scroll operation, if any.
-   */
-  cancelSmoothScroll: () => void
-  /**
-   * Gets the known height of the item.
-   */
-  height: (item: Data) => number
 }

@@ -103,19 +103,17 @@ expect(cells.length).toBe(visibleColumns)
 
 ### API Surface
 
-The component exposes an imperative API via ref (see `VirtuosoDataTableMethods` in `src/interfaces.ts`):
+The component is controlled through the reactive engine rather than a component ref API:
 
-- `scrollToRow(location)` - Programmatic scrolling to a specific row
-- `scrollIntoView(location)` - Scroll row into view if necessary
-- `getScrollLocation()` - Current scroll position information
-- `scrollerElement()` - Get reference to the scroller DOM element
-- `cancelSmoothScroll()` - Cancel current smooth scroll animation
-- `height(item)` - Get the known height of an item
+- `engineRef` / `engineId` identify the table instance
+- `scrollToRow$` and `scrollIntoView$` handle programmatic scrolling
+- `scrollLocation$` exposes current scroll position information
+- `cancelSmoothScroll$` cancels the current smooth scroll animation
 
 ### Key Design Patterns
 
 1. **Reactive State Management** - All state changes flow through the reactive engine reactive system
-2. **Declarative Data with Imperative Scroll** - Data is passed declaratively via prop; scroll operations are imperative via ref
+2. **Declarative Data with Reactive Control** - Data is passed declaratively via prop; table operations use engine streams
 3. **Performance Optimization** - Only renders visible items with efficient size caching
 4. **Cross-platform Compatibility** - Handles browser-specific scroll behavior differences
 5. **Internal State Ownership** - The table manages its own state internally. External code does not lift state out of the table and pass it back in as props. Instead, the table's internal state is accessible and controllable through an imperative "remote control" pattern (e.g., ref methods, command channels). This avoids the lifted-state antipattern where the developer extracts table state, transforms it, and feeds it back, which creates extra render cycles and race conditions.

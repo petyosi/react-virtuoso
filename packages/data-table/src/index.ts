@@ -28,7 +28,7 @@ export { totalWidth$, columnCount$ } from './columns/column-sizes'
 export { columnsState$, stickyColumnsState$, columnItemsState$ } from './columns/column-state'
 export type { ColumnState, ColumnsStateMap, StickyColumnsState, ColumnItem, ColumnItemsState } from './columns/column-state'
 export { columnWidthOverrides$ } from './columns/column-width-overrides'
-export { useVirtuosoLocation, useCurrentlyRenderedData, useVirtuosoLoadingState, useVirtuosoMethods } from './core/hooks'
+export { useVirtuosoLocation, useCurrentlyRenderedData, useVirtuosoLoadingState } from './core/hooks'
 export type {
   TableData,
   DataTableLoadingSegment,
@@ -39,13 +39,13 @@ export type {
   RowLocation,
   Row,
   ContextAwareComponent,
+  ItemHeightFunction,
   LoadingComponentProps,
   ScrollElementComponent,
   ListScrollLocation,
   BezierFunction,
   ScrollerProps,
   VirtuosoDataTableProps,
-  VirtuosoDataTableMethods,
   DataTableComponents,
   RowComponentProps,
   StickyHeaderComponentProps,
@@ -94,7 +94,8 @@ export type {
 } from './model/remote-source'
 export { viewportRange$, currentlyRenderedRows$ } from './rows/row-state'
 export type { ViewportRange } from './rows/row-state'
-export { scrollLocation$ } from './scroll/dom'
+export { itemHeight$ } from './resize/sizes'
+export { scrollLocation$, scrollerElement$, cancelSmoothScroll$ } from './scroll/dom'
 export { scrollToRow$, scrollIntoView$ } from './scroll/scroll-to-row'
 export type {
   LocalSourceConfig,

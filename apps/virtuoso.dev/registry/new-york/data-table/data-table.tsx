@@ -16,7 +16,6 @@ import {
   ColumnGroupHeader,
   setColumnSticky$,
   loadingState$,
-  useVirtuosoMethods,
   useVirtuosoLocation,
   useCurrentlyRenderedData,
   useVirtuosoLoadingState,
@@ -28,7 +27,6 @@ import { cn } from '@/lib/utils'
 
 import type {
   VirtuosoDataTableProps,
-  VirtuosoDataTableMethods,
   CellRenderParams,
   CellRenderFunction,
   ColumnHeaderChildren,
@@ -160,33 +158,27 @@ const TABLE_COMPONENTS: DataTableComponents = {
   LoadingFooter: TableLoadingFooter,
 }
 
-const DataTable = React.forwardRef<VirtuosoDataTableMethods, VirtuosoDataTableProps<unknown, unknown, unknown>>(
-  ({ className, components, ...props }, ref) => {
-    const mergedComponents = React.useMemo(() => ({ ...TABLE_COMPONENTS, ...components }), [components])
+function DataTable<Data, Context = unknown, Group = unknown>({
+  className,
+  components,
+  ...props
+}: VirtuosoDataTableProps<Data, Context, Group> & { className?: string }) {
+  const mergedComponents = React.useMemo(() => ({ ...TABLE_COMPONENTS, ...components }) as DataTableComponents<Context>, [components])
 
-    return (
-      <VirtuosoDataTable
-        ref={ref}
-        className={cn(
-          'relative w-full overflow-x-auto bg-background text-foreground text-sm',
-          '**:data-[scope=colgroup]:border-b **:data-[scope=colgroup]:border-border',
-          '**:data-group-row:bg-muted **:data-group-row:font-medium',
-          '[&_[data-table-element-role=row]:hover_[data-sticky]]:bg-[color-mix(in_oklch,var(--color-muted)_50%,var(--color-background))]',
-          className
-        )}
-        components={mergedComponents}
-        {...props}
-      />
-    )
-  }
-) as (<Data, Context = unknown, Group = unknown>(
-  props: VirtuosoDataTableProps<Data, Context, Group> & {
-    ref?: React.Ref<VirtuosoDataTableMethods<Data>>
-    className?: string
-  }
-) => React.ReactElement) & { displayName?: string }
-
-DataTable.displayName = 'DataTable'
+  return (
+    <VirtuosoDataTable
+      className={cn(
+        'relative w-full overflow-x-auto bg-background text-foreground text-sm',
+        '**:data-[scope=colgroup]:border-b **:data-[scope=colgroup]:border-border',
+        '**:data-group-row:bg-muted **:data-group-row:font-medium',
+        '[&_[data-table-element-role=row]:hover_[data-sticky]]:bg-[color-mix(in_oklch,var(--color-muted)_50%,var(--color-background))]',
+        className
+      )}
+      components={mergedComponents}
+      {...props}
+    />
+  )
+}
 
 function DataTableColumn(props: Column.Props) {
   return <Column {...props} />
@@ -255,7 +247,6 @@ export {
   DataTableGroupHeader,
   // Re-export types
   type VirtuosoDataTableProps,
-  type VirtuosoDataTableMethods,
   type CellRenderParams,
   type CellRenderFunction,
   type ColumnHeaderChildren,
@@ -297,7 +288,6 @@ export {
   setColumnSticky$,
   reorderColumns$,
   loadingState$,
-  useVirtuosoMethods,
   useVirtuosoLocation,
   useCurrentlyRenderedData,
   useVirtuosoLoadingState,

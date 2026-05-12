@@ -1,14 +1,17 @@
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 
 import {
   Cell,
   Column,
   ColumnHeader,
+  cancelSmoothScroll$,
   columnWidthOverrides$,
   columnWidths$,
   columns$,
   columnsState$,
+  scrollIntoView$,
+  scrollerElement$,
   scrollToRow$,
   setColumnSticky$,
   useEngineRef,
@@ -28,6 +31,7 @@ const FIELDS = ['id', 'name', 'status', 'city', 'score'] as const
 const HEADER_HEIGHT = 40
 const ROW_HEIGHT = 32
 const COLUMN_WIDTH = 140
+const SCROLLER_SELECTOR = '[data-testid=virtuoso-table-scroller]'
 
 interface DemoRow {
   id: string
@@ -219,6 +223,7 @@ function ResetWidthControls({ engineSource }: { engineSource: EngineSource }) {
 
 function ReadControls({ engineSource }: { engineSource: EngineSource }) {
   const columns = useRemoteCellValue(columns$, engineSource)
+  const scrollerElement = useRemoteCellValue(scrollerElement$, engineSource)
   const widths = useRemoteCellValue(columnWidths$, engineSource)
   const range = useRemoteCellValue(viewportRange$, engineSource)
   const nameKey = findColumnKey(columns, 'name')
@@ -227,6 +232,7 @@ function ReadControls({ engineSource }: { engineSource: EngineSource }) {
     <div>
       <div data-testid="field-order">{columns ? Array.from(columns.values(), (info) => info.field).join(',') : 'loading'}</div>
       <div data-testid="name-width">{nameKey && widths ? Math.round(widths.get(nameKey) ?? 0) : 0}</div>
+      <div data-testid="scroller-element">{scrollerElement?.dataset.testid ?? 'loading'}</div>
       <div data-testid="viewport-range">{range ? `${range.startIndex}-${range.endIndex}` : 'loading'}</div>
     </div>
   )
@@ -234,6 +240,7 @@ function ReadControls({ engineSource }: { engineSource: EngineSource }) {
 
 function ScrollControls({ engineSource }: { engineSource: EngineSource }) {
   const range = useRemoteCellValue(viewportRange$, engineSource)
+  const scrollIntoView = useRemotePublisher(scrollIntoView$, engineSource)
   const scrollToRow = useRemotePublisher(scrollToRow$, engineSource)
 
   return (
@@ -246,6 +253,47 @@ function ScrollControls({ engineSource }: { engineSource: EngineSource }) {
         }}
       >
         scroll
+      </button>
+      <button
+        data-testid="scroll-into-view-40"
+        onClick={() => {
+          scrollIntoView(40)
+        }}
+      >
+        into view
+      </button>
+    </div>
+  )
+}
+
+function SmoothScrollControls({ engineSource }: { engineSource: EngineSource }) {
+  const cancelSmoothScroll = useRemotePublisher(cancelSmoothScroll$, engineSource)
+  const scrollToRow = useRemotePublisher(scrollToRow$, engineSource)
+
+  return (
+    <div>
+      <button
+        data-testid="start-smooth-scroll"
+        onClick={() => {
+          scrollToRow({
+            index: 50,
+            align: 'start',
+            behavior: () => ({
+              animationFrameCount: 300,
+              easing: (x) => x,
+            }),
+          })
+        }}
+      >
+        start
+      </button>
+      <button
+        data-testid="cancel-smooth-scroll"
+        onClick={() => {
+          cancelSmoothScroll()
+        }}
+      >
+        cancel
       </button>
     </div>
   )
@@ -315,6 +363,7 @@ test('remote readers expose column widths and viewport range via engineRef', asy
   await waitForReady(screen)
   await expect.poll(() => readText(screen.container, 'field-order')).toBe('id,name,status,city,score')
   await expect.poll(() => readWidth(screen.container, 'name-width')).toBeGreaterThan(0)
+  await expect.poll(() => readText(screen.container, 'scroller-element')).toBe('virtuoso-table-scroller')
   await expect.poll(() => readRange(screen.container, 'viewport-range').start).toBe(0)
   await expect.poll(() => readRange(screen.container, 'viewport-range').end).toBeGreaterThan(0)
 })
@@ -328,6 +377,57 @@ test('remote scroll to row via engineRef updates the viewport range', async () =
   await screen.getByTestId('scroll-to-40').click()
 
   await expect.poll(() => readRange(screen.container, 'viewport-range').start).toBeGreaterThanOrEqual(40)
+})
+
+test('remote scroll into view via engineRef updates the viewport range', async () => {
+  const screen = await render(<EngineRefHarness>{(engineRef) => <ScrollControls engineSource={engineRef} />}</EngineRefHarness>)
+
+  await waitForReady(screen)
+  await expect.poll(() => readRange(screen.container, 'viewport-range').start).toBe(0)
+
+  await screen.getByTestId('scroll-into-view-40').click()
+
+  await expect.poll(() => readRange(screen.container, 'viewport-range').start).toBeGreaterThan(0)
+})
+
+test('remote cancel smooth scroll via engineRef cancels the active animation', async () => {
+  const screen = await render(<EngineRefHarness>{(engineRef) => <SmoothScrollControls engineSource={engineRef} />}</EngineRefHarness>)
+
+  await waitForReady(screen)
+
+  const scroller = screen.container.querySelector(SCROLLER_SELECTOR) as HTMLElement
+  const expectedTargetScrollTop = 50 * ROW_HEIGHT
+
+  let nextAnimationFrameId = 1
+  const queuedAnimationFrames = new Map<number, FrameRequestCallback>()
+
+  const requestAnimationFrameSpy = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+    const id = nextAnimationFrameId
+    nextAnimationFrameId += 1
+    queuedAnimationFrames.set(id, callback)
+    return id
+  })
+
+  const cancelAnimationFrameSpy = vi.spyOn(window, 'cancelAnimationFrame').mockImplementation((id) => {
+    queuedAnimationFrames.delete(id)
+  })
+
+  try {
+    await screen.getByTestId('start-smooth-scroll').click()
+
+    expect(queuedAnimationFrames.size).toBe(1)
+    expect(scroller.scrollTop).toBe(0)
+
+    await screen.getByTestId('cancel-smooth-scroll').click()
+
+    expect(cancelAnimationFrameSpy).toHaveBeenCalledExactlyOnceWith(1)
+    expect(queuedAnimationFrames.size).toBe(0)
+    expect(scroller.scrollTop).toBe(0)
+    expect(scroller.scrollTop).not.toBe(expectedTargetScrollTop)
+  } finally {
+    requestAnimationFrameSpy.mockRestore()
+    cancelAnimationFrameSpy.mockRestore()
+  }
 })
 
 test('remote reset clears all column width overrides via engineRef', async () => {
