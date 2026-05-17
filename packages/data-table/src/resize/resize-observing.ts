@@ -89,18 +89,6 @@ e.singletonSub(dataTableStructureEntries$, (entries) => {
       }
       continue
     }
-    if (element === scrollerElement) {
-      pubPayload = {
-        ...pubPayload,
-        [scrollTop$]: element.scrollTop,
-        [scrollHeight$]: element.scrollHeight,
-        [scrollWidth$]: element.scrollWidth,
-        [viewportHeight$]: entry.contentRect.height,
-        [viewportWidth$]: element.clientWidth,
-      }
-      continue
-    }
-
     if (elementRole === WINDOW_SCROLL_WRAPPER_ROLE) {
       const theElementWindow = element.ownerDocument.defaultView
       if (theElementWindow !== null) {
@@ -128,6 +116,18 @@ e.singletonSub(dataTableStructureEntries$, (entries) => {
           [offsetTopInExternalScroller$]: computeOffsetTopInScrollParent(wrapper, parent),
           [viewportWidth$]: wrapper.clientWidth,
         }
+      }
+      continue
+    }
+
+    if (element === scrollerElement) {
+      pubPayload = {
+        ...pubPayload,
+        [scrollTop$]: element.scrollTop,
+        [scrollHeight$]: element.scrollHeight,
+        [scrollWidth$]: element.scrollWidth,
+        [viewportHeight$]: entry.contentRect.height,
+        [viewportWidth$]: element.clientWidth,
       }
       continue
     }
