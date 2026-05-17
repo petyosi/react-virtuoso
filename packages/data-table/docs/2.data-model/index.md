@@ -1,8 +1,8 @@
 ---
-title: Overview
+title: Choosing a Data Model
 description: Give the table a local or remote model before adding table features.
 sidebar:
-  label: Overview
+  label: Choosing a Model
 ---
 
 Every data table starts with a data model. Columns decide what is visible, but the model decides
@@ -60,7 +60,7 @@ The local and remote model pages cover the details separately:
   persistence, and grouped rows.
 - [Remote Data Model](/data-table/data-model/remote-data-model/) explains fetch ownership, actions,
   viewport loading, cancellation, grouped rows, and loading UI.
-- [Inferring Columns From Model Data](/data-table/columns/inferring-columns-from-model-data/) explains
+- [Columns for Dynamic Schemas](/data-table/columns/inferring-columns-from-model-data/) explains
   how dynamic local or remote model schemas become column declarations.
 
 ## Group rows
