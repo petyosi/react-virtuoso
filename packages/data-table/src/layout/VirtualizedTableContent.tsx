@@ -349,7 +349,6 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
   return (
     <TableLayoutRoot {...htmlProps} style={passedStyle}>
       <ScrollableRoot {...htmlProps} tableBodyRef={tableBodyRef}>
-        {showEmptyPlaceholder ? <EmptyPlaceholder context={context} /> : null}
         <StickyHeaderWrapper
           data-table-element-role={STICKY_HEADER_ROLE}
           ref={stickyHeaderCallbackRef}
@@ -398,6 +397,10 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
         ) : showInitialLoadingPlaceholder ? (
           <div aria-busy={loadingState.initial.status === 'loading' || undefined} data-table-element-role={TABLE_BODY_ROLE}>
             <LoadingPlaceholder context={context} loadingState={loadingState} />
+          </div>
+        ) : showEmptyPlaceholder ? (
+          <div data-table-element-role={TABLE_BODY_ROLE}>
+            <EmptyPlaceholder context={context} />
           </div>
         ) : null}
         {showFooter && (

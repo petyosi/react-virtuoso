@@ -29,7 +29,7 @@ function columnMap(entries: [string, string, visible?: boolean][]) {
 }
 
 function visibleFields(columns: Map<string, ColumnInfo>) {
-  return [...columns.values()].filter((column) => column.visible !== false).map((column) => column.field)
+  return [...columns.values()].map((column) => column.field)
 }
 
 function effectiveVisibleFields(columns: Map<string, ColumnInfo>, overrides: Map<string, boolean>) {
@@ -119,7 +119,7 @@ describe('column visibility persistence', () => {
     ).toStrictEqual(['id', 'city'])
   })
 
-  it('captures hidden fields while preserving previously saved missing fields', () => {
+  it('captures visibility overrides while preserving previously saved missing fields', () => {
     expect(
       columnVisibilityStateFromColumns(
         columnMap([
@@ -140,7 +140,6 @@ describe('column visibility persistence', () => {
       version: 1,
       visibility: {
         city: false,
-        name: false,
       },
     })
   })
@@ -169,6 +168,23 @@ describe('column visibility persistence', () => {
     })
   })
 
+  it('captures shown state for a default-hidden current field', () => {
+    expect(
+      columnVisibilityStateFromColumns(
+        columnMap([
+          ['runtime-id', 'id'],
+          ['runtime-internal-id', 'internalId', false],
+        ]),
+        new Map([['runtime-internal-id', true]])
+      )
+    ).toStrictEqual({
+      version: 1,
+      visibility: {
+        internalId: true,
+      },
+    })
+  })
+
   it('publishes runtime visibility by column key', () => {
     engine.pub(
       columns$,
@@ -185,6 +201,28 @@ describe('column visibility persistence', () => {
       new Map([
         ['runtime-id', true],
         ['runtime-name', false],
+      ])
+    )
+  })
+
+  it('shows default-hidden columns with a true visibility override', () => {
+    engine.pub(
+      columns$,
+      columnMap([
+        ['runtime-id', 'id'],
+        ['runtime-internal-id', 'internalId', false],
+      ])
+    )
+
+    expect(visibleFields(engine.getValue(visibleColumns$))).toStrictEqual(['id'])
+
+    engine.pub(setColumnVisibility$, { key: 'runtime-internal-id', visible: true })
+
+    expect(visibleFields(engine.getValue(visibleColumns$))).toStrictEqual(['id', 'internalId'])
+    expect(engine.getValue(columnVisibilityState$)).toStrictEqual(
+      new Map([
+        ['runtime-id', true],
+        ['runtime-internal-id', true],
       ])
     )
   })
