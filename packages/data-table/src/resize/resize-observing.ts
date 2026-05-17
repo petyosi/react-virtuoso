@@ -4,6 +4,7 @@ import { columnEntries$ } from '../columns/Column'
 import {
   customScrollParent$,
   customScrollParentWrapper$,
+  computeOffsetTopInScrollParent,
   externalScrollerScrollTop$,
   externalScrollerViewportHeight$,
   offsetTopInExternalScroller$,
@@ -124,7 +125,7 @@ e.singletonSub(dataTableStructureEntries$, (entries) => {
           [scrollHeight$]: wrapper.getBoundingClientRect().height,
           [externalScrollerScrollTop$]: parent.scrollTop,
           [externalScrollerViewportHeight$]: parent.clientHeight,
-          [offsetTopInExternalScroller$]: wrapper.offsetTop,
+          [offsetTopInExternalScroller$]: computeOffsetTopInScrollParent(wrapper, parent),
           [viewportWidth$]: wrapper.clientWidth,
         }
       }

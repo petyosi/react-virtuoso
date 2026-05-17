@@ -296,6 +296,13 @@ export const customScrollParentWrapper$ = Cell<HTMLElement | null>(null)
 
 export const offsetTopInExternalScroller$ = Cell(0)
 
+export function computeOffsetTopInScrollParent(element: HTMLElement, scrollParent: HTMLElement) {
+  const elementRect = element.getBoundingClientRect()
+  const scrollParentRect = scrollParent.getBoundingClientRect()
+
+  return elementRect.top - scrollParentRect.top - scrollParent.clientTop + scrollParent.scrollTop
+}
+
 e.link(
   e.pipe(
     scrollTo$,

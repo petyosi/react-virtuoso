@@ -10,10 +10,12 @@ import { useScrollCallbacks, usePollForHeightInMobileSafari } from '../scroll/ca
 import {
   customScrollParent$,
   customScrollParentWrapper$,
+  computeOffsetTopInScrollParent,
   externalScrollerScrollTo$,
   externalScrollerScrollTop$,
   externalScrollerViewportHeight$,
   hasHorizontalScroll$,
+  offsetTopInExternalScroller$,
   scrollHeight$,
   scrollLeft$,
   scrollerElement$,
@@ -230,6 +232,10 @@ export const CustomScrollParentWrapper: React.FC<ScrollableRootProps> = ({ child
     customScrollParent.addEventListener('wheel', onWheel)
     observer?.observe(customScrollParent, { box: 'border-box' })
 
+    if (customScrollParentWrapperRef.current) {
+      engine.pub(offsetTopInExternalScroller$, computeOffsetTopInScrollParent(customScrollParentWrapperRef.current, customScrollParent))
+    }
+
     if (testingContext) {
       engine.pubIn({
         [externalScrollerViewportHeight$]: customScrollParent.clientHeight,
@@ -251,6 +257,9 @@ export const CustomScrollParentWrapper: React.FC<ScrollableRootProps> = ({ child
         engine.pub(customScrollParentWrapper$, el)
         customScrollParentWrapperRef.current = el
         observer?.observe(el, { box: 'border-box' })
+        if (customScrollParentRef.current) {
+          engine.pub(offsetTopInExternalScroller$, computeOffsetTopInScrollParent(el, customScrollParentRef.current))
+        }
       } else {
         engine.pub(customScrollParentWrapper$, null)
         if (customScrollParentWrapperRef.current) {

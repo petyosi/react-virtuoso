@@ -47,12 +47,16 @@ export const ResizeHandle: HeaderSlotCustomComponent = ({ columnKey, headerRef }
       }}
       onPointerDown={(event) => {
         event.preventDefault()
+        const handle = event.currentTarget
+        const ownerDocument = handle.ownerDocument
         const startWidth = headerRef.current?.getBoundingClientRect().width
         if (startWidth === undefined) {
           return
         }
 
         const startX = event.clientX
+        const pointerId = event.pointerId
+        handle.setPointerCapture(pointerId)
         setIsResizing(true)
 
         const handlePointerMove = (moveEvent: PointerEvent) => {
@@ -63,15 +67,18 @@ export const ResizeHandle: HeaderSlotCustomComponent = ({ columnKey, headerRef }
         }
 
         const handlePointerEnd = () => {
+          if (handle.hasPointerCapture(pointerId)) {
+            handle.releasePointerCapture(pointerId)
+          }
           setIsResizing(false)
-          document.removeEventListener('pointermove', handlePointerMove)
-          document.removeEventListener('pointerup', handlePointerEnd)
-          document.removeEventListener('pointercancel', handlePointerEnd)
+          ownerDocument.removeEventListener('pointermove', handlePointerMove)
+          ownerDocument.removeEventListener('pointerup', handlePointerEnd)
+          ownerDocument.removeEventListener('pointercancel', handlePointerEnd)
         }
 
-        document.addEventListener('pointermove', handlePointerMove)
-        document.addEventListener('pointerup', handlePointerEnd, { once: true })
-        document.addEventListener('pointercancel', handlePointerEnd, { once: true })
+        ownerDocument.addEventListener('pointermove', handlePointerMove)
+        ownerDocument.addEventListener('pointerup', handlePointerEnd, { once: true })
+        ownerDocument.addEventListener('pointercancel', handlePointerEnd, { once: true })
       }}
     >
       <div

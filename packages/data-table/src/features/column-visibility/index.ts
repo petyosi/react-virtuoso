@@ -123,9 +123,10 @@ export function columnVisibilityStateFromColumns(
   }
 
   for (const [key, column] of columns) {
-    const visible = visibilityOverrides.get(key) ?? column.visible !== false
-    if (!visible) {
-      visibility[column.field] = false
+    const defaultVisibility = column.visible !== false
+    const visible = visibilityOverrides.get(key) ?? defaultVisibility
+    if (visible !== defaultVisibility) {
+      visibility[column.field] = visible
     }
   }
 
@@ -168,16 +169,25 @@ export function columnVisibilityPersistenceAdapter(): DataTableStatePersistenceA
   }
 }
 
-e.changeWith(columnVisibilityOverrides$, setColumnVisibility$, (overrides, { key, visible }) => {
-  const next = new Map(overrides)
-  if (visible) {
-    next.delete(key)
-  } else {
-    // oxlint-disable-next-line no-immediate-mutation
-    next.set(key, false)
+e.changeWith(
+  columnVisibilityOverrides$,
+  e.pipe(setColumnVisibility$, e.withLatestFrom(columns$)),
+  (overrides, [{ key, visible }, columns]) => {
+    const column = columns.get(key)
+    if (!column) {
+      return overrides
+    }
+
+    const next = new Map(overrides)
+    if (visible === (column.visible !== false)) {
+      next.delete(key)
+    } else {
+      // oxlint-disable-next-line no-immediate-mutation
+      next.set(key, visible)
+    }
+    return next
   }
-  return next
-})
+)
 
 e.changeWith(columnVisibilityOverrides$, resetColumnVisibility$, (overrides) =>
   overrides.size === 0 ? overrides : new Map<string, boolean>()

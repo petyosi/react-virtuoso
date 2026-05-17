@@ -56,6 +56,34 @@ describe('EmptyPlaceholder', () => {
     expect(rows.length).toBe(0)
   })
 
+  test('renders EmptyPlaceholder below the header', async () => {
+    function EmptyPlaceholder() {
+      return <div data-testid="empty-placeholder">No data available</div>
+    }
+
+    const screen = await render(
+      <VirtuosoDataTable
+        style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
+        source={EMPTY_DATA}
+        EmptyPlaceholder={EmptyPlaceholder}
+      >
+        <Column field="name">
+          <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Name</div>}</ColumnHeader>
+          <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
+        </Column>
+      </VirtuosoDataTable>
+    )
+
+    await waitForPlaceholder(screen, '[data-testid="empty-placeholder"]')
+
+    const scrollerChildren = [...screen.container.querySelector('[data-testid="virtuoso-table-scroller"]')!.children]
+    const headerIndex = scrollerChildren.findIndex((element) => (element as HTMLElement).dataset.tableElementRole === 'sticky-header')
+    const placeholderIndex = scrollerChildren.findIndex((element) => element.querySelector('[data-testid="empty-placeholder"]'))
+
+    expect(headerIndex).toBeGreaterThanOrEqual(0)
+    expect(placeholderIndex).toBeGreaterThan(headerIndex)
+  })
+
   test('EmptyPlaceholder receives context prop', async () => {
     const placeholderTestId = 'empty-placeholder-with-context'
     const testContext = { message: 'Custom empty message', count: 42 }
