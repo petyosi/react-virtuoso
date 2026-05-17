@@ -34,10 +34,10 @@ const autoImportConfig = {
 export default defineConfig({
   env: {
     schema: {
-      PADDLE_ENVIRONMENT: envField.string({ access: 'public', context: 'client' }),
-      PADDLE_PRO_PRICE_ID: envField.string({ access: 'public', context: 'client' }),
-      PADDLE_STANDARD_PRICE_ID: envField.string({ access: 'public', context: 'client' }),
-      PADDLE_TOKEN: envField.string({ access: 'public', context: 'client' }),
+      PADDLE_ENVIRONMENT: envField.string({ access: 'public', context: 'client', default: '' }),
+      PADDLE_PRO_PRICE_ID: envField.string({ access: 'public', context: 'client', default: '' }),
+      PADDLE_STANDARD_PRICE_ID: envField.string({ access: 'public', context: 'client', default: '' }),
+      PADDLE_TOKEN: envField.string({ access: 'public', context: 'client', default: '' }),
     },
   },
   integrations: [
