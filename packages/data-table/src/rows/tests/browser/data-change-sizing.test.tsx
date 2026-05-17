@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo } from 'react'
 
 import { expect, test, describe } from 'vitest'
 import { render } from 'vitest-browser-react'
@@ -6,6 +6,7 @@ import { render } from 'vitest-browser-react'
 import { Cell, VirtuosoDataTable } from '../../..'
 import { Column } from '../../../columns/Column'
 import { ColumnHeader } from '../../../columns/ColumnHeader'
+import { localModel } from '../../../model/local-model'
 import { GroupHeaderCell } from '../../GroupHeaderCell'
 
 const HEADER_HEIGHT = 40
@@ -67,17 +68,14 @@ describe('data change sizing', () => {
     const GROUP_COUNT = 2
 
     function TestComponent() {
-      const [tableData, setTableData] = useState<{ data: (DataItem | GroupItem)[]; groups: { index: number; level: number }[] }>({
-        data: ITEMS,
-        groups: [],
-      })
+      const model = useMemo(() => localModel<DataItem, GroupItem>({ data: ITEMS }), [])
 
       return (
         <>
-          <button data-testid="group" onClick={() => setTableData(grouped)}>
+          <button data-testid="group" onClick={() => model.setData?.(grouped.data, grouped.groups)}>
             Group
           </button>
-          <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={tableData}>
+          <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} model={model}>
             <GroupHeaderCell>
               {({ row }) => <div style={{ height: GROUP_HEADER_HEIGHT }}>{(row.data as GroupItem).groupName}</div>}
             </GroupHeaderCell>
@@ -117,17 +115,14 @@ describe('data change sizing', () => {
     const grouped = buildGroupedData(ITEMS)
 
     function TestComponent() {
-      const [tableData, setTableData] = useState<{ data: (DataItem | GroupItem)[]; groups: { index: number; level: number }[] }>({
-        data: ITEMS,
-        groups: [],
-      })
+      const model = useMemo(() => localModel<DataItem, GroupItem>({ data: ITEMS }), [])
 
       return (
         <>
-          <button data-testid="group" onClick={() => setTableData(grouped)}>
+          <button data-testid="group" onClick={() => model.setData?.(grouped.data, grouped.groups)}>
             Group
           </button>
-          <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={tableData}>
+          <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} model={model}>
             <GroupHeaderCell>
               {({ row }) => <div style={{ height: GROUP_HEADER_HEIGHT }}>{(row.data as GroupItem).groupName}</div>}
             </GroupHeaderCell>
@@ -167,17 +162,14 @@ describe('data change sizing', () => {
     const grouped = buildGroupedData(ITEMS)
 
     function TestComponent() {
-      const [tableData, setTableData] = useState<{ data: (DataItem | GroupItem)[]; groups: { index: number; level: number }[] }>({
-        data: ITEMS,
-        groups: [],
-      })
+      const model = useMemo(() => localModel<DataItem, GroupItem>({ data: ITEMS }), [])
 
       return (
         <>
-          <button data-testid="group" onClick={() => setTableData(grouped)}>
+          <button data-testid="group" onClick={() => model.setData?.(grouped.data, grouped.groups)}>
             Group
           </button>
-          <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={tableData}>
+          <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} model={model}>
             <GroupHeaderCell>
               {({ row }) => <div style={{ height: GROUP_HEADER_HEIGHT }}>{(row.data as GroupItem).groupName}</div>}
             </GroupHeaderCell>

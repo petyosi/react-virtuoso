@@ -16,10 +16,10 @@ import {
   useRemoteCellValue,
   useRemotePublisher,
   viewportRange$,
-  VirtuosoDataTable,
 } from '..'
 import { reorderColumns$ } from '../features/column-reorder'
 import { resizeColumn$ } from '../features/column-resize'
+import { LocalDataTable as VirtuosoDataTable } from '../tests/LocalDataTable'
 
 import type { ColumnInfo, EngineRef } from '..'
 
@@ -146,7 +146,7 @@ function stickyStateByField(columns: Map<string, ColumnInfo> | undefined, state:
 
 function RemoteControlTable({ engineRef }: { engineRef: EngineRef }) {
   return (
-    <VirtuosoDataTable style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }} engineRef={engineRef}>
+    <VirtuosoDataTable style={TABLE_STYLE} source={ITEMS} engineRef={engineRef}>
       {FIELDS.map((field) => (
         <Column key={field} field={field}>
           <ColumnHeader>{() => <div style={HEADER_CONTENT_STYLE}>{field}</div>}</ColumnHeader>

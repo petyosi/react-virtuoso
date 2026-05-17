@@ -580,7 +580,13 @@ export default function LiveCodeBlock({
         </div>
       </div>
 
-      <div className={`absolute bottom-0 flex flex-row p-1 ${isWide ? 'right-0' : 'right-1/2'}`}>
+      <div
+        className={`
+          absolute bottom-0 z-10 flex flex-row rounded-tl border-t border-l
+          border-border-secondary bg-surface-codeblock p-1
+          ${isWide ? 'right-0' : 'right-1/2'}
+        `}
+      >
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>

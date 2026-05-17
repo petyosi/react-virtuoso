@@ -173,6 +173,9 @@ importers:
       '@virtuoso.dev/message-list':
         specifier: ^1.15.2
         version: 1.15.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@virtuoso.dev/reactive-engine-react':
+        specifier: workspace:*
+        version: link:../../packages/reactive-engine-react
       astro:
         specifier: ^5.6.1
         version: 5.16.2(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.53.3)(terser@5.44.1)(typescript@5.9.3)(yaml@2.8.2)

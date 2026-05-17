@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { columns$, remoteSource, useCellValue, usePublisher } from '@virtuoso.dev/data-table'
+import { columns$, remoteModel, useCellValue, usePublisher } from '@virtuoso.dev/data-table'
 import { columnOrderPersistenceAdapter } from '@virtuoso.dev/data-table/column-reorder'
 import { columnWidthPersistenceAdapter } from '@virtuoso.dev/data-table/column-resize'
-import { columnVisibilityPersistenceAdapter, columnVisibilityState$, setColumnVisibility$ } from '@virtuoso.dev/data-table/column-visibility'
+import {
+  columnVisibilityPersistenceAdapter,
+  columnVisibilityState$,
+  setColumnVisibility$,
+} from '@virtuoso.dev/data-table/column-visibility'
 import { DataTableStatePersistence } from '@virtuoso.dev/data-table/state-persistence'
 
 import { Button } from '@/components/ui/button'
@@ -152,7 +156,7 @@ export function PersistentColumnVisibilityWithRemoteSchema() {
   const [persistenceResetKey, setPersistenceResetKey] = useState(0)
   const model = useMemo(
     () =>
-      remoteSource<RemoteRow, DemoParams>({
+      remoteModel<RemoteRow, DemoParams>({
         fetch: fetchRows,
         initialParams: { dataset: 'people' },
         pageSize: 50,

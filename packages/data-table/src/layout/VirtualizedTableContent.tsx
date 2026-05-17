@@ -87,7 +87,16 @@ const SCROLLABLE_HEADER_CONTAINER_STYLE: CSSProperties = {
 }
 
 function StickyHeaderContent() {
-  const [declaredColumns, columnVisibilityOverrides, columnHeaders, stickyColumnsState, columnsState, columnGroups, columnGroupHeaders, columnWidths] = useCellValues(
+  const [
+    declaredColumns,
+    columnVisibilityOverrides,
+    columnHeaders,
+    stickyColumnsState,
+    columnsState,
+    columnGroups,
+    columnGroupHeaders,
+    columnWidths,
+  ] = useCellValues(
     columns$,
     columnVisibilityOverrides$,
     columnHeaders$,

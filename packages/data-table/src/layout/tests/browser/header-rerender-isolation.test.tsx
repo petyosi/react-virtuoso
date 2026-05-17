@@ -3,9 +3,10 @@ import React from 'react'
 import { expect, test, describe } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { Cell, VirtuosoDataTable } from '../../..'
+import { Cell } from '../../..'
 import { Column } from '../../../columns/Column'
 import { ColumnHeader } from '../../../columns/ColumnHeader'
+import { LocalDataTable as VirtuosoDataTable } from '../../../tests/LocalDataTable'
 
 const HEADER_HEIGHT = 40
 const ROW_HEIGHT = 30
@@ -47,7 +48,7 @@ describe('header re-render isolation', () => {
     }
 
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data: ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={ITEMS}>
         {Array.from({ length: COLUMN_COUNT }, (_, i) => (
           <Column key={`col${i}`} field={`col${i}`}>
             <ColumnHeader>{() => <TrackingHeader label={`Header ${i}`} />}</ColumnHeader>
@@ -90,7 +91,7 @@ describe('header re-render isolation', () => {
     }
 
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data: ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={ITEMS}>
         <Column field="col0" sticky="left">
           <ColumnHeader>{() => <TrackingHeader label="Sticky Left" />}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>

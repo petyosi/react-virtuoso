@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { localSource } from '../../local-source'
-import { remoteSource } from '../../remote-source'
+import { localModel } from '../../local-model'
+import { remoteModel } from '../../remote-model'
 
+import type { PipelineHandler } from '../../local-model'
 import type { DataResult } from '../../types'
-import type { PipelineHandler } from '../../local-source'
 
 interface Item {
   id: number
@@ -53,7 +53,7 @@ function latestResult<T>(results: DataResult<T>[]) {
 
 describe('model persistence', () => {
   it('captures only persisted remote actions', () => {
-    const model = remoteSource<Item, Params>({
+    const model = remoteModel<Item, Params>({
       initialParams: {},
       fetch: vi.fn(() => Promise.resolve(fetchResult)),
       actions: {
@@ -80,7 +80,7 @@ describe('model persistence', () => {
 
   it('restores remote persisted actions by applying handlers to initial params', () => {
     const fetch = vi.fn(() => Promise.resolve(fetchResult))
-    const model = remoteSource<Item, Params>({
+    const model = remoteModel<Item, Params>({
       initialParams: { dataset: 'active' },
       fetch,
       actions: {
@@ -117,7 +117,7 @@ describe('model persistence', () => {
 
   it('resets remote persisted actions to initial params', () => {
     const fetch = vi.fn(() => Promise.resolve(fetchResult))
-    const model = remoteSource<Item, Params>({
+    const model = remoteModel<Item, Params>({
       initialParams: { dataset: 'active' },
       fetch,
       actions: {
@@ -144,7 +144,7 @@ describe('model persistence', () => {
 
   it('supports custom remote action capture and restore', () => {
     const fetch = vi.fn(() => Promise.resolve(fetchResult))
-    const model = remoteSource<Item, Params>({
+    const model = remoteModel<Item, Params>({
       initialParams: {},
       fetch,
       actions: {
@@ -177,7 +177,7 @@ describe('model persistence', () => {
   })
 
   it('passes remote group metadata through model results', async () => {
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       initialParams: {},
       fetch: vi.fn(() =>
         Promise.resolve({
@@ -201,7 +201,7 @@ describe('model persistence', () => {
   })
 
   it('captures and restores local pipeline action payloads', () => {
-    const model = localSource<Item>({
+    const model = localModel<Item>({
       data: ITEMS,
       pipeline: ['filter', 'sort'],
       actions: {

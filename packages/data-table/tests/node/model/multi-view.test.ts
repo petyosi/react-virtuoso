@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { localSource } from '../../../src/model/local-source'
+import { localModel } from '../../../src/model/local-model'
 
 import type { DataResult, MessageEnvelope } from '../../../src/model/types'
 
@@ -28,7 +28,7 @@ function messagesForView(messages: MessageEnvelope[], viewId: string): MessageEn
 
 describe('multi-view', () => {
   it('two views see the same initial data', () => {
-    const model = localSource<Item>({ data: ITEMS })
+    const model = localModel<Item>({ data: ITEMS })
     const messages = collectMessages(model)
 
     model.send({ action: 'handshake', viewId: 'v1' })
@@ -49,7 +49,7 @@ describe('multi-view', () => {
   })
 
   it('filter one view, other is unaffected', () => {
-    const model = localSource<Item>({
+    const model = localModel<Item>({
       data: ITEMS,
       pipeline: ['filter'],
       actions: {
@@ -84,7 +84,7 @@ describe('multi-view', () => {
   })
 
   it('disconnect last subscriber destroys view state', () => {
-    const model = localSource<Item>({
+    const model = localModel<Item>({
       data: ITEMS,
       pipeline: ['filter'],
       actions: {
@@ -110,7 +110,7 @@ describe('multi-view', () => {
   })
 
   it('reconnect gives fresh state with no carryover', () => {
-    const model = localSource<Item>({
+    const model = localModel<Item>({
       data: ITEMS,
       pipeline: ['filter', 'sort'],
       actions: {
@@ -145,7 +145,7 @@ describe('multi-view', () => {
   })
 
   it('source mutator from one view re-runs pipeline for the acting view', () => {
-    const model = localSource<Item>({
+    const model = localModel<Item>({
       data: ITEMS,
       pipeline: ['filter'],
       actions: {
@@ -179,7 +179,7 @@ describe('multi-view', () => {
   })
 
   it('independent dataVersions per view', () => {
-    const model = localSource<Item>({ data: ITEMS })
+    const model = localModel<Item>({ data: ITEMS })
     const messages = collectMessages(model)
 
     model.send({ action: 'handshake', viewId: 'v1' })

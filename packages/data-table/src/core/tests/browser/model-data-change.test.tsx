@@ -6,9 +6,9 @@ import { render } from 'vitest-browser-react'
 import { Cell, VirtuosoDataTable } from '../../..'
 import { Column } from '../../../columns/Column'
 import { ColumnHeader } from '../../../columns/ColumnHeader'
-import { localSource } from '../../../model/local-source'
+import { localModel } from '../../../model/local-model'
 
-import type { PipelineHandler } from '../../../model/local-source'
+import type { PipelineHandler } from '../../../model/local-model'
 import type { DataModelHandle } from '../../../model/types'
 
 const HEADER_HEIGHT = 40
@@ -53,7 +53,7 @@ describe('model-driven data change', () => {
 
     function TestComponent() {
       const model = useMemo(() => {
-        const m = localSource<Item>({
+        const m = localModel<Item>({
           data: ITEMS,
           pipeline: ['sort'],
           actions: {

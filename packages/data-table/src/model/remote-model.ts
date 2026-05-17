@@ -8,6 +8,7 @@ import {
   persistenceKeyForAction,
 } from './persistence'
 
+import type { ModelActionPersistenceConfig } from './persistence'
 import type {
   AsyncErrorEmitter,
   AsyncResultEmitter,
@@ -18,7 +19,6 @@ import type {
   FrameAdapter,
   ModelPersistenceState,
 } from './types'
-import type { ModelActionPersistenceConfig } from './persistence'
 
 /**
  * Parameters for an offset-based fetch request.
@@ -68,28 +68,28 @@ export interface AppendFetchResult<T> {
 }
 
 /**
- * Loading reasons emitted by `remoteSource()`.
+ * Loading reasons emitted by `remoteModel()`.
  *
  * @group Data Models
  */
-export type RemoteSourceLoadingReason = 'initial' | 'refresh' | 'end' | 'viewport'
+export type RemoteModelLoadingReason = 'initial' | 'refresh' | 'end' | 'viewport'
 
 /**
- * Loading lifecycle phase emitted by `remoteSource()`.
+ * Loading lifecycle phase emitted by `remoteModel()`.
  *
  * @group Data Models
  */
-export type RemoteSourceLoadingPhase = 'start' | 'success' | 'error' | 'cancel'
+export type RemoteModelLoadingPhase = 'start' | 'success' | 'error' | 'cancel'
 
 /**
- * Event payload emitted by `remoteSource()` through the model event channel.
+ * Event payload emitted by `remoteModel()` through the model event channel.
  *
  * @group Data Models
  */
-export interface RemoteSourceLoadingEvent {
+export interface RemoteModelLoadingEvent {
   kind: 'loading'
-  reason: RemoteSourceLoadingReason
-  phase: RemoteSourceLoadingPhase
+  reason: RemoteModelLoadingReason
+  phase: RemoteModelLoadingPhase
   errorMessage?: string
 }
 
@@ -155,11 +155,11 @@ export interface AppendViewportContext<Params = Record<string, unknown>> {
 export type AppendViewportAction = { loadMore: true } | void
 
 /**
- * Configuration for an offset-mode remote source.
+ * Configuration for an offset-mode remote model.
  *
  * @group Data Models
  */
-export interface OffsetRemoteSourceConfig<T, Params = Record<string, unknown>> {
+export interface OffsetRemoteModelConfig<T, Params = Record<string, unknown>> {
   mode?: 'offset'
   fetch: (params: FetchParams<Params>) => Promise<FetchResult<T>>
   initialParams: Params
@@ -171,11 +171,11 @@ export interface OffsetRemoteSourceConfig<T, Params = Record<string, unknown>> {
 }
 
 /**
- * Configuration for an append-mode remote source.
+ * Configuration for an append-mode remote model.
  *
  * @group Data Models
  */
-export interface AppendRemoteSourceConfig<T, Params = Record<string, unknown>> {
+export interface AppendRemoteModelConfig<T, Params = Record<string, unknown>> {
   mode: 'append'
   fetch: (params: AppendFetchParams<Params>) => Promise<AppendFetchResult<T>>
   initialParams: Params
@@ -186,13 +186,11 @@ export interface AppendRemoteSourceConfig<T, Params = Record<string, unknown>> {
 }
 
 /**
- * Configuration for `remoteSource()`.
+ * Configuration for `remoteModel()`.
  *
  * @group Data Models
  */
-export type RemoteSourceConfig<T, Params = Record<string, unknown>> =
-  | OffsetRemoteSourceConfig<T, Params>
-  | AppendRemoteSourceConfig<T, Params>
+export type RemoteModelConfig<T, Params = Record<string, unknown>> = OffsetRemoteModelConfig<T, Params> | AppendRemoteModelConfig<T, Params>
 
 interface LoadedRange {
   offset: number
@@ -205,7 +203,7 @@ interface OffsetViewData<T> {
   totalCount: number
   loadedRanges: LoadedRange[]
   abortController: AbortController | null
-  abortReason: RemoteSourceLoadingReason | null
+  abortReason: RemoteModelLoadingReason | null
   viewportAbortControllers: Set<AbortController>
   pendingViewportFetches: Set<string>
 }
@@ -217,7 +215,7 @@ interface AppendViewData<T> {
   hasMore: boolean
   fetching: boolean
   abortController: AbortController | null
-  abortReason: RemoteSourceLoadingReason | null
+  abortReason: RemoteModelLoadingReason | null
 }
 
 function isRangeLoaded<T>(vd: OffsetViewData<T>, offset: number, limit: number): boolean {
@@ -263,8 +261,8 @@ function abortAppendInFlight<T>(vd: AppendViewData<T>) {
 function emitLoadingEvent(
   emit: EventEmitter | null,
   viewId: string,
-  reason: RemoteSourceLoadingReason,
-  phase: RemoteSourceLoadingPhase,
+  reason: RemoteModelLoadingReason,
+  phase: RemoteModelLoadingPhase,
   errorMessage?: string
 ) {
   emit?.(viewId, {
@@ -272,7 +270,7 @@ function emitLoadingEvent(
     reason,
     phase,
     ...(errorMessage ? { errorMessage } : {}),
-  } satisfies RemoteSourceLoadingEvent)
+  } satisfies RemoteModelLoadingEvent)
 }
 
 /**
@@ -318,7 +316,7 @@ export function defaultAppendViewportHandler<Params>(context: AppendViewportCont
 }
 
 // Offset mode implementation
-function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Params>): DataModelHandle<T> {
+function createOffsetModel<T, Params>(config: OffsetRemoteModelConfig<T, Params>): DataModelHandle<T> {
   let currentParams = config.initialParams
   const pageSize = config.pageSize ?? 50
   const actions = config.actions ?? {}
@@ -458,7 +456,7 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
     vd.abortReason = null
   }
 
-  async function doFetch(viewId: string, offset: number, limit: number, reason: RemoteSourceLoadingReason, requestId?: string) {
+  async function doFetch(viewId: string, offset: number, limit: number, reason: RemoteModelLoadingReason, requestId?: string) {
     const vd = getViewData(viewId)
     cancelMainFetch(viewId, vd)
 
@@ -685,7 +683,7 @@ function createOffsetSource<T, Params>(config: OffsetRemoteSourceConfig<T, Param
 }
 
 // Append mode implementation
-function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Params>): DataModelHandle<T> {
+function createAppendModel<T, Params>(config: AppendRemoteModelConfig<T, Params>): DataModelHandle<T> {
   let currentParams = config.initialParams
   const pageSize = config.pageSize ?? 50
   const actions = config.actions ?? {}
@@ -788,7 +786,7 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
     vd.hasMore = true
   }
 
-  async function doFetch(viewId: string, reason: RemoteSourceLoadingReason, requestId?: string) {
+  async function doFetch(viewId: string, reason: RemoteModelLoadingReason, requestId?: string) {
     const vd = getViewData(viewId)
     if (vd.fetching || !vd.hasMore) {
       if (requestId) {
@@ -988,9 +986,9 @@ function createAppendSource<T, Params>(config: AppendRemoteSourceConfig<T, Param
  *
  * @group Data Models
  */
-export function remoteSource<T, Params = Record<string, unknown>>(config: RemoteSourceConfig<T, Params>): DataModelHandle<T> {
+export function remoteModel<T, Params = Record<string, unknown>>(config: RemoteModelConfig<T, Params>): DataModelHandle<T> {
   if (config.mode === 'append') {
-    return createAppendSource(config)
+    return createAppendModel(config)
   }
-  return createOffsetSource(config)
+  return createOffsetModel(config)
 }

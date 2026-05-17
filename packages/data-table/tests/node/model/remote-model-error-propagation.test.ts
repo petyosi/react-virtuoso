@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { remoteSource } from '../../../src/model/remote-source'
+import { remoteModel } from '../../../src/model/remote-model'
 
-import type { FetchParams } from '../../../src/model/remote-source'
+import type { FetchParams } from '../../../src/model/remote-model'
 import type { DataResult, MessageEnvelope } from '../../../src/model/types'
 
 interface Item {
@@ -20,14 +20,14 @@ function collectMessages(model: { subscribe: (fn: (msg: MessageEnvelope) => void
   return messages
 }
 
-describe('remote source error propagation', () => {
+describe('remote model error propagation', () => {
   describe('offset mode', () => {
     it('emits an error message when initial fetch rejects', async () => {
       const fetch = vi.fn((_params: FetchParams) => {
         return Promise.reject(new Error('Network error: connection refused'))
       })
 
-      const model = remoteSource<Item>({
+      const model = remoteModel<Item>({
         fetch,
         initialParams: {},
         pageSize: 20,
@@ -53,7 +53,7 @@ describe('remote source error propagation', () => {
         return Promise.reject(new Error('Server error: 500 Internal Server Error'))
       })
 
-      const model = remoteSource<Item>({
+      const model = remoteModel<Item>({
         fetch,
         initialParams: {},
         pageSize: 20,
@@ -91,7 +91,7 @@ describe('remote source error propagation', () => {
         return Promise.reject(new Error('fetch failed'))
       })
 
-      const model = remoteSource<Item>({
+      const model = remoteModel<Item>({
         fetch,
         initialParams: {},
         pageSize: 50,
@@ -129,7 +129,7 @@ describe('remote source error propagation', () => {
         return Promise.reject(new Error('Network timeout'))
       })
 
-      const model = remoteSource<Item>({
+      const model = remoteModel<Item>({
         mode: 'append',
         fetch,
         initialParams: {},
@@ -159,7 +159,7 @@ describe('remote source error propagation', () => {
         return Promise.resolve({ rows: makeItems(10, 10), hasMore: false, cursor: null })
       })
 
-      const model = remoteSource<Item>({
+      const model = remoteModel<Item>({
         mode: 'append',
         fetch,
         initialParams: {},
@@ -200,7 +200,7 @@ describe('remote source error propagation', () => {
         return Promise.reject(new Error('server down'))
       })
 
-      const model = remoteSource<Item>({
+      const model = remoteModel<Item>({
         fetch,
         initialParams: {},
         onError,
@@ -230,7 +230,7 @@ describe('remote source error propagation', () => {
         return { rows: makeItems(0, 10), totalCount: 10 }
       })
 
-      const model = remoteSource<Item>({
+      const model = remoteModel<Item>({
         fetch,
         initialParams: {},
         pageSize: 10,
@@ -268,7 +268,7 @@ describe('remote source error propagation', () => {
         return { rows: makeItems(0, 10), totalCount: 100 }
       })
 
-      const model = remoteSource<Item>({
+      const model = remoteModel<Item>({
         fetch,
         initialParams: {},
         pageSize: 10,

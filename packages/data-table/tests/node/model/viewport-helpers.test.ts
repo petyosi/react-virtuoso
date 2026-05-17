@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { defaultAppendViewportHandler, defaultOffsetViewportHandler } from '../../../src/model/remote-source'
+import { defaultAppendViewportHandler, defaultOffsetViewportHandler } from '../../../src/model/remote-model'
 
-import type { AppendViewportContext, OffsetViewportContext } from '../../../src/model/remote-source'
+import type { AppendViewportContext, OffsetViewportContext } from '../../../src/model/remote-model'
 
 function offsetCtx(overrides: Partial<OffsetViewportContext>): OffsetViewportContext {
   return {

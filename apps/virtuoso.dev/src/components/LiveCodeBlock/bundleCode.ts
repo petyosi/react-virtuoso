@@ -59,12 +59,12 @@ function virtualFsPlugin(files: Record<string, string>, entryPoint: string): esb
 }
 
 function extractExternalPackages(files: Record<string, string>): string[] {
-  const importRegex = /import\s+(?:{[^}]+}|\*\s+as\s+\w+|\w+)(?:\s*,\s*(?:{[^}]+}|\*\s+as\s+\w+|\w+))?\s+from\s+['"]([^'"]+)['"]/g
+  const importRegex = /(?:import|export)\s+(?:type\s+)?(?:[\s\S]*?\s+from\s+)?['"]([^'"]+)['"]/g
   const packages = new Set<string>()
   for (const code of Object.values(files)) {
     for (const match of code.matchAll(importRegex)) {
       const pkg = match[1]!
-      if (!pkg.startsWith('.') && pkg !== 'react') {
+      if (!pkg.startsWith('.') && pkg !== 'react' && pkg !== 'react/jsx-runtime') {
         packages.add(pkg)
       }
     }

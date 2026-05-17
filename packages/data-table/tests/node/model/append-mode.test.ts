@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { remoteSource } from '../../../src/model/remote-source'
+import { remoteModel } from '../../../src/model/remote-model'
 import { delay } from '../../../src/tests/utils'
 
-import type { AppendFetchParams } from '../../../src/model/remote-source'
+import type { AppendFetchParams } from '../../../src/model/remote-model'
 import type { DataResult, MessageEnvelope } from '../../../src/model/types'
 
 interface Item {
@@ -45,12 +45,12 @@ function createMockAppendFetch(pages: Item[][], delayMs = 0) {
   return { fetch, calls, resetPageIndex: () => (pageIndex = 0) }
 }
 
-describe('remoteSource append mode', () => {
+describe('remoteModel append mode', () => {
   it('initial fetch with cursor=undefined', async () => {
     const page1 = Array.from({ length: 10 }, (_, i) => ({ id: i, name: `item-${i}` }))
     const { fetch, calls } = createMockAppendFetch([page1, []])
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch,
       initialParams: {},
@@ -81,7 +81,7 @@ describe('remoteSource append mode', () => {
     const page2 = Array.from({ length: 5 }, (_, i) => ({ id: i + 5, name: `item-${i + 5}` }))
     const { fetch, calls } = createMockAppendFetch([page1, page2, []])
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch,
       initialParams: {},
@@ -114,7 +114,7 @@ describe('remoteSource append mode', () => {
     const page1 = [{ id: 0, name: 'only-item' }]
     const { fetch } = createMockAppendFetch([page1])
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch,
       initialParams: {},
@@ -140,7 +140,7 @@ describe('remoteSource append mode', () => {
     const page1 = Array.from({ length: 5 }, (_, i) => ({ id: i, name: `item-${i}` }))
     const { fetch, calls, resetPageIndex } = createMockAppendFetch([page1, page1])
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch,
       initialParams: {},
@@ -177,7 +177,7 @@ describe('remoteSource append mode', () => {
     const page2 = Array.from({ length: 5 }, (_, i) => ({ id: i + 5, name: `item-${i + 5}` }))
     const { fetch } = createMockAppendFetch([page1, page2, []], 50)
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch,
       initialParams: {},

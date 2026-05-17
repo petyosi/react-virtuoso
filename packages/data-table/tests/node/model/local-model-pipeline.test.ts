@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { localSource } from '../../../src/model/local-source'
+import { localModel } from '../../../src/model/local-model'
 
 import type { DataResult, MessageEnvelope } from '../../../src/model/types'
 
@@ -20,9 +20,9 @@ function lastPayload(messages: MessageEnvelope[]): DataResult<Item> {
   return messages.at(-1)!.payload as DataResult<Item>
 }
 
-describe('localSource pipeline', () => {
+describe('localModel pipeline', () => {
   it('filter: reduces items by predicate', () => {
-    const model = localSource<Item>({
+    const model = localModel<Item>({
       data: ITEMS,
       pipeline: ['filter'],
       actions: {
@@ -57,7 +57,7 @@ describe('localSource pipeline', () => {
       { id: 2, name: 'b', category: 'A' },
     ]
 
-    const model = localSource<Item>({
+    const model = localModel<Item>({
       data: items,
       pipeline: ['sort'],
       actions: {
@@ -81,7 +81,7 @@ describe('localSource pipeline', () => {
   })
 
   it('filter then sort: pipeline executes in order', () => {
-    const model = localSource<Item>({
+    const model = localModel<Item>({
       data: ITEMS,
       pipeline: ['filter', 'sort'],
       actions: {
@@ -122,7 +122,7 @@ describe('localSource pipeline', () => {
       { id: 4, name: 'item-4', category: 'B' },
     ]
 
-    const model = localSource<Item>({
+    const model = localModel<Item>({
       data: items,
       pipeline: ['group'],
       actions: {
@@ -168,7 +168,7 @@ describe('localSource pipeline', () => {
   })
 
   it('source mutator: removes items and re-runs pipeline', () => {
-    const model = localSource<Item>({
+    const model = localModel<Item>({
       data: ITEMS.slice(0, 10),
       pipeline: ['filter'],
       actions: {
@@ -205,7 +205,7 @@ describe('localSource pipeline', () => {
     )
     const sortHandler = vi.fn(({ data }: { data: Item[]; payload: unknown }) => data.toSorted((a, b) => a.id - b.id))
 
-    const model = localSource<Item>({
+    const model = localModel<Item>({
       data: ITEMS,
       pipeline: ['filter', 'sort'],
       actions: {
@@ -229,7 +229,7 @@ describe('localSource pipeline', () => {
   })
 
   it('full pipeline: filter + sort + group composition', () => {
-    const model = localSource<Item>({
+    const model = localModel<Item>({
       data: ITEMS,
       pipeline: ['filter', 'sort', 'group'],
       actions: {
@@ -287,7 +287,7 @@ describe('localSource pipeline', () => {
   })
 
   it('handshake without actions returns unprocessed data', () => {
-    const model = localSource<Item>({
+    const model = localModel<Item>({
       data: ITEMS.slice(0, 5),
       pipeline: ['filter'],
       actions: {

@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { remoteSource } from '../../../src/model/remote-source'
+import { remoteModel } from '../../../src/model/remote-model'
 import { delay } from '../../../src/tests/utils'
 
-import type { FetchParams } from '../../../src/model/remote-source'
+import type { FetchParams } from '../../../src/model/remote-model'
 import type { DataResult, MessageEnvelope } from '../../../src/model/types'
 
 interface Item {
@@ -41,10 +41,10 @@ function resultMessages(messages: MessageEnvelope[]): MessageEnvelope[] {
   return messages.filter((m) => m.type === 'result')
 }
 
-describe(remoteSource, () => {
+describe(remoteModel, () => {
   it('handshake triggers initial fetch', async () => {
     const { fetch } = createMockFetch(100)
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 20,
@@ -79,7 +79,7 @@ describe(remoteSource, () => {
 
   it('sort action updates params and re-fetches', async () => {
     const { fetch, calls } = createMockFetch(50)
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 10,
@@ -111,7 +111,7 @@ describe(remoteSource, () => {
 
   it('filter action invalidates ranges and re-fetches', async () => {
     const { fetch } = createMockFetch(100)
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 10,
@@ -149,7 +149,7 @@ describe(remoteSource, () => {
       return { rows: makeItems(0, 10), totalCount: 100 }
     })
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 10,
@@ -176,7 +176,7 @@ describe(remoteSource, () => {
 
   it('loadRange fetches missing segments', async () => {
     const { fetch } = createMockFetch(100)
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 20,
@@ -204,7 +204,7 @@ describe(remoteSource, () => {
 
   it('loadRange skips already-loaded ranges', async () => {
     const { fetch } = createMockFetch(100)
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 50,
@@ -227,7 +227,7 @@ describe(remoteSource, () => {
   it('placeholder fills unloaded entries', async () => {
     const { fetch } = createMockFetch(100)
     const PLACEHOLDER: Item = { id: -1, name: 'loading...' }
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 10,
@@ -259,7 +259,7 @@ describe(remoteSource, () => {
       return { rows: [], totalCount: 0 }
     })
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
     })

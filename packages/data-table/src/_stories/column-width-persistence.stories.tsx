@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { remoteSource } from '@virtuoso.dev/data-table'
+import { remoteModel } from '@virtuoso.dev/data-table'
 import { columnOrderPersistenceAdapter } from '@virtuoso.dev/data-table/column-reorder'
 import { columnWidthPersistenceAdapter } from '@virtuoso.dev/data-table/column-resize'
 import { DataTableStatePersistence } from '@virtuoso.dev/data-table/state-persistence'
@@ -125,7 +125,7 @@ export function PersistentColumnWidthsWithRemoteSchema() {
   const [persistenceResetKey, setPersistenceResetKey] = useState(0)
   const model = useMemo(
     () =>
-      remoteSource<RemoteRow, DemoParams>({
+      remoteModel<RemoteRow, DemoParams>({
         fetch: fetchRows,
         initialParams: { dataset: 'people' },
         pageSize: 50,

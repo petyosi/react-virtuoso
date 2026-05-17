@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { createModel } from '../../../src/model/model-core'
-import { remoteSource } from '../../../src/model/remote-source'
+import { remoteModel } from '../../../src/model/remote-model'
 
 import type { FrameAdapter, MessageEnvelope } from '../../../src/model/types'
 
@@ -108,7 +108,7 @@ describe('cancel', () => {
     })
   })
 
-  describe('cancel with remote source', () => {
+  describe('cancel with remote model', () => {
     it('param-changing action aborts in-flight fetch', () => {
       const fetchFn = vi.fn(({ signal }: { signal: AbortSignal }) => {
         const { promise, resolve, reject } = Promise.withResolvers<{ rows: { id: number }[]; totalCount: number }>()
@@ -120,7 +120,7 @@ describe('cancel', () => {
         return promise
       })
 
-      const model = remoteSource<{ id: number }>({
+      const model = remoteModel<{ id: number }>({
         fetch: fetchFn,
         initialParams: {},
         pageSize: 10,

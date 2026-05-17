@@ -179,7 +179,9 @@ e.changeWith(columnVisibilityOverrides$, setColumnVisibility$, (overrides, { key
   return next
 })
 
-e.changeWith(columnVisibilityOverrides$, resetColumnVisibility$, (overrides) => (overrides.size === 0 ? overrides : new Map<string, boolean>()))
+e.changeWith(columnVisibilityOverrides$, resetColumnVisibility$, (overrides) =>
+  overrides.size === 0 ? overrides : new Map<string, boolean>()
+)
 
 e.changeWith(
   columnVisibilityOverrides$,

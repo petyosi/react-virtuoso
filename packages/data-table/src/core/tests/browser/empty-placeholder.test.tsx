@@ -1,9 +1,10 @@
 import { expect, test, describe } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { Cell, VirtuosoDataTable } from '../../..'
+import { Cell } from '../../..'
 import { Column } from '../../../columns/Column'
 import { ColumnHeader } from '../../../columns/ColumnHeader'
+import { LocalDataTable as VirtuosoDataTable } from '../../../tests/LocalDataTable'
 
 const HEADER_HEIGHT = 40
 const ROW_HEIGHT = 30
@@ -35,7 +36,7 @@ describe('EmptyPlaceholder', () => {
     const screen = await render(
       <VirtuosoDataTable
         style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-        data={{ data: EMPTY_DATA, groups: [] }}
+        source={EMPTY_DATA}
         EmptyPlaceholder={EmptyPlaceholder}
       >
         <Column field="name">
@@ -71,7 +72,7 @@ describe('EmptyPlaceholder', () => {
     const screen = await render(
       <VirtuosoDataTable
         style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-        data={{ data: EMPTY_DATA, groups: [] }}
+        source={EMPTY_DATA}
         context={testContext}
         EmptyPlaceholder={EmptyPlaceholder}
       >
@@ -111,11 +112,7 @@ describe('EmptyPlaceholder', () => {
     }
 
     const screen = await render(
-      <VirtuosoDataTable
-        style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-        data={{ data: items, groups: [] }}
-        EmptyPlaceholder={EmptyPlaceholder}
-      >
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={items} EmptyPlaceholder={EmptyPlaceholder}>
         <Column field="name">
           <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Name</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>

@@ -38,6 +38,7 @@
     "@virtuoso.dev/data-table": "workspace:*",
     "@virtuoso.dev/masonry": "workspace:*",
     "@virtuoso.dev/message-list": "^1.15.2",
+    "@virtuoso.dev/reactive-engine-react": "workspace:*",
     "astro": "^5.6.1",
     "astro-og-canvas": "^0.7.2",
     "canvaskit-wasm": "^0.40.0",

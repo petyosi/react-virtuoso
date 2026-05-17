@@ -1,5 +1,7 @@
+import { useMemo } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 
+import { localModel } from '@virtuoso.dev/data-table'
 import { usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
 import { Button } from '@/components/ui/button'
@@ -27,6 +29,16 @@ const ITEMS = Array.from({ length: ITEM_COUNT }, (_, rowIndex) => {
 
 const TABLE_STYLE: CSSProperties = { height: 400, width: 600 }
 
+const WIDE_CONTAINER_ITEMS = Array.from({ length: 20 }, (_, i) => ({
+  col0: `R${i}C0`,
+  col1: `R${i}C1`,
+  col2: `R${i}C2`,
+}))
+
+function useItemsModel(data: typeof ITEMS | typeof WIDE_CONTAINER_ITEMS) {
+  return useMemo(() => localModel({ data }), [data])
+}
+
 function StoryFrame({ title, description, children }: { title: string; description: string; children: ReactNode }) {
   return (
     <Card className="w-fit max-w-full">
@@ -40,12 +52,14 @@ function StoryFrame({ title, description, children }: { title: string; descripti
 }
 
 export function LeftStickyColumn() {
+  const model = useItemsModel(ITEMS)
+
   return (
     <StoryFrame
       title="Left Sticky Column"
       description="Pins the first column while the remaining columns scroll horizontally inside the shadcn card shell."
     >
-      <DataTable className="rounded-xl" style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
+      <DataTable className="rounded-xl" style={TABLE_STYLE} model={model}>
         <DataTableColumn field="id" sticky="left">
           <DataTableColumnHeader>ID</DataTableColumnHeader>
           <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
@@ -62,12 +76,14 @@ export function LeftStickyColumn() {
 }
 
 export function RightStickyColumn() {
+  const model = useItemsModel(ITEMS)
+
   return (
     <StoryFrame
       title="Right Sticky Column"
       description="Pins the trailing actions column while the rest of the table remains scrollable inside a card wrapper."
     >
-      <DataTable className="rounded-xl" style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
+      <DataTable className="rounded-xl" style={TABLE_STYLE} model={model}>
         {Array.from({ length: COLUMN_COUNT }, (_, i) => (
           <DataTableColumn key={`col${i}`} field={`col${i}`}>
             <DataTableColumnHeader>Column {i + 1}</DataTableColumnHeader>
@@ -84,12 +100,14 @@ export function RightStickyColumn() {
 }
 
 export function BothStickyColumns() {
+  const model = useItemsModel(ITEMS)
+
   return (
     <StoryFrame
       title="Both Sticky Columns"
       description="Pins the leading identifier and trailing actions columns while the center columns scroll normally."
     >
-      <DataTable className="rounded-xl" style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
+      <DataTable className="rounded-xl" style={TABLE_STYLE} model={model}>
         <DataTableColumn field="id" sticky="left">
           <DataTableColumnHeader className="w-10 text-red-500 grow-0">ID</DataTableColumnHeader>
           <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
@@ -110,12 +128,14 @@ export function BothStickyColumns() {
 }
 
 export function MultipleStickyColumns() {
+  const model = useItemsModel(ITEMS)
+
   return (
     <StoryFrame
       title="Multiple Sticky Columns"
       description="Keeps several columns pinned on both edges to exercise the full sticky-column layout inside the same shadcn frame."
     >
-      <DataTable className="rounded-xl" style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
+      <DataTable className="rounded-xl" style={TABLE_STYLE} model={model}>
         <DataTableColumn field="id" sticky="left">
           <DataTableColumnHeader>ID</DataTableColumnHeader>
           <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
@@ -192,18 +212,14 @@ function StickyButtons({
 }
 
 export function WideContainerFewColumns() {
-  const items = Array.from({ length: 20 }, (_, i) => ({
-    col0: `R${i}C0`,
-    col1: `R${i}C1`,
-    col2: `R${i}C2`,
-  }))
+  const model = useItemsModel(WIDE_CONTAINER_ITEMS)
 
   return (
     <StoryFrame
       title="Wide Container Few Columns"
       description="Shows a small table inside the same card wrapper to verify sticky behavior without horizontal crowding."
     >
-      <DataTable className="rounded-xl" style={{ height: 300, width: 600 }} data={{ data: items, groups: [] }}>
+      <DataTable className="rounded-xl" style={{ height: 300, width: 600 }} model={model}>
         <DataTableColumn field="col0" sticky="left">
           <DataTableColumnHeader className="w-20">Col 0</DataTableColumnHeader>
           <DataTableCell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</DataTableCell>
@@ -222,12 +238,14 @@ export function WideContainerFewColumns() {
 }
 
 export function ColumnOverscan() {
+  const model = useItemsModel(ITEMS)
+
   return (
     <StoryFrame
       title="Column Overscan"
       description="Exercises sticky columns with extra horizontal overscan while keeping the story chrome identical to the other shadcn examples."
     >
-      <DataTable className="rounded-xl" style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }} columnOverscanCount={2}>
+      <DataTable className="rounded-xl" style={TABLE_STYLE} model={model} columnOverscanCount={2}>
         <DataTableColumn field="id" sticky="left">
           <DataTableColumnHeader>ID</DataTableColumnHeader>
           <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>
@@ -248,12 +266,14 @@ export function ColumnOverscan() {
 }
 
 export function InteractiveStickyColumn() {
+  const model = useItemsModel(ITEMS)
+
   return (
     <StoryFrame
       title="Interactive Sticky Column"
       description="Lets you toggle sticky state from the header controls while keeping the shadcn layout chrome consistent."
     >
-      <DataTable className="rounded-xl" style={TABLE_STYLE} data={{ data: ITEMS, groups: [] }}>
+      <DataTable className="rounded-xl" style={TABLE_STYLE} model={model}>
         <DataTableColumn field="id" sticky="left">
           <DataTableColumnHeader component={InteractiveStickyHeader} />
           <DataTableCell>{({ cellValue }) => String(cellValue)}</DataTableCell>

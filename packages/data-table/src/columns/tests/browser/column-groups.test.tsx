@@ -1,7 +1,8 @@
 import { expect, test, describe } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { Cell, ColumnGroup, ColumnGroupHeader, VirtuosoDataTable } from '../../..'
+import { Cell, ColumnGroup, ColumnGroupHeader } from '../../..'
+import { LocalDataTable as VirtuosoDataTable } from '../../../tests/LocalDataTable'
 import { Column } from '../../Column'
 import { ColumnHeader } from '../../ColumnHeader'
 
@@ -34,7 +35,7 @@ async function waitForReady(screen: Awaited<ReturnType<typeof render>>) {
 describe('column groups', () => {
   test('columns inside group have groupId set and render together', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data: MULTI_COLUMN_ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={MULTI_COLUMN_ITEMS}>
         <Column field="col0">
           <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Col 0</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
@@ -74,7 +75,7 @@ describe('column groups', () => {
 
   test('sticky group makes all child columns sticky', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data: MULTI_COLUMN_ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={MULTI_COLUMN_ITEMS}>
         <ColumnGroup sticky="left">
           <ColumnGroupHeader>{() => <div style={{ height: 20 }}>Sticky Group</div>}</ColumnGroupHeader>
           <Column field="col0">
@@ -110,7 +111,7 @@ describe('column groups', () => {
 
   test('nested groups render correctly with group header above children', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data: MULTI_COLUMN_ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={MULTI_COLUMN_ITEMS}>
         <ColumnGroup>
           <ColumnGroupHeader>
             {() => (
@@ -166,7 +167,7 @@ describe('column groups', () => {
 
   test('group header receives correct columnKeys and aria-colspan', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data: MULTI_COLUMN_ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={MULTI_COLUMN_ITEMS}>
         <ColumnGroup>
           <ColumnGroupHeader>
             {({ columnKeys }) => (
@@ -203,7 +204,7 @@ describe('column groups', () => {
 
   test('sticky only works at depth 0', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data: MULTI_COLUMN_ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={MULTI_COLUMN_ITEMS}>
         <ColumnGroup sticky="left">
           <ColumnGroupHeader>{() => <div style={{ height: 20 }}>Outer Sticky</div>}</ColumnGroupHeader>
           <Column field="col0">

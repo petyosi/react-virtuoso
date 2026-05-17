@@ -1,13 +1,13 @@
 import { expect, test, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { VirtuosoDataTable } from '../../src'
 import { CellDefinition as Cell } from '../../src/columns/Cell'
 import { Column } from '../../src/columns/Column'
+import { LocalDataTable as VirtuosoDataTable } from '../../src/tests/LocalDataTable'
 
 function SimpleTable() {
   return (
-    <VirtuosoDataTable style={{ height: 200 }} data={{ data: [{ id: 1 }, { id: 2 }, { id: 3 }], groups: [] }}>
+    <VirtuosoDataTable style={{ height: 200 }} source={{ data: [{ id: 1 }, { id: 2 }, { id: 3 }], groups: [] }}>
       <Column field="id">
         <Cell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</Cell>
       </Column>

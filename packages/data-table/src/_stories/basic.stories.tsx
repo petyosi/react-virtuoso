@@ -1,9 +1,10 @@
 import type { CSSProperties } from 'react'
 import { useState } from 'react'
 
-import { Cell, VirtuosoDataTable } from '..'
+import { Cell } from '..'
 import { Column } from '../columns/Column'
 import { ColumnHeader } from '../columns/ColumnHeader'
+import { LocalDataTable as VirtuosoDataTable } from '../tests/LocalDataTable'
 
 const HUNDRED_ITEMS = Array.from({ length: 100 }, (_, i) => ({
   name: `User ${i + 1}`,
@@ -46,7 +47,7 @@ export function HundredItems() {
       >
         Increase render count: {renderCount}
       </button>
-      <VirtuosoDataTable style={LIST_STYLE} data={{ data: HUNDRED_ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={LIST_STYLE} source={HUNDRED_ITEMS}>
         {columns.map((col) => (
           <Column field={col} key={col}>
             <ColumnHeader>
@@ -66,7 +67,7 @@ const CELL_STYLE: CSSProperties = { width: 100, padding: '4px 8px' }
 
 export function TwentyColumns() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: HUNDRED_ITEMS_TWENTY_COLUMNS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={HUNDRED_ITEMS_TWENTY_COLUMNS}>
       {TWENTY_COLUMNS.map((col) => (
         <Column field={col} key={col}>
           <ColumnHeader>{({ column }) => <div style={{ ...COLUMN_HEADER_STYLE, ...CELL_STYLE }}>{column.field}</div>}</ColumnHeader>

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { DataTable, DataTableCell, DataTableColumn, DataTableColumnHeader } from '@/components/ui/data-table'
 
-import { defaultAppendViewportHandler, defaultOffsetViewportHandler, remoteSource } from '..'
+import { defaultAppendViewportHandler, defaultOffsetViewportHandler, remoteModel } from '..'
 import { delay } from '../tests/utils'
 
 import type { AppendFetchParams, FetchParams } from '..'
@@ -137,7 +137,7 @@ function ItemsTable({
   model,
   emptyPlaceholder,
 }: {
-  model: ReturnType<typeof remoteSource<Item, Params>>
+  model: ReturnType<typeof remoteModel<Item, Params>>
   emptyPlaceholder?: React.ComponentType<{ context: unknown }>
 }) {
   const columns = (
@@ -186,7 +186,7 @@ export function RemoteWithSortAndFilter() {
 
   const model = useMemo(
     () =>
-      remoteSource<Item, Params>({
+      remoteModel<Item, Params>({
         fetch: mockFetch,
         initialParams: {},
         pageSize: 50,
@@ -231,7 +231,7 @@ export function AppendMode() {
 
   const model = useMemo(
     () =>
-      remoteSource<Item, Params>({
+      remoteModel<Item, Params>({
         mode: 'append',
         fetch: mockAppendFetch,
         initialParams: {},
@@ -264,7 +264,7 @@ export function AppendModeManualLoadMore() {
 
   const model = useMemo(
     () =>
-      remoteSource<Item, Params>({
+      remoteModel<Item, Params>({
         mode: 'append',
         fetch: mockAppendFetch,
         initialParams: {},
@@ -304,7 +304,7 @@ export function AppendModeLoadingStates() {
 
   const model = useMemo(
     () =>
-      remoteSource<Item, Params>({
+      remoteModel<Item, Params>({
         mode: 'append',
         fetch: mockAppendFetch,
         initialParams: {},
@@ -340,7 +340,7 @@ export function AppendModeLoadingError() {
 
   const model = useMemo(() => {
     let loadMoreCount = 0
-    return remoteSource<Item, Params>({
+    return remoteModel<Item, Params>({
       mode: 'append',
       fetch: async (params: AppendFetchParams<Params>) => {
         await delay(300)
@@ -400,7 +400,7 @@ export function RemoteWithSortAndFilterLoadingOverlay() {
 
   const model = useMemo(
     () =>
-      remoteSource<Item, Params>({
+      remoteModel<Item, Params>({
         fetch: mockFetch,
         initialParams: {},
         pageSize: 50,
@@ -443,7 +443,7 @@ export function RemoteWithSortAndFilterLoadingOverlay() {
 export function InitialRemoteLoading() {
   const model = useMemo(
     () =>
-      remoteSource<Item, Params>({
+      remoteModel<Item, Params>({
         mode: 'append',
         fetch: async (params: AppendFetchParams<Params>) => {
           await delay(1000)

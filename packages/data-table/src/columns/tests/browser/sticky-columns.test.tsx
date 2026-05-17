@@ -1,7 +1,8 @@
 import { expect, test, describe } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { Cell, VirtuosoDataTable } from '../../..'
+import { Cell } from '../../..'
+import { LocalDataTable as VirtuosoDataTable } from '../../../tests/LocalDataTable'
 import { Column } from '../../Column'
 import { ColumnHeader } from '../../ColumnHeader'
 
@@ -37,7 +38,7 @@ async function waitForReady(screen: Awaited<ReturnType<typeof render>>) {
 describe('sticky columns', () => {
   test('left sticky column stays fixed at left edge', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data: MULTI_COLUMN_ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={MULTI_COLUMN_ITEMS}>
         <Column field="col0" sticky="left">
           <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Sticky Left</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
@@ -75,7 +76,7 @@ describe('sticky columns', () => {
 
   test('right sticky column stays fixed at right edge', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data: MULTI_COLUMN_ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={MULTI_COLUMN_ITEMS}>
         {Array.from({ length: COLUMN_COUNT - 1 }, (_, i) => (
           <Column key={`col${i}`} field={`col${i}`}>
             <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Header {i}</div>}</ColumnHeader>
@@ -113,7 +114,7 @@ describe('sticky columns', () => {
 
   test('virtualization excludes sticky columns from scrollable area', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data: MULTI_COLUMN_ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={MULTI_COLUMN_ITEMS}>
         <Column field="col0" sticky="left">
           <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Sticky Left</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
@@ -149,7 +150,7 @@ describe('sticky columns', () => {
 
   test('multiple sticky columns preserve declaration order', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data: MULTI_COLUMN_ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={MULTI_COLUMN_ITEMS}>
         <Column field="col0" sticky="left">
           <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Left 1</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
@@ -197,7 +198,7 @@ describe('sticky columns', () => {
     const WIDE_CELL_WIDTH = 150
 
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: 600 }} data={{ data: MULTI_COLUMN_ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: 600 }} source={MULTI_COLUMN_ITEMS}>
         <Column field="col0" sticky="left">
           <ColumnHeader>{() => <div style={{ width: NARROW_HEADER_WIDTH, height: HEADER_HEIGHT }}>ID</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ width: WIDE_CELL_WIDTH, height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
@@ -238,7 +239,7 @@ describe('sticky columns', () => {
     }))
 
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: WIDE_CONTAINER }} data={{ data: items, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: WIDE_CONTAINER }} source={items}>
         <Column field="col0" sticky="left">
           <ColumnHeader>{() => <div style={{ width: SMALL_COLUMN_WIDTH, height: HEADER_HEIGHT }}>Col 0</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
@@ -265,7 +266,7 @@ describe('sticky columns', () => {
 
   test('sticky header paints above content rows when scrolled vertically', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data: MULTI_COLUMN_ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={MULTI_COLUMN_ITEMS}>
         <Column field="col0" sticky="left">
           <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Sticky Left</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
@@ -314,7 +315,7 @@ describe('sticky columns', () => {
     }))
 
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: WIDE_CONTAINER }} data={{ data: items, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: WIDE_CONTAINER }} source={items}>
         <Column field="col0">
           <ColumnHeader>{() => <div style={{ width: SMALL_COLUMN_WIDTH, height: HEADER_HEIGHT }}>Col 0</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
