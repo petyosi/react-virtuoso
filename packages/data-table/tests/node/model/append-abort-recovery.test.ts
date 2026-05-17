@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { remoteSource } from '../../../src/model/remote-source'
+import { remoteModel } from '../../../src/model/remote-model'
 import { delay } from '../../../src/tests/utils'
 
-import type { AppendFetchParams } from '../../../src/model/remote-source'
+import type { AppendFetchParams } from '../../../src/model/remote-model'
 import type { DataResult, MessageEnvelope } from '../../../src/model/types'
 
 interface Item {
@@ -33,7 +33,7 @@ describe('append mode: abort recovery (bug 6.8)', () => {
       return promise
     })
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch: fetchFn,
       initialParams: {},

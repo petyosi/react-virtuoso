@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { remoteSource } from '../../../src/model/remote-source'
+import { remoteModel } from '../../../src/model/remote-model'
 import { delay } from '../../../src/tests/utils'
 
-import type { AppendFetchParams, AppendViewportContext, FetchParams, OffsetViewportContext } from '../../../src/model/remote-source'
+import type { AppendFetchParams, AppendViewportContext, FetchParams, OffsetViewportContext } from '../../../src/model/remote-model'
 import type { DataResult, MessageEnvelope } from '../../../src/model/types'
 
 interface Item {
@@ -45,7 +45,7 @@ describe('offset mode viewportChange', () => {
   it('handler receives correct context', async () => {
     const { fetch } = createMockFetch(100)
     const handlerCalls: unknown[] = []
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 20,
@@ -74,7 +74,7 @@ describe('offset mode viewportChange', () => {
 
   it('handler returning fetch triggers fetch calls', async () => {
     const { fetch } = createMockFetch(100)
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 20,
@@ -94,7 +94,7 @@ describe('offset mode viewportChange', () => {
 
   it('handler returning void does not fetch', async () => {
     const { fetch } = createMockFetch(100)
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 20,
@@ -112,7 +112,7 @@ describe('offset mode viewportChange', () => {
 
   it('no handler means no-op', async () => {
     const { fetch } = createMockFetch(100)
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 20,
@@ -130,7 +130,7 @@ describe('offset mode viewportChange', () => {
 
   it('skips already-loaded ranges', async () => {
     const { fetch } = createMockFetch(100)
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 50,
@@ -149,7 +149,7 @@ describe('offset mode viewportChange', () => {
 
   it('fetches after param change invalidates ranges', async () => {
     const { fetch } = createMockFetch(100)
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 20,
@@ -177,7 +177,7 @@ describe('offset mode viewportChange', () => {
 
   it('fetches multiple gaps in parallel', async () => {
     const { fetch } = createMockFetch(200, 10)
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 20,
@@ -216,7 +216,7 @@ describe('offset mode viewportChange', () => {
       return { rows: makeItems(params.offset, params.limit), totalCount: 200 }
     })
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 20,
@@ -273,7 +273,7 @@ describe('append mode viewportChange', () => {
     const { fetch } = createMockAppendFetch([page1, []])
     const handlerCalls: unknown[] = []
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch,
       initialParams: {},
@@ -306,7 +306,7 @@ describe('append mode viewportChange', () => {
     const page2 = makeItems(10, 10)
     const { fetch } = createMockAppendFetch([page1, page2, []])
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch,
       initialParams: {},
@@ -327,7 +327,7 @@ describe('append mode viewportChange', () => {
     const page1 = makeItems(0, 10)
     const { fetch } = createMockAppendFetch([page1, []])
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch,
       initialParams: {},
@@ -349,7 +349,7 @@ describe('append mode viewportChange', () => {
     const page1 = makeItems(0, 10)
     const { fetch } = createMockAppendFetch([page1, []])
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch,
       initialParams: {},
@@ -372,7 +372,7 @@ describe('append mode viewportChange', () => {
     const { fetch } = createMockAppendFetch([page1, page2, []], 30)
     const handlerCalls: unknown[] = []
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch,
       initialParams: {},
@@ -404,7 +404,7 @@ describe('append mode viewportChange', () => {
     const { fetch } = createMockAppendFetch([page1])
     const handlerCalls: unknown[] = []
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch,
       initialParams: {},

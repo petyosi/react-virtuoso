@@ -30,7 +30,6 @@ export type { ColumnState, ColumnsStateMap, StickyColumnsState, ColumnItem, Colu
 export { columnWidthOverrides$ } from './columns/column-width-overrides'
 export { useVirtuosoLocation, useCurrentlyRenderedData, useVirtuosoLoadingState } from './core/hooks'
 export type {
-  TableData,
   DataTableLoadingSegment,
   DataTableLoadingState,
   DataTableLoadingStatus,
@@ -62,8 +61,8 @@ export {
   useRemotePublisher,
 } from '@virtuoso.dev/reactive-engine-react'
 export type { EngineRef, EngineSource } from '@virtuoso.dev/reactive-engine-react'
-export { localSource } from './model/local-source'
-export { remoteSource, defaultOffsetViewportHandler, defaultAppendViewportHandler } from './model/remote-source'
+export { localModel } from './model/local-model'
+export { remoteModel, defaultOffsetViewportHandler, defaultAppendViewportHandler } from './model/remote-model'
 export type {
   DataModelHandle,
   DataModelPersistenceCapability,
@@ -77,34 +76,34 @@ export type { ModelActionPersistenceConfig } from './model/persistence'
 export type {
   FetchParams,
   FetchResult,
-  RemoteSourceConfig,
+  RemoteModelConfig,
   AppendFetchParams,
   AppendFetchResult,
-  AppendRemoteSourceConfig,
-  OffsetRemoteSourceConfig,
+  AppendRemoteModelConfig,
+  OffsetRemoteModelConfig,
   OffsetViewportContext,
   OffsetViewportAction,
   AppendViewportContext,
   AppendViewportAction,
   ParamTransformer,
   RemoteActionConfig,
-  RemoteSourceLoadingEvent,
-  RemoteSourceLoadingPhase,
-  RemoteSourceLoadingReason,
-} from './model/remote-source'
+  RemoteModelLoadingEvent,
+  RemoteModelLoadingPhase,
+  RemoteModelLoadingReason,
+} from './model/remote-model'
 export { viewportRange$, currentlyRenderedRows$ } from './rows/row-state'
 export type { ViewportRange } from './rows/row-state'
 export { itemHeight$ } from './resize/sizes'
 export { scrollLocation$, scrollerElement$, cancelSmoothScroll$ } from './scroll/dom'
 export { scrollToRow$, scrollIntoView$ } from './scroll/scroll-to-row'
 export type {
-  LocalSourceConfig,
+  LocalModelConfig,
   PipelineActionConfig,
   PipelineHandler,
   PipelineResult,
   SourceMutator,
   SourceMutatorConfig,
-} from './model/local-source'
+} from './model/local-model'
 export {
   ColumnHeader,
   type ColumnHeaderProps,

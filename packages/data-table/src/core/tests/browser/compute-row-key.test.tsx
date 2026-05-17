@@ -1,9 +1,10 @@
 import { expect, test, describe, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { Cell, VirtuosoDataTable } from '../../..'
+import { Cell } from '../../..'
 import { Column } from '../../../columns/Column'
 import { ColumnHeader } from '../../../columns/ColumnHeader'
+import { LocalDataTable as VirtuosoDataTable } from '../../../tests/LocalDataTable'
 
 const HEADER_HEIGHT = 40
 const ROW_HEIGHT = 30
@@ -41,7 +42,7 @@ describe('computeRowKey', () => {
     const screen = await render(
       <VirtuosoDataTable<Item, string>
         style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-        data={{ data: ITEMS, groups: [] }}
+        source={ITEMS}
         context={testContext}
         computeRowKey={computeRowKey}
       >
@@ -77,7 +78,7 @@ describe('computeRowKey', () => {
     const screen = await render(
       <VirtuosoDataTable<Item, undefined>
         style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-        data={{ data: ITEMS, groups: [] }}
+        source={ITEMS}
         computeRowKey={computeRowKey}
       >
         <Column field="name">

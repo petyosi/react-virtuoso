@@ -3,10 +3,11 @@ import type { CSSProperties } from 'react'
 import { ReorderDropZone, ReorderGrip } from '@/components/ui/data-table/column-reorder'
 import { ResizeHandle } from '@/components/ui/data-table/column-resize'
 
-import { Cell, VirtuosoDataTable } from '..'
+import { Cell } from '..'
 import { Column } from '../columns/Column'
 import { ColumnHeader } from '../columns/ColumnHeader'
 import { HeaderEdge, HeaderOverlay, HeaderStart } from '../columns/header-slots/slots'
+import { LocalDataTable as VirtuosoDataTable } from '../tests/LocalDataTable'
 
 const COLUMN_COUNT = 6
 const ITEM_COUNT = 50
@@ -21,7 +22,7 @@ const ITEMS = Array.from({ length: ITEM_COUNT }, (_row, rowIndex) =>
 
 export function BasicColumnResize() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       {Array.from({ length: COLUMN_COUNT }, (_, index) => (
         <Column key={`col${index}`} field={`col${index}`}>
           <ColumnHeader className={BASE_HEADER_CLASSNAME}>
@@ -37,7 +38,7 @@ export function BasicColumnResize() {
 
 export function ResizeWithReorder() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       {Array.from({ length: COLUMN_COUNT }, (_, index) => (
         <Column key={`col${index}`} field={`col${index}`}>
           <ColumnHeader className={BASE_HEADER_CLASSNAME}>

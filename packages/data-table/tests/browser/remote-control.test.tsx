@@ -18,10 +18,10 @@ import {
   useRemoteCellValue,
   useRemotePublisher,
   viewportRange$,
-  VirtuosoDataTable,
 } from '../../src'
 import { reorderColumns$ } from '../../src/features/column-reorder'
 import { resizeColumn$, resetColumnWidthOverrides$ } from '../../src/features/column-resize'
+import { LocalDataTable as VirtuosoDataTable } from '../../src/tests/LocalDataTable'
 
 import type { ColumnInfo, EngineRef, EngineSource } from '../../src'
 
@@ -94,7 +94,7 @@ function TestTable({ engineRef, engineId }: { engineRef?: EngineRef; engineId?: 
   }
 
   return (
-    <VirtuosoDataTable style={{ height: 320, width: 420 }} data={{ data: ITEMS, groups: [] }} {...remoteProps}>
+    <VirtuosoDataTable style={{ height: 320, width: 420 }} source={ITEMS} {...remoteProps}>
       {FIELDS.map((field) => (
         <Column key={field} field={field}>
           <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>{field}</div>}</ColumnHeader>

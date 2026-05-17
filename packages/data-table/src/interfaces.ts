@@ -15,14 +15,6 @@ export interface SizeRange {
   size: number
 }
 
-/** @internal */
-export type DataArray<T = unknown> = T[]
-
-export interface TableData<Data, Group> {
-  data: (Data | Group)[]
-  groups: { index: number; level: number }[]
-}
-
 /** @internal - Generic virtualized item, used for both rows and columns */
 export interface Item<D> {
   index: number
@@ -32,6 +24,9 @@ export interface Item<D> {
   prevData: D | null
   nextData: D | null
 }
+
+/** @internal */
+export type DataArray = unknown[]
 
 /** Alias for Item, used in row-specific contexts */
 export type Row<D> = Item<D>
@@ -330,14 +325,9 @@ export type ScrollerProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data'
  */
 export interface VirtuosoDataTableProps<Data, Context, Group = unknown> extends ScrollerProps {
   /**
-   * The data to display in the table.
+   * A data model handle that provides data to the table through a message-exchange protocol.
    */
-  data?: TableData<Data, Group>
-  /**
-   * An optional data model handle that provides data to the table through a message-exchange protocol.
-   * When provided, the `data` prop is ignored and data flows through the model bridge instead.
-   */
-  model?: DataModelHandle<Data | Group>
+  model: DataModelHandle<Data | Group>
   /**
    * Any additional state that you need to use in the `ItemContent`, `EmptyPlaceholder`, etc.
    */

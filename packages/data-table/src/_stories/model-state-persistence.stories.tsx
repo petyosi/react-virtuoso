@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { columns$, remoteSource, useCellValue, usePublisher } from '@virtuoso.dev/data-table'
+import { columns$, remoteModel, useCellValue, usePublisher } from '@virtuoso.dev/data-table'
 import { columnOrderPersistenceAdapter } from '@virtuoso.dev/data-table/column-reorder'
 import { columnWidthPersistenceAdapter } from '@virtuoso.dev/data-table/column-resize'
-import { columnVisibilityPersistenceAdapter, columnVisibilityState$, setColumnVisibility$ } from '@virtuoso.dev/data-table/column-visibility'
+import {
+  columnVisibilityPersistenceAdapter,
+  columnVisibilityState$,
+  setColumnVisibility$,
+} from '@virtuoso.dev/data-table/column-visibility'
 import { DataTableStatePersistence, modelStatePersistenceAdapter } from '@virtuoso.dev/data-table/state-persistence'
 
 import { Button } from '@/components/ui/button'
@@ -170,7 +174,7 @@ async function fetchRows({ limit, offset, params, signal }: { limit: number; off
 }
 
 function createModel() {
-  return remoteSource<RemoteRow, DemoParams>({
+  return remoteModel<RemoteRow, DemoParams>({
     fetch: fetchRows,
     initialParams: { dataset: 'people' },
     pageSize: 50,
@@ -404,11 +408,7 @@ export function PersistentRemoteQueryState() {
         </div>
 
         <DataTable className="rounded-xl" model={model} style={{ height: 420 }}>
-          <DataTableStatePersistence
-            adapters={persistenceAdapters}
-            resetKey={persistenceResetKey}
-            storageKey={QUERY_STORAGE_KEY}
-          />
+          <DataTableStatePersistence adapters={persistenceAdapters} resetKey={persistenceResetKey} storageKey={QUERY_STORAGE_KEY} />
           <RemoteGroupHeader />
           <RemoteColumns fields={fields} />
         </DataTable>
@@ -423,7 +423,12 @@ export function PersistentTableAndQueryState() {
   const model = useMemo(createModel, [])
   const fields = useDiscoveredFields(model)
   const persistenceAdapters = useMemo(
-    () => [columnVisibilityPersistenceAdapter(), columnOrderPersistenceAdapter(), columnWidthPersistenceAdapter(), modelStatePersistenceAdapter()],
+    () => [
+      columnVisibilityPersistenceAdapter(),
+      columnOrderPersistenceAdapter(),
+      columnWidthPersistenceAdapter(),
+      modelStatePersistenceAdapter(),
+    ],
     []
   )
 
@@ -456,11 +461,7 @@ export function PersistentTableAndQueryState() {
         </div>
 
         <DataTable className="rounded-xl" model={model} style={{ height: 420 }}>
-          <DataTableStatePersistence
-            adapters={persistenceAdapters}
-            resetKey={persistenceResetKey}
-            storageKey={COMBINED_STORAGE_KEY}
-          />
+          <DataTableStatePersistence adapters={persistenceAdapters} resetKey={persistenceResetKey} storageKey={COMBINED_STORAGE_KEY} />
           <ColumnVisibilityPicker />
           <RemoteGroupHeader />
           <RemoteColumns fields={fields} interactive />

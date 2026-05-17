@@ -1,7 +1,7 @@
 import { Engine } from '@virtuoso.dev/reactive-engine-core'
 import { describe, expect, it, vi } from 'vitest'
 
-import { localSource } from '../../../src/model/local-source'
+import { localModel } from '../../../src/model/local-model'
 import { bridgeModelToEngine } from '../../../src/model/model-bridge'
 import { createModel } from '../../../src/model/model-core'
 import { viewportRange$ } from '../../../src/rows/row-state'
@@ -54,7 +54,7 @@ describe('bridgeModelToEngine cleanup on engine disposal', () => {
   })
 
   it('cleans up per-view pipeline state when the engine is disposed', () => {
-    const model = localSource<Item>({
+    const model = localModel<Item>({
       data: ITEMS,
       pipeline: ['filter'],
       actions: {
@@ -78,7 +78,7 @@ describe('bridgeModelToEngine cleanup on engine disposal', () => {
     // Reconnect with a fresh handshake on the same viewId.
     // If disconnect was sent, the view's pipeline state (including the filter payload)
     // would have been cleared, and this handshake returns all 10 items.
-    // Without disconnect, the stale filter payload persists in localSource's viewStates Map,
+    // Without disconnect, the stale filter payload persists in localModel's viewStates Map,
     // so handshake re-runs the pipeline with the old filter and returns only 5 items.
     const messages = collectMessages(model)
     model.send({ action: 'handshake', viewId: 'default' })

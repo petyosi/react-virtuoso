@@ -1,8 +1,9 @@
 import type { CSSProperties } from 'react'
 
-import { Cell, VirtuosoDataTable } from '..'
+import { Cell } from '..'
 import { Column } from '../columns/Column'
 import { ColumnHeader } from '../columns/ColumnHeader'
+import { LocalDataTable as VirtuosoDataTable } from '../tests/LocalDataTable'
 
 const COLUMN_COUNT = 20
 const ITEM_COUNT = 100
@@ -26,7 +27,7 @@ const STICKY_CELL_STYLE: CSSProperties = { padding: '8px 12px', width: 120, back
 
 export function ScrollbarOverlayHandling() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       <Column field="id" sticky="left">
         <ColumnHeader>{() => <div style={STICKY_HEADER_STYLE}>ID</div>}</ColumnHeader>
         <Cell>{({ cellValue }) => String(cellValue)}</Cell>

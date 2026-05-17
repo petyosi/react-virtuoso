@@ -1,9 +1,10 @@
 import { expect, test, describe } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { Cell, VirtuosoDataTable } from '../../..'
+import { Cell } from '../../..'
 import { Column } from '../../../columns/Column'
 import { ColumnHeader } from '../../../columns/ColumnHeader'
+import { LocalDataTable as VirtuosoDataTable } from '../../../tests/LocalDataTable'
 import { GroupHeaderCell } from '../../GroupHeaderCell'
 
 const HEADER_HEIGHT = 40
@@ -52,7 +53,7 @@ describe('grouped data', () => {
     const tableData = buildGroupedData([3, 3])
 
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={tableData}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={tableData}>
         <GroupHeaderCell>
           {({ row }) => (
             <div style={{ height: ROW_HEIGHT }} data-testid="group-header">
@@ -81,7 +82,7 @@ describe('grouped data', () => {
     const tableData = buildGroupedData([3])
 
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={tableData}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={tableData}>
         <GroupHeaderCell>
           {({ row }) => (
             <div style={{ height: ROW_HEIGHT }} data-testid="group-header">
@@ -117,7 +118,7 @@ describe('grouped data', () => {
     }
 
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={tableData}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={tableData}>
         <GroupHeaderCell>
           {({ row }) => (
             <div style={{ height: ROW_HEIGHT }} data-testid="group-header">
@@ -145,7 +146,7 @@ describe('grouped data', () => {
     const tableData = buildGroupedData([3])
 
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={tableData}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={tableData}>
         <style>{`.padded-group-row { padding-block: 8px; line-height: 20px; }`}</style>
         <GroupHeaderCell className="padded-group-row">{({ row }) => (row.data as GroupItem).groupName}</GroupHeaderCell>
         <Column field="name">
@@ -168,7 +169,7 @@ describe('grouped data', () => {
     const tableData = buildGroupedData([3])
 
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={tableData}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={tableData}>
         <GroupHeaderCell>{({ row }) => <div style={{ height: ROW_HEIGHT }}>{(row.data as GroupItem).groupName}</div>}</GroupHeaderCell>
         <Column field="name">
           <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Name</div>}</ColumnHeader>
@@ -201,7 +202,7 @@ describe('grouped data', () => {
     ]
 
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data, groups }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={{ data, groups }}>
         <GroupHeaderCell>
           {({ row, level }) => (
             <div style={{ height: ROW_HEIGHT }} data-testid="group-header" data-level={level}>
@@ -229,7 +230,7 @@ describe('grouped data', () => {
     const items: DataItem[] = Array.from({ length: ITEM_COUNT }, (_, i) => ({ name: `User ${i + 1}` }))
 
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data: items, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={items}>
         <Column field="name">
           <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Name</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
@@ -258,7 +259,7 @@ describe('grouped data', () => {
     }
 
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={tableData}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={tableData}>
         <GroupHeaderCell component={CustomGroupHeader} />
         <Column field="name">
           <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Name</div>}</ColumnHeader>

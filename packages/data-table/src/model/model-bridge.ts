@@ -1,11 +1,11 @@
+import { Cell } from '@virtuoso.dev/reactive-engine-core'
+
 import { data$, groupIndices$ } from '../core/data'
 import { EMPTY_LOADING_STATE, loadingState$ } from '../core/loading'
 import { viewportRange$ } from '../rows/row-state'
 
-import { Cell } from '@virtuoso.dev/reactive-engine-core'
-
 import type { DataTableLoadingState } from '../interfaces'
-import type { RemoteSourceLoadingEvent, RemoteSourceLoadingReason } from './remote-source'
+import type { RemoteModelLoadingEvent, RemoteModelLoadingReason } from './remote-model'
 import type { DataModelHandle, DataResult, MessageEnvelope } from './types'
 import type { Engine } from '@virtuoso.dev/reactive-engine-core'
 
@@ -33,7 +33,7 @@ function cloneLoadingState(): DataTableLoadingState {
   }
 }
 
-function segmentKeyForReason(reason: RemoteSourceLoadingReason): keyof DataTableLoadingState | null {
+function segmentKeyForReason(reason: RemoteModelLoadingReason): keyof DataTableLoadingState | null {
   switch (reason) {
     case 'initial': {
       return 'initial'
@@ -59,7 +59,7 @@ export function bridgeModelToEngine(model: DataModelHandle, engine: Engine, view
     }
 
     if (msg.type === 'event' && msg.payload && typeof msg.payload === 'object' && 'kind' in msg.payload) {
-      const event = msg.payload as RemoteSourceLoadingEvent
+      const event = msg.payload as RemoteModelLoadingEvent
       if (event.kind === 'loading') {
         const segmentKey = segmentKeyForReason(event.reason)
         if (segmentKey !== null) {

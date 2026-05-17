@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { localSource } from '../../../src/model/local-source'
+import { localModel } from '../../../src/model/local-model'
 
 import type { DataResult, MessageEnvelope } from '../../../src/model/types'
 
-describe(localSource, () => {
+describe(localModel, () => {
   it('produces a result on handshake with the provided data', () => {
     const items = Array.from({ length: 10 }, (_, i) => ({ id: i }))
-    const model = localSource({ data: items })
+    const model = localModel({ data: items })
 
     const messages: MessageEnvelope[] = []
     model.subscribe((msg) => messages.push(msg))
@@ -32,7 +32,7 @@ describe(localSource, () => {
       { index: 0, level: 0 },
       { index: 5, level: 0 },
     ]
-    const model = localSource({ data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], groups })
+    const model = localModel({ data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], groups })
 
     const messages: MessageEnvelope[] = []
     model.subscribe((msg) => messages.push(msg))
@@ -43,7 +43,7 @@ describe(localSource, () => {
   })
 
   it('setData triggers a new result with updated data', () => {
-    const model = localSource({ data: [1, 2, 3] })
+    const model = localModel({ data: [1, 2, 3] })
 
     const messages: MessageEnvelope[] = []
     model.subscribe((msg) => messages.push(msg))
@@ -57,7 +57,7 @@ describe(localSource, () => {
   })
 
   it('disconnect stops further emissions for that view', () => {
-    const model = localSource({ data: [1] })
+    const model = localModel({ data: [1] })
 
     const messages: MessageEnvelope[] = []
     model.subscribe((msg) => messages.push(msg))
@@ -71,7 +71,7 @@ describe(localSource, () => {
   })
 
   it('destroy prevents further messages', () => {
-    const model = localSource({ data: [1] })
+    const model = localModel({ data: [1] })
 
     const messages: MessageEnvelope[] = []
     model.subscribe((msg) => messages.push(msg))

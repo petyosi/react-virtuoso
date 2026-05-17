@@ -3,9 +3,10 @@ import type { CSSProperties } from 'react'
 
 import { useEngine, usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
-import { unstableEnableRowRenderEvents$, unstableRowRender$, Cell, VirtuosoDataTable } from '..'
+import { unstableEnableRowRenderEvents$, unstableRowRender$, Cell } from '..'
 import { Column } from '../columns/Column'
 import { ColumnHeader } from '../columns/ColumnHeader'
+import { LocalDataTable as VirtuosoDataTable } from '../tests/LocalDataTable'
 
 import type { UnstableRowRenderEvent } from '..'
 
@@ -182,7 +183,7 @@ function RowRenderMetricsBridge({ onRowRender }: { onRowRender: (event: Unstable
 
 const RenderStormTable = React.memo(function RenderStormTable({ onRowRender }: { onRowRender: (event: UnstableRowRenderEvent) => void }) {
   return (
-    <VirtuosoDataTable style={TABLE_STYLE} data={{ data: ROWS, groups: [] }}>
+    <VirtuosoDataTable style={TABLE_STYLE} source={ROWS}>
       <RowRenderMetricsBridge onRowRender={onRowRender} />
 
       <Column field="rowId" sticky="left">

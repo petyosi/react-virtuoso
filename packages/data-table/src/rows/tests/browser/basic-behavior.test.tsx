@@ -1,9 +1,10 @@
 import { expect, test, describe } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { Cell, VirtuosoDataTable } from '../../..'
+import { Cell } from '../../..'
 import { Column } from '../../../columns/Column'
 import { ColumnHeader } from '../../../columns/ColumnHeader'
+import { LocalDataTable as VirtuosoDataTable } from '../../../tests/LocalDataTable'
 
 const HEADER_HEIGHT = 40
 const ROW_HEIGHT = 30
@@ -41,7 +42,7 @@ async function waitForReady(screen: Awaited<ReturnType<typeof render>>) {
 
 function MultiColumnTable() {
   return (
-    <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data: MULTI_COLUMN_ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={MULTI_COLUMN_ITEMS}>
       {Array.from({ length: COLUMN_COUNT }, (_, i) => (
         <Column key={`col${i}`} field={`col${i}` as keyof (typeof MULTI_COLUMN_ITEMS)[0]}>
           <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Header {i}</div>}</ColumnHeader>
@@ -55,7 +56,7 @@ function MultiColumnTable() {
 describe('row virtualization', () => {
   test('renders only visible rows', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT }} data={{ data: ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT }} source={ITEMS}>
         <Column field="name">
           <ColumnHeader>{({ column }) => <div style={{ height: HEADER_HEIGHT }}>{column.field}</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
@@ -71,7 +72,7 @@ describe('row virtualization', () => {
 
   test('table body height matches total content size', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT }} data={{ data: ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT }} source={ITEMS}>
         <Column field="name">
           <ColumnHeader>{({ column }) => <div style={{ height: HEADER_HEIGHT }}>{column.field}</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>

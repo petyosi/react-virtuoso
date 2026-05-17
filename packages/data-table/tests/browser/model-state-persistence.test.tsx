@@ -4,12 +4,12 @@ import { expect, test } from 'vitest'
 import { render } from 'vitest-browser-react'
 import { userEvent } from 'vitest/browser'
 
-import { Cell, Column, ColumnHeader, GroupHeaderCell, remoteSource, VirtuosoDataTable } from '../../src'
+import { Cell, Column, ColumnHeader, GroupHeaderCell, remoteModel, VirtuosoDataTable } from '../../src'
 import { DataTableStatePersistence, modelStatePersistenceAdapter } from '../../src/features/state-persistence'
-import { localSource } from '../../src/model/local-source'
+import { localModel } from '../../src/model/local-model'
 
 import type { DataTableStatePersistenceStorage } from '../../src/features/state-persistence'
-import type { PipelineHandler } from '../../src/model/local-source'
+import type { PipelineHandler } from '../../src/model/local-model'
 
 interface Item {
   id: number
@@ -94,7 +94,7 @@ test('model state persistence restores and resets local model output without use
     const [resetKey, setResetKey] = useState(0)
     const model = useMemo(
       () =>
-        localSource<Item>({
+        localModel<Item>({
           data: ITEMS,
           pipeline: ['sort'],
           actions: {
@@ -161,7 +161,7 @@ test('remote model state persistence can render restored group rows', async () =
   function TestTable() {
     const model = useMemo(
       () =>
-        remoteSource<RemoteItem>({
+        remoteModel<RemoteItem>({
           initialParams: {},
           fetch: ({ params }) => {
             if (params.groupBy) {

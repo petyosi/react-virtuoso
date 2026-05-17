@@ -4,10 +4,10 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { Cell, VirtuosoDataTable } from '..'
 import { Column } from '../columns/Column'
 import { ColumnHeader } from '../columns/ColumnHeader'
-import { localSource } from '../model/local-source'
+import { localModel } from '../model/local-model'
 import { GroupHeaderCell } from '../rows/GroupHeaderCell'
 
-import type { PipelineHandler } from '../model/local-source'
+import type { PipelineHandler } from '../model/local-model'
 import type { MessageEnvelope } from '../model/types'
 
 interface Item {
@@ -50,7 +50,7 @@ export function FilterAndSort() {
 
   const model = useMemo(
     () =>
-      localSource<Item>({
+      localModel<Item>({
         data: ITEMS,
         pipeline: ['filter', 'sort'],
         actions: {
@@ -158,7 +158,7 @@ export function GroupByCategory() {
 
   const model = useMemo(
     () =>
-      localSource<Item, GroupLabel>({
+      localModel<Item, GroupLabel>({
         data: ITEMS,
         pipeline: ['filter', 'group'],
         actions: {
@@ -272,7 +272,7 @@ export function ProtocolLifecycle() {
 
   const model = useMemo(() => {
     let throwNext = false
-    const m = localSource<Item>({
+    const m = localModel<Item>({
       data: ITEMS.slice(0, 20),
       pipeline: ['transform'],
       actions: {

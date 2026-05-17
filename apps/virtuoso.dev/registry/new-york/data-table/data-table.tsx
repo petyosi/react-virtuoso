@@ -38,7 +38,6 @@ import type {
   HeaderSlotCustomComponent,
   ColumnState,
   ColumnInfo,
-  TableData,
   RowLocation,
   ListScrollLocation,
   Row,
@@ -191,7 +190,10 @@ interface DataTableColumnHeaderProps {
 }
 
 function DataTableColumnHeader(props: DataTableColumnHeaderProps) {
-  const className = cn('flex h-10 items-center px-2 align-middle text-sm font-medium text-foreground whitespace-nowrap', props.className)
+  const className = cn(
+    'flex h-10 min-w-0 items-center overflow-hidden truncate px-2 align-middle text-sm font-medium text-foreground',
+    props.className
+  )
 
   if (props.component) {
     return <ColumnHeader className={className} component={props.component} />
@@ -218,7 +220,7 @@ function DataTableColumnHeader(props: DataTableColumnHeaderProps) {
 function DataTableCell(props: CellDefinitionProps) {
   const { children, className } = props
   return (
-    <Cell className={cn('p-2 align-middle text-sm whitespace-nowrap', className)}>
+    <Cell className={cn('min-w-0 overflow-hidden truncate p-2 align-middle text-sm', className)}>
       {(params) => (typeof children === 'function' ? children(params) : children)}
     </Cell>
   )
@@ -258,7 +260,6 @@ export {
   type HeaderSlotCustomComponent,
   type ColumnState,
   type ColumnInfo,
-  type TableData,
   type RowLocation,
   type ListScrollLocation,
   type Row,

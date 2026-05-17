@@ -3,9 +3,9 @@ import { useState } from 'react'
 import { expect, test, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { VirtuosoDataTable } from '../../src'
 import { CellDefinition as Cell } from '../../src/columns/Cell'
 import { Column } from '../../src/columns/Column'
+import { LocalDataTable as VirtuosoDataTable } from '../../src/tests/LocalDataTable'
 
 const DATA = Array.from({ length: 100 }, (_, i) => ({ id: i, name: `item-${i}` }))
 
@@ -33,7 +33,7 @@ function TestHarness() {
       <button data-testid="switch" onClick={() => setActiveParent((p) => (p === 'a' ? 'b' : 'a'))}>
         Switch
       </button>
-      <VirtuosoDataTable customScrollParent={activeParent === 'a' ? parentA : parentB} data={{ data: DATA, groups: [] }}>
+      <VirtuosoDataTable customScrollParent={activeParent === 'a' ? parentA : parentB} source={DATA}>
         <Column field="id">
           <Cell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</Cell>
         </Column>

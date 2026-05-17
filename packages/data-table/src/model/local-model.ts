@@ -8,8 +8,8 @@ import {
   persistenceKeyForAction,
 } from './persistence'
 
-import type { AsyncResultEmitter, ConcurrencyStrategy, DataModelHandle, DataResult, FrameAdapter, ModelPersistenceState } from './types'
 import type { ModelActionPersistenceConfig } from './persistence'
+import type { AsyncResultEmitter, ConcurrencyStrategy, DataModelHandle, DataResult, FrameAdapter, ModelPersistenceState } from './types'
 
 /**
  * The result of a local pipeline stage.
@@ -19,7 +19,7 @@ import type { ModelActionPersistenceConfig } from './persistence'
 export type PipelineResult<T, G = never> = (T | G)[] | DataResult<T, G>
 
 /**
- * A pipeline stage handler for `localSource()`.
+ * A pipeline stage handler for `localModel()`.
  *
  * @group Data Models
  */
@@ -55,11 +55,11 @@ export interface SourceMutatorConfig<T> {
 }
 
 /**
- * Configuration for `localSource()`.
+ * Configuration for `localModel()`.
  *
  * @group Data Models
  */
-export interface LocalSourceConfig<T, G = never> {
+export interface LocalModelConfig<T, G = never> {
   data: T[]
   groups?: { index: number; level: number }[]
   pipeline?: string[]
@@ -81,7 +81,7 @@ interface ViewPipelineState<T, G = never> {
  *
  * @group Data Models
  */
-export function localSource<T, G = never>(config: LocalSourceConfig<T, G>): DataModelHandle<T | G> {
+export function localModel<T, G = never>(config: LocalModelConfig<T, G>): DataModelHandle<T | G> {
   let sourceData = config.data
   let currentGroups = config.groups ?? []
   const pipeline = config.pipeline ?? []

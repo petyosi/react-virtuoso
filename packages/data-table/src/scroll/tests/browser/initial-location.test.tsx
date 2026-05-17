@@ -1,10 +1,11 @@
 import { expect, test, describe } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { Cell, VirtuosoDataTable } from '../../..'
+import { Cell } from '../../..'
 import { Column } from '../../../columns/Column'
 import { ColumnHeader } from '../../../columns/ColumnHeader'
 import { delay } from '../../../tests/browser/setup'
+import { LocalDataTable as VirtuosoDataTable } from '../../../tests/LocalDataTable'
 
 import type { RowLocation } from '../../../interfaces'
 
@@ -27,7 +28,7 @@ async function waitForReady(screen: Awaited<ReturnType<typeof render>>) {
 
 function Table({ initialLocation }: { initialLocation: RowLocation }) {
   return (
-    <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT }} data={{ data: ITEMS, groups: [] }} initialLocation={initialLocation}>
+    <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT }} source={ITEMS} initialLocation={initialLocation}>
       <Column field="name">
         <ColumnHeader>{({ column }) => <div style={{ height: HEADER_HEIGHT }}>{column.field}</div>}</ColumnHeader>
         <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>

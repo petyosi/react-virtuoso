@@ -24,6 +24,7 @@ export function getShikiHighlighter(): Promise<Highlighter> {
       import('@shikijs/langs/jsx'),
       import('@shikijs/langs/json'),
       import('@shikijs/langs/bash'),
+      import('@shikijs/langs/css'),
     ],
     themes: [githubDark, githubLight],
   }).then((highlighter) => {

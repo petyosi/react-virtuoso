@@ -1,8 +1,8 @@
 # React Virtuoso Data Table
 
 `@virtuoso.dev/data-table` is a virtualized React data table with row and column virtualization,
-grouped data support, sticky columns, local and remote data models, and a reactive engine for table
-instance control.
+grouped data support, sticky columns, state persistence, and column resizing, reordering, and
+visibility features.
 
 It is the successor to `TableVirtuoso` when you need a table-specific API instead of a virtualized HTML table primitive. The recommended distribution is the shadcn-style wrapper published from `virtuoso.dev`, which gives you styled cells and headers while keeping the headless engine available for advanced behavior.
 
@@ -10,17 +10,15 @@ It is the successor to `TableVirtuoso` when you need a table-specific API instea
 
 - [Shadcn installation](/data-table/installation/shadcn/) for the fastest path to a polished table
 - [Headless installation](/data-table/installation/headless/) for custom design systems or non-Tailwind stacks
-- [Data binding](/data-table/data-binding/) for direct data, local models, and remote models
-- [Column definitions](/data-table/column-definitions/) for headers, cells, and stable column identity
-- [Inferring columns](/data-table/inferring-columns-from-model-data/) for dynamic model schemas
+- [Data model](/data-table/data-model/) for local and remote models
+- [Columns](/data-table/columns/) for headers, cells, stable column identity, and dynamic model schemas
 - [Feature chapters](/data-table/features/grouped-rows/) for grouped rows, sticky columns, resizing, reordering, visibility, persistence, and table instance control
-- [Examples](/data-table/examples/basic-table/) for task-oriented recipes
-- [API reference](/data-table/api-reference/) for the main package types and exports
 
 ## Quick start
 
 ```tsx live
 import { DataTable, DataTableCell, DataTableColumn, DataTableColumnHeader } from '@/components/ui/data-table'
+import { localModel } from '@virtuoso.dev/data-table'
 
 const products = [
   { id: 'SKU-001', name: 'Standing Desk', category: 'Office', price: 699, stock: 14 },
@@ -34,9 +32,11 @@ const currency = new Intl.NumberFormat('en-US', {
   style: 'currency',
 })
 
+const model = localModel({ data: products })
+
 export default function App() {
   return (
-    <DataTable className="rounded-xl" data={{ data: products, groups: [] }} style={{ height: 320 }}>
+    <DataTable className="rounded-xl" model={model} style={{ height: 320 }}>
       <DataTableColumn field="name">
         <DataTableColumnHeader>Name</DataTableColumnHeader>
         <DataTableCell className="font-medium">{({ cellValue }) => String(cellValue)}</DataTableCell>
@@ -58,13 +58,6 @@ export default function App() {
 }
 ```
 
-## Why use it instead of `TableVirtuoso`
-
-- You define columns declaratively instead of returning raw `<td>` fragments.
-- Both axes are virtualized, so very wide tables stay responsive.
-- Group headers, sticky columns, and column groups are first-class.
-- The headless package exposes local and remote data models plus table instance control APIs.
-
 ## Migrating from `TableVirtuoso`
 
 If you are coming from `TableVirtuoso`, start by moving row rendering logic into `DataTableColumn` definitions:
@@ -81,8 +74,8 @@ See [Migrating From TableVirtuoso](/data-table/guides/migrating-from-table-virtu
 
 Start with the two required setup tasks:
 
-1. [Bind data](/data-table/data-binding/) with direct `data`, `localSource()`, or `remoteSource()`.
-2. [Define columns](/data-table/column-definitions/) with `DataTableColumn`, headers, and cells.
+1. [Data model](/data-table/data-model/) with `localModel()` or `remoteModel()`.
+2. [Columns](/data-table/columns/) with `DataTableColumn`, headers, and cells.
 
 Then add the features your table needs:
 

@@ -6,10 +6,10 @@ import { render } from 'vitest-browser-react'
 import { Cell, VirtuosoDataTable } from '../../..'
 import { Column } from '../../../columns/Column'
 import { ColumnHeader } from '../../../columns/ColumnHeader'
-import { defaultAppendViewportHandler, defaultOffsetViewportHandler, remoteSource } from '../../../model/remote-source'
+import { defaultAppendViewportHandler, defaultOffsetViewportHandler, remoteModel } from '../../../model/remote-model'
 import { delay } from '../../../tests/utils'
 
-import type { AppendFetchParams, FetchParams } from '../../../model/remote-source'
+import type { AppendFetchParams, FetchParams } from '../../../model/remote-model'
 import type { DataModelHandle } from '../../../model/types'
 
 const HEADER_HEIGHT = 40
@@ -60,7 +60,7 @@ describe('offset mode auto-fetch on scroll', () => {
     function TestComponent() {
       const model = useMemo(
         () =>
-          remoteSource<Item>({
+          remoteModel<Item>({
             fetch,
             initialParams: {},
             pageSize: PAGE_SIZE,
@@ -99,7 +99,7 @@ describe('offset mode auto-fetch on scroll', () => {
     function TestComponent() {
       const model = useMemo(
         () =>
-          remoteSource<Item>({
+          remoteModel<Item>({
             fetch,
             initialParams: {},
             pageSize: PAGE_SIZE,
@@ -141,7 +141,7 @@ describe('offset mode auto-fetch on scroll', () => {
     function TestComponent() {
       const model = useMemo(
         () =>
-          remoteSource<Item>({
+          remoteModel<Item>({
             fetch,
             initialParams: {},
             pageSize: PAGE_SIZE,
@@ -184,7 +184,7 @@ describe('offset mode auto-fetch on scroll', () => {
 
     function TestComponent() {
       const model = useMemo(() => {
-        const m = remoteSource<Item>({
+        const m = remoteModel<Item>({
           fetch,
           initialParams: {},
           pageSize: PAGE_SIZE,
@@ -228,7 +228,7 @@ describe('offset mode auto-fetch on scroll', () => {
 
     function TestComponent() {
       const model = useMemo(() => {
-        const m = remoteSource<Item>({
+        const m = remoteModel<Item>({
           fetch,
           initialParams: {},
           pageSize: PAGE_SIZE,
@@ -285,7 +285,7 @@ describe('append mode auto-fetch on scroll', () => {
     function TestComponent() {
       const model = useMemo(
         () =>
-          remoteSource<Item>({
+          remoteModel<Item>({
             mode: 'append',
             fetch,
             initialParams: {},
@@ -324,7 +324,7 @@ describe('append mode auto-fetch on scroll', () => {
     function TestComponent() {
       const model = useMemo(
         () =>
-          remoteSource<Item>({
+          remoteModel<Item>({
             mode: 'append',
             fetch,
             initialParams: {},
@@ -373,7 +373,7 @@ describe('append mode auto-fetch on scroll', () => {
     function TestComponent() {
       const model = useMemo(
         () =>
-          remoteSource<Item>({
+          remoteModel<Item>({
             mode: 'append',
             fetch,
             initialParams: {},
@@ -413,7 +413,7 @@ describe('opt-out: no onViewportChange', () => {
     function TestComponent() {
       const model = useMemo(
         () =>
-          remoteSource<Item>({
+          remoteModel<Item>({
             fetch,
             initialParams: {},
             pageSize: PAGE_SIZE,
@@ -453,7 +453,7 @@ describe('reactive loop termination', () => {
     function TestComponent() {
       const model = useMemo(
         () =>
-          remoteSource<Item>({
+          remoteModel<Item>({
             fetch,
             initialParams: {},
             pageSize: PAGE_SIZE,

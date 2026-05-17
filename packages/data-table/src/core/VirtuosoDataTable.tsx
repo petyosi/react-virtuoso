@@ -5,7 +5,6 @@ import { EngineProvider } from '@virtuoso.dev/reactive-engine-react'
 import { columnDeclarationOrder$, columns$ } from '../columns/Column'
 import { columnItemsState$, columnOverscanCount$ } from '../columns/column-state'
 import { VirtualizedTableContent } from '../layout/VirtualizedTableContent'
-import { localSource } from '../model/local-source'
 import { bridgeModelToEngine, dataModel$, dataModelViewId$ } from '../model/model-bridge'
 import { dataTableStructureEntries$ } from '../resize/resize-observing'
 import { itemHeight$ } from '../resize/sizes'
@@ -43,9 +42,6 @@ import { context$, groupLevelMap$, groupStickyConfig$ } from './data'
 import { loadingState$ } from './loading'
 
 import type { VirtuosoDataTableProps } from '../interfaces'
-import type { DataModelHandle } from '../model/types'
-
-const DEFAULT_DATA = { data: [], groups: [] }
 
 function silenceResizeObserverError(error: ErrorEvent) {
   if (error.message?.includes('ResizeObserver loop')) {
@@ -64,8 +60,7 @@ function silenceResizeObserverError(error: ErrorEvent) {
  */
 function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unknown>) {
   const {
-    data = DEFAULT_DATA,
-    model: externalModel,
+    model,
     computeRowKey = defaultComputeRowKey,
     context = null,
     engineId,
@@ -83,7 +78,6 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
   const initialLocation = props.initialLocation ?? null
   const EmptyPlaceholder = props.EmptyPlaceholder ?? null
   const ScrollElement = props.ScrollElement ?? 'div'
-  const implicitModelRef = React.useRef<DataModelHandle | null>(null)
   const engineProviderProps = {
     ...(engineId === undefined ? {} : { engineId }),
     ...(engineRef === undefined ? {} : { engineRef }),
@@ -121,10 +115,6 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
         e.register(dataModel$)
         e.register(dataModelViewId$)
 
-        const model = externalModel ?? localSource({ data: [...data.data], groups: data.groups })
-        if (!externalModel) {
-          implicitModelRef.current = model
-        }
         e.pubIn({
           [dataModel$]: model,
           [dataModelViewId$]: 'default',
@@ -160,9 +150,6 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
       }}
       // oxlint-disable-next-line jsx-no-new-function-as-prop
       updateFn={(e) => {
-        if (implicitModelRef.current) {
-          implicitModelRef.current.setData!([...data.data], data.groups)
-        }
         e.pubIn({
           [context$]: context,
           [customScrollParent$]: customScrollParent,
@@ -182,7 +169,6 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
       }}
       // oxlint-disable-next-line jsx-no-new-array-as-prop
       updateDeps={[
-        data,
         context,
         customScrollParent,
         increaseViewportBy,

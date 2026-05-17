@@ -4,9 +4,10 @@ import { useEngine, usePublisher } from '@virtuoso.dev/reactive-engine-react'
 import { expect, test } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { unstableEnableRowRenderEvents$, unstableRowRender$, Cell, VirtuosoDataTable } from '../../..'
+import { unstableEnableRowRenderEvents$, unstableRowRender$, Cell } from '../../..'
 import { Column } from '../../../columns/Column'
 import { ColumnHeader } from '../../../columns/ColumnHeader'
+import { LocalDataTable as VirtuosoDataTable } from '../../../tests/LocalDataTable'
 
 import type { UnstableRowRenderEvent } from '../../..'
 
@@ -56,7 +57,7 @@ test('horizontal scroll emits unstable scrollable row render events when enabled
   const events: UnstableRowRenderEvent[] = []
 
   const screen = await render(
-    <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={ITEMS}>
       <RowRenderProbe
         onRowRender={(event) => {
           events.push(event)

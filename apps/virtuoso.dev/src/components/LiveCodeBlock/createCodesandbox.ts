@@ -75,10 +75,17 @@ function resolveLocalFiles(packages: string[]) {
   }
 }
 
+function toSandboxPackageName(pkg: string) {
+  if (pkg.startsWith('@virtuoso.dev/data-table/')) {
+    return '@virtuoso.dev/data-table'
+  }
+  return pkg
+}
+
 export async function createSandbox(files: Record<string, string>, packages: string[]) {
-  const externalPackages = packages.filter((pkg) => !pkg.startsWith('@/'))
+  const externalPackages = packages.filter((pkg) => !pkg.startsWith('@/')).map(toSandboxPackageName)
   const { files: resolvedLocalFiles, packages: localPackages } = resolveLocalFiles(packages)
-  const sandboxDependencies = [...new Set([...externalPackages, ...localPackages])]
+  const sandboxDependencies = [...new Set([...externalPackages, ...localPackages.map(toSandboxPackageName)])]
   const sandboxDependencyVersions = Object.fromEntries(sandboxDependencies.map((pkg) => [pkg, 'latest']))
   const sandboxFiles: Record<string, { content: string }> = {
     'package.json': {

@@ -3,11 +3,11 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { loadingState$ } from '../../../src/core/loading'
 import { bridgeModelToEngine } from '../../../src/model/model-bridge'
-import { remoteSource } from '../../../src/model/remote-source'
+import { remoteModel } from '../../../src/model/remote-model'
 import { viewportRange$ } from '../../../src/rows/row-state'
 import { delay } from '../../../src/tests/utils'
 
-import type { AppendFetchParams } from '../../../src/model/remote-source'
+import type { AppendFetchParams } from '../../../src/model/remote-model'
 
 interface Item {
   id: number
@@ -26,7 +26,7 @@ function createEngine() {
 }
 
 describe('bridgeModelToEngine loading state', () => {
-  it('derives initial and refresh loading state from remote source events', async () => {
+  it('derives initial and refresh loading state from remote model events', async () => {
     const fetch = vi.fn(async (params: AppendFetchParams) => {
       await delay(20)
       const filterParams = params.params as FilterParams
@@ -42,7 +42,7 @@ describe('bridgeModelToEngine loading state', () => {
       }
     })
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch,
       initialParams: {},
@@ -97,7 +97,7 @@ describe('bridgeModelToEngine loading state', () => {
       }
     })
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch,
       initialParams: {},

@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { Cell, Column, ColumnGroup, ColumnGroupHeader, ColumnHeader, GroupHeaderCell, VirtuosoDataTable } from '../..'
+import { Cell, Column, ColumnGroup, ColumnGroupHeader, ColumnHeader, GroupHeaderCell } from '../..'
+import { LocalDataTable as VirtuosoDataTable } from '../LocalDataTable'
 
 const readySelector = '[data-testid=virtuoso-table-root][data-ready]'
 const groupRowSelector = '[data-testid=virtuoso-table-row][data-group-row]'
@@ -19,7 +20,7 @@ async function waitForReady(screen: Awaited<ReturnType<typeof render>>) {
 describe('className support', () => {
   test('applies className to cell wrappers and omits the class attribute when unset', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: 240, width: 400 }} data={{ data: rows, groups: [] }}>
+      <VirtuosoDataTable style={{ height: 240, width: 400 }} source={rows}>
         <Column field="name">
           <ColumnHeader>{() => <span>Name</span>}</ColumnHeader>
           <Cell className="font-medium">{({ cellValue }) => <span data-testid="classed-cell">{String(cellValue)}</span>}</Cell>
@@ -42,7 +43,7 @@ describe('className support', () => {
 
   test('applies className to column headers and omits the class attribute when unset', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: 240, width: 400 }} data={{ data: rows, groups: [] }}>
+      <VirtuosoDataTable style={{ height: 240, width: 400 }} source={rows}>
         <Column field="name">
           <ColumnHeader className="justify-end">{() => <span data-testid="classed-header">Name</span>}</ColumnHeader>
           <Cell>{({ cellValue }) => String(cellValue)}</Cell>
@@ -67,7 +68,7 @@ describe('className support', () => {
 
   test('applies className to column group header wrappers', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: 240, width: 400 }} data={{ data: rows, groups: [] }}>
+      <VirtuosoDataTable style={{ height: 240, width: 400 }} source={rows}>
         <ColumnGroup>
           <ColumnGroupHeader className="text-center">{() => <span data-testid="group-header-content">Inventory</span>}</ColumnGroupHeader>
           <Column field="name">
@@ -86,7 +87,7 @@ describe('className support', () => {
 
   test('applies className to group header rows', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: 240, width: 400 }} data={groupedRows}>
+      <VirtuosoDataTable style={{ height: 240, width: 400 }} source={groupedRows}>
         <GroupHeaderCell className="bg-muted">
           {({ row }) => <span data-testid="group-row-content">{(row.data as { label: string }).label}</span>}
         </GroupHeaderCell>
@@ -108,7 +109,7 @@ describe('className support', () => {
 
   test('preserves layout when wrapper classes add padding', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: 240, width: 720 }} data={{ data: rows, groups: [] }}>
+      <VirtuosoDataTable style={{ height: 240, width: 720 }} source={rows}>
         <Column field="name">
           <ColumnHeader className="flex h-10 items-center px-2 whitespace-nowrap">
             {() => <span data-testid="layout-header-name">Name</span>}

@@ -6,11 +6,11 @@ import { render } from 'vitest-browser-react'
 import { Cell, VirtuosoDataTable } from '../../..'
 import { Column } from '../../../columns/Column'
 import { ColumnHeader } from '../../../columns/ColumnHeader'
-import { defaultAppendViewportHandler, remoteSource } from '../../../model/remote-source'
+import { defaultAppendViewportHandler, remoteModel } from '../../../model/remote-model'
 import { delay } from '../../../tests/utils'
 
 import type { LoadingComponentProps } from '../../../interfaces'
-import type { AppendFetchParams } from '../../../model/remote-source'
+import type { AppendFetchParams } from '../../../model/remote-model'
 import type { DataModelHandle } from '../../../model/types'
 
 const CONTAINER_HEIGHT = 300
@@ -67,7 +67,7 @@ describe('loading slots', () => {
     function TestComponent() {
       const model = useMemo(
         () =>
-          remoteSource<Item>({
+          remoteModel<Item>({
             mode: 'append',
             fetch,
             initialParams: {},
@@ -118,7 +118,7 @@ describe('loading slots', () => {
 
     function TestComponent() {
       const model = useMemo(() => {
-        const nextModel = remoteSource<Item>({
+        const nextModel = remoteModel<Item>({
           mode: 'append',
           fetch,
           initialParams: {},
@@ -185,7 +185,7 @@ describe('loading slots', () => {
     function TestComponent() {
       const model = useMemo(
         () =>
-          remoteSource<Item>({
+          remoteModel<Item>({
             mode: 'append',
             fetch,
             initialParams: {},

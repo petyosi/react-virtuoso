@@ -1,10 +1,11 @@
 import type { CSSProperties } from 'react'
 
-import { Cell, VirtuosoDataTable } from '..'
+import { Cell } from '..'
 import { Column } from '../columns/Column'
 import { ColumnGroup } from '../columns/ColumnGroup'
 import { ColumnGroupHeader } from '../columns/ColumnGroupHeader'
 import { ColumnHeader } from '../columns/ColumnHeader'
+import { LocalDataTable as VirtuosoDataTable } from '../tests/LocalDataTable'
 
 import type { ColumnGroupHeaderCustomComponent } from '../columns/ColumnGroupHeader'
 
@@ -56,7 +57,7 @@ const STICKY_GROUP_HEADER_STYLE: CSSProperties = {
 
 export function BasicColumnGroup() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       <Column field="id">
         <ColumnHeader>{() => <div style={HEADER_STYLE}>ID</div>}</ColumnHeader>
         <Cell>{({ cellValue }) => String(cellValue)}</Cell>
@@ -86,7 +87,7 @@ export function BasicColumnGroup() {
 
 export function NestedColumnGroups() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       <Column field="id">
         <ColumnHeader>{() => <div style={HEADER_STYLE}>ID</div>}</ColumnHeader>
         <Cell>{({ cellValue }) => String(cellValue)}</Cell>
@@ -128,7 +129,7 @@ export function NestedColumnGroups() {
 
 export function DeeplyNestedGroups() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       <Column field="id">
         <ColumnHeader>{() => <div style={HEADER_STYLE}>ID</div>}</ColumnHeader>
         <Cell>{({ cellValue }) => String(cellValue)}</Cell>
@@ -182,7 +183,7 @@ export function DeeplyNestedGroups() {
 
 export function StickyLeftColumnGroup() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       <ColumnGroup sticky="left">
         <ColumnGroupHeader>{() => <div style={STICKY_GROUP_HEADER_STYLE}>Sticky Group</div>}</ColumnGroupHeader>
         <Column field="id">
@@ -207,7 +208,7 @@ export function StickyLeftColumnGroup() {
 
 export function StickyRightColumnGroup() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       {Array.from({ length: COLUMN_COUNT }, (_, i) => (
         <Column key={`col${i}`} field={`col${i}`}>
           <ColumnHeader>{() => <div style={HEADER_STYLE}>Column {i + 1}</div>}</ColumnHeader>
@@ -232,7 +233,7 @@ export function StickyRightColumnGroup() {
 
 export function BothSideStickyGroups() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       <ColumnGroup sticky="left">
         <ColumnGroupHeader>{() => <div style={STICKY_GROUP_HEADER_STYLE}>Identity</div>}</ColumnGroupHeader>
         <Column field="id">
@@ -280,7 +281,7 @@ const CustomGroupHeader: ColumnGroupHeaderCustomComponent = ({ columnKeys, total
 
 export function CustomGroupHeaderComponent() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       <Column field="id">
         <ColumnHeader>{() => <div style={HEADER_STYLE}>ID</div>}</ColumnHeader>
         <Cell>{({ cellValue }) => String(cellValue)}</Cell>
@@ -314,7 +315,7 @@ export function CustomGroupHeaderComponent() {
 
 export function StickyGroupWithNestedGroups() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       <ColumnGroup sticky="left">
         <ColumnGroupHeader>{() => <div style={STICKY_GROUP_HEADER_STYLE}>Employee</div>}</ColumnGroupHeader>
         <Column field="id">
@@ -365,7 +366,7 @@ export function StickyGroupWithNestedGroups() {
 
 export function MixedGroupsAndColumns() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       <Column field="id">
         <ColumnHeader>{() => <div style={HEADER_STYLE}>ID</div>}</ColumnHeader>
         <Cell>{({ cellValue }) => String(cellValue)}</Cell>

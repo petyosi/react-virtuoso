@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { remoteSource } from '../../../src/model/remote-source'
+import { remoteModel } from '../../../src/model/remote-model'
 import { delay } from '../../../src/tests/utils'
 
-import type { AppendFetchParams, FetchParams, RemoteSourceLoadingEvent } from '../../../src/model/remote-source'
+import type { AppendFetchParams, FetchParams, RemoteModelLoadingEvent } from '../../../src/model/remote-model'
 import type { MessageEnvelope } from '../../../src/model/types'
 
 interface Item {
@@ -23,11 +23,11 @@ function collectMessages(model: { subscribe: (fn: (msg: MessageEnvelope) => void
 function loadingEvents(messages: MessageEnvelope[]) {
   return messages
     .filter((msg) => msg.type === 'event')
-    .map((msg) => msg.payload as RemoteSourceLoadingEvent)
+    .map((msg) => msg.payload as RemoteModelLoadingEvent)
     .filter((payload) => payload.kind === 'loading')
 }
 
-describe('remoteSource loading events', () => {
+describe('remoteModel loading events', () => {
   it('emits initial start and success events for offset mode handshake', async () => {
     const fetch = vi.fn(async (params: FetchParams) => {
       await delay(5)
@@ -37,7 +37,7 @@ describe('remoteSource loading events', () => {
       }
     })
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 10,
@@ -68,7 +68,7 @@ describe('remoteSource loading events', () => {
       }
     })
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       fetch,
       initialParams: {},
       pageSize: 10,
@@ -109,7 +109,7 @@ describe('remoteSource loading events', () => {
       }
     })
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch,
       initialParams: {},
@@ -156,7 +156,7 @@ describe('remoteSource loading events', () => {
       throw new Error('transient failure')
     })
 
-    const model = remoteSource<Item>({
+    const model = remoteModel<Item>({
       mode: 'append',
       fetch,
       initialParams: {},

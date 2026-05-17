@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
 
-import { Cell, VirtuosoDataTable } from '..'
+import { Cell } from '..'
 import { Column } from '../columns/Column'
 import { ColumnHeader } from '../columns/ColumnHeader'
+import { LocalDataTable as VirtuosoDataTable } from '../tests/LocalDataTable'
 
 const ITEM_COUNT = 200
 
@@ -18,7 +19,7 @@ const HEADER_STYLE: CSSProperties = { fontWeight: 'bold', borderBottom: '1px sol
 
 export function ZeroHeightCells() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       <Column field="name">
         <ColumnHeader>{() => <div style={HEADER_STYLE}>Name</div>}</ColumnHeader>
         <Cell>{({ cellValue }) => <div style={{ height: 0, overflow: 'hidden' }}>{String(cellValue)}</div>}</Cell>
@@ -33,7 +34,7 @@ export function ZeroHeightCells() {
 
 export function MixedZeroAndNormalHeight() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       <Column field="name">
         <ColumnHeader>{() => <div style={HEADER_STYLE}>Name</div>}</ColumnHeader>
         <Cell>
@@ -64,7 +65,7 @@ export function CollapsibleRows() {
       </button>
       <button onClick={() => setCollapsed(new Set())}>Expand all</button>
 
-      <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
         <Column field="name">
           <ColumnHeader>{() => <div style={HEADER_STYLE}>Name</div>}</ColumnHeader>
           <Cell>

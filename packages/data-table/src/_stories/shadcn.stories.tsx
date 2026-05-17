@@ -1,5 +1,7 @@
 import type { CSSProperties } from 'react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+
+import { localModel } from '@virtuoso.dev/data-table'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -36,16 +38,20 @@ const INTERACTIVE_TABLE_STYLE: CSSProperties = { height: 420 }
 
 export function ShadcnDataTable() {
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all')
-  const data = useMemo(() => {
-    const filtered = filter === 'all' ? ALL_ITEMS : ALL_ITEMS.filter((item) => item.status === filter)
-    return { data: filtered, groups: [] as { index: number; level: number }[] }
+  const filteredItems = useMemo(() => {
+    return filter === 'all' ? ALL_ITEMS : ALL_ITEMS.filter((item) => item.status === filter)
   }, [filter])
+  const model = useMemo(() => localModel<User>({ data: ALL_ITEMS }), [])
+
+  useEffect(() => {
+    model.setData?.(filteredItems)
+  }, [filteredItems, model])
 
   return (
     <Card className="w-full max-w-4xl">
       <CardHeader>
         <CardTitle>Users</CardTitle>
-        <CardDescription>{data.data.length} users total</CardDescription>
+        <CardDescription>{filteredItems.length} users total</CardDescription>
         <div className="flex gap-2 pt-2">
           <Button variant={filter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setFilter('all')}>
             All
@@ -59,7 +65,7 @@ export function ShadcnDataTable() {
         </div>
       </CardHeader>
       <CardContent>
-        <DataTable data={data} style={TABLE_STYLE}>
+        <DataTable model={model} style={TABLE_STYLE}>
           <DataTableColumn field="id">
             <DataTableColumnHeader>ID</DataTableColumnHeader>
             <DataTableCell>
@@ -106,6 +112,8 @@ export function ShadcnDataTable() {
 }
 
 export function ShadcnInteractiveDataTable() {
+  const model = useMemo(() => localModel<User>({ data: ALL_ITEMS }), [])
+
   return (
     <Card className="w-full max-w-5xl">
       <CardHeader>
@@ -113,7 +121,7 @@ export function ShadcnInteractiveDataTable() {
         <CardDescription>Drag the grip to reorder columns. Drag the divider to resize. Double-click the divider to reset.</CardDescription>
       </CardHeader>
       <CardContent>
-        <DataTable className="rounded-xl" data={{ data: ALL_ITEMS, groups: [] }} style={INTERACTIVE_TABLE_STYLE}>
+        <DataTable className="rounded-xl" model={model} style={INTERACTIVE_TABLE_STYLE}>
           <DataTableColumn field="id">
             <DataTableColumnHeader>
               <HeaderStart component={ReorderGrip} />

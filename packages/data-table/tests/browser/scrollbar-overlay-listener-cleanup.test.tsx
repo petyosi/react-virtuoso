@@ -4,20 +4,19 @@ import { render } from 'vitest-browser-react'
 import { VirtuosoDataTable } from '../../src'
 import { CellDefinition as Cell } from '../../src/columns/Cell'
 import { Column } from '../../src/columns/Column'
+import { localModel } from '../../src/model/local-model'
+
+const rows = [
+  { id: 1, name: 'a' },
+  { id: 2, name: 'b' },
+  { id: 3, name: 'c' },
+]
+
+const model = localModel({ data: rows })
 
 function SimpleTable() {
   return (
-    <VirtuosoDataTable
-      style={{ height: 200, width: 300 }}
-      data={{
-        data: [
-          { id: 1, name: 'a' },
-          { id: 2, name: 'b' },
-          { id: 3, name: 'c' },
-        ],
-        groups: [],
-      }}
-    >
+    <VirtuosoDataTable style={{ height: 200, width: 300 }} model={model}>
       <Column field="id">
         <Cell>{({ cellValue }) => <div style={{ height: 30 }}>{String(cellValue)}</div>}</Cell>
       </Column>

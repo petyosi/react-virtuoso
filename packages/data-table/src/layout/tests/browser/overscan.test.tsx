@@ -1,9 +1,10 @@
 import { expect, test, describe } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { Cell, VirtuosoDataTable } from '../../..'
+import { Cell } from '../../..'
 import { Column } from '../../../columns/Column'
 import { ColumnHeader } from '../../../columns/ColumnHeader'
+import { LocalDataTable as VirtuosoDataTable } from '../../../tests/LocalDataTable'
 
 const HEADER_HEIGHT = 40
 const ROW_HEIGHT = 30
@@ -41,7 +42,7 @@ describe('increaseViewportBy', () => {
     const INCREASE_VIEWPORT_BY = 100
 
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT }} data={{ data: ITEMS, groups: [] }} increaseViewportBy={INCREASE_VIEWPORT_BY}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT }} source={ITEMS} increaseViewportBy={INCREASE_VIEWPORT_BY}>
         <Column field="name">
           <ColumnHeader>{({ column }) => <div style={{ height: HEADER_HEIGHT }}>{column.field}</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
@@ -59,7 +60,7 @@ describe('increaseViewportBy', () => {
 
   test('renders default rows without increaseViewportBy', async () => {
     const screen = await render(
-      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT }} data={{ data: ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT }} source={ITEMS}>
         <Column field="name">
           <ColumnHeader>{({ column }) => <div style={{ height: HEADER_HEIGHT }}>{column.field}</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
@@ -79,7 +80,7 @@ describe('columnOverscanCount', () => {
     return (
       <VirtuosoDataTable
         style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-        data={{ data: MULTI_COLUMN_ITEMS, groups: [] }}
+        source={MULTI_COLUMN_ITEMS}
         {...(columnOverscanCount === null ? {} : { columnOverscanCount })}
       >
         {Array.from({ length: COLUMN_COUNT }, (_, i) => (

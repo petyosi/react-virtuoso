@@ -20,12 +20,12 @@ import {
   usePublisher,
   useRemoteCellValue,
   useRemotePublisher,
-  VirtuosoDataTable,
 } from '../../src'
 import { columnOrderPersistenceAdapter, reorderColumns$ } from '../../src/features/column-reorder'
 import { columnWidthPersistenceAdapter } from '../../src/features/column-resize'
 import { columnVisibilityPersistenceAdapter, columnVisibilityState$, setColumnVisibility$ } from '../../src/features/column-visibility'
 import { DataTableStatePersistence } from '../../src/features/state-persistence'
+import { LocalDataTable as VirtuosoDataTable } from '../../src/tests/LocalDataTable'
 
 import type { ColumnInfo } from '../../src'
 import type { DataTableStatePersistenceStorage } from '../../src/features/state-persistence'
@@ -74,7 +74,7 @@ function readSavedColumnVisibility(storage: Map<string, string>, key: string) {
 
 function TestTable() {
   return (
-    <VirtuosoDataTable style={{ height: 320, width: 520 }} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={{ height: 320, width: 520 }} source={ITEMS}>
       {(['name', 'status', 'region'] as const).map((field) => (
         <Column key={field} field={field}>
           <ColumnHeader className="flex h-10 items-center px-3 text-sm font-medium whitespace-nowrap">
@@ -92,7 +92,7 @@ function TestTable() {
 
 function PersistentTestTable({ storage }: { storage: DataTableStatePersistenceStorage }) {
   return (
-    <VirtuosoDataTable style={{ height: 320, width: 520 }} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={{ height: 320, width: 520 }} source={ITEMS}>
       <DataTableStatePersistence adapters={PERSISTENCE_ADAPTERS} debounceMs={0} storage={storage} storageKey="test-widths" />
       {(['name', 'status', 'region'] as const).map((field) => (
         <Column key={field} field={field}>
@@ -111,7 +111,7 @@ function PersistentTestTable({ storage }: { storage: DataTableStatePersistenceSt
 
 function CombinedPersistentTestTable({ storage }: { storage: DataTableStatePersistenceStorage }) {
   return (
-    <VirtuosoDataTable style={{ height: 320, width: 520 }} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={{ height: 320, width: 520 }} source={ITEMS}>
       <DataTableStatePersistence adapters={COMBINED_PERSISTENCE_ADAPTERS} debounceMs={0} storage={storage} storageKey="test-state" />
       {(['name', 'status', 'region'] as const).map((field) => (
         <Column key={field} field={field}>
@@ -130,7 +130,7 @@ function CombinedPersistentTestTable({ storage }: { storage: DataTableStatePersi
 
 function HiddenColumnTestTable() {
   return (
-    <VirtuosoDataTable style={{ height: 320, width: 520 }} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={{ height: 320, width: 520 }} source={ITEMS}>
       <Column field="name">
         <ColumnHeader className="flex h-10 items-center px-3 text-sm font-medium whitespace-nowrap">
           {({ column }) => (
@@ -191,7 +191,7 @@ function FullPersistentTestTable({ storage }: { storage: DataTableStatePersisten
       <button data-testid="reset-state" type="button" onClick={() => setResetKey((key) => key + 1)}>
         reset
       </button>
-      <VirtuosoDataTable style={{ height: 320, width: 520 }} data={{ data: ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: 320, width: 520 }} source={ITEMS}>
         <DataTableStatePersistence
           adapters={FULL_PERSISTENCE_ADAPTERS}
           debounceMs={0}
@@ -243,7 +243,7 @@ function PartialSchemaVisibilityTestTable({ storage }: { storage: DataTableState
       <button data-testid="show-people" type="button" onClick={() => setDataset('people')}>
         people
       </button>
-      <VirtuosoDataTable style={{ height: 320, width: 520 }} data={{ data, groups: [] }}>
+      <VirtuosoDataTable style={{ height: 320, width: 520 }} source={{ data, groups: [] }}>
         <DataTableStatePersistence
           adapters={VISIBILITY_PERSISTENCE_ADAPTERS}
           debounceMs={0}
@@ -297,7 +297,7 @@ function DynamicCombinedPersistentTestTable({ storage }: { storage: DataTableSta
       <button data-testid="reset-state" type="button" onClick={() => setResetKey((key) => key + 1)}>
         reset
       </button>
-      <VirtuosoDataTable style={{ height: 320, width: 520 }} data={{ data: ITEMS, groups: [] }} engineRef={engineRef}>
+      <VirtuosoDataTable style={{ height: 320, width: 520 }} source={ITEMS} engineRef={engineRef}>
         <DataTableStatePersistence
           adapters={adapters}
           debounceMs={0}
@@ -330,7 +330,7 @@ function InteractiveCombinedPersistentTestTable({ storage }: { storage: DataTabl
       <button data-testid="reset-state" type="button" onClick={() => setResetKey((key) => key + 1)}>
         reset
       </button>
-      <VirtuosoDataTable style={{ height: 320, width: 520 }} data={{ data: ITEMS, groups: [] }}>
+      <VirtuosoDataTable style={{ height: 320, width: 520 }} source={ITEMS}>
         <DataTableStatePersistence
           adapters={adapters}
           debounceMs={0}
@@ -536,7 +536,9 @@ test('does not render declaratively hidden columns', async () => {
   const screen = await render(<HiddenColumnTestTable />)
 
   await expect.poll(() => headerOrder(screen.container), { timeout: 2000 }).toBe('name,region')
-  expect([...screen.container.querySelectorAll<HTMLElement>('[data-table-element-role="cell"]')].some((cell) => cell.textContent === 'Active')).toBeFalsy()
+  expect(
+    [...screen.container.querySelectorAll<HTMLElement>('[data-table-element-role="cell"]')].some((cell) => cell.textContent === 'Active')
+  ).toBeFalsy()
 })
 
 test('restores column visibility with order and width persistence', async () => {

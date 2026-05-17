@@ -1,9 +1,10 @@
 import { expect, test, describe, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { Cell, VirtuosoDataTable } from '../../..'
+import { Cell } from '../../..'
 import { Column } from '../../../columns/Column'
 import { ColumnHeader } from '../../../columns/ColumnHeader'
+import { LocalDataTable as VirtuosoDataTable } from '../../../tests/LocalDataTable'
 
 import type { ListScrollLocation } from '../../../interfaces'
 
@@ -40,11 +41,7 @@ describe('onScroll callback', () => {
     const onScroll = vi.fn<(location: ListScrollLocation) => void>()
 
     const screen = await render(
-      <VirtuosoDataTable
-        style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-        data={{ data: ITEMS, groups: [] }}
-        onScroll={onScroll}
-      >
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={ITEMS} onScroll={onScroll}>
         <Column field="name">
           <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Name</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
@@ -74,11 +71,7 @@ describe('onScroll callback', () => {
     const onScroll = vi.fn<(location: ListScrollLocation) => void>()
 
     const screen = await render(
-      <VirtuosoDataTable
-        style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-        data={{ data: ITEMS, groups: [] }}
-        onScroll={onScroll}
-      >
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={ITEMS} onScroll={onScroll}>
         <Column field="name">
           <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Name</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
@@ -107,11 +100,7 @@ describe('onScroll callback', () => {
     const onScroll = vi.fn<(location: ListScrollLocation) => void>()
 
     const screen = await render(
-      <VirtuosoDataTable
-        style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-        data={{ data: ITEMS, groups: [] }}
-        onScroll={onScroll}
-      >
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={ITEMS} onScroll={onScroll}>
         <Column field="name">
           <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Name</div>}</ColumnHeader>
           <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
@@ -145,7 +134,7 @@ describe('onRenderedDataChange callback', () => {
     const screen = await render(
       <VirtuosoDataTable
         style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-        data={{ data: ITEMS, groups: [] }}
+        source={ITEMS}
         onRenderedDataChange={onRenderedDataChange}
       >
         <Column field="name">
@@ -168,7 +157,7 @@ describe('onRenderedDataChange callback', () => {
     const screen = await render(
       <VirtuosoDataTable
         style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-        data={{ data: ITEMS, groups: [] }}
+        source={ITEMS}
         onRenderedDataChange={onRenderedDataChange}
       >
         <Column field="name">
@@ -197,7 +186,7 @@ describe('onRenderedDataChange callback', () => {
     const screen = await render(
       <VirtuosoDataTable
         style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-        data={{ data: ITEMS, groups: [] }}
+        source={ITEMS}
         onRenderedDataChange={onRenderedDataChange}
       >
         <Column field="name">

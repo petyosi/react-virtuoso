@@ -1,9 +1,10 @@
 import type { CSSProperties } from 'react'
 
-import { Cell, VirtuosoDataTable } from '..'
+import { Cell } from '..'
 import { Column } from '../columns/Column'
 import { ColumnHeader } from '../columns/ColumnHeader'
 import { GroupHeaderCell } from '../rows/GroupHeaderCell'
+import { LocalDataTable as VirtuosoDataTable } from '../tests/LocalDataTable'
 
 const HEADER_STYLE: CSSProperties = { fontWeight: 'bold', borderBottom: '1px solid #ccc', padding: '8px 12px' }
 const GROUP_HEADER_STYLE: CSSProperties = {
@@ -125,7 +126,7 @@ export function SingleLevelGrouping() {
   const tableData = buildSingleLevelData()
 
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={tableData}>
+    <VirtuosoDataTable style={LIST_STYLE} source={tableData}>
       <GroupHeaderCell>{({ row }) => <div style={GROUP_HEADER_STYLE}>{(row.data as GroupItem).groupName}</div>}</GroupHeaderCell>
       <Column field="name">
         <ColumnHeader>{() => <div style={HEADER_STYLE}>Name</div>}</ColumnHeader>
@@ -148,7 +149,7 @@ export function MultiLevelGrouping() {
   const tableData = buildMultiLevelData()
 
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={tableData}>
+    <VirtuosoDataTable style={LIST_STYLE} source={tableData}>
       <GroupHeaderCell>
         {({ row, level }) => <div style={LEVEL_STYLES[level] ?? GROUP_HEADER_STYLE}>{(row.data as GroupItem).groupName}</div>}
       </GroupHeaderCell>
@@ -168,7 +169,7 @@ export function LargeMultiLevelGrouping() {
   const tableData = buildLargeMultiLevelData()
 
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={tableData} increaseViewportBy={400}>
+    <VirtuosoDataTable style={LIST_STYLE} source={tableData} increaseViewportBy={400}>
       <GroupHeaderCell>
         {({ row, level }) => <div style={LEVEL_STYLES[level] ?? GROUP_HEADER_STYLE}>{(row.data as GroupItem).groupName}</div>}
       </GroupHeaderCell>

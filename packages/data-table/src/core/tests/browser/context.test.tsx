@@ -3,9 +3,10 @@ import { useState } from 'react'
 import { expect, test, describe } from 'vitest'
 import { render } from 'vitest-browser-react'
 
-import { Cell, VirtuosoDataTable } from '../../..'
+import { Cell } from '../../..'
 import { Column } from '../../../columns/Column'
 import { ColumnHeader } from '../../../columns/ColumnHeader'
+import { LocalDataTable as VirtuosoDataTable } from '../../../tests/LocalDataTable'
 
 const HEADER_HEIGHT = 40
 const ROW_HEIGHT = 30
@@ -49,7 +50,7 @@ describe('context prop', () => {
     const screen = await render(
       <VirtuosoDataTable<(typeof ITEMS)[0], EmptyPlaceholderContext>
         style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-        data={{ data: EMPTY_DATA, groups: [] }}
+        source={EMPTY_DATA}
         context={{ message: 'No data available' }}
         EmptyPlaceholder={EmptyPlaceholder}
       >
@@ -77,11 +78,11 @@ describe('context prop', () => {
     const screen = await render(
       <VirtuosoDataTable<(typeof ITEMS)[0], TestContext>
         style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-        data={{ data: ITEMS, groups: [] }}
+        source={ITEMS}
         context={{ keyPrefix: 'test-prefix' }}
         computeRowKey={({ data, context, index }) => {
           capturedCalls.push({ contextValue: context.keyPrefix, index })
-          return `${context.keyPrefix}-${(data as (typeof ITEMS)[0]).id}`
+          return `${context.keyPrefix}-${data.id}`
         }}
       >
         <Column field="name">
@@ -111,7 +112,7 @@ describe('context prop', () => {
           </button>
           <VirtuosoDataTable<(typeof ITEMS)[0], EmptyPlaceholderContext>
             style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-            data={{ data: EMPTY_DATA, groups: [] }}
+            source={EMPTY_DATA}
             context={context}
             EmptyPlaceholder={EmptyPlaceholder}
           >
@@ -161,11 +162,11 @@ describe('context prop', () => {
           </button>
           <VirtuosoDataTable<(typeof ITEMS)[0], TestContext>
             style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-            data={{ data: localData, groups: [] }}
+            source={localData}
             context={localContext}
             computeRowKey={({ data, context }) => {
               capturedContextValues.push(context.keyPrefix)
-              return `${context.keyPrefix}-${(data as (typeof ITEMS)[0]).id}`
+              return `${context.keyPrefix}-${data.id}`
             }}
           >
             <Column field="name">
@@ -199,7 +200,7 @@ describe('context prop', () => {
     const screen = await render(
       <VirtuosoDataTable<(typeof ITEMS)[0], TestContext>
         style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
-        data={{ data: ITEMS, groups: [] }}
+        source={ITEMS}
         context={{ theme: 'dark', locale: 'en-US' }}
       >
         <Column field="name">

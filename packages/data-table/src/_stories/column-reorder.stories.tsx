@@ -2,12 +2,13 @@ import type { CSSProperties } from 'react'
 
 import { DraggableGroupHeader, ReorderDropZone, ReorderGrip } from '@/components/ui/data-table/column-reorder'
 
-import { Cell, VirtuosoDataTable } from '..'
+import { Cell } from '..'
 import { Column } from '../columns/Column'
 import { ColumnGroup } from '../columns/ColumnGroup'
 import { ColumnGroupHeader } from '../columns/ColumnGroupHeader'
 import { ColumnHeader } from '../columns/ColumnHeader'
 import { HeaderOverlay, HeaderStart } from '../columns/header-slots/slots'
+import { LocalDataTable as VirtuosoDataTable } from '../tests/LocalDataTable'
 
 import type { ColumnGroupHeaderCustomComponent } from '../columns/ColumnGroupHeader'
 
@@ -33,7 +34,7 @@ const BASE_HEADER_CLASSNAME = 'flex h-10 items-center px-3 text-sm font-medium t
 
 export function BasicColumnReorder() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       {Array.from({ length: COLUMN_COUNT }, (_, i) => (
         <Column key={`col${i}`} field={`col${i}`}>
           <ColumnHeader className={BASE_HEADER_CLASSNAME}>
@@ -50,7 +51,7 @@ export function BasicColumnReorder() {
 
 export function ReorderWithStickyColumns() {
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: ITEMS, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
       <Column field="id" sticky="left">
         <ColumnHeader className={BASE_HEADER_CLASSNAME}>
           <HeaderStart component={ReorderGrip} />
@@ -123,7 +124,7 @@ export function ReorderWithColumnGroups() {
   }))
 
   return (
-    <VirtuosoDataTable style={LIST_STYLE} data={{ data: items, groups: [] }}>
+    <VirtuosoDataTable style={LIST_STYLE} source={items}>
       <Column field="id">
         <ColumnHeader className={BASE_HEADER_CLASSNAME}>
           <HeaderStart component={ReorderGrip} />
