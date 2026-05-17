@@ -85,9 +85,9 @@ header and the selected field value for the cell.
 
 - [Defining Columns](/data-table/columns/defining-columns/) covers `field`, default rendering,
   declaration order, visibility, and generated columns.
-- [Cell and Header Renderers](/data-table/columns/cell-and-header-renderers/) covers render params,
+- [Formatting Cells and Headers](/data-table/columns/cell-and-header-renderers/) covers render params,
   extracted renderer functions, and custom header content.
-- [Identity and Context](/data-table/columns/identity-and-context/) covers stable column keys, row
+- [Keeping Column and Row State Stable](/data-table/columns/identity-and-context/) covers stable column keys, row
   keys, and the table `context` prop.
-- [Inferring Columns From Model Data](/data-table/columns/inferring-columns-from-model-data/) covers
+- [Columns for Dynamic Schemas](/data-table/columns/inferring-columns-from-model-data/) covers
   generated columns for dynamic local and remote schemas.
