@@ -59,6 +59,7 @@ function silenceResizeObserverError(error: ErrorEvent) {
  * @group Components
  */
 function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unknown>) {
+  const hasCustomScrollParentProp = Object.hasOwn(props, 'customScrollParent')
   const {
     model,
     computeRowKey = defaultComputeRowKey,
@@ -91,6 +92,10 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
       window.removeEventListener('error', silenceResizeObserverError, { capture: true })
     }
   }, [])
+
+  if (hasCustomScrollParentProp && customScrollParent === null) {
+    return null
+  }
 
   return (
     <EngineProvider
