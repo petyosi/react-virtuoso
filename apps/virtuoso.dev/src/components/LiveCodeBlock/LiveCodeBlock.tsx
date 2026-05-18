@@ -38,8 +38,6 @@ function configureMonacoWorkers() {
   }
 }
 
-const isFirefox = typeof navigator !== 'undefined' && navigator.userAgent.toLowerCase().includes('firefox')
-
 function getCodeTypographyFromCSS(): {
   fontFamily: string
   fontSize: number
@@ -95,32 +93,40 @@ const iframeThemeStyles = {
   `,
 }
 
+const iframeSource = '<!doctype html><html><head></head><body></body></html>'
+
 const IframePortal: React.FC<{ children: React.ReactNode; theme: Theme }> = ({ children, theme }) => {
   const [iFrameEl, setIframeEl] = React.useState<HTMLIFrameElement | null>(null)
+  const [portalRoot, setPortalRoot] = React.useState<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (!iFrameEl) {
+      setPortalRoot(null)
+      return
+    }
+
+    const updatePortalRoot = () => {
+      setPortalRoot(iFrameEl.contentDocument?.body ?? null)
+    }
+
+    updatePortalRoot()
+    iFrameEl.addEventListener('load', updatePortalRoot)
+
+    return () => {
+      iFrameEl.removeEventListener('load', updatePortalRoot)
+    }
+  }, [iFrameEl])
 
   return (
-    <iframe
-      onLoad={(e) => {
-        if (isFirefox) {
-          // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion)
-          setIframeEl(e.target as HTMLIFrameElement)
-        }
-      }}
-      ref={(el) => {
-        if (!isFirefox) {
-          setIframeEl(el)
-        }
-      }}
-      style={{ height: '100%', width: '100%' }}
-    >
-      {iFrameEl?.contentDocument
+    <iframe ref={setIframeEl} srcDoc={iframeSource} style={{ height: '100%', width: '100%' }} title="Live code preview">
+      {portalRoot
         ? createPortal(
             <>
               <style>{iFrameStyle}</style>
               <style>{iframeThemeStyles[theme]}</style>
               {children}
             </>,
-            iFrameEl.contentDocument.body
+            portalRoot
           )
         : null}
     </iframe>
