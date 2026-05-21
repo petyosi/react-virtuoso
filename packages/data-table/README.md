@@ -82,7 +82,8 @@ Then add the features your table needs:
 - [Grouped rows](/data-table/features/grouped-rows/) for sectioned local and remote datasets
 - [Column groups](/data-table/features/column-groups/) and [sticky columns](/data-table/features/sticky-columns/) for wide operational tables
 - [Column resizing](/data-table/features/column-resizing/), [column reordering](/data-table/features/column-reordering/), and [column visibility](/data-table/features/column-visibility/) for user-controlled layouts
-- [State persistence](/data-table/features/state-persistence/) for saving table and model state
+- [State persistence](/data-table/features/state-persistence/) for saving table feature state and
+  model action state
 - [Table instance control](/data-table/features/table-instance-control/) for toolbars and surrounding UI
 
 Visual customization is covered separately:

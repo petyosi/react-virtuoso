@@ -5,15 +5,20 @@ sidebar:
   label: Choosing a Model
 ---
 
-Every data table starts with a data model. Columns decide what is visible, but the model decides
-where rows come from, how the visible row set changes, and which state can be persisted.
+Every data table starts with a data model. Columns describe how fields render; the model describes
+where rows come from and which actions can change them.
+
+Choose the model by asking where the rows live:
 
 Use one of these model types:
 
-- [`localModel()`](/data-table/data-model/local-data-model/) when the browser owns the rows or derives
-  the visible rows through filtering, sorting, grouping, or edits.
-- [`remoteModel()`](/data-table/data-model/remote-data-model/) when the viewport, query state, cursor,
-  or backend owns the visible row set.
+- [`localModel()`](/data-table/data-model/local-data-model/) when the browser already has the rows and
+  derives the displayed rows through filtering, sorting, grouping, or edits.
+- [`remoteModel()`](/data-table/data-model/remote-data-model/) when rows come from an API and requests
+  depend on request params, cursors, or the currently rendered range.
+
+Both model types can opt specific actions into state persistence. That saves user intent such as a
+filter, search term, sort choice, or grouping mode; it does not save the row data itself.
 
 ## Basic local model
 
@@ -58,8 +63,8 @@ The local and remote model pages cover the details separately:
 
 - [Local Data Model](/data-table/data-model/local-data-model/) explains pipelines, source updates,
   persistence, and grouped rows.
-- [Remote Data Model](/data-table/data-model/remote-data-model/) explains fetch ownership, actions,
-  viewport loading, cancellation, grouped rows, and loading UI.
+- [Remote Data Model](/data-table/data-model/remote-data-model/) explains fetch lifecycle, actions,
+  viewport-driven fetching, cancellation, grouped rows, and loading UI.
 - [Columns for Dynamic Schemas](/data-table/columns/inferring-columns-from-model-data/) explains
   how dynamic local or remote model schemas become column declarations.
 
