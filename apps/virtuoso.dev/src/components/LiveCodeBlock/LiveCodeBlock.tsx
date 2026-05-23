@@ -184,7 +184,7 @@ const IframePortal: React.FC<{ children: React.ReactNode; theme: Theme }> = ({ c
         doc.head.append(themeStyle)
 
         const script = doc.createElement('script')
-        script.setAttribute('data-tailwind-inline', 'true')
+        script.dataset.tailwindInline = 'true'
         script.textContent = tailwindBrowserInlineScript
         doc.head.append(script)
       }
