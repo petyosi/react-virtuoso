@@ -5,20 +5,12 @@ sidebar:
   label: Choosing a Model
 ---
 
-Every data table starts with a data model. Columns describe how fields render; the model describes
-where rows come from and which actions can change them.
+The model owns the rows; columns own the rendering. Pick the model that matches where rows come from:
 
-Choose the model by asking where the rows live:
+- [`localModel()`](/data-table/data-model/local-data-model/) — rows already in the browser, with filter, sort, group, and edit actions deriving the displayed rows.
+- [`remoteModel()`](/data-table/data-model/remote-data-model/) — rows fetched from an API as request params, cursors, or the rendered range change.
 
-Use one of these model types:
-
-- [`localModel()`](/data-table/data-model/local-data-model/) when the browser already has the rows and
-  derives the displayed rows through filtering, sorting, grouping, or edits.
-- [`remoteModel()`](/data-table/data-model/remote-data-model/) when rows come from an API and requests
-  depend on request params, cursors, or the currently rendered range.
-
-Both model types can opt specific actions into state persistence. That saves user intent such as a
-filter, search term, sort choice, or grouping mode; it does not save the row data itself.
+Both models can persist action state (filter values, sort choice, grouping mode) through opt-in adapters. Row data itself is never persisted.
 
 ## Basic local model
 
@@ -57,32 +49,8 @@ export default function App() {
 }
 ```
 
-## Model details
+## Where to go next
 
-The local and remote model pages cover the details separately:
-
-- [Local Data Model](/data-table/data-model/local-data-model/) explains pipelines, source updates,
-  persistence, and grouped rows.
-- [Remote Data Model](/data-table/data-model/remote-data-model/) explains fetch lifecycle, actions,
-  viewport-driven fetching, cancellation, grouped rows, and loading UI.
-- [Columns for Dynamic Schemas](/data-table/columns/inferring-columns-from-model-data/) explains
-  how dynamic local or remote model schemas become column declarations.
-
-## Group rows
-
-Grouped tables use a flattened row array plus `groups` markers. The marker tells the table which
-flattened row is a group header, so it can render `GroupHeaderCell`, sticky group headers, and row
-measurements correctly.
-
-```typescript
-const model = localModel({
-  data: [
-    { label: 'Office' },
-    { id: 'SKU-001', name: 'Standing Desk', category: 'Office' },
-    { id: 'SKU-002', name: 'Desk Lamp', category: 'Office' },
-  ],
-  groups: [{ index: 0, level: 0 }],
-})
-```
-
-For a complete grouped example, see [Grouped Rows](/data-table/features/grouped-rows/).
+- [Local Data Model](/data-table/data-model/local-data-model/) — pipelines, source updates, persistence, grouping (single- and multi-level).
+- [Remote Data Model](/data-table/data-model/remote-data-model/) — pagination vs. infinite scrolling, actions, cancellation, grouped rows, loading UI.
+- [Generating Columns at Runtime](/data-table/columns/runtime-columns/) — discovering and declaring columns when the list isn't known up front.

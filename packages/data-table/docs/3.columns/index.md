@@ -6,18 +6,9 @@ sidebar:
   label: Overview
 ---
 
-Columns are the table schema. The data model decides which rows exist; columns decide which fields
-are visible, what order they appear in, how wide they measure, and which renderers the table should
-use for headers and cells.
+Columns decide which fields are visible, in what order, at what width, and how each cell is rendered. You declare them as JSX children of `DataTable` — one `DataTableColumn` per visible field, with its header and cell renderer inside.
 
-The column components are declarations. They do not render a standalone header or cell where they
-appear in JSX. Instead, each `DataTableColumn` registers a column definition with the table. Its
-children register the header and cell definitions for that column. The table then uses those
-definitions while it renders the virtualized header row and the currently visible body cells.
-
-That distinction matters because rows and columns are virtualized. A cell definition can be reused
-for many row instances over time, and a header definition can be combined with column sizing,
-sticky positioning, header slots, and user-controlled visibility.
+The JSX reads like a static description of the table, but `DataTableColumn` and its children don't render in place. Each one registers a definition with the table, which then draws the virtualized header row and the visible body cells from those definitions. That indirection is what makes virtualization possible: a single cell renderer is reused across many row positions as the user scrolls, and headers compose cleanly with sticky pinning, resizing, slots, and visibility.
 
 ## Basic columns
 
@@ -73,21 +64,16 @@ export default function App() {
 
 ## What each part defines
 
-- `DataTableColumn` defines a column, keyed by its `field`.
-- `DataTableColumnHeader` defines the header content and header class for that column.
-- `DataTableCell` defines the body-cell renderer and cell class for that column.
-- The table combines those definitions with row data, column state, sizing, and virtualization.
+- `DataTableColumn` — one column, keyed by `field`.
+- `DataTableColumnHeader` — header content and header class.
+- `DataTableCell` — body-cell renderer and cell class.
 
-When a header or cell definition is omitted, the table falls back to the column field name for the
-header and the selected field value for the cell.
+Omit the header to fall back to the field name; omit the cell to fall back to the field value.
 
-## Next steps
+`field` is both the cell lookup key (`row.data[field]`) and the column's persistent identity. Keep it stable across releases if you use any column features that save state — see [State Persistence](/data-table/features/state-persistence/#field-names-are-the-persistence-contract) for the rules around renaming.
 
-- [Defining Columns](/data-table/columns/defining-columns/) covers `field`, default rendering,
-  declaration order, visibility, and generated columns.
-- [Formatting Cells and Headers](/data-table/columns/cell-and-header-renderers/) covers render params,
-  extracted renderer functions, and custom header content.
-- [Keeping Column and Row State Stable](/data-table/columns/identity-and-context/) covers stable column keys, row
-  keys, and the table `context` prop.
-- [Columns for Dynamic Schemas](/data-table/columns/inferring-columns-from-model-data/) covers
-  generated columns for dynamic local and remote schemas.
+## Where to go next
+
+- [Defining Columns](/data-table/columns/defining-columns/) — `field`, default rendering, declaration order, visibility, generated columns.
+- [Formatting Cells and Headers](/data-table/columns/cell-and-header-renderers/) — render params, extracted renderer functions, custom header content.
+- [Generating Columns at Runtime](/data-table/columns/runtime-columns/) — discovering and declaring columns when the list isn't known up front.
