@@ -51,7 +51,9 @@ export type {
   StickyColumnContainerComponentProps,
 } from './interfaces'
 export { VirtuosoDataTable } from './core/VirtuosoDataTable'
+export { initialData$ } from './core/data'
 export { loadingState$ } from './core/loading'
+export { DynamicColumns, type DynamicColumnsProps, type DynamicColumnsRenderParams } from './features/dynamic-columns'
 export {
   useCellValue,
   useEngineRef,

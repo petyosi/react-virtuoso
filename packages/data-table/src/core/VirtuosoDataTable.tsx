@@ -2,7 +2,7 @@ import React from 'react'
 
 import { EngineProvider } from '@virtuoso.dev/reactive-engine-react'
 
-import { columnDeclarationOrder$, columns$ } from '../columns/Column'
+import { ColumnDeclarationOrderProvider, columnDeclarationOrder$, columns$ } from '../columns/Column'
 import { columnItemsState$, columnOverscanCount$ } from '../columns/column-state'
 import { VirtualizedTableContent } from '../layout/VirtualizedTableContent'
 import { bridgeModelToEngine, dataModel$, dataModelViewId$ } from '../model/model-bridge'
@@ -38,7 +38,7 @@ import {
   stickyHeaderWrapper$,
 } from './components'
 import { computeRowKey$, defaultComputeRowKey } from './content'
-import { context$, groupLevelMap$, groupStickyConfig$ } from './data'
+import { context$, data$, groupLevelMap$, groupStickyConfig$, initialData$ } from './data'
 import { loadingState$ } from './loading'
 
 import type { VirtuosoDataTableProps } from '../interfaces'
@@ -116,7 +116,9 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
         e.register(groupStickyConfig$)
         e.register(groupLevelMap$)
         e.register(viewportRange$)
+        e.register(data$)
         e.register(loadingState$)
+        e.register(initialData$)
         e.register(dataModel$)
         e.register(dataModelViewId$)
 
@@ -185,7 +187,7 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
         components,
       ]}
     >
-      {children}
+      <ColumnDeclarationOrderProvider>{children}</ColumnDeclarationOrderProvider>
       <VirtualizedTableContent {...scrollerProps} />
     </EngineProvider>
   )

@@ -2,6 +2,7 @@
 import { e, Cell, DerivedCell } from '@virtuoso.dev/reactive-engine-core'
 
 import { processStickyConfig } from '../sizing/stickyItems'
+import { loadingState$ } from './loading'
 
 import type { DataArray } from '../interfaces'
 import type { ProcessedStickyGroup, StickyItemsConfig } from '../sizing/stickyItems'
@@ -10,6 +11,20 @@ export const totalCount$ = Cell(0)
 export const context$ = Cell<unknown>(null)
 
 export const data$ = Cell<DataArray | null>(null)
+
+export const initialData$ = Cell<DataArray | null>(null)
+
+e.changeWith(initialData$, e.combine(data$, loadingState$), (current, [data, loadingState]) => {
+  if (current !== null) {
+    return current
+  }
+
+  if (data === null || data.length === 0 || loadingState.initial.status === 'loading') {
+    return null
+  }
+
+  return data
+})
 
 e.link(
   e.pipe(

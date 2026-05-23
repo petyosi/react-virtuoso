@@ -1,4 +1,4 @@
-import { createContext, useContext, useId, useLayoutEffect } from 'react'
+import { createContext, useContext, useId, useLayoutEffect, useRef } from 'react'
 
 // oxlint-disable require-hook
 import { Cell, Stream, e } from '@virtuoso.dev/reactive-engine-core'
@@ -9,11 +9,89 @@ import { columnCount$, columnRanges$ } from './column-sizes'
 import { computeAutoFillColumnWidths } from './column-width-distribution'
 import { columnWidthOverrides$ } from './column-width-overrides'
 import { ColumnGroupIdContext } from './ColumnGroup'
-import { createRegistryCell } from './registry'
 
 import type { SizeRange } from '../interfaces'
 
 const ColumnIdContext = createContext<string>('')
+type ColumnDeclarationPath = readonly number[]
+
+interface ColumnDeclarationAllocator {
+  next: () => ColumnDeclarationPath
+}
+
+function createColumnDeclarationAllocator(parentPath: ColumnDeclarationPath = []): ColumnDeclarationAllocator {
+  let nextIndex = 0
+  return {
+    next: () => [...parentPath, nextIndex++],
+  }
+}
+
+const ColumnDeclarationContext = createContext<ColumnDeclarationAllocator | null>(null)
+const columnDeclarationPathKey: unique symbol = Symbol('columnDeclarationPath')
+
+type ColumnInfoWithDeclarationPath = ColumnInfo & {
+  [columnDeclarationPathKey]?: ColumnDeclarationPath
+}
+
+function useStableColumnDeclarationPath() {
+  const allocator = useContext(ColumnDeclarationContext)
+  const pathRef = useRef<ColumnDeclarationPath | null>(null)
+
+  pathRef.current ??= allocator?.next() ?? []
+
+  return pathRef.current
+}
+
+function compareDeclarationPaths(left: ColumnDeclarationPath | undefined, right: ColumnDeclarationPath | undefined) {
+  if (left === undefined || right === undefined) {
+    return left === right ? 0 : left === undefined ? 1 : -1
+  }
+
+  const length = Math.min(left.length, right.length)
+  for (let index = 0; index < length; index++) {
+    const leftPart = left[index]!
+    const rightPart = right[index]!
+    if (leftPart !== rightPart) {
+      return leftPart - rightPart
+    }
+  }
+
+  return left.length - right.length
+}
+
+function getColumnDeclarationPath(column: ColumnInfo | undefined) {
+  return (column as ColumnInfoWithDeclarationPath | undefined)?.[columnDeclarationPathKey]
+}
+
+function withColumnDeclarationPath(column: ColumnInfo, path: ColumnDeclarationPath): ColumnInfo {
+  return {
+    ...column,
+    [columnDeclarationPathKey]: path,
+  } as ColumnInfoWithDeclarationPath
+}
+
+function columnsInDeclarationOrder(columns: Map<string, ColumnInfo>) {
+  return new Map(
+    [...columns.entries()]
+      .map((entry, index) => ({ entry, index }))
+      .toSorted((left, right) => {
+        const result = compareDeclarationPaths(getColumnDeclarationPath(left.entry[1]), getColumnDeclarationPath(right.entry[1]))
+        return result === 0 ? left.index - right.index : result
+      })
+      .map(({ entry }) => entry)
+  )
+}
+
+function columnsAreInDeclarationOrder(columns: Map<string, ColumnInfo>) {
+  const currentOrder = [...columns.keys()]
+  const declarationOrder = [...columnsInDeclarationOrder(columns).keys()]
+
+  return currentOrder.every((key, index) => key === declarationOrder[index])
+}
+
+type ColumnRegistryPayload =
+  | { type: 'add'; id: string; orderPath: ColumnDeclarationPath; value: ColumnInfo }
+  | { type: 'remove'; id: string }
 
 /**
  * Describes a registered column in the table.
@@ -27,8 +105,20 @@ export interface ColumnInfo {
   visible?: boolean
 }
 
-const { cell$: columns$, register$: columnRegister$ } = createRegistryCell<ColumnInfo>()
-export { columns$ }
+export const columns$ = Cell<Map<string, ColumnInfo>>(new Map())
+const columnRegister$ = Stream<ColumnRegistryPayload>()
+
+e.changeWith(columns$, columnRegister$, (current, payload) => {
+  const next = new Map(current)
+  if (payload.type === 'add') {
+    const existed = next.has(payload.id)
+    next.set(payload.id, withColumnDeclarationPath(payload.value, payload.orderPath))
+    return existed || !columnsAreInDeclarationOrder(current) ? next : columnsInDeclarationOrder(next)
+  }
+
+  next.delete(payload.id)
+  return next
+})
 
 /**
  * Runtime visibility overrides keyed by column key. When no override exists,
@@ -66,9 +156,14 @@ e.link(
  */
 export const columnDeclarationOrder$ = Cell<string[]>([])
 
-e.changeWith(columnDeclarationOrder$, columnRegister$, (order, payload) => {
+e.changeWith(columnDeclarationOrder$, e.pipe(columnRegister$, e.withLatestFrom(columns$)), (order, [payload, columns]) => {
   if (payload.type === 'add') {
-    return order.includes(payload.id) ? order : [...order, payload.id]
+    const next = order.includes(payload.id) ? order : [...order, payload.id]
+    return next.toSorted((left, right) => {
+      const leftPath = left === payload.id ? payload.orderPath : getColumnDeclarationPath(columns.get(left))
+      const rightPath = right === payload.id ? payload.orderPath : getColumnDeclarationPath(columns.get(right))
+      return compareDeclarationPaths(leftPath, rightPath)
+    })
   }
 
   return order.filter((id) => id !== payload.id)
@@ -114,6 +209,27 @@ export function useColumnId() {
   return useContext(ColumnIdContext)
 }
 
+/**
+ * @internal
+ */
+export function ColumnDeclarationOrderProvider({ children }: { children?: React.ReactNode }) {
+  const allocatorRef = useRef<ColumnDeclarationAllocator | null>(null)
+  allocatorRef.current ??= createColumnDeclarationAllocator()
+
+  return <ColumnDeclarationContext.Provider value={allocatorRef.current}>{children}</ColumnDeclarationContext.Provider>
+}
+
+/**
+ * @internal
+ */
+export function ColumnDeclarationScope({ children }: { children?: React.ReactNode }) {
+  const path = useStableColumnDeclarationPath()
+  const allocatorRef = useRef<ColumnDeclarationAllocator | null>(null)
+  allocatorRef.current ??= createColumnDeclarationAllocator(path)
+
+  return <ColumnDeclarationContext.Provider value={allocatorRef.current}>{children}</ColumnDeclarationContext.Provider>
+}
+
 export namespace Column {
   /**
    * The properties accepted by the `Column` component.
@@ -134,6 +250,7 @@ export namespace Column {
  */
 export function Column({ children, field, sticky, visible }: Column.Props) {
   const colId = useId()
+  const orderPath = useStableColumnDeclarationPath()
   const groupId = useContext(ColumnGroupIdContext) || undefined
   const columnRegister = usePublisher(columnRegister$)
 
@@ -148,11 +265,11 @@ export function Column({ children, field, sticky, visible }: Column.Props) {
     if (visible === false) {
       info.visible = false
     }
-    columnRegister({ type: 'add', id: colId, value: info })
+    columnRegister({ type: 'add', id: colId, orderPath, value: info })
     return () => {
       columnRegister({ type: 'remove', id: colId })
     }
-  }, [columnRegister, colId, field, sticky, groupId, visible])
+  }, [columnRegister, colId, field, sticky, groupId, visible, orderPath])
   return <ColumnIdContext.Provider value={colId}>{children}</ColumnIdContext.Provider>
 }
 
