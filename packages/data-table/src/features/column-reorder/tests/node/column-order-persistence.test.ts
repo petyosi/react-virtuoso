@@ -10,6 +10,7 @@ import {
   reorderColumnGroup$,
   reorderColumns$,
   resetColumnOrder$,
+  resetColumnOrderToDeclaration$,
   restoreColumnOrderState$,
 } from '../../index'
 
@@ -138,6 +139,25 @@ describe('column order persistence', () => {
     ).toStrictEqual(['id', 'name', 'status'])
   })
 
+  it('resets runtime order back to declaration order through the public trigger', () => {
+    engine.pub(
+      columns$,
+      columnMap([
+        ['runtime-id', 'id'],
+        ['runtime-name', 'name'],
+        ['runtime-status', 'status'],
+      ])
+    )
+    engine.pub(columnDeclarationOrder$, ['runtime-id', 'runtime-name', 'runtime-status'])
+    engine.pub(reorderColumns$, { sourceKey: 'runtime-status', targetKey: 'runtime-id', position: 'before' })
+
+    expect(fields(engine.getValue(columns$))).toStrictEqual(['status', 'id', 'name'])
+
+    engine.pub(resetColumnOrderToDeclaration$)
+
+    expect(fields(engine.getValue(columns$))).toStrictEqual(['id', 'name', 'status'])
+  })
+
   it('captures persisted state through the state persistence adapter after single-column reorder', () => {
     const adapter = columnOrderPersistenceAdapter()
     engine.pub(
@@ -227,6 +247,42 @@ describe('column order persistence', () => {
     expect(onRestore).toHaveBeenCalledTimes(2)
   })
 
+  it('notifies saves and skips restore when column order is reset to declaration order', async () => {
+    const adapter = columnOrderPersistenceAdapter()
+    const onSave = vi.fn()
+    const onRestore = vi.fn()
+    const unsubscribeSave = adapter.subscribe(persistenceContext(), onSave)
+    const unsubscribeRestore = adapter.subscribeRestore!(persistenceContext(), onRestore)
+
+    engine.pub(
+      columns$,
+      columnMap([
+        ['runtime-id', 'id'],
+        ['runtime-name', 'name'],
+        ['runtime-status', 'status'],
+      ])
+    )
+    engine.pub(columnDeclarationOrder$, ['runtime-id', 'runtime-name', 'runtime-status'])
+
+    expect(onRestore).toHaveBeenCalledOnce()
+
+    engine.pub(reorderColumns$, { sourceKey: 'runtime-status', targetKey: 'runtime-id', position: 'before' })
+
+    expect(onSave).toHaveBeenCalledOnce()
+    expect(onRestore).toHaveBeenCalledOnce()
+
+    await Promise.resolve()
+
+    engine.pub(resetColumnOrderToDeclaration$)
+
+    expect(fields(engine.getValue(columns$))).toStrictEqual(['id', 'name', 'status'])
+    expect(onSave).toHaveBeenCalledTimes(2)
+    expect(onRestore).toHaveBeenCalledOnce()
+
+    unsubscribeSave()
+    unsubscribeRestore()
+  })
+
   it('notifies the save subscription when persisted order is restored', () => {
     const adapter = columnOrderPersistenceAdapter()
     const onSave = vi.fn()
@@ -285,6 +341,21 @@ describe('column order persistence', () => {
 
     unsubscribeSave()
     engine.pub(resetColumnOrder$, ['runtime-name'])
+
+    expect(onSave).toHaveBeenCalledOnce()
+  })
+
+  it('notifies the save subscription when column order is reset to declaration order', () => {
+    const adapter = columnOrderPersistenceAdapter()
+    const onSave = vi.fn()
+    const unsubscribeSave = adapter.subscribe(persistenceContext(), onSave)
+
+    engine.pub(resetColumnOrderToDeclaration$)
+
+    expect(onSave).toHaveBeenCalledOnce()
+
+    unsubscribeSave()
+    engine.pub(resetColumnOrderToDeclaration$)
 
     expect(onSave).toHaveBeenCalledOnce()
   })

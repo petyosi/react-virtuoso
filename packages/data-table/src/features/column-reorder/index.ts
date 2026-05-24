@@ -1,5 +1,5 @@
 // oxlint-disable require-hook
-import { Cell, Stream, e } from '@virtuoso.dev/reactive-engine-core'
+import { Cell, Stream, Trigger, e } from '@virtuoso.dev/reactive-engine-core'
 
 import {
   columnDeclarationOrder$,
@@ -81,12 +81,20 @@ export interface ColumnOrderPersistenceState {
 export const restoreColumnOrderState$ = Stream<ColumnOrderPersistenceState>()
 
 /**
+ * Remote action that resets the current runtime column order to the supplied
+ * runtime column keys.
+ *
+ * @group Remote Control
+ */
+export const resetColumnOrder$ = Stream<string[]>()
+
+/**
  * Remote action that resets the current runtime column order back to component
  * declaration order.
  *
  * @group Remote Control
  */
-export const resetColumnOrder$ = Stream<string[]>()
+export const resetColumnOrderToDeclaration$ = Trigger()
 
 function isColumnOrderPersistenceState(state: ColumnOrderPersistenceState | null | undefined): state is ColumnOrderPersistenceState {
   return state?.version === 1 && Array.isArray(state.fields)
@@ -278,11 +286,13 @@ export function columnOrderPersistenceAdapter(): DataTableStatePersistenceAdapte
       const unsubscribeGroup = engine.sub(reorderColumnGroup$, onChange)
       const unsubscribeRestore = engine.sub(restoreColumnOrderState$, onChange)
       const unsubscribeReset = engine.sub(resetColumnOrder$, onChange)
+      const unsubscribeDeclarationReset = engine.sub(resetColumnOrderToDeclaration$, onChange)
       return () => {
         unsubscribeColumn()
         unsubscribeGroup()
         unsubscribeRestore()
         unsubscribeReset()
+        unsubscribeDeclarationReset()
       }
     },
     subscribeRestore({ engine }, onChange) {
@@ -297,6 +307,8 @@ export function columnOrderPersistenceAdapter(): DataTableStatePersistenceAdapte
 
       const unsubscribeColumn = engine.sub(reorderColumns$, markUserReorder)
       const unsubscribeGroup = engine.sub(reorderColumnGroup$, markUserReorder)
+      const unsubscribeReset = engine.sub(resetColumnOrder$, markUserReorder)
+      const unsubscribeDeclarationReset = engine.sub(resetColumnOrderToDeclaration$, markUserReorder)
       const unsubscribeColumns = engine.sub(columns$, () => {
         if (skipRestoreForCurrentReorder) {
           skipRestoreForCurrentReorder = false
@@ -309,6 +321,8 @@ export function columnOrderPersistenceAdapter(): DataTableStatePersistenceAdapte
       return () => {
         unsubscribeColumn()
         unsubscribeGroup()
+        unsubscribeReset()
+        unsubscribeDeclarationReset()
         unsubscribeColumns()
       }
     },
@@ -389,3 +403,6 @@ e.changeWith(columnDragState$, setColumnDropTarget$, (state, dropTarget) => {
 
 e.changeWith(columns$, restoreColumnOrderState$, columnsFromColumnOrderState)
 e.changeWith(columns$, resetColumnOrder$, columnsFromDeclarationOrder)
+e.changeWith(columns$, e.pipe(resetColumnOrderToDeclaration$, e.withLatestFrom(columnDeclarationOrder$)), (columns, [, declarationOrder]) =>
+  columnsFromDeclarationOrder(columns, declarationOrder)
+)
