@@ -1,0 +1,20 @@
+{
+  "name": "virtuoso",
+  "owner": {
+    "name": "Virtuoso.dev",
+    "email": "petyo@virtuoso.dev"
+  },
+  "description": "Skills for the Virtuoso family of React virtualization libraries",
+  "plugins": [
+    {
+      "name": "virtuoso-skills",
+      "source": "./packages/virtuoso-skills",
+      "description": "Agent guidance for react-virtuoso, message-list, and data-table",
+      "homepage": "https://virtuoso.dev",
+      "repository": "https://github.com/petyosi/react-virtuoso",
+      "license": "MIT",
+      "keywords": ["react", "virtualization", "table", "chat"],
+      "category": "frontend"
+    }
+  ]
+}

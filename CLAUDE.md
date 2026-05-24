@@ -70,6 +70,25 @@ These are auto-synced from source files + TypeDoc API via the `docsSync` integra
 - **gurx**: `packages/gurx/README.md` or `packages/gurx/docs/*.md`
 - **message-list**: `packages/message-list/README.md` or `packages/message-list/docs/*.md`
 
+## Plugin Distribution
+
+This repo ships `virtuoso-skills` as a Claude Code plugin from `packages/virtuoso-skills/`, a Codex plugin from `plugins/virtuoso-skills/`, and a root `skills/` mirror for `npx skills`.
+
+Edit source skill content in `packages/virtuoso-skills/skills/<name>/SKILL.md`. Do not edit `packages/virtuoso-skills/skills/*/references/`, root `skills/`, or `plugins/virtuoso-skills/skills/` directly; regenerate them with:
+
+```bash
+pnpm build:skills
+```
+
+After merge, public Codex plugin install uses:
+
+```bash
+codex plugin marketplace add petyosi/react-virtuoso --ref main --sparse .agents/plugins --sparse plugins/virtuoso-skills
+codex plugin add virtuoso-skills@virtuoso
+```
+
+Do not commit `.agents/skills/` for Codex/OpenCode/Cursor unless the cross-agent install plan changes. `npx skills` owns that target path.
+
 ## Monorepo Structure
 
 ```text
