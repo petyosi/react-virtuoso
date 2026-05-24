@@ -70,10 +70,23 @@ export default function App() {
 
 Omit the header to fall back to the field name; omit the cell to fall back to the field value.
 
-`field` is both the cell lookup key (`row.data[field]`) and the column's persistent identity. Keep it stable across releases if you use any column features that save state — see [State Persistence](/data-table/features/state-persistence/#field-names-are-the-persistence-contract) for the rules around renaming.
+`field` is both the cell lookup key (`row.data[field]`) and the column's persistent identity. Keep it stable across releases if you use any column features that save state — see [State Persistence](/data-table/state-persistence/#field-names-are-the-persistence-contract) for the rules around renaming.
 
 ## Where to go next
 
+Declarative shape:
+
 - [Defining Columns](/data-table/columns/defining-columns/) — `field`, default rendering, declaration order, visibility, generated columns.
 - [Formatting Cells and Headers](/data-table/columns/cell-and-header-renderers/) — render params, extracted renderer functions, custom header content.
+- [Column Groups](/data-table/columns/column-groups/) — wrap adjacent columns under a shared header.
+- [Sticky Columns](/data-table/columns/sticky-columns/) — pin a column to the left or right edge during horizontal scrolling.
+
+Interactive layout:
+
+- [Column Visibility](/data-table/columns/column-visibility/) — declarative defaults, runtime toggling, "Columns" picker.
+- [Column Resizing](/data-table/columns/column-resizing/) — drag handle in the header, presets, auto-fit.
+- [Column Reordering](/data-table/columns/column-reordering/) — drag-and-drop individual columns or whole groups.
+
+Dynamic schemas:
+
 - [Generating Columns at Runtime](/data-table/columns/runtime-columns/) — discovering and declaring columns when the list isn't known up front.

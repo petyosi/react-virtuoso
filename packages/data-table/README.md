@@ -11,8 +11,8 @@ It is the successor to `TableVirtuoso` when you need a table-specific API instea
 - [Shadcn installation](/data-table/installation/shadcn/) for the fastest path to a polished table
 - [Headless installation](/data-table/installation/headless/) for custom design systems or non-Tailwind stacks
 - [Data model](/data-table/data-model/) for local and remote models
-- [Columns](/data-table/columns/) for headers, cells, stable column identity, and dynamic model schemas
-- [Feature chapters](/data-table/features/grouped-rows/) for grouped rows, sticky columns, resizing, reordering, visibility, persistence, and table instance control
+- [Columns](/data-table/columns/) for headers, cells, column groups, sticky pinning, visibility, resizing, reordering, and dynamic schemas
+- [Grouped rows](/data-table/grouped-rows/), [state persistence](/data-table/state-persistence/), and [controlling the table](/data-table/controlling-the-table/) from surrounding UI
 
 ## Quick start
 
@@ -79,20 +79,22 @@ Start with the two required setup tasks:
 
 Then add the features your table needs:
 
-- [Grouped rows](/data-table/features/grouped-rows/) for sectioned local and remote datasets
-- [Column groups](/data-table/features/column-groups/) and [sticky columns](/data-table/features/sticky-columns/) for wide operational tables
-- [Column resizing](/data-table/features/column-resizing/), [column reordering](/data-table/features/column-reordering/), and [column visibility](/data-table/features/column-visibility/) for user-controlled layouts
-- [State persistence](/data-table/features/state-persistence/) for saving table feature state and
+- [Column groups](/data-table/columns/column-groups/) and [sticky columns](/data-table/columns/sticky-columns/) for wide operational tables
+- [Column visibility](/data-table/columns/column-visibility/), [resizing](/data-table/columns/column-resizing/), and [reordering](/data-table/columns/column-reordering/) for user-controlled layouts
+- [Grouped rows](/data-table/grouped-rows/) for sectioned local and remote datasets
+- [State persistence](/data-table/state-persistence/) for saving table feature state and
   model action state
-- [Table instance control](/data-table/features/table-instance-control/) for toolbars and surrounding UI
+- [Controlling the table](/data-table/controlling-the-table/) from toolbars and surrounding UI
 
 Visual customization is covered separately:
 
-- [shadcn wrapper](/data-table/customization/shadcn-wrapper/)
-- [styling cells, headers, and rows](/data-table/customization/styling-cells-headers-and-rows/)
-- [empty, loading, and error states](/data-table/customization/empty-loading-and-error-states/)
-- [header slots](/data-table/customization/header-slots/)
-- [custom scroll containers](/data-table/customization/custom-scroll-containers/)
+- [styling cells, headers, and rows](/data-table/customization/styling/)
+- [replacing internals](/data-table/customization/replacing-internals/)
+- [empty and loading states](/data-table/customization/empty-and-loading-states/)
+- [scroll containers](/data-table/customization/scroll-containers/)
+- [ambient context](/data-table/customization/ambient-context/) — a bag of values available throughout the table's customizable parts
+- [header slots](/data-table/customization/header-slots/) — mount sort buttons, filter menus, and other controls inside column headers
+- [inside the shadcn wrapper](/data-table/customization/shadcn-wrapper/) — change app-wide defaults by editing the wrapper file
 
 ## License
 
