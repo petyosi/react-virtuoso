@@ -9,6 +9,7 @@ head:
 
 import Hero from '@components/Hero.astro'
 import MessageListHero from '@components/MessageListHero.astro'
+import DataTableHero from '@components/DataTableHero.astro'
 import FeatureCard from '@components/FeatureCard.astro'
 import FeatureGrid from '@components/FeatureGrid.astro'
 import ProductCard from '@components/ProductCard.astro'
@@ -16,6 +17,8 @@ import ProductCard from '@components/ProductCard.astro'
 <Hero />
 
 <MessageListHero />
+
+<DataTableHero />
 
 ## Why Virtuoso?
 
@@ -56,9 +59,15 @@ import ProductCard from '@components/ProductCard.astro'
   href="/masonry/"
 />
 
+<ProductCard
+  title="Message List"
+  description="Chat interface component for human/AI conversations. Commercial License."
+  href="/message-list/"
+/>
+
   <ProductCard
-    title="Message List"
-    description="Chat interface component for human/AI conversations. Commercial License."
-    href="/message-list/"
+    title="Data Table"
+    description="Virtualized data table with sticky columns, grouped rows, resizing, and reordering. MIT Licensed."
+    href="/data-table/"
   />
 </FeatureGrid>
