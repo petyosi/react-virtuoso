@@ -1,3 +1,4 @@
+import { createActionStateTracker } from './action-state'
 import { createModel } from './model-core'
 import {
   capturePersistedAction,
@@ -7,7 +8,9 @@ import {
   persistedActionIsEmpty,
   persistenceKeyForAction,
 } from './persistence'
+import { warnModelActionInDev } from './reserved-actions'
 
+import type { InitialModelAction } from './action-state'
 import type { ModelActionPersistenceConfig } from './persistence'
 import type {
   AsyncErrorEmitter,
@@ -166,6 +169,7 @@ export interface OffsetRemoteModelConfig<T, Params = Record<string, unknown>> {
   pageSize?: number
   actions?: Record<string, RemoteActionConfig<Params>>
   placeholder?: T
+  initialActions?: InitialModelAction[]
   onViewportChange?: (context: OffsetViewportContext<Params>) => OffsetViewportAction
   onError?: (error: Error) => void
 }
@@ -181,6 +185,7 @@ export interface AppendRemoteModelConfig<T, Params = Record<string, unknown>> {
   initialParams: Params
   pageSize?: number
   actions?: Record<string, RemoteActionConfig<Params>>
+  initialActions?: InitialModelAction[]
   onViewportChange?: (context: AppendViewportContext<Params>) => AppendViewportAction
   onError?: (error: Error) => void
 }
@@ -325,6 +330,7 @@ function createOffsetModel<T, Params>(config: OffsetRemoteModelConfig<T, Params>
   const viewDataMap = new Map<string, OffsetViewData<T>>()
   const requestAbortMap = new Map<string, AbortController>()
   const persistedActionStates = new Map<string, unknown>()
+  const actionState = createActionStateTracker()
   const persistenceSubscribers = new Set<() => void>()
   let asyncEmit: AsyncResultEmitter<T> | null = null
   let asyncErrorEmit: AsyncErrorEmitter | null = null
@@ -447,6 +453,26 @@ function createOffsetModel<T, Params>(config: OffsetRemoteModelConfig<T, Params>
 
     notifyModelPersistenceSubscribers(persistenceSubscribers)
   }
+
+  function applyInitialActions() {
+    if (!config.initialActions) {
+      return
+    }
+
+    for (const initialAction of config.initialActions) {
+      const actionConfig = actions[initialAction.action]
+      if (!actionConfig) {
+        warnModelActionInDev(`Initial model action "${initialAction.action}" is not declared and was ignored.`)
+        continue
+      }
+
+      currentParams = actionConfig.handler({ payload: initialAction.payload, params: currentParams })
+      updatePersistedActionState(initialAction.action, initialAction.payload, currentParams)
+      actionState.update(initialAction.action, initialAction.payload, 'default', false)
+    }
+  }
+
+  applyInitialActions()
 
   function cancelMainFetch(viewId: string, vd: OffsetViewData<T>) {
     if (vd.abortController && vd.abortReason !== null) {
@@ -619,6 +645,7 @@ function createOffsetModel<T, Params>(config: OffsetRemoteModelConfig<T, Params>
 
       currentParams = actionConfig.handler({ payload, params: currentParams })
       updatePersistedActionState(action, payload, currentParams)
+      actionState.update(action, payload, viewId)
 
       const vd = getViewData(viewId)
       cancelMainFetch(viewId, vd)
@@ -665,6 +692,8 @@ function createOffsetModel<T, Params>(config: OffsetRemoteModelConfig<T, Params>
   }
 
   const model = createModel(adapter)
+  model.getActionState = actionState.getState
+  model.subscribeToActionState = actionState.subscribe
   model.persistence = {
     capture(_viewId, previous) {
       return capturePersistenceState(previous)
@@ -691,6 +720,7 @@ function createAppendModel<T, Params>(config: AppendRemoteModelConfig<T, Params>
   const viewDataMap = new Map<string, AppendViewData<T>>()
   const requestAbortMap = new Map<string, AbortController>()
   const persistedActionStates = new Map<string, unknown>()
+  const actionState = createActionStateTracker()
   const persistenceSubscribers = new Set<() => void>()
   let asyncEmit: AsyncResultEmitter<T> | null = null
   let asyncErrorEmit: AsyncErrorEmitter | null = null
@@ -858,6 +888,26 @@ function createAppendModel<T, Params>(config: AppendRemoteModelConfig<T, Params>
     notifyModelPersistenceSubscribers(persistenceSubscribers)
   }
 
+  function applyInitialActions() {
+    if (!config.initialActions) {
+      return
+    }
+
+    for (const initialAction of config.initialActions) {
+      const actionConfig = actions[initialAction.action]
+      if (!actionConfig) {
+        warnModelActionInDev(`Initial model action "${initialAction.action}" is not declared and was ignored.`)
+        continue
+      }
+
+      currentParams = actionConfig.handler({ payload: initialAction.payload, params: currentParams })
+      updatePersistedActionState(initialAction.action, initialAction.payload, currentParams)
+      actionState.update(initialAction.action, initialAction.payload, 'default', false)
+    }
+  }
+
+  applyInitialActions()
+
   const adapter: FrameAdapter<T> = {
     handleHandshake(viewId: string): DataResult<T> {
       const vd = getViewData(viewId)
@@ -919,6 +969,7 @@ function createAppendModel<T, Params>(config: AppendRemoteModelConfig<T, Params>
 
       currentParams = actionConfig.handler({ payload, params: currentParams })
       updatePersistedActionState(action, payload, currentParams)
+      actionState.update(action, payload, viewId)
 
       const vd = getViewData(viewId)
       resetView(viewId, vd)
@@ -964,6 +1015,8 @@ function createAppendModel<T, Params>(config: AppendRemoteModelConfig<T, Params>
   }
 
   const model = createModel(adapter)
+  model.getActionState = actionState.getState
+  model.subscribeToActionState = actionState.subscribe
   model.persistence = {
     capture(_viewId, previous) {
       return capturePersistenceState(previous)

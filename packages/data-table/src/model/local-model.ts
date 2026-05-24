@@ -1,3 +1,4 @@
+import { createActionStateTracker } from './action-state'
 import { createModel } from './model-core'
 import {
   capturePersistedAction,
@@ -7,7 +8,9 @@ import {
   persistedActionIsEmpty,
   persistenceKeyForAction,
 } from './persistence'
+import { warnModelActionInDev } from './reserved-actions'
 
+import type { InitialModelAction } from './action-state'
 import type { ModelActionPersistenceConfig } from './persistence'
 import type { AsyncResultEmitter, ConcurrencyStrategy, DataModelHandle, DataResult, FrameAdapter, ModelPersistenceState } from './types'
 
@@ -64,6 +67,7 @@ export interface LocalModelConfig<T, G = never> {
   groups?: { index: number; level: number }[]
   pipeline?: string[]
   actions?: Record<string, PipelineActionConfig<T, G> | SourceMutatorConfig<T>>
+  initialActions?: InitialModelAction[]
 }
 
 function isPipelineAction<T, G>(config: PipelineActionConfig<T, G> | SourceMutatorConfig<T>): config is PipelineActionConfig<T, G> {
@@ -72,6 +76,7 @@ function isPipelineAction<T, G>(config: PipelineActionConfig<T, G> | SourceMutat
 
 interface ViewPipelineState<T, G = never> {
   stageCache: ((T | G)[] | null)[]
+  stageGroups: ({ index: number; level: number }[] | null)[]
   stagePayloads: unknown[]
   lastPipelineResult: DataResult<T, G> | null
 }
@@ -86,6 +91,7 @@ export function localModel<T, G = never>(config: LocalModelConfig<T, G>): DataMo
   let currentGroups = config.groups ?? []
   const pipeline = config.pipeline ?? []
   const actions = config.actions ?? {}
+  const actionState = createActionStateTracker()
   const persistenceSubscribers = new Set<() => void>()
   let asyncEmit: AsyncResultEmitter<T, G> | null = null
 
@@ -96,6 +102,7 @@ export function localModel<T, G = never>(config: LocalModelConfig<T, G>): DataMo
     if (!state) {
       state = {
         stageCache: pipeline.map(() => null),
+        stageGroups: pipeline.map(() => null),
         // oxlint-disable-next-line unicorn/no-useless-undefined this is intentional
         stagePayloads: pipeline.map(() => undefined),
         lastPipelineResult: null,
@@ -115,12 +122,14 @@ export function localModel<T, G = never>(config: LocalModelConfig<T, G>): DataMo
 
       if (payload === undefined) {
         state.stageCache[i] = data
+        state.stageGroups[i] = null
         continue
       }
 
       const actionConfig = findPipelineActionForStage(stageName)
       if (!actionConfig) {
         state.stageCache[i] = data
+        state.stageGroups[i] = null
         continue
       }
 
@@ -128,20 +137,16 @@ export function localModel<T, G = never>(config: LocalModelConfig<T, G>): DataMo
       if (Array.isArray(result)) {
         data = result
         state.stageCache[i] = data
+        state.stageGroups[i] = null
       } else {
         data = result.data
         state.stageCache[i] = data
+        state.stageGroups[i] = result.groups
         state.lastPipelineResult = result
-        if (i === pipeline.length - 1) {
-          return result
-        }
       }
     }
 
-    if (state.lastPipelineResult && !Array.isArray(state.lastPipelineResult)) {
-      return { data, groups: state.lastPipelineResult.groups }
-    }
-    return { data, groups: currentGroups }
+    return { data, groups: state.stageGroups.findLast((groups) => groups !== null) ?? currentGroups }
   }
 
   function findPipelineActionForStage(stageName: string): PipelineActionConfig<T, G> | undefined {
@@ -212,6 +217,11 @@ export function localModel<T, G = never>(config: LocalModelConfig<T, G>): DataMo
       }
 
       state.stagePayloads[stageIndex] = payload
+      if (payload === undefined) {
+        actionState.remove(action)
+      } else {
+        actionState.update(action, payload, viewId)
+      }
     }
 
     invalidateAllStages(viewId)
@@ -232,6 +242,7 @@ export function localModel<T, G = never>(config: LocalModelConfig<T, G>): DataMo
     const state = getViewState(viewId)
     for (let i = 0; i < state.stageCache.length; i++) {
       state.stageCache[i] = null
+      state.stageGroups[i] = null
     }
   }
 
@@ -240,6 +251,39 @@ export function localModel<T, G = never>(config: LocalModelConfig<T, G>): DataMo
       invalidateAllStages(viewId)
     }
   }
+
+  function applyInitialActions() {
+    if (!config.initialActions) {
+      return
+    }
+
+    const state = getViewState('default')
+    for (const initialAction of config.initialActions) {
+      const actionConfig = actions[initialAction.action]
+      if (!actionConfig) {
+        warnModelActionInDev(`Initial model action "${initialAction.action}" is not declared and was ignored.`)
+        continue
+      }
+
+      if (!isPipelineAction(actionConfig)) {
+        warnModelActionInDev(`Initial model action "${initialAction.action}" is a source mutator and was ignored.`)
+        continue
+      }
+
+      const stageIndex = getStageIndex(actionConfig.stage)
+      if (stageIndex === -1) {
+        warnModelActionInDev(
+          `Initial model action "${initialAction.action}" targets a stage outside the configured pipeline and was ignored.`
+        )
+        continue
+      }
+
+      state.stagePayloads[stageIndex] = initialAction.payload
+      actionState.update(initialAction.action, initialAction.payload, 'default', false)
+    }
+  }
+
+  applyInitialActions()
 
   const adapter: FrameAdapter<T, G> = {
     handleHandshake(viewId: string): DataResult<T, G> {
@@ -273,6 +317,7 @@ export function localModel<T, G = never>(config: LocalModelConfig<T, G>): DataMo
         }
         const result = runPipeline(viewId, stageIndex)
         state.lastPipelineResult = result
+        actionState.update(action, payload, viewId)
         return result
       }
 
@@ -288,6 +333,8 @@ export function localModel<T, G = never>(config: LocalModelConfig<T, G>): DataMo
   }
 
   const model = createModel(adapter)
+  model.getActionState = actionState.getState
+  model.subscribeToActionState = actionState.subscribe
   model.persistence = {
     capture(viewId, previous) {
       return capturePersistenceState(viewId, previous)

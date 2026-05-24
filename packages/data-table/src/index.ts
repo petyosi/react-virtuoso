@@ -53,6 +53,13 @@ export type {
 export { VirtuosoDataTable } from './core/VirtuosoDataTable'
 export { initialData$ } from './core/data'
 export { loadingState$ } from './core/loading'
+export {
+  dispatchModelAction$,
+  modelActionState$,
+  type DispatchModelActionPayload,
+  type ModelActionSnapshot,
+  type ModelActionState,
+} from './core/model-actions'
 export { DynamicColumns, type DynamicColumnsProps, type DynamicColumnsRenderParams } from './features/dynamic-columns'
 export {
   useCellValue,

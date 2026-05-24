@@ -2,7 +2,9 @@ import { Cell } from '@virtuoso.dev/reactive-engine-core'
 
 import { data$, groupIndices$ } from '../core/data'
 import { EMPTY_LOADING_STATE, loadingState$ } from '../core/loading'
+import { dispatchModelAction$, modelActionState$ } from '../core/model-actions'
 import { viewportRange$ } from '../rows/row-state'
+import { RESERVED_ACTION_NAMES, warnReservedModelActionInDev } from './reserved-actions'
 
 import type { DataTableLoadingState } from '../interfaces'
 import type { RemoteModelLoadingEvent, RemoteModelLoadingReason } from './remote-model'
@@ -93,13 +95,29 @@ export function bridgeModelToEngine(model: DataModelHandle, engine: Engine, view
     }
   })
 
+  const unsubActionState = model.subscribeToActionState?.((state) => {
+    engine.pub(modelActionState$, state)
+  })
+
+  const unsubDispatchModelAction = engine.sub(dispatchModelAction$, ({ action, payload }) => {
+    if (RESERVED_ACTION_NAMES.has(action)) {
+      warnReservedModelActionInDev(action, 'the table model bridge')
+      return
+    }
+
+    model.send({ action, payload, viewId })
+  })
+
   engine.pub(loadingState$, loadingState)
+  engine.pub(modelActionState$, model.getActionState?.() ?? {})
   model.send({ action: 'handshake', viewId })
 
   const cleanup = () => {
     model.send({ action: 'disconnect', viewId })
     unsub()
     unsubViewport()
+    unsubActionState?.()
+    unsubDispatchModelAction()
   }
 
   engine.onDispose(cleanup)

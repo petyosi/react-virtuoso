@@ -40,6 +40,7 @@ import {
 import { computeRowKey$, defaultComputeRowKey } from './content'
 import { context$, data$, groupLevelMap$, groupStickyConfig$, initialData$ } from './data'
 import { loadingState$ } from './loading'
+import { dispatchModelAction$, modelActionState$ } from './model-actions'
 
 import type { VirtuosoDataTableProps } from '../interfaces'
 
@@ -121,6 +122,8 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
         e.register(initialData$)
         e.register(dataModel$)
         e.register(dataModelViewId$)
+        e.register(dispatchModelAction$)
+        e.register(modelActionState$)
 
         e.pubIn({
           [dataModel$]: model,

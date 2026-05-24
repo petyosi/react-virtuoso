@@ -1,3 +1,5 @@
+import type { ModelActionState } from './action-state'
+
 /**
  * Message envelope used by data model protocols.
  *
@@ -54,7 +56,9 @@ export interface DataModelHandle<T = unknown> {
   send(msg: { action: string; payload?: unknown; viewId?: string; requestId?: string }): void
   subscribe(listener: (msg: MessageEnvelope) => void): () => void
   destroy(): void
+  getActionState?(): ModelActionState
   persistence?: DataModelPersistenceCapability
+  subscribeToActionState?(handler: (state: ModelActionState) => void): () => void
   setData?(data: T[], groups?: { index: number; level: number }[]): void
 }
 
