@@ -19,15 +19,14 @@ const HANDLE_STYLE: CSSProperties = {
   cursor: 'col-resize',
   touchAction: 'none',
   userSelect: 'none',
-  transform: 'translateX(50%)',
   zIndex: 1,
 }
 const HANDLE_LINE_STYLE: CSSProperties = {
   position: 'absolute',
-  left: '50%',
+  right: 0,
   top: '50%',
   borderRadius: 9999,
-  transform: 'translate(-50%, -50%)',
+  transform: 'translateY(-50%)',
 }
 
 export const ResizeHandle: HeaderSlotCustomComponent = ({ columnKey, headerRef }) => {

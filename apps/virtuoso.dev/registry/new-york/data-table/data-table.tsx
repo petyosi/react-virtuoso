@@ -190,14 +190,16 @@ interface DataTableColumnHeaderProps {
 }
 
 function DataTableColumnHeader(props: DataTableColumnHeaderProps) {
-  const className = cn(
-    'flex h-10 min-w-0 items-center overflow-hidden truncate px-2 align-middle text-sm font-medium text-foreground',
-    props.className
-  )
+  const measureClassName = 'flex h-10 items-center px-2 align-middle text-sm font-medium text-foreground'
+  const contentClassName = cn('flex min-w-0 items-center overflow-hidden truncate', props.className)
 
   if (props.component) {
-    return <ColumnHeader className={className} component={props.component} />
+    return <ColumnHeader className={cn(measureClassName, props.className)} component={props.component} />
   }
+
+  const wrapRender =
+    (render: ColumnHeaderRenderFunction): ColumnHeaderRenderFunction =>
+    (params) => <div className={contentClassName}>{render(params)}</div>
 
   if (
     props.children === null ||
@@ -208,13 +210,26 @@ function DataTableColumnHeader(props: DataTableColumnHeaderProps) {
   ) {
     const userRender = props.children
     return (
-      <ColumnHeader className={className}>
-        {(params: ColumnHeaderRenderParams) => (typeof userRender === 'function' ? userRender(params) : userRender)}
+      <ColumnHeader className={measureClassName}>
+        {wrapRender((params) => (typeof userRender === 'function' ? userRender(params) : userRender))}
       </ColumnHeader>
     )
   }
 
-  return <ColumnHeader className={className}>{props.children as ColumnHeaderChildren}</ColumnHeader>
+  const wrapChildren = (children: unknown): unknown => {
+    if (Array.isArray(children)) {
+      return children.map(wrapChildren)
+    }
+    if (React.isValidElement(children) && children.type === React.Fragment) {
+      return wrapChildren((children.props as { children?: unknown }).children)
+    }
+    if (typeof children === 'function') {
+      return wrapRender(children as ColumnHeaderRenderFunction)
+    }
+    return children
+  }
+
+  return <ColumnHeader className={measureClassName}>{wrapChildren(props.children) as ColumnHeaderChildren}</ColumnHeader>
 }
 
 function DataTableCell(props: CellDefinitionProps) {

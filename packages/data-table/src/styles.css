@@ -2,6 +2,7 @@
   [data-table-element-role='column-header'] {
     min-width: 1px;
     box-sizing: border-box;
+    overflow-x: hidden;
   }
 
   [data-table-element-role='cell'] {
