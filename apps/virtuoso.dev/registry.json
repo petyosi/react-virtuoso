@@ -35,7 +35,7 @@
       "type": "registry:component",
       "title": "Data Table Reorder Grip",
       "description": "Slot-mounted drag grip for column reordering.",
-      "dependencies": ["@virtuoso.dev/data-table"],
+      "dependencies": ["@virtuoso.dev/data-table", "lucide-react"],
       "registryDependencies": ["data-table"],
       "files": [
         {

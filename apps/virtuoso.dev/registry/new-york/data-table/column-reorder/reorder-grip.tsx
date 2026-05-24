@@ -2,6 +2,7 @@
 
 import { usePublisher } from '@virtuoso.dev/data-table'
 import { beginColumnDrag$, endColumnDrag$ } from '@virtuoso.dev/data-table/column-reorder'
+import { GripVertical } from 'lucide-react'
 
 import type { HeaderSlotCustomComponent } from '@virtuoso.dev/data-table'
 
@@ -27,9 +28,10 @@ export const ReorderGrip: HeaderSlotCustomComponent = ({ columnKey, columnState,
       onDragEnd={() => {
         endColumnDrag()
       }}
-      className="mr-2 cursor-grab text-sm opacity-50 select-none"
+      className="mr-2 inline-flex shrink-0 cursor-grab items-center text-muted-foreground/60 select-none hover:text-muted-foreground"
+      aria-label="Drag to reorder column"
     >
-      ⠿
+      <GripVertical className="size-4" />
     </span>
   )
 }
