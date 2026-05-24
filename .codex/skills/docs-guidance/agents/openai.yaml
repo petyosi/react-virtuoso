@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Docs Guidance'
+  short_description: 'Write readable project docs'
+  default_prompt: 'Use $docs-guidance to revise this documentation for human readability, conceptual flow, and safe examples.'
