@@ -21,16 +21,16 @@
     "knip": "knip"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.5.2",
-    "@changesets/cli": "^2.29.8",
+    "@changesets/changelog-github": "^0.7.0",
+    "@changesets/cli": "^2.31.0",
     "@types/node": "catalog:",
-    "@typescript/native-preview": "7.0.0-dev.20260301.1",
-    "knip": "^5.70.2",
-    "lefthook": "^2.0.8",
-    "markdownlint-cli": "^0.46.0",
-    "oxfmt": "^0.35.0",
-    "oxlint": "^1.50.0",
-    "oxlint-tsgolint": "^0.15.0",
+    "@typescript/native-preview": "7.0.0-dev.20260525.1",
+    "knip": "^6.14.2",
+    "lefthook": "^2.1.8",
+    "markdownlint-cli": "^0.48.0",
+    "oxfmt": "^0.51.0",
+    "oxlint": "^1.66.0",
+    "oxlint-tsgolint": "^0.23.0",
     "typescript": "catalog:"
   },
   "devEngines": {
