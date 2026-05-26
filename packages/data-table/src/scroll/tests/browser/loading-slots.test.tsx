@@ -106,9 +106,14 @@ describe('loading slots', () => {
 
   test('refresh overlay appears during action-driven re-fetch and clears on success', async () => {
     let modelHandle: DataModelHandle<Item>
+    const refreshRequest = Promise.withResolvers<void>()
     const fetch = vi.fn(async (params: AppendFetchParams) => {
-      await delay(25)
       const filterParams = params.params as FilterParams
+      if (filterParams.filter) {
+        await refreshRequest.promise
+      } else {
+        await delay(25)
+      }
       const base = Array.from({ length: 20 }, (_, index) => ({
         id: index,
         name: filterParams.filter ? `${filterParams.filter}-${index}` : `item-${index}`,
@@ -159,8 +164,11 @@ describe('loading slots', () => {
 
     modelHandle!.send({ action: 'filter', payload: 'books', viewId: 'default' })
 
+    await expect.poll(() => fetch.mock.calls.some((c) => (c[0].params as FilterParams).filter === 'books')).toBe(true)
     await expect.poll(() => screen.container.querySelector('[data-testid=loading-overlay]')?.textContent ?? null).toBe('loading')
     expect(screen.container.textContent).toContain('item-0')
+
+    refreshRequest.resolve()
 
     await expect.poll(() => screen.container.querySelector('[data-testid=loading-overlay]')).toBeNull()
     await expect.poll(() => screen.container.textContent?.includes('books-0') ?? false).toBe(true)
