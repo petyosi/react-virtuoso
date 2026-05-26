@@ -482,6 +482,7 @@ describe('reactive loop termination', () => {
     await waitForReady(screen)
 
     const scroller = screen.container.querySelector(scrollerSelector) as HTMLElement
+    await waitForScrollable(scroller)
     scroller.scrollTop = 60 * ROW_HEIGHT
 
     await expect
