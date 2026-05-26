@@ -1,0 +1,69 @@
+import type { CSSProperties } from 'react'
+
+import { Cell } from '..'
+import { Column } from '../columns/Column'
+import { ColumnHeader } from '../columns/ColumnHeader'
+import { LocalDataTable as VirtuosoDataTable } from '../tests/LocalDataTable'
+
+const COLUMN_COUNT = 20
+const ITEM_COUNT = 100
+
+const ITEMS = Array.from({ length: ITEM_COUNT }, (_, rowIndex) => {
+  const row: Record<string, string> = {
+    id: `id-${rowIndex}`,
+    name: `User ${rowIndex}`,
+  }
+  for (let colIndex = 0; colIndex < COLUMN_COUNT; colIndex++) {
+    row[`col${colIndex}`] = `R${rowIndex + 1}C${colIndex + 1}`
+  }
+  row.actions = 'Edit | Delete'
+  return row
+})
+
+const LIST_STYLE: CSSProperties = { height: 400, width: 600 }
+const HEADER_STYLE: CSSProperties = { fontWeight: 'bold', borderBottom: '1px solid #ccc', padding: '8px 12px' }
+const STICKY_HEADER_STYLE: CSSProperties = { ...HEADER_STYLE, background: '#f0f0f0' }
+const STICKY_CELL_STYLE: CSSProperties = { padding: '8px 12px', width: 120, background: '#f8f8f8' }
+
+export function ScrollbarOverlayHandling() {
+  return (
+    <VirtuosoDataTable style={LIST_STYLE} source={ITEMS}>
+      <Column field="id" sticky="left">
+        <ColumnHeader>{() => <div style={STICKY_HEADER_STYLE}>ID</div>}</ColumnHeader>
+        <Cell>{({ cellValue }) => String(cellValue)}</Cell>
+      </Column>
+      {Array.from({ length: COLUMN_COUNT }, (_, i) => (
+        <Column key={`col${i}`} field={`col${i}`}>
+          <ColumnHeader>{() => <div style={HEADER_STYLE}>Column {i + 1}</div>}</ColumnHeader>
+          <Cell>{({ cellValue }) => String(cellValue)}</Cell>
+        </Column>
+      ))}
+      <Column field="actions" sticky="right">
+        <ColumnHeader>
+          {({ overlaidByScrollbar }) => (
+            <div
+              style={{
+                ...STICKY_HEADER_STYLE,
+                paddingRight: overlaidByScrollbar ? 'calc(8px + var(--overlay-scrollbar-visible-size))' : '8px',
+              }}
+            >
+              Actions
+            </div>
+          )}
+        </ColumnHeader>
+        <Cell>
+          {({ cellValue, overlaidByScrollbar }) => (
+            <div
+              style={{
+                ...STICKY_CELL_STYLE,
+                paddingRight: overlaidByScrollbar ? 'calc(8px + var(--overlay-scrollbar-visible-size))' : '8px',
+              }}
+            >
+              {String(cellValue)}
+            </div>
+          )}
+        </Cell>
+      </Column>
+    </VirtuosoDataTable>
+  )
+}

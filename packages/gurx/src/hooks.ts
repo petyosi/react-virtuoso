@@ -4,7 +4,7 @@ import { RealmContext } from './react'
 
 import type { Inp, NodeRef, Out, PipeRef } from './realm'
 
-const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? React.useLayoutEffect : React.useEffect
+const useIsomorphicLayoutEffect = typeof document === 'undefined' ? React.useEffect : React.useLayoutEffect
 
 /**
  * Returns a direct reference to the current realm. Use with caution.

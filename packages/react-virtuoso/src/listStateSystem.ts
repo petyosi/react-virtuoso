@@ -273,7 +273,7 @@ export const listStateSystem = u.system(
                 const rangeStartIndex = Math.max(range.start, startIndex)
                 const rangeEndIndex = Math.min(range.end, endIndex)
                 for (let i = rangeStartIndex; i <= rangeEndIndex; i++) {
-                  topItems.push({ data: data?.[i], index: i, offset: offset, size })
+                  topItems.push({ data: data?.[i], index: i, offset, size })
                   offset += size
                 }
               }
@@ -322,7 +322,7 @@ export const listStateSystem = u.system(
                     break
                   }
 
-                  result.push({ data: data?.[i], index: i, offset: offset, size })
+                  result.push({ data: data?.[i], index: i, offset, size })
                   offset += size + gap
                 }
               }
@@ -435,6 +435,7 @@ export const listStateSystem = u.system(
       u.pipe(
         listState,
         u.filter(({ items }) => items.length > 0),
+        // oxlint-disable-next-line array-callback-return -- callback always returns after trimming group sentinels
         u.map(({ items }) => {
           let startIndex = 0
           let endIndex = items.length - 1
@@ -447,10 +448,12 @@ export const listStateSystem = u.system(
             endIndex--
           }
 
-          return {
+          const range: ListRange = {
             endIndex: items[endIndex]!.index,
             startIndex: items[startIndex]!.index,
-          } as ListRange
+          }
+
+          return range
         }),
         u.distinctUntilChanged(rangeComparator)
       )

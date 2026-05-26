@@ -75,16 +75,16 @@ export const followOutputSystem = u.system(
         }
 
         // if the items have fixed size, we can scroll immediately
-        if (u.getValue(fixedItemSize) !== undefined) {
-          requestAnimationFrame(() => {
-            u.getValue(log)('following output to ', { totalCount }, LogLevel.DEBUG)
-            scrollToBottom(followOutputBehavior)
-          })
-        } else {
+        if (u.getValue(fixedItemSize) === undefined) {
           pendingScrollHandle = u.handleNext(listRefresh, () => {
             u.getValue(log)('following output to ', { totalCount }, LogLevel.DEBUG)
             scrollToBottom(followOutputBehavior)
             pendingScrollHandle = null
+          })
+        } else {
+          requestAnimationFrame(() => {
+            u.getValue(log)('following output to ', { totalCount }, LogLevel.DEBUG)
+            scrollToBottom(followOutputBehavior)
           })
         }
       }
@@ -158,7 +158,7 @@ export const followOutputSystem = u.system(
         u.combineLatest(u.pipe(tcOrDataChange, u.skip(1)), didMount),
         u.withLatestFrom(u.duc(scrollIntoViewOnChange), scrolledToInitialItem, scrollingInProgress, context),
         u.map(([[totalCount, didMount], scrollIntoViewOnChange, scrolledToInitialItem, scrollingInProgress, context]) => {
-          return didMount && scrolledToInitialItem && scrollIntoViewOnChange?.({ context, totalCount: totalCount, scrollingInProgress })
+          return didMount && scrolledToInitialItem && scrollIntoViewOnChange?.({ context, totalCount, scrollingInProgress })
         }),
         u.filter((viewLocation) => Boolean(viewLocation)),
         u.throttleTime(0)
@@ -170,16 +170,16 @@ export const followOutputSystem = u.system(
         }
 
         // if the items have fixed size, we can scroll immediately
-        if (u.getValue(fixedItemSize) !== undefined) {
-          requestAnimationFrame(() => {
-            u.getValue(log)('scrolling into view', {})
-            u.publish(scrollIntoView, viewLocation)
-          })
-        } else {
+        if (u.getValue(fixedItemSize) === undefined) {
           pendingScrollHandle = u.handleNext(listRefresh, () => {
             u.getValue(log)('scrolling into view', {})
             u.publish(scrollIntoView, viewLocation)
             pendingScrollHandle = null
+          })
+        } else {
+          requestAnimationFrame(() => {
+            u.getValue(log)('scrolling into view', {})
+            u.publish(scrollIntoView, viewLocation)
           })
         }
       }

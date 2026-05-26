@@ -25,6 +25,12 @@
         "run": "pnpm exec prettier --write {staged_files}",
         "stage_fixed": true,
         "skip": ["merge", "rebase"]
+      },
+      "validate-skill-manifests": {
+        "glob": "{.claude-plugin/marketplace.json,.agents/plugins/marketplace.json,packages/virtuoso-skills/.claude-plugin/plugin.json,plugins/virtuoso-skills/.codex-plugin/plugin.json}",
+        "run": "node -e \"for (const f of process.argv.slice(1)) JSON.parse(require('fs').readFileSync(f, 'utf8'))\" -- {staged_files}",
+        "stage_fixed": false,
+        "skip": ["merge", "rebase"]
       }
     }
   }

@@ -30,6 +30,13 @@
         "entry": ["src/**/*.test.{ts,tsx}", "vitest.config.ts"]
       }
     },
+    "packages/data-table": {
+      "entry": ["src/index.ts"],
+      "project": "**/*.{ts,tsx}",
+      "vitest": {
+        "entry": ["tests/**/*.test.{ts,tsx}", "src/**/tests/**/*.test.{ts,tsx}", "src/**/tests/**/*.bench.{ts,tsx}", "vitest.config.ts"]
+      }
+    },
     "packages/tooling": {
       "entry": ["eslint.config.mjs", "prettier.config.mjs"],
       "project": "**/*.{ts,tsx,mjs}"

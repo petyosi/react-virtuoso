@@ -99,7 +99,7 @@ export function combineLatest<O1, O2, O3, O4, O5, O6, O7, O8, O9, O10, O11, O12>
 ): Emitter<[O1, O2, O3, O4, O5, O6, O7, O8, O9, O10, O11, O12]> // prettier-ignore
 export function combineLatest(...emitters: Emitter<any>[]): Emitter<any> {
   const innerSubject = stream<any>()
-  const values = new Array(emitters.length)
+  const values = Array.from({ length: emitters.length })
   let called = 0
   const allCalled = 2 ** emitters.length - 1
 

@@ -7,7 +7,7 @@ import { defineConfig } from 'vitest/config'
 const inLadle = process.env.LADLE === 'true'
 
 const define = {
-  PACKAGE_TIMESTAMP: new Date().getTime(),
+  PACKAGE_TIMESTAMP: Date.now(),
 }
 // https://vitejs.dev/config/
 export default inLadle
@@ -18,7 +18,7 @@ export default inLadle
       build: {
         target: 'es2022',
         lib: {
-          entry: resolve(__dirname, 'src/index.ts'),
+          entry: resolve(import.meta.dirname, 'src/index.ts'),
           fileName: 'index',
           formats: ['es'],
           name: 'Virtuoso',

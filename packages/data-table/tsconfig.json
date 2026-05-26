@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@/components/ui/data-table": ["../../apps/virtuoso.dev/registry/new-york/data-table/data-table"],
+      "@/components/ui/data-table/column-reorder": ["../../apps/virtuoso.dev/registry/new-york/data-table/column-reorder/index.ts"],
+      "@/components/ui/data-table/column-resize": ["../../apps/virtuoso.dev/registry/new-york/data-table/column-resize/index.ts"],
+      "@/*": ["../../apps/virtuoso.dev/src/*"],
+      "@virtuoso.dev/data-table": ["./src/index.ts"],
+      "@virtuoso.dev/data-table/column-reorder": ["./src/features/column-reorder/index.ts"],
+      "@virtuoso.dev/data-table/column-resize": ["./src/features/column-resize/index.ts"],
+      "@virtuoso.dev/data-table/column-visibility": ["./src/features/column-visibility/index.ts"],
+      "@virtuoso.dev/data-table/state-persistence": ["./src/features/state-persistence/index.tsx"]
+    }
+  },
+  "include": ["src", "tests", "vite.config.ts", "vitest.config.ts"]
+}

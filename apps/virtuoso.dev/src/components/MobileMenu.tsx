@@ -5,6 +5,7 @@ import { ChevronDownIcon, GitHubLogoIcon } from '@radix-ui/react-icons'
 import { ThemeSelect } from './ThemeSelect'
 
 interface NavLink {
+  badge?: string
   href: string
   isActive: boolean
   label: string
@@ -105,8 +106,9 @@ export function MobileMenu({ navLinks }: MobileMenuProps) {
               {navLinks.map((link) => (
                 <a
                   className={`
-                    border-b border-(--sl-color-gray-6) px-2 py-3 text-base
-                    font-medium no-underline transition-colors duration-200
+                    flex items-center gap-2 border-b border-(--sl-color-gray-6)
+                    px-2 py-3 text-base font-medium no-underline
+                    transition-colors duration-200
                     ${
                       link.isActive
                         ? 'text-(--sl-color-text-accent)'
@@ -123,6 +125,18 @@ export function MobileMenu({ navLinks }: MobileMenuProps) {
                   }}
                 >
                   {link.label}
+                  {link.badge !== undefined && link.badge.length > 0 && (
+                    <span
+                      className={`
+                        inline-flex items-center rounded-full
+                        bg-(--sl-color-accent) px-1.5 py-0.5 text-[10px]
+                        leading-none font-semibold tracking-wide uppercase
+                        text-(--sl-color-black)
+                      `}
+                    >
+                      {link.badge}
+                    </span>
+                  )}
                 </a>
               ))}
             </nav>

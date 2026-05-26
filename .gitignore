@@ -6,7 +6,13 @@ dist
 build
 .turbo
 test-results
+coverage
 __screenshots__
+*.tsbuildinfo
+*.tgz
+tmp
+playwright-report
+blob-report
 
 # generated docs
 docs/virtuoso-api/*
@@ -15,6 +21,7 @@ docs/virtuoso-masonry-api/*
 apps/virtuoso.dev/docs/virtuoso-masonry-api/*
 .vscode
 .serena
-.claude/settings.local.json
+.claude/
 plans
 prompts
+reports

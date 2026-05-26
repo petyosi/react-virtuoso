@@ -1,0 +1,406 @@
+import type { DataModelHandle } from './model/types'
+import type { EngineRef } from '@virtuoso.dev/reactive-engine-react'
+
+/** @internal */
+export interface OffsetPoint {
+  offset: number
+  height: number
+  index: number
+}
+
+/** @internal */
+export interface SizeRange {
+  startIndex: number
+  endIndex: number
+  size: number
+}
+
+/** @internal - Generic virtualized item, used for both rows and columns */
+export interface Item<D> {
+  index: number
+  offset: number
+  size: number
+  data: D
+  prevData: D | null
+  nextData: D | null
+}
+
+/** @internal */
+export type DataArray = unknown[]
+
+/** Alias for Item, used in row-specific contexts */
+export type Row<D> = Item<D>
+
+/**
+ * The scroll behavior to use when scrolling to a location.
+ * You can also pass a custom scroll behavior function that returns an object with the number of animation frames and the easing function based on the current scroll top and the targetTop.
+ *
+ * @group Scroll Animation
+ */
+export type ScrollBehavior =
+  | 'smooth'
+  | 'auto'
+  | 'instant'
+  | ((
+      currentTop: number,
+      targetTop: number
+    ) => {
+      animationFrameCount: number
+      easing: BezierFunction
+    })
+
+/**
+ * Specifies a location in the list to scroll to.
+ *
+ * @group Scroll Location
+ */
+export interface RowLocationWithAlign {
+  /**
+   * The index of the item to scroll to. Use `'LAST'` to scroll to the last item.
+   */
+  index: number | 'LAST'
+  /**
+   * How to align the item in the viewport.
+   */
+  align?: 'start' | 'center' | 'end' | 'start-no-overflow'
+  /**
+   * Set `'smooth'` to have an animated transition to the specified location.
+   */
+  behavior?: ScrollBehavior
+  /**
+   * Use the offset for additional adjustment of the position - can be a positive or negative number.
+   */
+  offset?: number
+
+  /**
+   * A callback that's invoked when the scroll is complete.
+   */
+  done?: () => void
+}
+
+/**
+ * A location in the list to scroll to. Passing a number scrolls instantly to the row at the specified index aligned to the top. See {@link RowLocationWithAlign} for more advanced options.
+ *
+ * @group Scroll Location
+ */
+export type RowLocation = number | RowLocationWithAlign
+
+/**
+ * Used for the custom components that accept the data table context prop.
+ * @typeParam Context - The type of the context passed to the table.
+ *
+ * @group Customization
+ */
+export type ContextAwareComponent<Context = any> = React.ComponentType<{
+  /**
+   * The value currently passed to the `context` prop of the `VirtuosoDataTable` component.
+   */
+  context: Context
+}>
+
+/**
+ * Status for a loading state segment.
+ *
+ * @group State
+ */
+export type DataTableLoadingStatus = 'idle' | 'loading' | 'error'
+
+/**
+ * A single loading state segment.
+ *
+ * @group State
+ */
+export interface DataTableLoadingSegment {
+  status: DataTableLoadingStatus
+  errorMessage: string | null
+}
+
+/**
+ * Semantic loading state exposed by the data table.
+ *
+ * @group State
+ */
+export interface DataTableLoadingState {
+  initial: DataTableLoadingSegment
+  refresh: DataTableLoadingSegment
+  start: DataTableLoadingSegment
+  end: DataTableLoadingSegment
+}
+
+/**
+ * Resolves the measured height of a data item. Returns `0` when the item is not part of the
+ * current table data or has not been measured yet.
+ *
+ * @typeParam Data - The type of the data items in the table.
+ * @group Remote Control
+ */
+export type ItemHeightFunction<Data = any> = (item: Data) => number
+
+/**
+ * Props passed to loading UI component slots.
+ *
+ * @group Customization
+ */
+export interface LoadingComponentProps<Context = unknown> {
+  context: Context
+  loadingState: DataTableLoadingState
+}
+
+/**
+ * The type of the component that can be used for the scroll element.
+ * @typeParam Context - The type of the context passed to the list.
+ *
+ * @group Customization
+ */
+export type ScrollElementComponent<Context = any> = React.ComponentType<
+  React.HTMLProps<HTMLDivElement> & {
+    context?: Context
+  } & React.RefAttributes<HTMLDivElement>
+>
+
+/** @internal */
+export type HeaderWrapperComponent = React.ComponentType<
+  {
+    style: React.CSSProperties
+    children: React.ReactNode
+  } & React.RefAttributes<HTMLDivElement>
+>
+
+/**
+ * Props passed to the {@link DataTableComponents.StickyHeader | StickyHeader} component override.
+ * The component must forward `ref`, `style`, and `children` to its root element.
+ *
+ * @group Customization
+ */
+export type StickyHeaderComponentProps = {
+  style: React.CSSProperties
+  children: React.ReactNode
+  'data-table-element-role': string
+} & React.RefAttributes<HTMLDivElement>
+
+/** @internal */
+export type StickyHeaderWrapperComponent = React.ComponentType<StickyHeaderComponentProps & { context?: unknown }>
+
+/** @internal */
+export type FooterWrapperComponent = React.ComponentType<
+  {
+    style: React.CSSProperties
+    children: React.ReactNode
+  } & React.RefAttributes<HTMLDivElement>
+>
+
+/** @internal */
+export type StickyFooterWrapperComponent = React.ComponentType<
+  {
+    style: React.CSSProperties
+    children: React.ReactNode
+  } & React.RefAttributes<HTMLDivElement>
+>
+
+/**
+ * Props passed to the {@link DataTableComponents.Row | Row} component override.
+ * The component must forward `ref`, `style`, `children`, and data attributes to its root element.
+ *
+ * @group Customization
+ */
+export type RowComponentProps = {
+  style: React.CSSProperties
+  children: React.ReactNode
+  'data-testid': string
+  'data-table-element-role': string
+  'data-index': number
+  'data-known-size': number
+} & React.RefAttributes<HTMLDivElement>
+
+/**
+ * Props passed to the {@link DataTableComponents.StickyColumnContainer | StickyColumnContainer} component override.
+ * Used for both left and right sticky column containers in rows and headers.
+ * The `data-sticky` attribute indicates which side ("left" or "right").
+ *
+ * @group Customization
+ */
+export interface StickyColumnContainerComponentProps {
+  style: React.CSSProperties
+  children: React.ReactNode
+  'data-sticky': 'left' | 'right'
+}
+
+/**
+ * Component overrides for internal DOM elements of the data table.
+ * Each override receives the same props the default `<div>` would get, plus the table's `context` value.
+ *
+ * @typeParam Context - The type of the context passed to the table.
+ *
+ * @group Customization
+ */
+export interface DataTableComponents<Context = unknown> {
+  /**
+   * Override the element used for data rows (not group header rows).
+   * Must forward ref, style, children, and data attributes to the root element.
+   */
+  Row?: React.ComponentType<RowComponentProps & { context?: Context }>
+  /**
+   * Override the sticky header wrapper element.
+   * Must forward ref, style, and children to the root element.
+   */
+  StickyHeader?: React.ComponentType<StickyHeaderComponentProps & { context?: Context }>
+  /**
+   * Override the sticky column container element (used for both left and right sticky columns,
+   * in both row cells and header cells). The `data-sticky` attribute indicates the side.
+   */
+  StickyColumnContainer?: React.ComponentType<StickyColumnContainerComponentProps & { context?: Context }>
+  /**
+   * Override the placeholder rendered while the table is awaiting its first resolved dataset.
+   */
+  LoadingPlaceholder?: React.ComponentType<LoadingComponentProps<Context>>
+  /**
+   * Override the loading overlay rendered above the table body during refreshes.
+   */
+  LoadingOverlay?: React.ComponentType<LoadingComponentProps<Context>>
+  /**
+   * Override the measured footer rendered for end-of-list loading and error states.
+   */
+  LoadingFooter?: React.ComponentType<LoadingComponentProps<Context>>
+}
+
+/**
+ * Describes the location of the list relative to the viewport and the scroll element.
+ *
+ * @group State
+ */
+export interface ListScrollLocation {
+  /**
+   * The distance between the list top edge and the viewport top edge.
+   * When the list is above the viewport (when scrolling down), this value is a negative number. When the list is scrolled to the top, this value is `0`.
+   */
+  listOffset: number
+  /**
+   * The height of the visible portion of the list without any headers and footers.
+   */
+  visibleListHeight: number
+  /**
+   * The scroll height of the scroller wrapper.
+   */
+  scrollHeight: number
+  /**
+   * The distance between the scroller element bottom edge and the viewport bottom edge.
+   * If `0`, the list is at the bottom.
+   */
+  bottomOffset: number
+  /**
+   * A convenience flag that indicates whether the list is at the bottom. The flag is also true when the list is currently scrolling to the bottom.
+   */
+  isAtBottom: boolean
+}
+
+/**
+ * A function that describes the easing curve for the scroll animation.
+ * See {@link https://easings.net/ | easings.net} for examples of easing functions.
+ *
+ * @group Scroll Animation
+ */
+export type BezierFunction = (x: number) => number
+
+/** @internal */
+export type ComputeRowKey<Data = unknown, Context = unknown, Group = unknown> = (params: {
+  data: Data | Group
+  index: number
+  context: Context
+}) => React.Key
+
+/**
+ * The DOM attributes that you can pass to the `VirtuosoDataTable` component to customize the scroll element.
+ *
+ * @group Components
+ */
+export type ScrollerProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data' | 'onScroll'>
+
+/**
+ * The properties accepted by the `VirtuosoDataTable` component.
+ * In addition to the properties listed here, you can pass any other props that are accepted by a `div` element. They will be passed to the root div element used for the scroll.
+ * @typeParam Data - The type of the data items in the table.
+ * @typeParam Context - The type of the context passed to the table.
+ *
+ * @group Components
+ */
+export interface VirtuosoDataTableProps<Data, Context, Group = unknown> extends ScrollerProps {
+  /**
+   * A data model handle that provides data to the table through a message-exchange protocol.
+   */
+  model: DataModelHandle<Data | Group>
+  /**
+   * Any additional state that you need to use in the `ItemContent`, `EmptyPlaceholder`, etc.
+   */
+  context?: Context
+  /**
+   * Optional stable engine ID for remote access via `useRemote*` hooks.
+   * When provided, sibling or ancestor components can read from and publish to the table engine using this ID.
+   */
+  engineId?: string
+  /**
+   * Optional reactive ref to expose the table engine instance.
+   * Create it with `useEngineRef()` and use it with `useRemote*` hooks from outside the table tree.
+   */
+  engineRef?: EngineRef
+  /**
+   * The initial location to scroll to. It will be applied the first time the table is rendered with data.
+   * Using this property allows you to skip rendering of the items at the top of the table.
+   */
+  initialLocation?: RowLocation
+  /**
+   * Computes the value for the React `key` prop for the item at the specified index. Use stable, unique keys to avoid rendering issues.
+   * @param params - The parameters to compute the key.
+   */
+  computeRowKey?: NoInfer<(params: { data: Data | Group; index: number; context: Context }) => React.Key>
+
+  /**
+   * An optional React component to render when the table has zero data items.
+   */
+  EmptyPlaceholder?: NoInfer<ContextAwareComponent<Context>>
+  /**
+   * An optional React component to replace the default scroller element. The default value is a `div` element.
+   */
+  ScrollElement?: NoInfer<ScrollElementComponent<Context>>
+  /**
+   * A callback that's invoked when the table is scrolled. See {@link ListScrollLocation} for the details of the parameter received.
+   */
+  onScroll?: (location: ListScrollLocation) => void
+  /**
+   * A callback that's invoked when the currently visible items change
+   */
+  onRenderedDataChange?: (range: Data[]) => void
+
+  /**
+   * Set to true to make the table use the document scroller rather than wrapping in its own.
+   */
+  useWindowScroll?: boolean
+
+  /**
+   * Pass an HTML element to use as the scroll element. This is useful when you want to include additional content in the scrollable area, or if you want to use a complex custom scroll component.
+   */
+  customScrollParent?: HTMLElement | undefined | null
+
+  /**
+   * Artificially extends the viewport size in both directions, causing more items to be rendered.
+   * Useful if you have relatively heavy items or want images to be loaded before the user scrolls to them.
+   * For example, setting the value to `100` would increase the viewport in both directions by `100` pixels, causing more items to be rendered.
+   */
+  increaseViewportBy?: number
+
+  /**
+   * The number of extra columns to render on each side of the visible columns. Useful for smooth horizontal scrolling.
+   * Defaults to 0 (no overscan).
+   */
+  columnOverscanCount?: number
+
+  /**
+   * Component overrides for internal DOM elements like rows, sticky headers, and sticky column containers.
+   * See {@link DataTableComponents} for available slots.
+   */
+  components?: NoInfer<DataTableComponents<Context>>
+
+  /**
+   * Any children passed to the component.
+   */
+  children?: React.ReactNode
+}

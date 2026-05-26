@@ -1,0 +1,39 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "extends": ["../../.oxlintrc.json"],
+  "plugins": ["react-perf", "vitest", "unicorn"],
+  "rules": {
+    "typescript/no-unsafe-type-assertion": "off",
+    "typescript/strict-boolean-expressions": "off",
+    "typescript/no-confusing-void-expression": "off",
+    "typescript/no-base-to-string": "off",
+    "jest/no-hooks": "off",
+    "jest/require-top-level-describe": "off",
+    "jest/require-hook": "off",
+    "unicorn/filename-case": "off",
+    "unicorn/number-literal-case": "off",
+    "unicorn/no-array-callback-reference": "off",
+    "unicorn/no-array-method-this-argument": "off",
+    "unicorn/no-nested-ternary": "off",
+    "unicorn/no-null": "off",
+    "unicorn/no-unreadable-array-destructuring": "off",
+    "unicorn/prefer-global-this": "off",
+    "vitest/no-importing-vitest-globals": "off",
+    "vitest/prefer-strict-boolean-matchers": "off",
+    "vitest/prefer-called-times": "off",
+    "vitest/prefer-to-be-truthy": "off",
+    "vitest/require-mock-type-parameters": "off",
+    "jest/prefer-ending-with-an-expect": "off"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.tsx", "**/*.test.ts", "**/*.stories.tsx", "registry/**/*.tsx"],
+      "rules": {
+        "react-perf/jsx-no-new-function-as-prop": "off",
+        "react-perf/jsx-no-new-object-as-prop": "off",
+        "jest/require-hook": "error"
+      }
+    }
+  ],
+  "ignorePatterns": [".ladle/", "registry/"]
+}

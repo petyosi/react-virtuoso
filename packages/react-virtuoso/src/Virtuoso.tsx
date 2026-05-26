@@ -128,13 +128,13 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
           ? {
               display: 'inline-block',
               height: '100%',
-              marginInlineStart: deviation !== 0 ? deviation : alignToBottom ? 'auto' : 0,
+              marginInlineStart: deviation === 0 ? (alignToBottom ? 'auto' : 0) : deviation,
               paddingInlineEnd: listState.offsetBottom,
               paddingInlineStart: listState.offsetTop,
               whiteSpace: 'nowrap',
             }
           : {
-              marginTop: deviation !== 0 ? deviation : alignToBottom ? 'auto' : 0,
+              marginTop: deviation === 0 ? (alignToBottom ? 'auto' : 0) : deviation,
               paddingBottom: listState.offsetBottom,
               paddingTop: listState.offsetTop,
             }),
@@ -326,7 +326,7 @@ export function buildScroller({ useEmitter, useEmitterValue, usePublisher }: Hoo
       <ScrollerComponent
         data-testid="virtuoso-scroller"
         data-virtuoso-scroller={true}
-        ref={scrollerRef as React.MutableRefObject<HTMLDivElement | null>}
+        ref={scrollerRef as React.RefObject<HTMLDivElement | null>}
         style={{ ...defaultStyle, ...style }}
         tabIndex={0}
         {...props}
@@ -358,7 +358,7 @@ export function buildWindowScroller({ useEmitter, useEmitterValue, usePublisher 
     )
 
     useIsomorphicLayoutEffect(() => {
-      scrollerRef.current = customScrollParent ? customScrollParent : (scrollerElRef.current?.ownerDocument.defaultView as Window)
+      scrollerRef.current = customScrollParent ?? (scrollerElRef.current?.ownerDocument.defaultView as Window)
       return () => {
         scrollerRef.current = null
       }
@@ -370,7 +370,7 @@ export function buildWindowScroller({ useEmitter, useEmitterValue, usePublisher 
       <ScrollerComponent
         ref={scrollerElRef}
         data-virtuoso-scroller={true}
-        style={{ position: 'relative', ...style, ...(totalListHeight !== 0 ? { height: totalListHeight + deviation } : undefined) }}
+        style={{ position: 'relative', ...style, ...(totalListHeight === 0 ? undefined : { height: totalListHeight + deviation }) }}
         {...props}
         {...contextPropIfNotDomElement(ScrollerComponent, context)}
       >

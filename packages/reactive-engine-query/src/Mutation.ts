@@ -111,13 +111,12 @@ export function Mutation<TParams, TData>(options: MutationOptions<TParams, TData
           type: 'success',
         })
 
-        // Call onSuccess callback if provided
         try {
           options.onSuccess?.(result)
         } catch (error) {
-          // Log but don't break execution
           console.error('Mutation onSuccess callback error:', error)
         }
+        return undefined
       })
       .catch((error: unknown) => {
         engine.pub(data$, {

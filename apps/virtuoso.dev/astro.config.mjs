@@ -34,10 +34,10 @@ const autoImportConfig = {
 export default defineConfig({
   env: {
     schema: {
-      PADDLE_ENVIRONMENT: envField.string({ access: 'public', context: 'client' }),
-      PADDLE_PRO_PRICE_ID: envField.string({ access: 'public', context: 'client' }),
-      PADDLE_STANDARD_PRICE_ID: envField.string({ access: 'public', context: 'client' }),
-      PADDLE_TOKEN: envField.string({ access: 'public', context: 'client' }),
+      PADDLE_ENVIRONMENT: envField.string({ access: 'public', context: 'client', default: '' }),
+      PADDLE_PRO_PRICE_ID: envField.string({ access: 'public', context: 'client', default: '' }),
+      PADDLE_STANDARD_PRICE_ID: envField.string({ access: 'public', context: 'client', default: '' }),
+      PADDLE_TOKEN: envField.string({ access: 'public', context: 'client', default: '' }),
     },
   },
   integrations: [
@@ -143,6 +143,26 @@ sidebar:
           dest: 'message-list',
           path: '../../packages/message-list/docs',
         },
+        {
+          dest: 'data-table',
+          file: '../../packages/data-table/README.md',
+          transform: (content) => {
+            const frontmatter = `---
+title: Virtuoso Data Table
+sidebar:
+  label: Overview
+  order: 0
+---
+
+`
+            const withoutH1 = content.replace(/^# .+\n\n/, '')
+            return frontmatter + withoutH1
+          },
+        },
+        {
+          dest: 'data-table',
+          path: '../../packages/data-table/docs',
+        },
       ],
     }),
     react(),
@@ -186,6 +206,16 @@ sidebar:
       excludeExternals: false,
       outputFolder: 'src/content/docs/message-list/99.api-reference',
       tsconfig: resolve(__dirname, './tsconfig.message-list.json'),
+    }),
+    await initAstroTypedoc({
+      baseUrl: '/data-table/api-reference/',
+      entryPoints: [
+        {
+          path: resolve(__dirname, '../../packages/data-table/src/index.ts'),
+        },
+      ],
+      outputFolder: 'src/content/docs/data-table/99.api-reference',
+      tsconfig: resolve(__dirname, '../../packages/data-table/tsconfig.json'),
     }),
     starlight({
       components: {
@@ -262,6 +292,11 @@ sidebar:
           autogenerate: { directory: 'gurx' },
           collapsed: true,
           label: 'gurx',
+        },
+        {
+          autogenerate: { directory: 'data-table' },
+          collapsed: true,
+          label: 'data-table',
         },
       ],
       social: [

@@ -1,0 +1,9 @@
+sandbox_mode = "workspace-write"
+[mcp_servers.notion]
+url = "https://mcp.notion.com/mcp"
+
+[mcp_servers.notion.tools.notion-update-data-source]
+approval_mode = "approve"
+
+[mcp_servers.notion.tools.notion-update-page]
+approval_mode = "approve"

@@ -7,5 +7,5 @@
     "types": ["vite/client"]
   },
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"]
+  "exclude": ["dist", "registry"]
 }

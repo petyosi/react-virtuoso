@@ -4,7 +4,7 @@ import type { MdxJsxElement } from '@virtuoso.dev/m2dx-utils'
 import type { Root } from 'mdast'
 
 export function findUnresolved(root: Root): MdxJsxElement[] {
-  const imports = findAllImportSpecifiers(root).map((i) => i.name)
+  const imports = new Set(findAllImportSpecifiers(root).map((i) => i.name))
   const elements = findAllJsxElements(root)
-  return elements.filter((n) => !imports.includes(n.name ?? ''))
+  return elements.filter((n) => !imports.has(n.name ?? ''))
 }

@@ -61,7 +61,7 @@ function buildItems<D>(startIndex: number, endIndex: number, data: D[] | null) {
 function buildProbeGridState<D = unknown>(items: GridItem<D>[]): GridState {
   return {
     ...PROBE_GRID_STATE,
-    items: items,
+    items,
   }
 }
 

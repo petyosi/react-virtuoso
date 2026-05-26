@@ -21,6 +21,7 @@ export default function Purchase(): JSX.Element {
       if (paddleInstance) {
         setPaddle(paddleInstance)
       }
+      return undefined
     })
   }, [])
 

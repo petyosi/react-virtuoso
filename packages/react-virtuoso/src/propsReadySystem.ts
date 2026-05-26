@@ -13,7 +13,9 @@ export const propsReadySystem = u.system(
       )
     )
     u.subscribe(propsReady, (value) => {
-      value && u.getValue(log)('props updated', {}, LogLevel.DEBUG)
+      if (value) {
+        u.getValue(log)('props updated', {}, LogLevel.DEBUG)
+      }
     })
 
     return { didMount, propsReady }

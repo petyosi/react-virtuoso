@@ -3,5 +3,13 @@
   "extends": ["../../.oxlintrc.json"],
   "rules": {
     "no-lonely-if": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["src/VirtuosoMasonry.tsx"],
+      "rules": {
+        "typescript/no-unsafe-type-assertion": "off"
+      }
+    }
+  ]
 }

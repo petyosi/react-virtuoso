@@ -4,7 +4,7 @@ import invariant from 'tiny-invariant'
 
 import type { Engine, Inp, NodeRef, Out, Subscription } from '@virtuoso.dev/reactive-engine-core'
 
-export const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? React.useLayoutEffect : React.useEffect
+export const useIsomorphicLayoutEffect = typeof document === 'undefined' ? React.useEffect : React.useLayoutEffect
 
 // EngineRef: reactive ref for engine instances
 
@@ -183,7 +183,9 @@ function useCellValueWithState<T>(cell: Out<T>): T {
   const [value, setValue] = React.useState(() => engine.getValue(cell))
 
   useIsomorphicLayoutEffect(() => {
-    return engine.sub(cell, setValue)
+    return engine.sub(cell, (nextValue) => {
+      setValue(() => nextValue)
+    })
   }, [engine, cell])
 
   return value
@@ -345,7 +347,7 @@ function useRemoteEngine(source: EngineSource): Engine | null {
   const engineRef = isRef ? source : null
 
   const [engineFromRegistry, setEngineFromRegistry] = React.useState<Engine | null>(() =>
-    engineId !== null ? getRegistryEngine(engineId) : null
+    engineId === null ? null : getRegistryEngine(engineId)
   )
 
   useIsomorphicLayoutEffect(() => {
@@ -403,12 +405,14 @@ export function useRemoteCellValue<T>(cell: Out<T>, engineSource: EngineSource):
 
   useIsomorphicLayoutEffect(() => {
     if (!engine) {
-      setValue(undefined)
+      setValue(() => undefined)
       return
     }
     engine.register(cell)
-    setValue(engine.getValue(cell))
-    return engine.sub(cell, setValue)
+    setValue(() => engine.getValue(cell))
+    return engine.sub(cell, (nextValue) => {
+      setValue(() => nextValue)
+    })
   }, [engine, cell])
 
   return value
@@ -483,7 +487,8 @@ export function useRemoteCell<T>(cell: NodeRef<T>, engineSource: EngineSource): 
  * @category React Hooks and Components
  */
 export interface RemoteCellValuesOptions<T extends unknown[]> {
-  cells: { [K in keyof T]: Out<T[K]> }
+  // oxlint-disable-next-line typescript/no-unnecessary-type-arguments -- mapped tuple cell types need the explicit item type
+  cells: { [K in keyof T]: NodeRef<T[K]> }
   engineSource: EngineSource
 }
 

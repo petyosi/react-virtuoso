@@ -54,6 +54,7 @@ After docs changes: run `pnpm lint` from the app directory or root.
 
 **DO NOT EDIT** the following auto-generated directories:
 
+- `apps/virtuoso.dev/src/content/docs/data-table/`
 - `apps/virtuoso.dev/src/content/docs/react-virtuoso/`
 - `apps/virtuoso.dev/src/content/docs/masonry/`
 - `apps/virtuoso.dev/src/content/docs/gurx/`
@@ -63,10 +64,30 @@ These are auto-synced from source files + TypeDoc API via the `docsSync` integra
 
 **To edit package documentation**, modify the source files in each package:
 
+- **data-table**: `packages/data-table/docs/*.md`
 - **react-virtuoso**: `packages/react-virtuoso/README.md` or `packages/react-virtuoso/docs/*.md`
 - **masonry**: `packages/masonry/README.md` or `packages/masonry/docs/*.md`
 - **gurx**: `packages/gurx/README.md` or `packages/gurx/docs/*.md`
 - **message-list**: `packages/message-list/README.md` or `packages/message-list/docs/*.md`
+
+## Plugin Distribution
+
+This repo ships `virtuoso-skills` as a Claude Code plugin from `packages/virtuoso-skills/`, a Codex plugin from `plugins/virtuoso-skills/`, and a root `skills/` mirror for `npx skills`.
+
+Edit source skill content in `packages/virtuoso-skills/skills/<name>/SKILL.md`. Do not edit `packages/virtuoso-skills/skills/*/references/`, root `skills/`, or `plugins/virtuoso-skills/skills/` directly; regenerate them with:
+
+```bash
+pnpm build:skills
+```
+
+After merge, public Codex plugin install uses:
+
+```bash
+codex plugin marketplace add petyosi/react-virtuoso --ref main --sparse .agents/plugins --sparse plugins/virtuoso-skills
+codex plugin add virtuoso-skills@virtuoso
+```
+
+Do not commit `.agents/skills/` for Codex/OpenCode/Cursor unless the cross-agent install plan changes. `npx skills` owns that target path.
 
 ## Monorepo Structure
 
@@ -151,6 +172,7 @@ E2E tests in `packages/react-virtuoso/e2e/`:
 
 ## Code Style
 
+- Never use `data-testid` attributes for CSS styling selectors. `data-testid` is reserved for testing only. Use `data-table-element-role` or other semantic data attributes for styling hooks.
 - TypeScript with strong typing; avoid `any`
 - oxfmt: 140 char width, single quotes, no semicolons
 - Naming: camelCase for variables/functions, PascalCase for components

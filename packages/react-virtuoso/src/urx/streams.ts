@@ -96,7 +96,6 @@ export function statefulStream<T>(initial: T): StatefulStream<T> {
   let value: T = initial
   const innerSubject = stream<T>()
 
-  // @ts-ignore
   return ((action: PUBLISH | RESET | SUBSCRIBE | VALUE, arg: any) => {
     switch (action) {
       case PUBLISH:
@@ -109,6 +108,8 @@ export function statefulStream<T>(initial: T): StatefulStream<T> {
       }
       case VALUE:
         return value
+      case RESET:
+        break
     }
     return innerSubject(action as any, arg)
   }) as StatefulStream<T>
@@ -172,7 +173,7 @@ export function stream<T>(): Stream<T> {
         })
         return
       case RESET:
-        subscriptions.splice(0, subscriptions.length)
+        subscriptions.splice(0)
         return
       case SUBSCRIBE:
         subscriptions.push(arg as Subscription<T>)

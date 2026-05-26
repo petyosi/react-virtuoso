@@ -1,0 +1,13 @@
+{
+  "name": "virtuoso-skills",
+  "description": "Agent skills for react-virtuoso, message-list, and data-table",
+  "version": "0.1.0",
+  "author": {
+    "name": "Virtuoso.dev",
+    "email": "petyo@virtuoso.dev"
+  },
+  "homepage": "https://virtuoso.dev",
+  "repository": "https://github.com/petyosi/react-virtuoso",
+  "license": "MIT",
+  "keywords": ["react-virtuoso", "virtualization", "table", "chat", "data-table"]
+}

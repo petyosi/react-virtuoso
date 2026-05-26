@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "react", "import"],
+  "plugins": ["typescript", "react", "jsx-a11y", "import", "promise"],
   "categories": {
     "correctness": "error",
     "suspicious": "error",
@@ -8,7 +8,16 @@
     "style": "error",
     "perf": "error"
   },
+  "settings": {
+    "react": {
+      "version": "19"
+    }
+  },
   "rules": {
+    "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+    "promise/prefer-await-to-callbacks": "off",
+    "promise/avoid-new": "off",
+    "promise/prefer-await-to-then": "off",
     "no-console": ["error", { "allow": ["warn", "error"] }],
     "typescript/no-unused-vars": [
       "error",
@@ -18,7 +27,6 @@
         "caughtErrorsIgnorePattern": "^_"
       }
     ],
-    "react/prop-types": "off",
     "react/react-in-jsx-scope": "off",
     "react/jsx-props-no-spreading": "off",
     "react/jsx-boolean-value": "off",
@@ -39,33 +47,63 @@
     "no-continue": "off",
     "no-inline-comments": "off",
     "no-magic-numbers": "off",
-    "no-negated-condition": "off",
     "no-nested-ternary": "off",
     "no-ternary": "off",
     "prefer-destructuring": "off",
-    "radix": "off",
     "sort-imports": "off",
     "sort-keys": "off",
-    "symbol-description": "off",
+    "unicorn/filename-case": "off",
+    "unicorn/no-array-callback-reference": "off",
+    "unicorn/no-array-method-this-argument": "off",
+    "unicorn/no-array-sort": "off",
+    "unicorn/no-lonely-if": "off",
+    "unicorn/no-null": "off",
+    "unicorn/no-nested-ternary": "off",
+    "unicorn/no-unreadable-array-destructuring": "off",
+    "unicorn/no-useless-undefined": "off",
+    "unicorn/prefer-at": "off",
+    "unicorn/prefer-global-this": "off",
+    "unicorn/prefer-import-meta-properties": "off",
+    "unicorn/prefer-native-coercion-functions": "off",
+    "unicorn/prefer-optional-catch-binding": "off",
+    "unicorn/prefer-spread": "off",
+    "unicorn/prefer-string-replace-all": "off",
+    "unicorn/prefer-string-slice": "off",
+    "unicorn/prefer-ternary": "off",
+    "unicorn/switch-case-braces": "off",
+    "unicorn/catch-error-name": "off",
+    "unicorn/consistent-existence-index-check": "off",
+    "unicorn/consistent-function-scoping": "off",
+    "unicorn/explicit-length-check": "off",
+    "unicorn/numeric-separators-style": "off",
+    "unicorn/text-encoding-identifier-case": "off",
 
     "typescript/restrict-template-expressions": ["error", { "allowNumber": true }],
     "typescript/ban-types": "error",
+    "typescript/consistent-return": "off",
+    "typescript/prefer-readonly-parameter-types": "off",
+    "typescript/strict-void-return": "off",
 
     "import/no-named-export": "off",
     "import/group-exports": "off",
     "import/exports-last": "off",
     "import/prefer-default-export": "off",
     "import/no-namespace": "off",
-    "import/default": "off",
     "max-depth": "off",
     "no-duplicate-imports": ["error", { "allowSeparateTypeImports": true }],
-    "no-inner-declarations": "off"
+    "react/hook-use-state": "off"
   },
   "overrides": [
     {
       "files": ["**/vite.config.*", "**/playwright.config.*"],
       "rules": {
         "import/no-nodejs-modules": "off"
+      }
+    },
+    {
+      "files": ["**/.ladle/**"],
+      "rules": {
+        "import/no-unassigned-import": "off"
       }
     }
   ],

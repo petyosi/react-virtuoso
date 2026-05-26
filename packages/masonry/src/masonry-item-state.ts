@@ -108,7 +108,7 @@ export const masonryItemsState$ = Cell<MasonryItemsState<unknown>>({ columns: []
                   items,
                   listBottom: 0,
                   listTop: 0,
-                  offsetTree: offsetTree,
+                  offsetTree,
                   totalHeight: 0,
                   viewportBottom,
                 } satisfies ColumnItemsState<unknown>
@@ -226,7 +226,7 @@ export const masonryItemsState$ = Cell<MasonryItemsState<unknown>>({ columns: []
       pub(
         indexesInColumns$,
         indexes.map((indexesInColumn, index) => {
-          return index === shortestColumn.index ? [...indexesInColumn, nextIndex] : indexesInColumn
+          return index === shortestColumn.index ? indexesInColumn.concat(nextIndex) : indexesInColumn
         })
       )
     }

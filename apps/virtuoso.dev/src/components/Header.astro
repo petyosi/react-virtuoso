@@ -52,6 +52,20 @@ function isActive(path: string) {
       </a>
       <a
         class:list={[
+          'inline-flex items-center gap-2 text-sm font-medium no-underline transition-colors duration-200',
+          isActive('/data-table/') ? 'text-(--sl-color-text-accent)' : 'text-(--sl-color-white) hover:text-(--sl-color-text-accent)',
+        ]}
+        href="/data-table/"
+      >
+        Data Table
+        <span
+          class="inline-flex items-center rounded-full bg-(--sl-color-accent) px-1.5 py-0.5 text-[10px] leading-none font-semibold tracking-wide uppercase text-(--sl-color-black)"
+        >
+          New
+        </span>
+      </a>
+      <a
+        class:list={[
           'text-sm font-medium no-underline transition-colors duration-200',
           isActive('/masonry/') ? 'text-(--sl-color-text-accent)' : 'text-(--sl-color-white) hover:text-(--sl-color-text-accent)',
         ]}

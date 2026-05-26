@@ -39,7 +39,7 @@
     "format:check": "oxfmt --check"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.55.1",
+    "@microsoft/api-extractor": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

@@ -60,7 +60,9 @@ export function Example() {
       </div>
       <Virtuoso
         atBottomStateChange={(atBottom) => {
-          appendInterval.current && clearInterval(appendInterval.current)
+          if (appendInterval.current) {
+            clearInterval(appendInterval.current)
+          }
           if (atBottom) {
             appendInterval.current = setInterval(() => {
               // setCount((count) => count + 3)

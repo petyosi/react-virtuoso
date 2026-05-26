@@ -161,11 +161,14 @@ export type SystemSpecs = AnySystemSpec[]
  * @param __namedParameters Options
  * @param singleton determines if the system will act as a singleton in a system dependency tree. `true` by default.
  */
+const defaultSystemOptions = { singleton: true }
+
 export function system<F extends SystemConstructor<D>, D extends SystemSpecs>(
   constructor: F,
   dependencies: D = [] as unknown as D,
-  { singleton }: { singleton: boolean } = { singleton: true }
+  options: { singleton: boolean } = defaultSystemOptions
 ): SystemSpec<D, F> {
+  const { singleton } = options
   return {
     constructor,
     dependencies,
@@ -175,7 +178,7 @@ export function system<F extends SystemConstructor<D>, D extends SystemSpecs>(
 }
 
 /** @internal */
-const id = () => Symbol() as unknown as string
+const id = () => Symbol('id') as unknown as string
 
 /**
  * Initializes a [[SystemSpec]] by recursively initializing its dependencies.

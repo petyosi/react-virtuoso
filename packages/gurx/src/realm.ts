@@ -148,7 +148,7 @@ export class Realm {
    * @param distinct - true by default. Pass false to mark the signal as a non-distinct one, meaning that publishing the same value multiple times will re-trigger a recomputation cycle.
    * @param node - optional, a reference to a cell. If the cell has not been touched in the realm before, the realm will instantiate a reference to it. If it's registered already, the function will return the reference.
    */
-  cellInstance<T>(value: T, distinct: Distinct<T> = true, node = Symbol()): NodeRef<T> {
+  cellInstance<T>(value: T, distinct: Distinct<T> = true, node = Symbol('cell')): NodeRef<T> {
     if (!this.state.has(node)) {
       this.state.set(node, value)
     }
@@ -783,7 +783,7 @@ export class Realm {
       this.execute(keys, values)
       return
     }
-    const ids = new Array<symbol>(keys.length)
+    const ids = Array.from<symbol>({ length: keys.length })
     let remapped = false
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i]!
@@ -922,7 +922,7 @@ export class Realm {
    * @param distinct - true by default. Pass false to mark the signal as a non-distinct one, meaning that publishing the same value multiple times will re-trigger a recomputation cycle.
    * @param node - optional, a reference to a signal. If the signal has not been touched in the realm before, the realm will instantiate a reference to it. If it's registered already, the function will return the reference.
    */
-  signalInstance<T>(distinct: Distinct<T> = true, node = Symbol()): NodeRef<T> {
+  signalInstance<T>(distinct: Distinct<T> = true, node = Symbol('signal')): NodeRef<T> {
     if (distinct !== false) {
       // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion)
       this.distinctNodes.set(node, distinct === true ? defaultComparator : (distinct as Comparator<unknown>))
@@ -1188,7 +1188,7 @@ export class Realm {
  */
 export function Cell<T>(value: T, init: (r: Realm) => void = noop, distinct: Distinct<T> = true): NodeRef<T> {
   // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion)
-  return tap(Symbol(), (id) => {
+  return tap(Symbol('cell'), (id) => {
     nodeDefs$$.set(id, { distinct, init, initial: value, type: CELL_TYPE })
   }) as NodeRef<T>
 }
@@ -1199,7 +1199,7 @@ export function Pipe<I, Result>(
   distinct: Distinct<I> = true
 ): PipeRef<I, Result> {
   // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion)
-  return tap(Symbol(), (id) => {
+  return tap(Symbol('pipe'), (id) => {
     nodeDefs$$.set(id, { distinct, init, initial: value, type: PIPE_TYPE })
   }) as PipeRef<I, Result>
 }
@@ -1224,7 +1224,7 @@ export function Pipe<I, Result>(
  */
 export function DerivedCell<T>(value: T, linkFn: (r: Realm, cell: NodeRef<T>) => NodeRef<T>, distinct: Distinct<T> = true): NodeRef<T> {
   // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion)
-  return tap(Symbol(), (id) => {
+  return tap(Symbol('derived-cell'), (id) => {
     nodeDefs$$.set(id, {
       distinct,
       init: (r, node$) => {
@@ -1253,7 +1253,7 @@ export function DerivedCell<T>(value: T, linkFn: (r: Realm, cell: NodeRef<T>) =>
  */
 export function Signal<T>(init: NodeInit<T> = noop, distinct: Distinct<T> = false): NodeRef<T> {
   // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion)
-  return tap(Symbol(), (id) => {
+  return tap(Symbol('signal'), (id) => {
     nodeDefs$$.set(id, { distinct, init, type: 'signal' })
   }) as NodeRef<T>
 }
@@ -1275,7 +1275,7 @@ export function Signal<T>(init: NodeInit<T> = noop, distinct: Distinct<T> = fals
  */
 export function Action(init: NodeInit<void> = noop): NodeRef<void> {
   // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion)
-  return tap(Symbol(), (id) => {
+  return tap(Symbol('action'), (id) => {
     nodeDefs$$.set(id, { distinct: false, init, type: 'signal' })
   }) as NodeRef<void>
 }

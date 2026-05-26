@@ -34,6 +34,7 @@ export function AsyncQuery<I, O>(query: (params: I) => Promise<O>, defaultParams
       query(params)
         .then((data) => {
           r.pub(output$, { data, error: null, isLoading: false, type: 'success' })
+          return undefined
         })
         .catch((error: unknown) => {
           r.pub(output$, { data: null, error, isLoading: false, type: 'error' })

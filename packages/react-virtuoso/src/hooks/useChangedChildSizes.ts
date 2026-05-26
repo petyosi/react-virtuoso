@@ -26,7 +26,7 @@ export default function useChangedListContentsSizes(
         scrollableElement = scrollableElement.parentElement!
       }
 
-      const windowScrolling = (scrollableElement.lastElementChild! as HTMLDivElement).dataset.viewportType! === 'window'
+      const windowScrolling = (scrollableElement.lastElementChild as HTMLDivElement | null)?.dataset.viewportType === 'window'
       let theWindow!: Window
       if (windowScrolling) {
         theWindow = scrollableElement.ownerDocument.defaultView!
@@ -106,7 +106,7 @@ function getChangedChildSizes(children: HTMLCollection, itemSize: SizeFunction, 
       continue
     }
 
-    const index = parseInt(child.dataset.index)
+    const index = parseInt(child.dataset.index, 10)
     const knownSize = parseFloat(child.dataset.knownSize!)
     const size = itemSize(child, field)
 

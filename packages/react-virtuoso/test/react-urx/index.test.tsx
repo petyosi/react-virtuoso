@@ -34,7 +34,7 @@ describe('components from system', () => {
   beforeEach(() => {
     // setup a DOM element as a render target
     container = document.createElement('div')
-    document.body.appendChild(container)
+    document.body.append(container)
     root = createRoot(container)
     render = (children) => {
       root.render(children)

@@ -82,10 +82,10 @@ export default function useScrollTop(
   )
 
   React.useEffect(() => {
-    const localRef = customScrollParent ? customScrollParent : scrollerRef.current!
+    const localRef = customScrollParent ?? scrollerRef.current!
 
     clearHorizontalScrollDirectionCache(localRef)
-    scrollerRefCallback(customScrollParent ? customScrollParent : scrollerRef.current)
+    scrollerRefCallback(customScrollParent ?? scrollerRef.current)
     handler({ suppressFlushSync: true, target: localRef } as unknown as Event)
     localRef.addEventListener('scroll', handler, { passive: true })
 
@@ -167,7 +167,7 @@ export default function useScrollTop(
 
     if (horizontalDirection === true) {
       location = {
-        ...(location.behavior !== undefined ? { behavior: location.behavior } : {}),
+        ...(location.behavior === undefined ? {} : { behavior: location.behavior }),
         left: getPhysicalScrollLeft(scrollerElement, top),
       }
     }
@@ -178,8 +178,8 @@ export default function useScrollTop(
   function scrollByCallback(location: ScrollToOptions) {
     if (horizontalDirection === true) {
       location = {
-        ...(location.behavior !== undefined ? { behavior: location.behavior } : {}),
-        ...(location.top !== undefined ? { left: getPhysicalScrollLeft(scrollerRef.current!, location.top) } : {}),
+        ...(location.behavior === undefined ? {} : { behavior: location.behavior }),
+        ...(location.top === undefined ? {} : { left: getPhysicalScrollLeft(scrollerRef.current!, location.top) }),
       }
     }
     scrollerRef.current!.scrollBy(location)

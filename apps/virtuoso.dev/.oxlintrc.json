@@ -1,6 +1,7 @@
 {
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
   "extends": ["../../.oxlintrc.json"],
+  "ignorePatterns": ["registry/"],
   "rules": {
     "no-console": "off",
     "no-loop-func": "off",
@@ -9,6 +10,7 @@
     "max-classes-per-file": "off",
     "react/jsx-curly-brace-presence": "off",
     "react/iframe-missing-sandbox": "off",
+    "import/default": "off",
     "import/first": "off",
     "import/no-named-as-default": "off",
     "import/no-named-as-default-member": "off",
@@ -18,14 +20,20 @@
     "typescript/no-misused-promises": "off",
     "typescript/restrict-template-expressions": "off",
     "typescript/no-implied-eval": "off",
-    "import/no-nodejs-modules": "off"
+    "import/no-nodejs-modules": "off",
+    "jsx-a11y/iframe-has-title": "off"
   },
   "overrides": [
     {
       "files": ["**/*.astro"],
       "rules": {
-        "typescript/no-unused-vars": "off",
-        "import/no-unused-modules": "off"
+        "typescript/no-unused-vars": "off"
+      }
+    },
+    {
+      "files": ["src/plugins/common/shortHash.ts"],
+      "rules": {
+        "unicorn/number-literal-case": "off"
       }
     }
   ]

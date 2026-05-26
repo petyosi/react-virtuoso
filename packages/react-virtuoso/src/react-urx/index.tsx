@@ -57,7 +57,7 @@ function omit<O extends Dict<any>, K extends readonly string[]>(keys: K, obj: O)
   return result as Omit<O, K[number]>
 }
 
-const useIsomorphicLayoutEffect = typeof document !== 'undefined' ? React.useLayoutEffect : React.useEffect
+const useIsomorphicLayoutEffect = typeof document === 'undefined' ? React.useEffect : React.useLayoutEffect
 
 /** @internal */
 export type MethodsFromPropMap<E extends AnySystemSpec, M extends SystemPropsMap<E>> = {
@@ -240,10 +240,10 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
     const RootComponent = Root as React.ComponentType<any>
     return (
       <Context.Provider value={system}>
-        {Root !== undefined ? (
-          <RootComponent {...omit([...requiredPropNames, ...optionalPropNames, ...eventNames], props)}>{children}</RootComponent>
-        ) : (
+        {Root === undefined ? (
           children
+        ) : (
+          <RootComponent {...omit([...requiredPropNames, ...optionalPropNames, ...eventNames], props)}>{children}</RootComponent>
         )}
       </Context.Provider>
     )
@@ -299,7 +299,7 @@ export function systemToComponent<SS extends AnySystemSpec, M extends SystemProp
     return value
   }
 
-  const useEmitterValue = parseInt(React.version) >= 18 ? useEmitterValue18 : useEmitterValueLegacy
+  const useEmitterValue = parseInt(React.version, 10) >= 18 ? useEmitterValue18 : useEmitterValueLegacy
 
   const useEmitter = <K extends keyof S, V = S[K] extends Stream<infer R> ? R : never>(key: K, callback: (value: V) => void) => {
     const context = React.useContext(Context)

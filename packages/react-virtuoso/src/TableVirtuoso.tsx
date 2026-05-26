@@ -97,7 +97,7 @@ const DefaultScrollSeekPlaceholder = ({ height }: { height: number }) => (
 
 const DefaultFillerRow = ({ height }: { height: number }) => (
   <tr>
-    <td style={{ border: 0, height: height, padding: 0 }} />
+    <td style={{ border: 0, height, padding: 0 }} />
   </tr>
 )
 

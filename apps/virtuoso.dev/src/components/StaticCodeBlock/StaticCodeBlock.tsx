@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { ComponentProps } from 'react'
 
 import { CheckIcon, ClipboardCopyIcon } from '@radix-ui/react-icons'
 import copy from 'copy-text-to-clipboard'
-import ShikiHighlighter from 'react-shiki/core'
 
 import { useStarlightTheme } from '@/components/theme-utils'
 import { Button } from '@/components/ui/button'
@@ -18,6 +17,26 @@ interface StaticCodeBlockProps {
   meta?: string
 }
 
+function normalizeLanguage(lang: string) {
+  if (lang === 'ts') {
+    return 'typescript'
+  }
+  if (lang === 'js') {
+    return 'javascript'
+  }
+  if (lang === 'sh' || lang === 'shell') {
+    return 'bash'
+  }
+  return lang
+}
+
+function withStaticCodeBlockClass(html: string) {
+  if (html.includes('<pre class="')) {
+    return html.replace('<pre class="', '<pre class="static-code-block ')
+  }
+  return html.replace('<pre', '<pre class="static-code-block"')
+}
+
 export default function StaticCodeBlock({ code, lang }: StaticCodeBlockProps) {
   const theme = useStarlightTheme()
   const [CopyButtonIcon, setCopyButtonIcon] = useState<React.ComponentType<ComponentProps<typeof ClipboardCopyIcon>>>(ClipboardCopyIcon)
@@ -28,6 +47,22 @@ export default function StaticCodeBlock({ code, lang }: StaticCodeBlockProps) {
   }, [])
 
   const shikiTheme = theme === 'light' ? 'github-light' : 'github-dark'
+  const highlightedHtml = useMemo(() => {
+    if (highlighter === null || lang === 'text') {
+      return null
+    }
+
+    try {
+      return withStaticCodeBlockClass(
+        highlighter.codeToHtml(code, {
+          lang: normalizeLanguage(lang),
+          theme: shikiTheme,
+        })
+      )
+    } catch {
+      return null
+    }
+  }, [code, highlighter, lang, shikiTheme])
 
   return (
     <div
@@ -36,21 +71,12 @@ export default function StaticCodeBlock({ code, lang }: StaticCodeBlockProps) {
         bg-surface-codeblock
       `}
     >
-      {highlighter ? (
-        <ShikiHighlighter
-          addDefaultStyles={false}
-          className="static-code-block"
-          highlighter={highlighter}
-          langStyle={{}}
-          language={lang}
-          theme={shikiTheme}
-        >
-          {code}
-        </ShikiHighlighter>
-      ) : (
+      {highlightedHtml === null ? (
         <pre className="static-code-block">
           <code>{code}</code>
         </pre>
+      ) : (
+        <div dangerouslySetInnerHTML={{ __html: highlightedHtml }} />
       )}
 
       <div className="absolute right-1 bottom-1">

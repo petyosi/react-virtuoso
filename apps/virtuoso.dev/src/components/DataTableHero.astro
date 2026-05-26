@@ -1,0 +1,62 @@
+---
+import { ArrowRightIcon } from '@radix-ui/react-icons'
+
+import DataTableHeroDemo from './DataTableHeroDemo'
+import OutlinedButton from './OutlinedButton'
+---
+
+<div class="hero-section">
+  <div class="hero-container mx-auto max-w-6xl px-4">
+    <div class="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12">
+      <div class="hero-content">
+        <div class="mb-3 flex flex-wrap items-center gap-2">
+          <h2 class="text-3xl font-bold text-(--sl-color-white) md:text-4xl lg:text-5xl">Data Table</h2>
+          <span
+            class="inline-flex items-center rounded-full bg-(--sl-color-accent) px-2 py-0.5 text-xs leading-none font-semibold tracking-wide uppercase text-(--sl-color-black)"
+          >
+            New
+          </span>
+        </div>
+        <div class="mb-4 flex flex-wrap items-center gap-2">
+          <a href="https://www.npmjs.com/package/@virtuoso.dev/data-table" rel="noopener noreferrer" target="_blank">
+            <img alt="npm version" src="https://img.shields.io/npm/v/@virtuoso.dev/data-table.svg" />
+          </a>
+          <a href="https://www.npmjs.com/package/@virtuoso.dev/data-table" rel="noopener noreferrer" target="_blank">
+            <img alt="npm downloads" src="https://img.shields.io/npm/dm/@virtuoso.dev/data-table.svg" />
+          </a>
+        </div>
+        <p class="mb-6 text-lg leading-relaxed text-(--sl-color-gray-2) md:text-xl">
+          The successor to <code>TableVirtuoso</code>. Row and column virtualization, sticky columns, grouped rows, resizing, reordering,
+          and state persistence — shipped as a shadcn-style wrapper around a headless engine.
+        </p>
+        <div class="flex flex-wrap items-center gap-4">
+          <a
+            class="inline-flex items-center gap-2 rounded-full bg-(--sl-color-accent) px-6 py-3 text-lg font-medium text-(--sl-color-black) transition-opacity hover:opacity-90"
+            href="/data-table/"
+          >
+            Get Started
+            <ArrowRightIcon className="size-5" />
+          </a>
+          <OutlinedButton href="/data-table/examples/basic-table/">View Examples</OutlinedButton>
+        </div>
+      </div>
+      <div class="hero-demo flex justify-center lg:justify-end">
+        <DataTableHeroDemo client:load />
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .hero-section {
+    padding: 3rem 0;
+    display: flex;
+    align-items: center;
+  }
+
+  @media (min-width: 768px) {
+    .hero-section {
+      padding: 4rem 0;
+    }
+  }
+</style>

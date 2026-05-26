@@ -29,7 +29,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: 22.x
+          node-version: 24.x
           cache: pnpm
 
       - name: Install dependencies
@@ -37,6 +37,29 @@ jobs:
 
       - name: Lint markdown
         run: pnpm lint:md
+
+  format:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.24.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm format:check
 
   typecheck:
     name: Type Check
@@ -54,7 +77,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: 22.x
+          node-version: 24.x
           cache: pnpm
 
       - name: Install dependencies
@@ -82,7 +105,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: 22.x
+          node-version: 24.x
           cache: pnpm
 
       - name: Install dependencies
@@ -112,7 +135,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: 22.x
+          node-version: 24.x
           cache: pnpm
 
       - name: Install dependencies
@@ -143,7 +166,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: 22.x
+          node-version: 24.x
           cache: pnpm
 
       - name: Install dependencies
@@ -156,6 +179,74 @@ jobs:
           PADDLE_TOKEN: test_5
           PADDLE_STANDARD_PRICE_ID: pri_01
           PADDLE_PRO_PRICE_ID: pri_01
+
+  validate-skills:
+    name: Validate Skills
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 10.24.0
+
+      - name: Setup Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 24.x
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Validate Claude marketplace
+        run: claude plugin validate . --strict
+
+      - name: Validate Claude plugin
+        run: claude plugin validate ./packages/virtuoso-skills --strict
+
+      - name: Validate Codex plugin
+        run: pnpm --filter @virtuoso.dev/virtuoso-skills validate:codex
+
+      - name: Regenerate skill output
+        run: pnpm build:skills
+
+      - name: Check generated skill output drift
+        run: git diff --exit-code packages/virtuoso-skills/skills skills plugins/virtuoso-skills/skills
+
+      - name: Check Agent Skills source discovery
+        run: |
+          tmpdir="$(mktemp -d)"
+          repo="$(pwd)"
+          trap 'rm -rf "$tmpdir"' EXIT
+
+          (
+            cd "$tmpdir"
+            npx skills add "$repo" --list
+          )
+
+      - name: Check Agent Skills target installs
+        run: |
+          tmpdir="$(mktemp -d)"
+          repo="$(pwd)"
+          trap 'rm -rf "$tmpdir"' EXIT
+
+          git -C "$tmpdir" init
+          (
+            cd "$tmpdir"
+            npx skills add "$repo" --skill react-virtuoso --skill message-list --skill data-table -a codex -a opencode -a cursor --copy -y
+          )
+
+          test -f "$tmpdir/.agents/skills/react-virtuoso/SKILL.md"
+          test -f "$tmpdir/.agents/skills/message-list/SKILL.md"
+          test -f "$tmpdir/.agents/skills/data-table/SKILL.md"
 
   e2e:
     name: E2E Tests
@@ -173,7 +264,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: 22.x
+          node-version: 24.x
           cache: pnpm
 
       - name: Install dependencies

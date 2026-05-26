@@ -4,7 +4,7 @@ import { GroupedTableVirtuoso } from '../src/'
 
 export function Example() {
   const groupCounts = useMemo(() => {
-    return Array(10).fill(10)
+    return Array.from({ length: 10 }, () => 10)
   }, [])
 
   const users = useMemo(() => {

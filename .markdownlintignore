@@ -14,7 +14,15 @@ apps/virtuoso.dev/docs/
 .changeset/*.md
 !.changeset/README.md
 
-# Specs (internal planning docs)
+# Internal planning docs
 specs/
+plans/
+prompts/
+reports/
+
+# Generated skill bundles
+packages/virtuoso-skills/skills/*/references/
+plugins/virtuoso-skills/skills/
+skills/
 
 .github/
