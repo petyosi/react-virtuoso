@@ -56,8 +56,9 @@ async function waitForScrollable(scroller: HTMLElement) {
 
 describe('loading slots', () => {
   test('initial loading placeholder renders before the first dataset resolves and suppresses the empty placeholder', async () => {
+    const initialRequest = Promise.withResolvers<void>()
     const fetch = vi.fn(async (params: AppendFetchParams) => {
-      await delay(80)
+      await initialRequest.promise
       return {
         rows: Array.from({ length: params.limit }, (_, index) => ({
           id: index,
@@ -99,6 +100,8 @@ describe('loading slots', () => {
 
     await expect.poll(() => screen.container.querySelector('[data-testid=loading-placeholder]')?.textContent ?? null).toBe('loading')
     expect(screen.container.querySelector('[data-testid=empty-placeholder]')).toBeNull()
+
+    initialRequest.resolve()
 
     await waitForReady(screen)
     await expect.poll(() => screen.container.querySelector('[data-testid=loading-placeholder]')).toBeNull()
