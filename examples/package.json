@@ -17,7 +17,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@ladle/react": "catalog:",
-    "@mui/material": "^7.3.6",
+    "@mui/material": "^9.0.1",
     "@tanstack/react-table": "^8.21.3",
     "@virtuoso.dev/reactive-engine-core": "workspace:*",
     "@virtuoso.dev/reactive-engine-react": "workspace:*",
