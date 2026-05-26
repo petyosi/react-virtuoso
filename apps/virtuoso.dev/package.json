@@ -67,8 +67,8 @@
     "vite": "catalog:"
   },
   "devDependencies": {
-    "@tailwindcss/browser": "^4.2.1",
-    "@types/estree": "^1.0.8",
+    "@tailwindcss/browser": "^4.3.0",
+    "@types/estree": "^1.0.9",
     "@types/mdast": "^4.0.4",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
@@ -76,11 +76,11 @@
     "@virtuoso.dev/masonry": "workspace:*",
     "estree-util-visit": "^2.0.0",
     "mdast-util-mdx": "^3.0.0",
-    "prettier": "^3.5.3",
+    "prettier": "^3.8.3",
     "prettier-plugin-astro": "^0.14.1",
     "react-virtuoso": "workspace:*",
     "typescript": "catalog:",
-    "unist-util-visit": "^5.0.0",
+    "unist-util-visit": "^5.1.0",
     "vfile": "^6.0.3"
   }
 }
