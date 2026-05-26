@@ -1,5 +1,16 @@
 # @virtuoso.dev/reactive-engine-examples
 
+## 0.0.9
+
+### Patch Changes
+
+- Updated dependencies [[`94338de`](https://github.com/petyosi/react-virtuoso/commit/94338dec93fba3f52532b8f7af3958856eee2bcc)]:
+  - @virtuoso.dev/reactive-engine-core@0.0.6
+  - @virtuoso.dev/reactive-engine-react@0.2.2
+  - @virtuoso.dev/reactive-engine-query@0.0.3
+  - @virtuoso.dev/reactive-engine-router@0.0.3
+  - @virtuoso.dev/reactive-engine-storage@2.0.1
+
 ## 0.0.8
 
 ### Patch Changes
