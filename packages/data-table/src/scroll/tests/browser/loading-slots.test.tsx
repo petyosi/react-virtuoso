@@ -50,6 +50,10 @@ async function waitForReady(screen: Awaited<ReturnType<typeof render>>) {
   await expect.poll(() => screen.container.querySelector(readySelector)).not.toBeNull()
 }
 
+async function waitForScrollable(scroller: HTMLElement) {
+  await expect.poll(() => scroller.scrollHeight - scroller.clientHeight).toBeGreaterThan(0)
+}
+
 describe('loading slots', () => {
   test('initial loading placeholder renders before the first dataset resolves and suppresses the empty placeholder', async () => {
     const fetch = vi.fn(async (params: AppendFetchParams) => {
@@ -163,13 +167,15 @@ describe('loading slots', () => {
   })
 
   test('measured loading footer appears for append fetches and exposes error state', async () => {
+    const loadMoreRequest = Promise.withResolvers<void>()
     const fetch = vi.fn(async (params: AppendFetchParams) => {
-      await delay(80)
       const startIndex = (params.cursor as number | undefined) ?? 0
       if (startIndex >= 20) {
+        await loadMoreRequest.promise
         throw new Error('load more failed')
       }
 
+      await delay(80)
       const rows = Array.from({ length: params.limit }, (_, index) => ({
         id: startIndex + index,
         name: `item-${startIndex + index}`,
@@ -215,11 +221,13 @@ describe('loading slots', () => {
     await expect.poll(() => fetch.mock.calls.length).toBe(1)
 
     const scroller = screen.container.querySelector(scrollerSelector) as HTMLElement
+    await waitForScrollable(scroller)
     scroller.scrollTop = 15 * ROW_HEIGHT
 
+    await expect.poll(() => fetch.mock.calls.length).toBe(2)
     await expect.poll(() => screen.container.querySelector('[data-testid=loading-footer]')?.textContent ?? null).toBe('loading')
 
-    await expect.poll(() => fetch.mock.calls.length).toBe(2)
+    loadMoreRequest.resolve()
 
     await expect.poll(() => screen.container.querySelector('[data-testid=loading-footer]')?.textContent ?? null).toBe('error')
 
