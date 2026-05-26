@@ -374,8 +374,9 @@ test('resizes a column through the slot-mounted handle', async () => {
   const headerElements = [...headers]
   const firstHeaderRect = firstHeader!.getBoundingClientRect()
   const handleRect = handle!.getBoundingClientRect()
+  expect(handleRect.left).toBeGreaterThanOrEqual(firstHeaderRect.left)
   expect(handleRect.left).toBeLessThan(firstHeaderRect.right)
-  expect(handleRect.right).toBeGreaterThan(firstHeaderRect.right)
+  expect(Math.abs(handleRect.right - firstHeaderRect.right)).toBeLessThan(0.5)
   await expect
     .poll(() => headerElements.reduce((sum, header) => sum + Math.round(header.getBoundingClientRect().width), 0), { timeout: 2000 })
     .toBeGreaterThan(COLUMN_WIDTH * headerElements.length)
