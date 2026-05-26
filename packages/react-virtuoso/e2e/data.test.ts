@@ -5,38 +5,21 @@ import { navigateToExample } from './utils.ts'
 test.describe('list with hundred items', () => {
   test.beforeEach(async ({ baseURL, page }) => {
     await navigateToExample(page, baseURL, 'data')
-    await page.waitForSelector('[data-testid=virtuoso-scroller]')
-    await page.waitForSelector('[data-testid=virtuoso-item-list]')
-    await page.waitForTimeout(400)
+    await expect(page.locator('[data-testid=virtuoso-scroller]')).toBeVisible()
+    await expect(page.locator('[data-testid=virtuoso-item-list]')).toBeVisible()
   })
 
   test('renders 10 items', async ({ page }) => {
-    await page.waitForTimeout(400)
-    const itemCount = await page.evaluate(() => {
-      const listContainer = document.querySelector('[data-testid=virtuoso-item-list]')!
-      return listContainer.childElementCount
-    })
-    expect(itemCount).toBe(10)
+    await expect(page.locator('[data-testid=virtuoso-item-list] > div')).toHaveCount(10)
   })
 
   test('fills in the scroller', async ({ page }) => {
-    const scrollHeight = await page.evaluate(() => {
-      const scroller = document.querySelector('[data-testid=virtuoso-scroller]')!
-      return scroller.scrollHeight
-    })
-    expect(scrollHeight).toBe(100 * 30)
+    await expect.poll(() => page.locator('[data-testid=virtuoso-scroller]').evaluate((scroller) => scroller.scrollHeight)).toBe(100 * 30)
   })
 
   test('increases the items', async ({ page }) => {
-    await page.evaluate(() => {
-      document.querySelector('button')!.click()
-    })
+    await page.getByRole('button', { name: 'Append 20 Items' }).click()
 
-    const scrollHeight = await page.evaluate(() => {
-      const scroller = document.querySelector('[data-testid=virtuoso-scroller]')!
-      return scroller.scrollHeight
-    })
-
-    expect(scrollHeight).toBe(120 * 30)
+    await expect.poll(() => page.locator('[data-testid=virtuoso-scroller]').evaluate((scroller) => scroller.scrollHeight)).toBe(120 * 30)
   })
 })
