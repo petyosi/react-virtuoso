@@ -180,6 +180,52 @@ async function waitForStickyViewportState(container: HTMLElement, scroller: HTML
   return state
 }
 
+async function waitForAnimationFrames() {
+  await new Promise<void>((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        resolve()
+      })
+    })
+  })
+}
+
+async function findInlineRowTop(container: HTMLElement, scroller: HTMLElement, rowText: string, estimatedOffset: number) {
+  const viewportHeight = scroller.clientHeight
+  const maxScrollTop = Math.max(0, scroller.scrollHeight - viewportHeight)
+  const scanRadius = Math.max(6000, viewportHeight * 12)
+  const step = Math.max(80, Math.floor(viewportHeight / 2))
+  const seenTargets = new Set<number>()
+  const targets: number[] = []
+
+  for (let delta = 0; delta <= scanRadius; delta += step) {
+    targets.push(estimatedOffset - delta)
+    targets.push(estimatedOffset + delta)
+  }
+
+  for (const rawTarget of targets) {
+    const target = Math.max(0, Math.min(maxScrollTop, Math.round(rawTarget)))
+    if (seenTargets.has(target)) {
+      continue
+    }
+    seenTargets.add(target)
+
+    scroller.scrollTop = target
+
+    // oxlint-disable-next-line no-await-in-loop
+    await expect.poll(() => Math.round(scroller.scrollTop)).toBe(target)
+    // oxlint-disable-next-line no-await-in-loop
+    await waitForAnimationFrames()
+
+    const row = readRows(container).find((candidate) => !candidate.sticky && candidate.text === rowText)
+    if (row) {
+      return row.top
+    }
+  }
+
+  throw new Error(`Could not find inline row "${rowText}" near estimated scrollTop ${estimatedOffset}.`)
+}
+
 test('large multi-level grouped scrolling does not open viewport gap below sticky headers', async () => {
   const screen = await render(<LargeMultiLevelGrouping />)
 
@@ -289,8 +335,9 @@ test('next team header does not become sticky before its team content reaches th
   const scroller = screen.container.querySelector(scrollerSelector) as HTMLElement
   const team27HeaderIndex = 311 + 1 + 6 * 31
   const estimatedBoundaryOffset = Math.floor(scroller.scrollHeight * (team27HeaderIndex / 31_100))
-  const startTarget = Math.max(0, estimatedBoundaryOffset - 300)
-  const endTarget = estimatedBoundaryOffset + 200
+  const team27HeaderOffset = await findInlineRowTop(screen.container, scroller, 'Team 2-7', estimatedBoundaryOffset)
+  const startTarget = Math.max(0, team27HeaderOffset - 300)
+  const endTarget = team27HeaderOffset + 200
   const step = 5
   let seenTeam26 = false
 
@@ -319,7 +366,9 @@ test('next team header does not become sticky before its team content reaches th
     return
   }
 
-  throw new Error(`Did not observe the Team 2-6 -> Team 2-7 sticky handoff between scrollTop ${startTarget} and ${endTarget}.`)
+  throw new Error(
+    `Did not observe the Team 2-6 -> Team 2-7 sticky handoff between scrollTop ${startTarget} and ${endTarget}. Team 2-7 inline offset was ${team27HeaderOffset}.`
+  )
 })
 
 test('rapid scroll direction reversal keeps sticky team in sync', async () => {

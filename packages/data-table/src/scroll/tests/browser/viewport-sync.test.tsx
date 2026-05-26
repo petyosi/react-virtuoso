@@ -35,6 +35,10 @@ async function waitForReady(screen: Awaited<ReturnType<typeof render>>) {
   await expect.poll(() => screen.container.querySelector(readySelector)).not.toBeNull()
 }
 
+async function waitForScrollable(scroller: HTMLElement) {
+  await expect.poll(() => scroller.scrollHeight - scroller.clientHeight).toBeGreaterThan(0)
+}
+
 function makeItems(offset: number, count: number): Item[] {
   return Array.from({ length: count }, (_, i) => ({ id: offset + i, name: `Item ${offset + i}` }))
 }
@@ -125,7 +129,7 @@ describe('offset mode auto-fetch on scroll', () => {
     await expect.poll(() => fetch.mock.calls.length).toBe(1)
 
     const scroller = screen.container.querySelector(scrollerSelector) as HTMLElement
-    expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight)
+    await waitForScrollable(scroller)
     scroller.scrollTop = 100 * ROW_HEIGHT
 
     await expect
@@ -350,6 +354,7 @@ describe('append mode auto-fetch on scroll', () => {
     await expect.poll(() => fetch.mock.calls.length).toBe(1)
 
     const scroller = screen.container.querySelector(scrollerSelector) as HTMLElement
+    await waitForScrollable(scroller)
     scroller.scrollTop = (APPEND_PAGE - 5) * ROW_HEIGHT
 
     await expect.poll(() => fetch.mock.calls.length).toBe(2)
