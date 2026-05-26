@@ -58,7 +58,7 @@
     "vitest-browser-react": "^2.0.2"
   },
   "peerDependencies": {
-    "@virtuoso.dev/reactive-engine-core": ">=0.0.5",
+    "@virtuoso.dev/reactive-engine-core": ">=0.0.6",
     "react": ">= 18"
   }
 }
