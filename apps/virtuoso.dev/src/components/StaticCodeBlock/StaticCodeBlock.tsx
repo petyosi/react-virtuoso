@@ -17,6 +17,11 @@ interface StaticCodeBlockProps {
   meta?: string
 }
 
+const actionButtonClassName = `
+  cursor-pointer bg-background text-foreground shadow-sm ring-1 ring-border/80
+  hover:bg-accent hover:text-accent-foreground
+`
+
 function normalizeLanguage(lang: string) {
   if (lang === 'ts') {
     return 'typescript'
@@ -84,7 +89,7 @@ export default function StaticCodeBlock({ code, lang }: StaticCodeBlockProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                className="cursor-pointer"
+                className={actionButtonClassName}
                 onClick={() => {
                   copy(code)
                   setCopyButtonIcon(CheckIcon)

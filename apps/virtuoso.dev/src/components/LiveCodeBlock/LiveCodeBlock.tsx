@@ -29,6 +29,11 @@ interface FileEntry {
 let shikiInitialized = false
 let eagerSyncEnabled = false
 
+const actionButtonClassName = `
+  cursor-pointer bg-background text-foreground shadow-sm ring-1 ring-border/80
+  hover:bg-accent hover:text-accent-foreground
+`
+
 function configureMonacoWorkers() {
   if (typeof self === 'undefined') {
     return
@@ -590,7 +595,7 @@ export default function LiveCodeBlock({
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button className="cursor-pointer" onClick={handleReset} size="radixIcon" variant="ghost">
+              <Button className={actionButtonClassName} onClick={handleReset} size="radixIcon" variant="ghost">
                 <ResetIcon className="size-3" />
               </Button>
             </TooltipTrigger>
@@ -601,7 +606,7 @@ export default function LiveCodeBlock({
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button className="cursor-pointer" onClick={handleCopy} size="radixIcon" variant="ghost">
+              <Button className={actionButtonClassName} onClick={handleCopy} size="radixIcon" variant="ghost">
                 <CopyButtonIcon className="size-3" />
               </Button>
             </TooltipTrigger>
@@ -614,7 +619,7 @@ export default function LiveCodeBlock({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  className="cursor-pointer"
+                  className={actionButtonClassName}
                   onClick={() => {
                     void createSandbox(filesMap, usedPackages)
                   }}
