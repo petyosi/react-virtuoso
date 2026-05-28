@@ -1,5 +1,14 @@
 # @virtuoso.dev/data-table
 
+## 0.1.1
+
+### Patch Changes
+
+- [`06f253a`](https://github.com/petyosi/react-virtuoso/commit/06f253a9c69fd145165534f79fe5fad721e7ed6d) Thanks [@petyosi](https://github.com/petyosi)! - Fix Data Table scroll behavior in sticky-column, external-scroller, and window-scroll layouts.
+  - Match sticky column hover transitions with the rest of the row in the shadcn wrapper.
+  - Avoid rendering the internal scrollbar overlay when `customScrollParent` or `useWindowScroll` owns scrolling.
+  - Restore row virtualization for `useWindowScroll` by measuring against the window viewport instead of the table wrapper height.
+
 ## 0.1.0
 
 ### Minor Changes
