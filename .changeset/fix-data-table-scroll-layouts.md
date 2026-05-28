@@ -1,5 +1,5 @@
 ---
-"@virtuoso.dev/data-table": patch
+'@virtuoso.dev/data-table': patch
 ---
 
 Fix Data Table scroll behavior in sticky-column, external-scroller, and window-scroll layouts.
