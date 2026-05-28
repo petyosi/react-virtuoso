@@ -85,7 +85,7 @@ const TableStickyHeader = React.forwardRef<HTMLDivElement, StickyHeaderComponent
 
 const TableStickyColumnContainer = React.forwardRef<HTMLDivElement, StickyColumnContainerComponentProps & { context?: unknown }>(
   function TableStickyColumnContainer({ context: _context, ...props }, ref) {
-    return <div ref={ref} className="bg-background" {...props} />
+    return <div ref={ref} className="bg-background transition-colors" {...props} />
   }
 )
 
