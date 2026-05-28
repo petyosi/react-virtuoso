@@ -6,6 +6,7 @@ import { useCellValue, useCellValues, useEngine } from '@virtuoso.dev/reactive-e
 import { emptyPlaceholder$, scrollElement$ } from '../core/components'
 import { context$, totalCount$ } from '../core/data'
 import { resizeObserverSingleton$ } from '../resize/resize-observer-singleton'
+import { WINDOW_SCROLL_WRAPPER_ROLE } from '../resize/resize-observing'
 import { useScrollCallbacks, usePollForHeightInMobileSafari } from '../scroll/callbacks'
 import {
   customScrollParent$,
@@ -198,7 +199,7 @@ export const WindowScrollElementWrapper: React.FC<ScrollableRootProps> = ({ chil
   usePollForHeightInMobileSafari(() => windowScrollWrapperRef.current?.getBoundingClientRect().height)
 
   return (
-    <div ref={windowScrollWrapperCallbackRef} {...htmlProps}>
+    <div ref={windowScrollWrapperCallbackRef} data-table-element-role={WINDOW_SCROLL_WRAPPER_ROLE} {...htmlProps}>
       {children}
     </div>
   )

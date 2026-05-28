@@ -30,7 +30,7 @@ export const STICKY_HEADER_ROLE = 'sticky-header'
 export const FOOTER_ROLE = 'footer'
 export const STICKY_FOOTER_ROLE = 'sticky-footer'
 export const TABLE_BODY_ROLE = 'table-body'
-const WINDOW_SCROLL_WRAPPER_ROLE = 'window-scroll-wrapper'
+export const WINDOW_SCROLL_WRAPPER_ROLE = 'window-scroll-wrapper'
 export const ROW_ROLE = 'row'
 
 export const dataTableStructureEntries$ = createResizeObserverSignal(() => true)

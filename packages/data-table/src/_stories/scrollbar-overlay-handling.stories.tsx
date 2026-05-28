@@ -38,6 +38,12 @@ const CUSTOM_SCROLL_TOOLBAR_STYLE: CSSProperties = {
   zIndex: 5,
 }
 const CUSTOM_SCROLL_TABLE_STYLE: CSSProperties = { width: 600 }
+const WINDOW_SCROLL_SPACER_STYLE: CSSProperties = {
+  background: '#f8f8f8',
+  border: '1px solid #ddd',
+  marginBottom: 16,
+  padding: 16,
+}
 const HEADER_STYLE: CSSProperties = { fontWeight: 'bold', borderBottom: '1px solid #ccc', padding: '8px 12px' }
 const STICKY_HEADER_STYLE: CSSProperties = { ...HEADER_STYLE, background: '#f0f0f0' }
 const STICKY_CELL_STYLE: CSSProperties = { padding: '8px 12px', width: 120, background: '#f8f8f8' }
@@ -127,6 +133,24 @@ export function CustomScrollParentOverlay() {
               </div>
             )}
           </Cell>
+        </Column>
+      </VirtuosoDataTable>
+    </div>
+  )
+}
+
+export function WindowScroll() {
+  return (
+    <div>
+      <div style={WINDOW_SCROLL_SPACER_STYLE}>Scroll the page. The table uses the window as its scroll container.</div>
+      <VirtuosoDataTable source={ITEMS} useWindowScroll>
+        <Column field="id">
+          <ColumnHeader>{() => <div style={HEADER_STYLE}>ID</div>}</ColumnHeader>
+          <Cell>{({ cellValue }) => <div style={STICKY_CELL_STYLE}>{String(cellValue)}</div>}</Cell>
+        </Column>
+        <Column field="name">
+          <ColumnHeader>{() => <div style={HEADER_STYLE}>Name</div>}</ColumnHeader>
+          <Cell>{({ cellValue }) => <div style={STICKY_CELL_STYLE}>{String(cellValue)}</div>}</Cell>
         </Column>
       </VirtuosoDataTable>
     </div>
