@@ -3,7 +3,7 @@
   "semi": false,
   "singleQuote": true,
   "trailingComma": "es5",
-  "ignorePatterns": ["**/*.astro"],
+  "ignorePatterns": ["**/*.astro", "**/build/**", "**/dist/**", "**/.claude/**"],
   "sortImports": {
     "customGroups": [
       {

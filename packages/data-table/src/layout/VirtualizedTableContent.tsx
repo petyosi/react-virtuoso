@@ -420,7 +420,7 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
           <LoadingOverlay context={context} loadingState={loadingState} />
         </div>
       )}
-      <ScrollbarOverlay />
+      {!customScrollParent && !useWindowScroll && <ScrollbarOverlay />}
     </TableLayoutRoot>
   )
 }

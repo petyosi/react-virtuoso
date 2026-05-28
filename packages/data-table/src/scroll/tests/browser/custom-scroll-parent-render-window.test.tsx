@@ -21,6 +21,7 @@ const ITEMS = Array.from({ length: 100 }, (_, i) => ({
 }))
 
 const rowSelector = '[data-testid=virtuoso-table-row]'
+const scrollbarOverlaySelector = '[data-testid=virtuoso-scrollbar-overlay]'
 const scrollParentSelector = '[data-testid=custom-scroll-parent]'
 
 async function waitForRows(screen: Awaited<ReturnType<typeof render>>) {
@@ -70,6 +71,7 @@ describe('customScrollParent render window', () => {
 
     await waitForRows(screen)
     await waitForScrollableParent(scrollParent)
+    expect(screen.container.querySelector(scrollbarOverlaySelector)).toBeNull()
 
     scrollParent.scrollTop = SCROLL_TOP
 

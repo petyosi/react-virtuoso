@@ -189,11 +189,11 @@ export function ScrollbarOverlay() {
   if (isSafari) {
     return (
       <>
-        <div style={verticalOverlayScrollbarStyle} ref={setVerticalScrollbarRef}>
+        <div data-testid="virtuoso-scrollbar-overlay" style={verticalOverlayScrollbarStyle} ref={setVerticalScrollbarRef}>
           <div style={verticalContentStyle} ref={setVerticalContentRef} />
         </div>
 
-        <div style={horizontalOverlayScrollbarStyle} ref={setHorizontalScrollbarRef}>
+        <div data-testid="virtuoso-scrollbar-overlay" style={horizontalOverlayScrollbarStyle} ref={setHorizontalScrollbarRef}>
           <div style={horizontalContentStyle} ref={setHorizontalContentRef} />
         </div>
       </>
@@ -201,7 +201,7 @@ export function ScrollbarOverlay() {
   }
 
   return (
-    <div style={overlayScrollbarStyle} ref={setCombinedScrollbarRef}>
+    <div data-testid="virtuoso-scrollbar-overlay" style={overlayScrollbarStyle} ref={setCombinedScrollbarRef}>
       <div style={combinedContentStyle} ref={setCombinedContentRef} />
     </div>
   )
