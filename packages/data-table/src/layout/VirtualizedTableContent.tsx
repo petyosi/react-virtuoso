@@ -243,6 +243,7 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
   }, [rows, engine])
 
   const ScrollableRoot = customScrollParent ? CustomScrollParentWrapper : useWindowScroll ? WindowScrollElementWrapper : ScrollableElement
+  const scrollableRootProps = customScrollParent || useWindowScroll ? {} : htmlProps
 
   const tableBodyStyle = useMemo(
     () => ({
@@ -348,7 +349,7 @@ export const VirtualizedTableContent: React.FC<ScrollerProps> = ({ style: passed
 
   return (
     <TableLayoutRoot {...htmlProps} style={passedStyle}>
-      <ScrollableRoot {...htmlProps} tableBodyRef={tableBodyRef}>
+      <ScrollableRoot {...scrollableRootProps} tableBodyRef={tableBodyRef}>
         <StickyHeaderWrapper
           data-table-element-role={STICKY_HEADER_ROLE}
           ref={stickyHeaderCallbackRef}

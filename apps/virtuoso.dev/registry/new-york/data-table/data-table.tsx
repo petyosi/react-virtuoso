@@ -163,11 +163,13 @@ function DataTable<Data, Context = unknown, Group = unknown>({
   ...props
 }: VirtuosoDataTableProps<Data, Context, Group> & { className?: string }) {
   const mergedComponents = React.useMemo(() => ({ ...TABLE_COMPONENTS, ...components }) as DataTableComponents<Context>, [components])
+  const usesExternalScroll = props.useWindowScroll === true || Object.hasOwn(props, 'customScrollParent')
 
   return (
     <VirtuosoDataTable
       className={cn(
-        'relative w-full overflow-x-auto bg-background text-foreground text-sm',
+        'relative w-full bg-background text-foreground text-sm',
+        !usesExternalScroll && 'overflow-x-auto',
         '**:data-[scope=colgroup]:border-b **:data-[scope=colgroup]:border-border',
         '**:data-group-row:bg-muted **:data-group-row:font-medium',
         '[&_[data-table-element-role=row]:hover_[data-sticky]]:bg-[color-mix(in_oklch,var(--color-muted)_50%,var(--color-background))]',
