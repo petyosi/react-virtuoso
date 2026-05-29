@@ -176,10 +176,88 @@ export function combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, 
     Out<T19>,
   ]
 ): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19]> // prettier-ignore
+/** @hidden */
+export function combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20>(
+  ...nodes: [
+    Out<T1>,
+    Out<T2>,
+    Out<T3>,
+    Out<T4>,
+    Out<T5>,
+    Out<T6>,
+    Out<T7>,
+    Out<T8>,
+    Out<T9>,
+    Out<T10>,
+    Out<T11>,
+    Out<T12>,
+    Out<T13>,
+    Out<T14>,
+    Out<T15>,
+    Out<T16>,
+    Out<T17>,
+    Out<T18>,
+    Out<T19>,
+    Out<T20>,
+  ]
+): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20]> // prettier-ignore
+/** @hidden */
+export function combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21>(
+  ...nodes: [
+    Out<T1>,
+    Out<T2>,
+    Out<T3>,
+    Out<T4>,
+    Out<T5>,
+    Out<T6>,
+    Out<T7>,
+    Out<T8>,
+    Out<T9>,
+    Out<T10>,
+    Out<T11>,
+    Out<T12>,
+    Out<T13>,
+    Out<T14>,
+    Out<T15>,
+    Out<T16>,
+    Out<T17>,
+    Out<T18>,
+    Out<T19>,
+    Out<T20>,
+    Out<T21>,
+  ]
+): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21]> // prettier-ignore
+/** @hidden */
+export function combine<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22>(
+  ...nodes: [
+    Out<T1>,
+    Out<T2>,
+    Out<T3>,
+    Out<T4>,
+    Out<T5>,
+    Out<T6>,
+    Out<T7>,
+    Out<T8>,
+    Out<T9>,
+    Out<T10>,
+    Out<T11>,
+    Out<T12>,
+    Out<T13>,
+    Out<T14>,
+    Out<T15>,
+    Out<T16>,
+    Out<T17>,
+    Out<T18>,
+    Out<T19>,
+    Out<T20>,
+    Out<T21>,
+    Out<T22>,
+  ]
+): Out<[T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T17, T18, T19, T20, T21, T22]> // prettier-ignore
 export function combine(...nodes: Out[]): Out
 /**
  * Combines the values from multiple nodes into a single node that emits an array of the latest values of the nodes.
- * This function is overloaded to support up to 19 nodes with proper type inference.
+ * This function is overloaded to support up to 22 nodes with proper type inference.
  *
  * @param nodes - The nodes to combine. Can be any number of output nodes.
  *

@@ -340,3 +340,19 @@ e.link(
   ),
   viewportHeight$
 )
+
+export const tableBelowExternalViewport$ = DerivedCell(
+  false,
+  e.pipe(
+    e.combine(
+      customScrollParent$,
+      useWindowScroll$,
+      externalScrollerViewportHeight$,
+      externalScrollerScrollTop$,
+      offsetTopInExternalScroller$
+    ),
+    e.map(([customScrollParent, useWindowScroll, viewportHeight, scrollTop, offsetTop]) => {
+      return (customScrollParent !== null || useWindowScroll) && viewportHeight > 0 && offsetTop > scrollTop + viewportHeight
+    })
+  )
+)

@@ -9,6 +9,7 @@ import {
   scrollableHeaderHeight$,
   scrollOffset$,
   scrollToPending$,
+  tableBelowExternalViewport$,
   scrollTop$,
   stickyFooterHeight$,
   stickyHeaderHeight$,
@@ -26,6 +27,7 @@ import {
 } from '../scroll/state'
 import { empty } from '../sizing/AATree'
 import { itemsWithinOffsetsWithStickyResult } from '../sizing/itemsWithinOffsets'
+import { itemOffsetAndSize } from '../sizing/offsetOf'
 import { computeStickyItems, computeStickyItemsFromAnchorOffset, EMPTY_STICKY_RESULT } from '../sizing/stickyItems'
 
 import type { DataArray, Item, Row } from '../interfaces'
@@ -43,6 +45,18 @@ function rowsSeed(index: number, data: unknown[] | null) {
       offset: 0,
     },
   ] as Row<unknown>[]
+}
+
+function measuredProbeRow(index: number, data: unknown[] | null, offsetTree: OffsetBreakpoint[]) {
+  const [offset, size] = itemOffsetAndSize(index, offsetTree)
+  return {
+    data: data?.[index],
+    prevData: data?.[index - 1] ?? null,
+    nextData: data?.[index + 1] ?? null,
+    size,
+    index,
+    offset,
+  } as Row<unknown>
 }
 
 const EMPTY_ROWS = [] as Row<unknown>[]
@@ -129,6 +143,7 @@ e.link(
       stickyHeaderHeight$,
       stickyFooterHeight$,
       deviation$,
+      tableBelowExternalViewport$,
       muteRowsChange$,
       recalcInProgress$,
       mobileSafariIsReadjusting$,
@@ -161,6 +176,7 @@ e.link(
             stickyHeaderHeight,
             stickyFooterHeight,
             deviation,
+            tableBelowExternalViewport,
             _muteRowsChange,
             _recalcInProgress,
             _mobileSafariIsReadjusting,
@@ -264,6 +280,20 @@ e.link(
           stickyHeaderHeight
         )
 
+        if (tableBelowExternalViewport && visibleListHeight === 0 && rowsResult.items.length === 0) {
+          const probeIndex = Math.min(current.rows[0]?.index ?? 0, totalCount - 1)
+          const probe = measuredProbeRow(probeIndex, data, sizeState.offsetTree)
+
+          rowsResult = {
+            ...rowsResult,
+            items: [probe],
+            listStart: probe.offset,
+            listEnd: probe.offset + probe.size,
+            paddingStart: probe.offset,
+            paddingEnd: Math.max(0, totalHeight - probe.offset - probe.size),
+          }
+        }
+
         // Sticky rows should describe the first visible data row below the sticky stack.
         // A threshold-only selection can lag by one group near transitions, so correct it
         // against the actual visible data row when necessary.
@@ -328,7 +358,7 @@ e.link(
           data,
           deviationDelta,
           visibleListSize: visibleListHeight,
-          stable: pendingScrollToInitialLocation === null,
+          stable: pendingScrollToInitialLocation === null && !tableBelowExternalViewport,
         }
       },
       EMPTY_ROWS_STATE
