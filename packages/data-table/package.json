@@ -1,6 +1,6 @@
 {
   "name": "@virtuoso.dev/data-table",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": false,
   "description": "Virtualized React data table component with column and row virtualization.",
   "keywords": [
