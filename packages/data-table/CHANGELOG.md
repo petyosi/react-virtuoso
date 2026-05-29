@@ -1,5 +1,11 @@
 # @virtuoso.dev/data-table
 
+## 0.1.2
+
+### Patch Changes
+
+- [`23cde5a`](https://github.com/petyosi/react-virtuoso/commit/23cde5aa1bce42b337cc914abb035d69852d80c6) Thanks [@petyosi](https://github.com/petyosi)! - Fix sticky table headers when `customScrollParent` or `useWindowScroll` is used with wrappers that apply horizontal overflow styles.
+
 ## 0.1.1
 
 ### Patch Changes
