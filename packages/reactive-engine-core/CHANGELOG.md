@@ -1,5 +1,13 @@
 # @virtuoso.dev/reactive-engine-core
 
+## 0.0.7
+
+### Patch Changes
+
+- [`de57c35`](https://github.com/petyosi/react-virtuoso/commit/de57c354a685e584ff21d267c7b9a9beed10cb13) Thanks [@petyosi](https://github.com/petyosi)! - Fix custom scroll parent height estimation when a table starts below the external viewport.
+
+  Extend reactive engine `combine` typings for larger tuples used by data table internals.
+
 ## 0.0.6
 
 ### Patch Changes

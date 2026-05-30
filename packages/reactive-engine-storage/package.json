@@ -54,7 +54,7 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@virtuoso.dev/reactive-engine-core": ">=0.0.6",
+    "@virtuoso.dev/reactive-engine-core": ">=0.0.7",
     "@virtuoso.dev/reactive-engine-react": ">=0.2.2",
     "react": ">= 18",
     "react-dom": ">= 18"
