@@ -1,5 +1,19 @@
 # @virtuoso.dev/data-table
 
+## 0.1.3
+
+### Patch Changes
+
+- [`4782bf1`](https://github.com/petyosi/react-virtuoso/commit/4782bf19f8c000d0f1f46bcad69c6b1375644d33) Thanks [@petyosi](https://github.com/petyosi)! - Refresh external scroll measurements while scrolling so tables stay aligned when content before them changes height.
+
+- [`de57c35`](https://github.com/petyosi/react-virtuoso/commit/de57c354a685e584ff21d267c7b9a9beed10cb13) Thanks [@petyosi](https://github.com/petyosi)! - Fix custom scroll parent height estimation when a table starts below the external viewport.
+
+  Extend reactive engine `combine` typings for larger tuples used by data table internals.
+
+- Updated dependencies [[`de57c35`](https://github.com/petyosi/react-virtuoso/commit/de57c354a685e584ff21d267c7b9a9beed10cb13)]:
+  - @virtuoso.dev/reactive-engine-core@0.0.7
+  - @virtuoso.dev/reactive-engine-react@0.2.2
+
 ## 0.1.2
 
 ### Patch Changes
