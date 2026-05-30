@@ -140,8 +140,23 @@ export const WindowScrollElementWrapper: React.FC<ScrollableRootProps> = ({ chil
 
   const testingContext = React.useContext(VirtuosoDataTableTestingContext)
 
+  const windowScrollMeasurements = React.useCallback(() => {
+    const wrapper = windowScrollWrapperRef.current
+    const theElementWindow = wrapper?.ownerDocument.defaultView
+    if (!wrapper || !theElementWindow) {
+      return {}
+    }
+    const rect = wrapper.getBoundingClientRect()
+    return {
+      [externalScrollerViewportHeight$]: theElementWindow.innerHeight,
+      [scrollHeight$]: rect.height,
+      [offsetTopInExternalScroller$]: rect.top + theElementWindow.scrollY,
+    }
+  }, [])
+
   const { onScroll, onWheel } = useScrollCallbacks({
     listRef,
+    scrollMeasurements: windowScrollMeasurements,
     scrollLeftCell$: scrollLeft$,
     scrollTopCell$: externalScrollerScrollTop$,
     scrollToSignal$: externalScrollerScrollTo$,
@@ -213,8 +228,21 @@ export const CustomScrollParentWrapper: React.FC<ScrollableRootProps> = ({ child
   const customScrollParentWrapperRef = React.useRef<HTMLElement | null>(null)
   const observer = useCellValue(resizeObserverSingleton$)
 
+  const customScrollMeasurements = React.useCallback((scrollParent: HTMLElement) => {
+    const wrapper = customScrollParentWrapperRef.current
+    if (!wrapper) {
+      return {}
+    }
+    return {
+      [externalScrollerViewportHeight$]: scrollParent.clientHeight,
+      [scrollHeight$]: wrapper.getBoundingClientRect().height,
+      [offsetTopInExternalScroller$]: computeOffsetTopInScrollParent(wrapper, scrollParent),
+    }
+  }, [])
+
   const { onWheel, onScroll } = useScrollCallbacks({
     listRef,
+    scrollMeasurements: customScrollMeasurements,
     scrollLeftCell$: scrollLeft$,
     scrollTopCell$: externalScrollerScrollTop$,
     scrollToSignal$: externalScrollerScrollTo$,

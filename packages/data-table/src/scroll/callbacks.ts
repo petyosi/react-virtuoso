@@ -12,12 +12,20 @@ import type { NodeRef } from '@virtuoso.dev/reactive-engine-core'
 interface ScrollCallbackParams {
   scrollableRef: React.RefObject<HTMLElement | null>
   listRef: React.RefObject<HTMLElement | null>
+  scrollMeasurements?: (element: HTMLElement) => Partial<Record<NodeRef, unknown>>
   scrollLeftCell$: NodeRef<number>
   scrollTopCell$: NodeRef<number>
   scrollToSignal$: NodeRef<ScrollToParams>
 }
 
-export function useScrollCallbacks({ scrollToSignal$, scrollableRef, listRef, scrollLeftCell$, scrollTopCell$ }: ScrollCallbackParams) {
+export function useScrollCallbacks({
+  scrollToSignal$,
+  scrollableRef,
+  listRef,
+  scrollLeftCell$,
+  scrollMeasurements,
+  scrollTopCell$,
+}: ScrollCallbackParams) {
   const engine = useEngine()
 
   const scrollTarget = React.useRef<number | null>(null)
@@ -42,6 +50,7 @@ export function useScrollCallbacks({ scrollToSignal$, scrollableRef, listRef, sc
     const pubPayload: Record<NodeRef, unknown> = {
       [scrollLeftCell$]: element.scrollLeft,
       [scrollTopCell$]: element.scrollTop,
+      ...scrollMeasurements?.(element),
     }
 
     if (scrollTarget.current !== null) {
@@ -53,7 +62,7 @@ export function useScrollCallbacks({ scrollToSignal$, scrollableRef, listRef, sc
       }
     }
     engine.pubIn(pubPayload)
-  }, [engine, scrollableRef, scrollLeftCell$, scrollTopCell$])
+  }, [engine, scrollableRef, scrollLeftCell$, scrollMeasurements, scrollTopCell$])
 
   const onWheel = React.useCallback(
     (e: WheelEvent) => {

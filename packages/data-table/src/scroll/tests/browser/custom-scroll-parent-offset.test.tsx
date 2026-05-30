@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { describe, expect, test, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
@@ -18,6 +18,7 @@ const TABLE_HEIGHT = 1000
 const COLUMN_WIDTH = 150
 const SCROLL_TOP = 260
 const TOOLBAR_HEIGHT = 40
+const UPDATED_TOOLBAR_HEIGHT = 140
 
 const ITEMS = Array.from({ length: 100 }, (_, i) => ({
   id: i,
@@ -73,5 +74,61 @@ describe('customScrollParent offset', () => {
     scrollParent.scrollTop = SCROLL_TOP
 
     await expect.poll(() => onScroll.mock.calls.at(-1)?.[0].listOffset).toBe(-(SCROLL_TOP - TOOLBAR_HEIGHT))
+  })
+
+  test('renormalizes scrollTop when content before the table changes height', async () => {
+    const onScroll = vi.fn<(location: ListScrollLocation) => void>()
+
+    function TestComponent() {
+      const [scrollParent, setScrollParent] = useState<HTMLDivElement | null>(null)
+      const [toolbarHeight, setToolbarHeight] = useState(TOOLBAR_HEIGHT)
+
+      useEffect(() => {
+        const timeout = setTimeout(() => {
+          setToolbarHeight(UPDATED_TOOLBAR_HEIGHT)
+        }, 20)
+
+        return () => {
+          clearTimeout(timeout)
+        }
+      }, [])
+
+      return (
+        <div
+          data-testid="custom-scroll-parent"
+          data-toolbar-height={toolbarHeight}
+          ref={setScrollParent}
+          style={{
+            height: CONTAINER_HEIGHT,
+            overflow: 'auto',
+            width: CONTAINER_WIDTH,
+          }}
+        >
+          <div style={{ height: toolbarHeight }}>Workspace toolbar</div>
+          <VirtuosoDataTable
+            customScrollParent={scrollParent}
+            onScroll={onScroll}
+            source={ITEMS}
+            style={{ height: TABLE_HEIGHT, width: CONTAINER_WIDTH }}
+          >
+            <Column field="name">
+              <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Name</div>}</ColumnHeader>
+              <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
+            </Column>
+          </VirtuosoDataTable>
+        </div>
+      )
+    }
+
+    const screen = await render(<TestComponent />)
+    await waitForReady(screen)
+
+    const scrollParent = screen.container.querySelector(scrollParentSelector) as HTMLElement
+    await expect.poll(() => scrollParent.dataset.toolbarHeight).toBe(String(UPDATED_TOOLBAR_HEIGHT))
+
+    scrollParent.scrollTop = SCROLL_TOP
+    scrollParent.dispatchEvent(new Event('scroll', { bubbles: true }))
+
+    await expect.poll(() => onScroll.mock.calls.at(-1)?.[0].listOffset).toBe(-(SCROLL_TOP - UPDATED_TOOLBAR_HEIGHT))
   })
 })
