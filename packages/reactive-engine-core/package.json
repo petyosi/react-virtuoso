@@ -2,6 +2,7 @@
   "name": "@virtuoso.dev/reactive-engine-core",
   "version": "0.0.7",
   "private": false,
+  "description": "Framework-agnostic reactive state engine built on a graph of typed nodes.",
   "license": "MIT",
   "repository": {
     "type": "git",

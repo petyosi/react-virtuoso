@@ -2,6 +2,7 @@
   "name": "@virtuoso.dev/reactive-engine-query",
   "version": "0.0.3",
   "private": false,
+  "description": "Reactive data fetching with queries and mutations for the Virtuoso reactive engine.",
   "license": "MIT",
   "repository": {
     "type": "git",

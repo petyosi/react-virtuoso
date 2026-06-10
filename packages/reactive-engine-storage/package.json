@@ -2,6 +2,7 @@
   "name": "@virtuoso.dev/reactive-engine-storage",
   "version": "2.0.1",
   "private": false,
+  "description": "Cell persistence in web storage and cookies for the Virtuoso reactive engine.",
   "license": "MIT",
   "repository": {
     "type": "git",
