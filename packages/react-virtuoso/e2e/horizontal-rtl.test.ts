@@ -4,7 +4,8 @@ import { navigateToExample } from './utils.ts'
 
 import type { Page } from '@playwright/test'
 
-function itemPosition(page: Page, index: number) {
+async function itemPosition(page: Page, index: number) {
+  await page.locator(`[data-item-index="${index}"]`).waitFor()
   return page.evaluate((index) => {
     const scroller = document.querySelector('[data-testid=virtuoso-scroller]')!
     const item = document.querySelector(`[data-item-index="${index}"]`)!
