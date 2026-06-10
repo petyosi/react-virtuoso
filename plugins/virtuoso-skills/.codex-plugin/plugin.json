@@ -1,6 +1,6 @@
 {
   "name": "virtuoso-skills",
-  "description": "Agent skills for react-virtuoso, message-list, and data-table",
+  "description": "Agent skills for react-virtuoso, message-list, data-table, and the reactive engine",
   "version": "0.1.0",
   "author": {
     "name": "Virtuoso.dev",
@@ -10,12 +10,12 @@
   "homepage": "https://virtuoso.dev",
   "repository": "https://github.com/petyosi/react-virtuoso",
   "license": "MIT",
-  "keywords": ["react-virtuoso", "virtualization", "table", "chat", "data-table"],
+  "keywords": ["react-virtuoso", "virtualization", "table", "chat", "data-table", "reactive-engine"],
   "skills": "./skills/",
   "interface": {
     "displayName": "Virtuoso Skills",
     "shortDescription": "Use Virtuoso React virtualization libraries correctly.",
-    "longDescription": "Agent guidance for react-virtuoso, message-list, and data-table, generated from the official package docs.",
+    "longDescription": "Agent guidance for react-virtuoso, message-list, data-table, and the reactive engine, generated from the official package docs.",
     "developerName": "Virtuoso.dev",
     "category": "Coding",
     "capabilities": ["Write"],
