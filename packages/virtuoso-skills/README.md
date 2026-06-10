@@ -36,10 +36,10 @@ codex plugin marketplace add petyosi/react-virtuoso --ref main --sparse .agents/
 codex plugin add virtuoso-skills@virtuoso
 ```
 
-Agent Skills users can install from the root mirror:
+Agent Skills users install from the dedicated public mirror, [`virtuoso-dev/skills`](https://github.com/virtuoso-dev/skills). `npx skills` shallow-clones the whole source repository before copying the selected skill, so pointing it at the small mirror pulls just the four skill directories instead of the entire monorepo:
 
 ```bash
-npx skills add petyosi/react-virtuoso --skill '*' -a codex -a opencode -a cursor --copy -y
+npx skills add virtuoso-dev/skills --skill '*' -a codex -a opencode -a cursor --copy -y
 ```
 
 ## Releases
