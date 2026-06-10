@@ -1,0 +1,51 @@
+---
+title: 'Agent Skills'
+description: Install agent skills that teach Claude Code, Codex, Cursor, and other coding agents how to use react-virtuoso, message-list, data-table, and the reactive engine correctly.
+tableOfContents: false
+template: splash
+---
+
+The Virtuoso packages ship [Agent Skills](https://agentskills.io) — structured guidance that teaches coding agents how to use each package correctly. Instead of guessing from training data (and carrying over habits from other virtualization libraries), an agent with the skills installed knows the component selection rules, the measurement constraints, the common pitfalls, and has the full package documentation at hand as references.
+
+Four skills are available:
+
+| Skill             | Covers                                                                                                |
+| ----------------- | ----------------------------------------------------------------------------------------------------- |
+| `react-virtuoso`  | Virtualized lists, grids, and tables — `Virtuoso`, `GroupedVirtuoso`, `VirtuosoGrid`, `TableVirtuoso` |
+| `message-list`    | Chat and AI conversation UIs — `VirtuosoMessageList`                                                  |
+| `data-table`      | The virtualized data grid — `@virtuoso.dev/data-table`                                                |
+| `reactive-engine` | The `@virtuoso.dev/reactive-engine-*` state management family                                         |
+
+## Claude Code
+
+Install the plugin from the repository marketplace:
+
+```text
+/plugin marketplace add petyosi/react-virtuoso
+/plugin install virtuoso-skills@virtuoso
+```
+
+## Codex
+
+```bash
+codex plugin marketplace add petyosi/react-virtuoso --ref main --sparse .agents/plugins --sparse plugins/virtuoso-skills
+codex plugin add virtuoso-skills@virtuoso
+```
+
+## Cursor, OpenCode, and other agents
+
+Use the [Agent Skills CLI](https://github.com/vercel-labs/skills) against the [virtuoso-dev/skills](https://github.com/virtuoso-dev/skills) mirror:
+
+```bash
+npx skills add virtuoso-dev/skills --skill '*'
+```
+
+Or install individual skills:
+
+```bash
+npx skills add virtuoso-dev/skills --skill react-virtuoso
+```
+
+## How the skills are maintained
+
+The skills are authored and versioned in the [react-virtuoso monorepo](https://github.com/petyosi/react-virtuoso) next to the packages they describe. Each skill bundles the package documentation as references, regenerated on every change — so the guidance ships from the same source, at the same time, as the code it documents. The [virtuoso-dev/skills](https://github.com/virtuoso-dev/skills) repository is a generated mirror for skill installers; report issues and contribute in the monorepo.

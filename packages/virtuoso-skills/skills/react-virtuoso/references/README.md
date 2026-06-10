@@ -29,6 +29,12 @@ React components for efficiently rendering large lists, grids, and tables with v
 npm install react-virtuoso
 ```
 
+If you work with a coding agent (Claude Code, Codex, Cursor), install the [Virtuoso agent skills](https://virtuoso.dev/skills/) so it knows the component selection rules, measurement constraints, and common pitfalls:
+
+```bash
+npx skills add virtuoso-dev/skills --skill react-virtuoso
+```
+
 ## Quick Start
 
 ### Virtuoso
