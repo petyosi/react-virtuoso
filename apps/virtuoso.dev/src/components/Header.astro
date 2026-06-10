@@ -82,6 +82,15 @@ function isActive(path: string) {
       >
         Pricing
       </a>
+      <a
+        class:list={[
+          'text-sm font-medium no-underline transition-colors duration-200',
+          isActive('/skills/') ? 'text-(--sl-color-text-accent)' : 'text-(--sl-color-white) hover:text-(--sl-color-text-accent)',
+        ]}
+        href="/skills/"
+      >
+        Agent Skills
+      </a>
     </nav>
     <div class="sl-flex w-full md:w-96">
       {shouldRenderSearch && <Search />}

@@ -26,7 +26,7 @@ catalog:
   vitest: ^4.1.5
   '@vitejs/plugin-react': ^4.7.0
   vite-plugin-dts: ^4.5.4
-  playwright: ^1.58.2
+  playwright: ^1.60.0
   '@vitest/browser': ^4.1.5
   '@vitest/browser-playwright': ^4.1.5
   oxlint: ^1.60.0

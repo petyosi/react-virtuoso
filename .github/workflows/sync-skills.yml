@@ -1,0 +1,52 @@
+name: Sync Skills Mirror
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'skills/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync skills to virtuoso-dev/skills
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      # SKILLS_SYNC_TOKEN is a fine-grained PAT with contents read/write on virtuoso-dev/skills.
+      - name: Clone target repository
+        run: git clone "https://x-access-token:${SKILLS_SYNC_TOKEN}@github.com/virtuoso-dev/skills.git" target
+        env:
+          SKILLS_SYNC_TOKEN: ${{ secrets.SKILLS_SYNC_TOKEN }}
+
+      # Only the skill directories are managed by the sync; root files (README, LICENSE)
+      # are owned by the target repository.
+      - name: Copy skill directories
+        run: |
+          for skill in skills/*/; do
+            name=$(basename "$skill")
+            rsync -a --delete "$skill" "target/$name/"
+          done
+
+      - name: Commit and push
+        run: |
+          cd target
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Mirror already up to date"
+            exit 0
+          fi
+          git config user.name "virtuoso-skills-sync[bot]"
+          git config user.email "support@virtuoso.dev"
+          git commit -m "Sync skills from petyosi/react-virtuoso@${GITHUB_SHA}"
+          git push

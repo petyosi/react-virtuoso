@@ -243,12 +243,13 @@ jobs:
           git -C "$tmpdir" init
           (
             cd "$tmpdir"
-            npx skills add "$repo" --skill react-virtuoso --skill message-list --skill data-table -a codex -a opencode -a cursor --copy -y
+            npx skills add "$repo" --skill react-virtuoso --skill message-list --skill data-table --skill reactive-engine -a codex -a opencode -a cursor --copy -y
           )
 
           test -f "$tmpdir/.agents/skills/react-virtuoso/SKILL.md"
           test -f "$tmpdir/.agents/skills/message-list/SKILL.md"
           test -f "$tmpdir/.agents/skills/data-table/SKILL.md"
+          test -f "$tmpdir/.agents/skills/reactive-engine/SKILL.md"
 
   e2e:
     name: E2E Tests

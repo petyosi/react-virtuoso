@@ -2,6 +2,7 @@
   "name": "@virtuoso.dev/reactive-engine-router",
   "version": "0.0.3",
   "private": false,
+  "description": "Reactive router with routes, layouts, and guards for the Virtuoso reactive engine.",
   "license": "MIT",
   "repository": {
     "type": "git",

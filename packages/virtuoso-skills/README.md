@@ -1,6 +1,6 @@
 # Virtuoso Skills
 
-This private workspace package is the canonical source for the `virtuoso-skills` agent distribution. It packages the same three skills for Claude Code, Codex, and Agent Skills consumers such as Codex, OpenCode, and Cursor.
+This private workspace package is the canonical source for the `virtuoso-skills` agent distribution. It packages the same four skills (react-virtuoso, message-list, data-table, and reactive-engine) for Claude Code, Codex, and Agent Skills consumers such as Codex, OpenCode, and Cursor.
 
 The package is not imported by the runtime libraries. It owns the hand-authored `SKILL.md` source files under `packages/virtuoso-skills/skills/` and generates the documentation references and public mirrors used by installers.
 

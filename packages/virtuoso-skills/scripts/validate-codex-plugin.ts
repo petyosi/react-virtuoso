@@ -2,7 +2,7 @@ import { access, readFile } from 'node:fs/promises'
 import { dirname, isAbsolute, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const expectedSkillNames = ['react-virtuoso', 'message-list', 'data-table'] as const
+const expectedSkillNames = ['react-virtuoso', 'message-list', 'data-table', 'reactive-engine'] as const
 const allowedTopLevelManifestFields = new Set<string>([
   'name',
   'version',
