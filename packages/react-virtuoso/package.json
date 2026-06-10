@@ -61,7 +61,7 @@
     "@faker-js/faker": "^7.6.0",
     "@ladle/react": "catalog:",
     "@microsoft/api-extractor": "catalog:",
-    "@playwright/test": "^1.58.2",
+    "@playwright/test": "^1.60.0",
     "@testing-library/react": "catalog:",
     "@types/jsdom": "^21.1.1",
     "@types/lodash": "^4.14.194",
