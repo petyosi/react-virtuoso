@@ -14,7 +14,6 @@ description: >-
 
 ```tsx
 import { Virtuoso } from 'react-virtuoso'
-
 ;<Virtuoso style={{ height: '100%' }} data={users} itemContent={(index, user) => <div>{user.name}</div>} />
 ```
 
