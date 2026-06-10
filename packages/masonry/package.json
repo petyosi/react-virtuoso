@@ -71,7 +71,7 @@
     "@vitest/browser-playwright": "catalog:",
     "jsdom": "catalog:",
     "knip": "catalog:",
-    "node-html-parser": "^6.1.13",
+    "node-html-parser": "^7.1.0",
     "playwright": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
