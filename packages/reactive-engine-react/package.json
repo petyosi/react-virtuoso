@@ -1,6 +1,6 @@
 {
   "name": "@virtuoso.dev/reactive-engine-react",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": false,
   "description": "React bindings for the Virtuoso reactive engine.",
   "license": "MIT",
@@ -56,7 +56,7 @@
     "vitest-browser-react": "^2.0.2"
   },
   "peerDependencies": {
-    "@virtuoso.dev/reactive-engine-core": ">=0.0.7",
+    "@virtuoso.dev/reactive-engine-core": ">=0.0.8",
     "react": ">= 18",
     "react-dom": ">= 18"
   }

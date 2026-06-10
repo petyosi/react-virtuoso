@@ -1,7 +1,7 @@
 {
   "name": "virtuoso-skills",
   "description": "Agent skills for react-virtuoso, message-list, data-table, and the reactive engine",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Virtuoso.dev",
     "email": "petyo@virtuoso.dev"

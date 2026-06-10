@@ -1,5 +1,13 @@
 # @virtuoso.dev/data-table
 
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies [[`5f90dfd`](https://github.com/petyosi/react-virtuoso/commit/5f90dfd83a4acb5b1f0d30ff19190c98d1591443)]:
+  - @virtuoso.dev/reactive-engine-core@0.0.8
+  - @virtuoso.dev/reactive-engine-react@0.2.3
+
 ## 0.1.3
 
 ### Patch Changes
