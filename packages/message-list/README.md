@@ -136,6 +136,7 @@ export default function App() {
               scrollModifier: {
                 type: 'auto-scroll-to-bottom',
                 autoScroll: ({ scrollInProgress, atBottom }) => {
+                  // This is a local user action, so it intentionally brings the question into view.
                   return {
                     index: 'LAST',
                     align: 'start',
