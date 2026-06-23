@@ -6,6 +6,24 @@ import { EngineContext, getRefInternal, setRegistryEngine, useIsomorphicLayoutEf
 
 import type { EngineRef } from './hooks'
 
+interface PendingEngineDispose {
+  cancelled: boolean
+  engine: Engine
+  engineRef: EngineRef | undefined
+  id: string | undefined
+  initWith: Record<symbol, unknown> | undefined
+}
+
+function disposeEngine({ engine, engineRef, id }: PendingEngineDispose) {
+  if (id !== undefined) {
+    setRegistryEngine(id, null)
+  }
+  if (engineRef) {
+    getRefInternal(engineRef).set(null)
+  }
+  engine.dispose()
+}
+
 /**
  * @inline
  * @category React Hooks and Components
@@ -90,9 +108,23 @@ export const EngineProvider: React.FC<EngineProviderProps> = ({
     initFn?.(instance)
     return instance
   })
+  const pendingDisposeRef = React.useRef<PendingEngineDispose | null>(null)
 
   useIsomorphicLayoutEffect(() => {
     let activeEngine = engine
+    const pendingDispose = pendingDisposeRef.current
+
+    if (pendingDispose?.engine === activeEngine) {
+      pendingDispose.cancelled = true
+      pendingDisposeRef.current = null
+
+      if (pendingDispose.id !== id || pendingDispose.engineRef !== engineRef || pendingDispose.initWith !== initWith) {
+        disposeEngine(pendingDispose)
+        activeEngine = new Engine(initWith, id)
+        initFn?.(activeEngine)
+        setEngine(activeEngine)
+      }
+    }
 
     if (activeEngine.isDisposed) {
       activeEngine = new Engine(initWith, id)
@@ -108,13 +140,22 @@ export const EngineProvider: React.FC<EngineProviderProps> = ({
     }
 
     return () => {
-      if (id !== undefined) {
-        setRegistryEngine(id, null)
+      const disposeRecord: PendingEngineDispose = {
+        cancelled: false,
+        engine: activeEngine,
+        engineRef,
+        id,
+        initWith,
       }
-      if (engineRef) {
-        getRefInternal(engineRef).set(null)
-      }
-      activeEngine.dispose()
+      pendingDisposeRef.current = disposeRecord
+      queueMicrotask(() => {
+        if (disposeRecord.cancelled || pendingDisposeRef.current !== disposeRecord) {
+          return
+        }
+
+        pendingDisposeRef.current = null
+        disposeEngine(disposeRecord)
+      })
     }
   }, [initWith, id, engineRef])
 

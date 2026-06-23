@@ -1,3 +1,5 @@
+import React from 'react'
+
 import { expect, test, describe, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 
@@ -59,6 +61,23 @@ function MultiColumnTable() {
 }
 
 describe('row virtualization', () => {
+  test('renders under React StrictMode without crashing table layout', async () => {
+    const screen = await render(
+      <React.StrictMode>
+        <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={ITEMS}>
+          <Column field="name">
+            <ColumnHeader>{({ column }) => <div style={{ height: HEADER_HEIGHT }}>{column.field}</div>}</ColumnHeader>
+            <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
+          </Column>
+        </VirtuosoDataTable>
+      </React.StrictMode>
+    )
+
+    await waitForReady(screen)
+
+    expect(screen.container.querySelector(rowSelector)).not.toBeNull()
+  })
+
   test('renders only visible rows', async () => {
     const screen = await render(
       <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT }} source={ITEMS}>

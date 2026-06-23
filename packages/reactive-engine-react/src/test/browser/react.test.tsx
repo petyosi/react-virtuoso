@@ -788,5 +788,26 @@ describe('Remote hooks with EngineRef', () => {
 
       await expect.element(screen.getByTestId('strict-update-value')).toHaveTextContent('after')
     })
+
+    it('supports combined cell values after strict mode recovery', async () => {
+      const strictA$ = Cell('a')
+      const strictB$ = Cell('b')
+      const strictC$ = Cell('c')
+
+      function StrictCombinedChild() {
+        const [a, b, c] = useCellValues(strictA$, strictB$, strictC$)
+        return <div data-testid="strict-combined-value">{`${a}-${b}-${c}`}</div>
+      }
+
+      const screen = await render(
+        <React.StrictMode>
+          <EngineProvider initFn={noop} updateDeps={[]} updateFn={noop}>
+            <StrictCombinedChild />
+          </EngineProvider>
+        </React.StrictMode>
+      )
+
+      await expect.element(screen.getByTestId('strict-combined-value')).toHaveTextContent('a-b-c')
+    })
   })
 })
