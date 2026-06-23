@@ -17,7 +17,7 @@ A virtualized React data table (rows and columns) with grouped rows, sticky colu
 **Shadcn (pre-styled wrapper)** — for projects using shadcn/ui conventions:
 
 ```bash
-npx shadcn@latest add https://virtuoso.dev/r/data-table.json
+npx shadcn@latest add petyosi/react-virtuoso/data-table
 ```
 
 This installs a styled wrapper at `@/components/ui/data-table` exporting `DataTable`, `DataTableColumn`, `DataTableColumnHeader`, `DataTableCell`.
