@@ -115,6 +115,26 @@
           "target": "@ui/data-table/column-resize/resize-handle.tsx"
         }
       ]
+    },
+    {
+      "name": "data-table-sort-header-button",
+      "type": "registry:component",
+      "title": "Data Table Sort Header Button",
+      "description": "Slot-mounted sort button for column headers.",
+      "dependencies": ["@virtuoso.dev/data-table", "lucide-react"],
+      "registryDependencies": ["petyosi/react-virtuoso/data-table"],
+      "files": [
+        {
+          "path": "registry/new-york/data-table/column-sort/index.ts",
+          "type": "registry:component",
+          "target": "@ui/data-table/column-sort/index.ts"
+        },
+        {
+          "path": "registry/new-york/data-table/column-sort/sort-header-button.tsx",
+          "type": "registry:component",
+          "target": "@ui/data-table/column-sort/sort-header-button.tsx"
+        }
+      ]
     }
   ]
 }

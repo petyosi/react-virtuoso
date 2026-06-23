@@ -95,6 +95,7 @@ Visual customization is covered separately:
 - [ambient context](/data-table/customization/ambient-context/) — a bag of values available throughout the table's customizable parts
 - [header slots](/data-table/customization/header-slots/) — mount sort buttons, filter menus, and other controls inside column headers
 - [inside the shadcn wrapper](/data-table/customization/shadcn-wrapper/) — change app-wide defaults by editing the wrapper file
+- [remote column sorting](/data-table/examples/remote-column-sorting/) — connect shadcn header sort buttons to request params
 
 ## License
 

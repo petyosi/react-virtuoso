@@ -10,6 +10,7 @@ import * as _DataTableStatePersistence from '@virtuoso.dev/data-table/state-pers
 import * as _Masonry from '@virtuoso.dev/masonry'
 import * as _ML from '@virtuoso.dev/message-list'
 import * as _ReactiveEngineReact from '@virtuoso.dev/reactive-engine-react'
+import * as _LucideReact from 'lucide-react'
 import * as jsxRuntime from 'react/jsx-runtime'
 
 import * as _UiButton from '@/components/ui/button'
@@ -38,6 +39,8 @@ import dataTableColumnReorderDropZoneSource from '../../../registry/new-york/dat
 import dataTableColumnReorderGripSource from '../../../registry/new-york/data-table/column-reorder/reorder-grip.tsx?raw'
 import * as _DataTableColumnResizeUI from '../../../registry/new-york/data-table/column-resize'
 import dataTableColumnResizeHandleSource from '../../../registry/new-york/data-table/column-resize/resize-handle.tsx?raw'
+import * as _DataTableColumnSortUI from '../../../registry/new-york/data-table/column-sort'
+import dataTableColumnSortHeaderButtonSource from '../../../registry/new-york/data-table/column-sort/sort-header-button.tsx?raw'
 import * as _DataTableUI from '../../../registry/new-york/data-table/data-table'
 import dataTableUiSource from '../../../registry/new-york/data-table/data-table.tsx?raw'
 import utilsSource from '../../lib/utils.ts?raw'
@@ -125,6 +128,23 @@ export { ResizeHandle } from '@/components/ui/data-table/column-resize/resize-ha
     filePath: 'file:///src/components/ui/data-table/column-resize/resize-handle.tsx',
     sandboxPath: 'src/components/ui/data-table/column-resize/resize-handle.tsx',
   },
+  '@/components/ui/data-table/column-sort': {
+    content: `
+export { SortHeaderButton } from '@/components/ui/data-table/column-sort/sort-header-button'
+export type { SortDirection, SortHeaderButtonProps, SortPayload } from '@/components/ui/data-table/column-sort/sort-header-button'
+`,
+    dependencies: ['@virtuoso.dev/data-table', 'lucide-react'],
+    filePath: 'file:///src/components/ui/data-table/column-sort.ts',
+    imports: ['@/components/ui/data-table/column-sort/sort-header-button'],
+    sandboxPath: 'src/components/ui/data-table/column-sort.ts',
+  },
+  '@/components/ui/data-table/column-sort/sort-header-button': {
+    content: dataTableColumnSortHeaderButtonSource,
+    dependencies: ['@virtuoso.dev/data-table', 'lucide-react'],
+    filePath: 'file:///src/components/ui/data-table/column-sort/sort-header-button.tsx',
+    imports: ['@/lib/utils'],
+    sandboxPath: 'src/components/ui/data-table/column-sort/sort-header-button.tsx',
+  },
   '@/components/ui/tooltip': {
     content: tooltipSource,
     dependencies: ['@radix-ui/react-tooltip'],
@@ -150,11 +170,13 @@ export const importMap: Record<string, unknown> = {
   '@virtuoso.dev/masonry': _Masonry,
   '@virtuoso.dev/message-list': _ML,
   '@virtuoso.dev/reactive-engine-react': _ReactiveEngineReact,
+  'lucide-react': _LucideReact,
   '@/components/ui/button': _UiButton,
   '@/components/ui/card': _UiCard,
   '@/components/ui/data-table': _DataTableUI,
   '@/components/ui/data-table/column-reorder': _DataTableColumnReorderUI,
   '@/components/ui/data-table/column-resize': _DataTableColumnResizeUI,
+  '@/components/ui/data-table/column-sort': _DataTableColumnSortUI,
   '@/components/ui/tooltip': _UiTooltip,
   '@/lib/utils': _Utils,
   react: React,
