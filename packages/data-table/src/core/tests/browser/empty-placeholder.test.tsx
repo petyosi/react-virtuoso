@@ -1,4 +1,7 @@
-import { expect, test, describe } from 'vitest'
+import { forwardRef } from 'react'
+import type { HTMLProps } from 'react'
+
+import { expect, test, describe, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 
 import { Cell } from '../../..'
@@ -155,5 +158,48 @@ describe('EmptyPlaceholder', () => {
 
     const rows = screen.container.querySelectorAll(rowSelector)
     expect(rows.length).toBe(ITEM_COUNT)
+  })
+
+  test('does not forward table-only props to DOM elements', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    function EmptyPlaceholder() {
+      return <div data-testid="empty-placeholder">No data available</div>
+    }
+
+    const ScrollElement = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElement>>(function ScrollElement(props, ref) {
+      return <div {...props} ref={ref} />
+    })
+
+    try {
+      const screen = await render(
+        <VirtuosoDataTable
+          style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }}
+          source={EMPTY_DATA}
+          initialLocation={0}
+          EmptyPlaceholder={EmptyPlaceholder}
+          ScrollElement={ScrollElement}
+        >
+          <Column field="name">
+            <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Name</div>}</ColumnHeader>
+            <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
+          </Column>
+        </VirtuosoDataTable>
+      )
+
+      await waitForPlaceholder(screen, '[data-testid="empty-placeholder"]')
+
+      const unknownPropWarnings = consoleError.mock.calls.filter(([message]) => {
+        return (
+          typeof message === 'string' &&
+          message.includes('React does not recognize') &&
+          (message.includes('initialLocation') || message.includes('EmptyPlaceholder') || message.includes('ScrollElement'))
+        )
+      })
+
+      expect(unknownPropWarnings).toStrictEqual([])
+    } finally {
+      consoleError.mockRestore()
+    }
   })
 })
