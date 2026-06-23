@@ -1,0 +1,6 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "react-virtuoso",
+  "homepage": "https://virtuoso.dev",
+  "include": ["apps/virtuoso.dev/registry.json"]
+}
