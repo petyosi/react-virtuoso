@@ -1,4 +1,6 @@
-import { expect, test, describe } from 'vitest'
+import React from 'react'
+
+import { expect, test, describe, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 
 import { Cell } from '../../..'
@@ -18,6 +20,11 @@ const ITEMS = Array.from({ length: ITEM_COUNT }, (_, i) => ({
   id: i,
   name: `User ${i + 1}`,
 }))
+
+const PEOPLE = [
+  { id: 1, firstName: 'Ada', lastName: 'Lovelace' },
+  { id: 2, firstName: 'Grace', lastName: 'Hopper' },
+]
 
 const MULTI_COLUMN_ITEMS = Array.from({ length: ITEM_COUNT }, (_, i) => ({
   id: i,
@@ -54,6 +61,23 @@ function MultiColumnTable() {
 }
 
 describe('row virtualization', () => {
+  test('renders under React StrictMode without crashing table layout', async () => {
+    const screen = await render(
+      <React.StrictMode>
+        <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={ITEMS}>
+          <Column field="name">
+            <ColumnHeader>{({ column }) => <div style={{ height: HEADER_HEIGHT }}>{column.field}</div>}</ColumnHeader>
+            <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
+          </Column>
+        </VirtuosoDataTable>
+      </React.StrictMode>
+    )
+
+    await waitForReady(screen)
+
+    expect(screen.container.querySelector(rowSelector)).not.toBeNull()
+  })
+
   test('renders only visible rows', async () => {
     const screen = await render(
       <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT }} source={ITEMS}>
@@ -85,6 +109,54 @@ describe('row virtualization', () => {
     const expectedTotalHeight = ITEM_COUNT * ROW_HEIGHT
     const tableBody = screen.container.querySelector(tableBodySelector) as HTMLElement
     expect(tableBody.style.height).toBe(`${expectedTotalHeight}px`)
+  })
+})
+
+describe('column values', () => {
+  test('supports display columns without matching row fields', async () => {
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    try {
+      const screen = await render(
+        <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={ITEMS.slice(0, 2)}>
+          <Column id="actions">
+            <ColumnHeader>{({ column }) => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>{column.id}</div>}</ColumnHeader>
+            <Cell>{({ row }) => <div style={{ height: ROW_HEIGHT }}>Open {(row.data as (typeof ITEMS)[number]).id}</div>}</Cell>
+          </Column>
+        </VirtuosoDataTable>
+      )
+
+      await waitForReady(screen)
+
+      expect(screen.container.querySelector(headerCellSelector)?.textContent).toBe('actions')
+      expect(screen.container.querySelector(rowSelector)?.textContent).toBe('Open 0')
+      expect(
+        consoleWarn.mock.calls.filter(([message]) => typeof message === 'string' && message.includes('not found in row data'))
+      ).toStrictEqual([])
+    } finally {
+      consoleWarn.mockRestore()
+    }
+  })
+
+  test('supports computed column values through an accessor', async () => {
+    const screen = await render(
+      <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} source={PEOPLE}>
+        <Column
+          id="fullName"
+          accessor={(row) => {
+            const person = row as (typeof PEOPLE)[number]
+            return `${person.firstName} ${person.lastName}`
+          }}
+        >
+          <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Full name</div>}</ColumnHeader>
+          <Cell>{({ cellValue }) => <div style={{ height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
+        </Column>
+      </VirtuosoDataTable>
+    )
+
+    await waitForReady(screen)
+
+    expect(screen.container.querySelector(rowSelector)?.textContent).toBe('Ada Lovelace')
   })
 })
 

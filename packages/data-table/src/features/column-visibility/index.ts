@@ -1,7 +1,7 @@
 // oxlint-disable require-hook
 import { DerivedCell, Stream, Trigger, e } from '@virtuoso.dev/reactive-engine-core'
 
-import { columns$, columnVisibilityOverrides$ } from '../../columns/Column'
+import { columns$, columnVisibilityOverrides$, getColumnPersistenceKey } from '../../columns/Column'
 
 import type { ColumnInfo } from '../../columns/Column'
 import type { DataTableStatePersistenceAdapter } from '../state-persistence'
@@ -32,7 +32,7 @@ export const setColumnVisibility$ = Stream<SetColumnVisibilityPayload>()
 export const resetColumnVisibility$ = Trigger()
 
 /**
- * Serializable column visibility state keyed by stable column field names.
+ * Serializable column visibility state keyed by stable column field names or explicit column ids.
  *
  * @group Remote Control
  */
@@ -71,8 +71,8 @@ function isColumnVisibilityPersistenceState(
 }
 
 /**
- * Converts persisted field-keyed column visibility into runtime column-keyed
- * visibility overrides for the currently registered columns.
+ * Converts persisted column visibility into runtime column-keyed visibility
+ * overrides for the currently registered columns.
  *
  * @group Remote Control
  */
@@ -86,7 +86,7 @@ export function columnVisibilityOverridesFromState(
   }
 
   for (const [key, column] of columns) {
-    const persistedVisibility = state.visibility[column.field]
+    const persistedVisibility = state.visibility[getColumnPersistenceKey(column, key)]
     if (typeof persistedVisibility !== 'boolean') {
       continue
     }
@@ -101,8 +101,8 @@ export function columnVisibilityOverridesFromState(
 }
 
 /**
- * Converts runtime column visibility into serializable field-keyed state while
- * preserving saved visibility for columns that are not currently registered.
+ * Converts runtime column visibility into serializable state while preserving
+ * saved visibility for columns that are not currently registered.
  *
  * @group Remote Control
  */
@@ -114,8 +114,8 @@ export function columnVisibilityStateFromColumns(
   const visibility: Record<string, boolean> = isColumnVisibilityPersistenceState(previous) ? { ...previous.visibility } : {}
   const currentFields = new Set<string>()
 
-  for (const column of columns.values()) {
-    currentFields.add(column.field)
+  for (const [key, column] of columns) {
+    currentFields.add(getColumnPersistenceKey(column, key))
   }
 
   for (const field of currentFields) {
@@ -126,7 +126,7 @@ export function columnVisibilityStateFromColumns(
     const defaultVisibility = column.visible !== false
     const visible = visibilityOverrides.get(key) ?? defaultVisibility
     if (visible !== defaultVisibility) {
-      visibility[column.field] = visible
+      visibility[getColumnPersistenceKey(column, key)] = visible
     }
   }
 

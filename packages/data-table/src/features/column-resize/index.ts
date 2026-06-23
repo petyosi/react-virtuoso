@@ -1,7 +1,7 @@
 // oxlint-disable require-hook
 import { Stream, Trigger, e } from '@virtuoso.dev/reactive-engine-core'
 
-import { columns$ } from '../../columns/Column'
+import { columns$, getColumnPersistenceKey } from '../../columns/Column'
 import { columnWidthOverrides$ } from '../../columns/column-width-overrides'
 
 import type { ColumnInfo } from '../../columns/Column'
@@ -22,7 +22,7 @@ export interface ClearColumnWidthOverridePayload {
 }
 
 /**
- * Serializable column width state keyed by stable column field names.
+ * Serializable column width state keyed by stable column field names or explicit column ids.
  *
  * @group Remote Control
  */
@@ -65,8 +65,8 @@ function isValidPersistedWidth(value: unknown): value is number {
 }
 
 /**
- * Converts persisted field-keyed column widths into runtime column-keyed width
- * overrides for the currently registered columns.
+ * Converts persisted column widths into runtime column-keyed width overrides
+ * for the currently registered columns.
  *
  * @group Remote Control
  */
@@ -80,7 +80,7 @@ export function columnWidthOverridesFromState(
   }
 
   for (const [key, column] of columns) {
-    const width = state.widths[column.field]
+    const width = state.widths[getColumnPersistenceKey(column, key)]
     if (isValidPersistedWidth(width)) {
       overrides.set(key, width)
     }
@@ -90,9 +90,8 @@ export function columnWidthOverridesFromState(
 }
 
 /**
- * Converts runtime column-keyed width overrides into serializable field-keyed
- * state while preserving saved widths for columns that are not currently
- * registered.
+ * Converts runtime column-keyed width overrides into serializable state while
+ * preserving saved widths for columns that are not currently registered.
  *
  * @group Remote Control
  */
@@ -104,8 +103,8 @@ export function columnWidthStateFromOverrides(
   const widths: Record<string, number> = previous?.version === 1 ? { ...previous.widths } : {}
   const currentFields = new Set<string>()
 
-  for (const column of columns.values()) {
-    currentFields.add(column.field)
+  for (const [key, column] of columns) {
+    currentFields.add(getColumnPersistenceKey(column, key))
   }
 
   for (const field of currentFields) {
@@ -115,7 +114,7 @@ export function columnWidthStateFromOverrides(
   for (const [key, width] of overrides) {
     const column = columns.get(key)
     if (column && isValidPersistedWidth(width)) {
-      widths[column.field] = width
+      widths[getColumnPersistenceKey(column, key)] = width
     }
   }
 

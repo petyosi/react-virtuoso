@@ -73,13 +73,13 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
     customScrollParent = null,
     increaseViewportBy = 0,
     columnOverscanCount = 0,
+    initialLocation = null,
+    EmptyPlaceholder = null,
+    ScrollElement = 'div',
     components,
     children,
     ...scrollerProps
   } = props
-  const initialLocation = props.initialLocation ?? null
-  const EmptyPlaceholder = props.EmptyPlaceholder ?? null
-  const ScrollElement = props.ScrollElement ?? 'div'
   const engineProviderProps = {
     ...(engineId === undefined ? {} : { engineId }),
     ...(engineRef === undefined ? {} : { engineRef }),

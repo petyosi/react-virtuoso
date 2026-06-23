@@ -197,7 +197,7 @@ export function ColumnHeaderRenderer({
   )
   const content = useMemo(() => {
     if (!renderer) {
-      return column.field
+      return column.field ?? column.id ?? columnKey
     }
 
     if (rendererType === 'component') {
