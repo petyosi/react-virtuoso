@@ -91,9 +91,19 @@ interface CellRendererProps {
 }
 
 export function CellRenderer({ columnKey, column, columnState, row, cellRenderFunction, overlaidByScrollbar }: CellRendererProps) {
-  const cellValue = (row.data as Record<string, unknown>)?.[column.field]
+  const cellValue = column.accessor
+    ? column.accessor(row.data)
+    : column.field === undefined
+      ? undefined
+      : (row.data as Record<string, unknown>)?.[column.field]
 
-  if (process.env.NODE_ENV !== 'production' && row.data && typeof row.data === 'object' && !(column.field in row.data)) {
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    column.field !== undefined &&
+    row.data &&
+    typeof row.data === 'object' &&
+    !(column.field in row.data)
+  ) {
     console.warn(
       `[VirtuosoDataTable] Column field "${column.field}" not found in row data at index ${row.index}. Available fields: ${Object.keys(row.data).join(', ')}`
     )

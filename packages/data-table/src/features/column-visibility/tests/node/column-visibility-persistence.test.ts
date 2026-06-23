@@ -185,6 +185,29 @@ describe('column visibility persistence', () => {
     })
   })
 
+  it('uses explicit column ids for display-only column visibility persistence', () => {
+    const columns = new Map<string, ColumnInfo>([
+      ['runtime-name', { field: 'name' }],
+      ['actions', { id: 'actions', visible: false }],
+    ])
+
+    expect(
+      columnVisibilityOverridesFromState(columns, {
+        version: 1,
+        visibility: {
+          actions: true,
+        },
+      })
+    ).toStrictEqual(new Map([['actions', true]]))
+
+    expect(columnVisibilityStateFromColumns(columns, new Map([['actions', true]]))).toStrictEqual({
+      version: 1,
+      visibility: {
+        actions: true,
+      },
+    })
+  })
+
   it('publishes runtime visibility by column key', () => {
     engine.pub(
       columns$,

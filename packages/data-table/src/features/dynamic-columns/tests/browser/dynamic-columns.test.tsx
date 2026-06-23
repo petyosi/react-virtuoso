@@ -77,7 +77,7 @@ function DynamicFieldColumns({ skip = [] }: { skip?: readonly string[] }) {
   )
 }
 
-function columnKeyForField(columns: Map<string, { field: string }>, field: string) {
+function columnKeyForField(columns: Map<string, { field?: string }>, field: string) {
   return [...columns].find(([, column]) => column.field === field)?.[0] ?? null
 }
 

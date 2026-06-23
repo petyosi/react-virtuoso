@@ -105,6 +105,28 @@ describe('column order persistence', () => {
     })
   })
 
+  it('uses explicit column ids for display-only column order persistence', () => {
+    const columns = new Map<string, ColumnInfo>([
+      ['runtime-name', { field: 'name' }],
+      ['actions', { id: 'actions' }],
+      ['full-name', { id: 'fullName', field: 'name' }],
+    ])
+
+    expect(columnOrderStateFromColumns(columns)).toStrictEqual({
+      version: 1,
+      fields: ['name', 'actions', 'fullName'],
+    })
+
+    expect(
+      fields(
+        columnsFromColumnOrderState(columns, {
+          version: 1,
+          fields: ['actions', 'fullName', 'name'],
+        })
+      )
+    ).toStrictEqual([undefined, 'name', 'name'])
+  })
+
   it('restores persisted order by replacing the runtime column order', () => {
     engine.pub(
       columns$,

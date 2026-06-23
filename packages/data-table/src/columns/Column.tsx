@@ -99,10 +99,27 @@ type ColumnRegistryPayload =
  * @group Components
  */
 export interface ColumnInfo {
-  field: string
+  /**
+   * Stable public column identifier used by persistence and explicit column-keyed APIs.
+   * Defaults to `field` for data-backed columns.
+   */
+  id?: string
+  /**
+   * Row-data lookup key used to compute the default `cellValue`.
+   */
+  field?: string
+  /**
+   * Computes `cellValue` from the row data. Useful for computed columns and
+   * display-only columns that should not require a matching row-data field.
+   */
+  accessor?: (row: unknown) => unknown
   sticky?: 'left' | 'right'
   groupId?: string
   visible?: boolean
+}
+
+export function getColumnPersistenceKey(column: ColumnInfo, runtimeKey = column.id ?? column.field ?? '') {
+  return column.id ?? column.field ?? runtimeKey
 }
 
 export const columns$ = Cell<Map<string, ColumnInfo>>(new Map())
@@ -236,11 +253,25 @@ export namespace Column {
    *
    * @group Components
    */
-  export interface Props extends ColumnInfo {
+  interface BaseProps {
     children?: React.ReactNode
     sticky?: 'left' | 'right'
     visible?: boolean
   }
+
+  export type Props = BaseProps &
+    (
+      | {
+          id?: string
+          field: string
+          accessor?: never
+        }
+      | {
+          id: string
+          field?: string
+          accessor?: (row: unknown) => unknown
+        }
+    )
 }
 
 /**
@@ -248,14 +279,21 @@ export namespace Column {
  *
  * @group Components
  */
-export function Column({ children, field, sticky, visible }: Column.Props) {
-  const colId = useId()
+export function Column({ children, id, field, accessor, sticky, visible }: Column.Props) {
+  const generatedId = useId()
+  const colId = id ?? generatedId
   const orderPath = useStableColumnDeclarationPath()
   const groupId = useContext(ColumnGroupIdContext) || undefined
   const columnRegister = usePublisher(columnRegister$)
 
   useLayoutEffect(() => {
-    const info: ColumnInfo = { field }
+    const info: ColumnInfo = { id: id ?? field ?? colId }
+    if (field !== undefined) {
+      info.field = field
+    }
+    if (accessor) {
+      info.accessor = accessor
+    }
     if (sticky) {
       info.sticky = sticky
     }
@@ -269,7 +307,7 @@ export function Column({ children, field, sticky, visible }: Column.Props) {
     return () => {
       columnRegister({ type: 'remove', id: colId })
     }
-  }, [columnRegister, colId, field, sticky, groupId, visible, orderPath])
+  }, [columnRegister, colId, id, field, accessor, sticky, groupId, visible, orderPath])
   return <ColumnIdContext.Provider value={colId}>{children}</ColumnIdContext.Provider>
 }
 

@@ -108,6 +108,29 @@ describe('column width persistence', () => {
     })
   })
 
+  it('uses explicit column ids for display-only column width persistence', () => {
+    const columns = new Map<string, ColumnInfo>([
+      ['runtime-name', { field: 'name' }],
+      ['actions', { id: 'actions' }],
+    ])
+
+    expect(
+      columnWidthOverridesFromState(columns, {
+        version: 1,
+        widths: {
+          actions: 96,
+        },
+      })
+    ).toStrictEqual(new Map([['actions', 96]]))
+
+    expect(columnWidthStateFromOverrides(columns, new Map([['actions', 112]]))).toStrictEqual({
+      version: 1,
+      widths: {
+        actions: 112,
+      },
+    })
+  })
+
   it('preserves previously saved widths for columns missing from the current render', () => {
     expect(
       columnWidthStateFromOverrides(

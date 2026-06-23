@@ -5,6 +5,7 @@ import {
   columnDeclarationOrder$,
   columns$,
   columnVisibilityOverrides$,
+  getColumnPersistenceKey,
   visibleColumns$,
   visibleColumnsFromColumns,
 } from '../../columns/Column'
@@ -63,7 +64,7 @@ function reorderOne(columns: Map<string, ColumnInfo>, payload: ReorderColumnsPay
 e.changeWith(columns$, reorderColumns$, reorderOne)
 
 /**
- * Serializable column order state keyed by stable column field names.
+ * Serializable column order state keyed by stable column field names or explicit column ids.
  *
  * @group Remote Control
  */
@@ -117,9 +118,13 @@ function appendField(fields: string[], seenFields: Set<string>, field: string) {
   }
 }
 
+function appendColumnKey(fields: string[], seenFields: Set<string>, column: ColumnInfo, runtimeKey: string) {
+  appendField(fields, seenFields, getColumnPersistenceKey(column, runtimeKey))
+}
+
 /**
- * Converts persisted field-keyed column order into a runtime column map for
- * the currently registered columns.
+ * Converts persisted column order into a runtime column map for the currently
+ * registered columns.
  *
  * @group Remote Control
  */
@@ -133,11 +138,11 @@ export function columnsFromColumnOrderState(
 
   const availableByField = new Map<string, [string, ColumnInfo][]>()
   for (const entry of columns) {
-    const fieldEntries = availableByField.get(entry[1].field)
+    const fieldEntries = availableByField.get(getColumnPersistenceKey(entry[1], entry[0]))
     if (fieldEntries) {
       fieldEntries.push(entry)
     } else {
-      availableByField.set(entry[1].field, [entry])
+      availableByField.set(getColumnPersistenceKey(entry[1], entry[0]), [entry])
     }
   }
 
@@ -193,8 +198,8 @@ export function columnsFromDeclarationOrder(columns: Map<string, ColumnInfo>, de
 }
 
 /**
- * Converts runtime column order into serializable field-keyed state while
- * preserving saved fields that are not currently registered.
+ * Converts runtime column order into serializable state while preserving saved
+ * field names or explicit ids that are not currently registered.
  *
  * @group Remote Control
  */
@@ -206,9 +211,9 @@ export function columnOrderStateFromColumns(
   const seenFields = new Set<string>()
   const currentFields = new Set<string>()
 
-  for (const column of columns.values()) {
-    currentFields.add(column.field)
-    appendField(fields, seenFields, column.field)
+  for (const [key, column] of columns) {
+    currentFields.add(getColumnPersistenceKey(column, key))
+    appendColumnKey(fields, seenFields, column, key)
   }
 
   if (isColumnOrderPersistenceState(previous)) {
