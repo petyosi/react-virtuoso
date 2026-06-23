@@ -1,6 +1,6 @@
 {
   "name": "@virtuoso.dev/reactive-engine-react",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "private": false,
   "description": "React bindings for the Virtuoso reactive engine.",
   "license": "MIT",

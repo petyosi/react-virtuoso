@@ -1,5 +1,13 @@
 # @virtuoso.dev/reactive-engine-react
 
+## 0.2.4
+
+### Patch Changes
+
+- [#1440](https://github.com/petyosi/react-virtuoso/pull/1440) [`ad7f2b0`](https://github.com/petyosi/react-virtuoso/commit/ad7f2b0d03567d7dd98433a67223bc36b8c7443c) Thanks [@petyosi](https://github.com/petyosi)! - Add id-based data table columns for display-only and computed values, keep
+  table-only props off DOM elements, and avoid disposing reactive engines during
+  React 18 StrictMode's development-only effect replay.
+
 ## 0.2.3
 
 ### Patch Changes
