@@ -72,7 +72,7 @@ Provide `computeRowKey={({ data }) => data.id}` whenever rows can reorder (sort,
 - **Visibility:** declaratively via `visible={false}`, or at runtime through `setColumnVisibility$` / `columnVisibilityState$` from `@virtuoso.dev/data-table/column-visibility`.
 - **Resizing:** mount `ResizeHandle` in the `HeaderEdge` slot; programmatic via `resizeColumn$` from `@virtuoso.dev/data-table/column-resize`.
 - **Reordering:** `ReorderGrip` in `HeaderStart` + `ReorderDropZone` in `HeaderOverlay`; programmatic via `reorderColumns$` from `@virtuoso.dev/data-table/column-reorder`.
-- **Header slots:** `HeaderStart` (before label), `HeaderEnd` (after label), `HeaderEdge` (pinned to the column boundary), `HeaderOverlay` (covers the header) — see [header-slots](references/7.customization/06.header-slots.md).
+- **Header slots:** `HeaderStart` (before label), `HeaderEnd` (after label), `HeaderEdge` (pinned to the column boundary), `HeaderOverlay` (covers the header) — see [header-slots](references/7.customization/06.header-slots.md). Do not render slot UI such as `SortHeaderButton` as ordinary header children; put it inside `HeaderEnd` and make the label a render-function child.
 - **Grouped rows:** pass `groups: [{ index, level }]` alongside `data` and render headers with `GroupHeaderCell` — see [grouped-rows](references/4.grouped-rows.md).
 
 State persistence: mount `<DataTableStatePersistence adapters={[...]} storageKey="my-table" />` with adapters from the feature subpaths (`columnVisibilityPersistenceAdapter()`, `columnOrderPersistenceAdapter()`, `columnWidthPersistenceAdapter()`, `modelStatePersistenceAdapter()`). See [state-persistence](references/5.state-persistence.md).
