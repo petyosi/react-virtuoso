@@ -27,11 +27,11 @@ function StoryFrame({ title, description, width, children }: { title: string; de
 export function WidePromptListGrowColumns() {
   return (
     <StoryFrame
-      description="Two text-heavy columns absorb spare width while versions, labels, timestamps, and actions keep fixed base widths."
+      description="Two text-heavy columns absorb spare width while the sortable icon boundary shows where header controls end."
       title="Prompt List Grow Columns"
       width={PROMPT_TABLE_WIDTHS.wide}
     >
-      <PromptListGrowTable />
+      <PromptListGrowTable showSortIconBoundaries />
     </StoryFrame>
   )
 }

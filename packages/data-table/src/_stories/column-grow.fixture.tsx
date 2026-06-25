@@ -4,7 +4,7 @@ import type { CSSProperties, PointerEvent, ReactNode } from 'react'
 
 import { usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
-import { Cell, Column, ColumnHeader, HeaderEdge } from '..'
+import { Cell, Column, ColumnHeader, HeaderEdge, HeaderEnd, HeaderOverlay } from '..'
 import { resizeColumn$, clearColumnWidthOverride$ } from '../features/column-resize'
 import { LocalDataTable as VirtuosoDataTable } from '../tests/LocalDataTable'
 
@@ -132,6 +132,44 @@ const HEADER_STYLE: CSSProperties = {
   overflow: 'hidden',
   whiteSpace: 'nowrap',
 }
+const COLUMN_TRACK_OVERLAY_STYLE: CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  borderRight: '2px solid rgba(37, 99, 235, 0.65)',
+  background: 'linear-gradient(90deg, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0.02))',
+  pointerEvents: 'none',
+}
+const SORT_ICON_BOUNDARY_STYLE: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  height: 40,
+  flexShrink: 0,
+}
+const SORT_ICON_STYLE: CSSProperties = {
+  display: 'inline-flex',
+  width: 28,
+  height: 28,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginLeft: 4,
+  border: '1px solid #93c5fd',
+  borderRadius: 4,
+  background: '#eff6ff',
+  color: '#1d4ed8',
+}
+const ACTIVE_SORT_ICON_STYLE: CSSProperties = {
+  ...SORT_ICON_STYLE,
+  borderColor: '#60a5fa',
+  background: '#dbeafe',
+  color: '#1e40af',
+}
+const SORT_ICON_END_MARKER_STYLE: CSSProperties = {
+  width: 2,
+  height: 40,
+  flexShrink: 0,
+  marginLeft: 4,
+  background: '#2563eb',
+}
 const CELL_STACK_STYLE: CSSProperties = { display: 'flex', minWidth: 0, flexDirection: 'column', gap: 2 }
 const CELL_PRIMARY_STYLE: CSSProperties = { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }
 const CELL_SECONDARY_STYLE: CSSProperties = {
@@ -185,6 +223,29 @@ function HeaderLabel({
 
 function Badge({ children, status = false }: { children: ReactNode; status?: boolean }) {
   return <span style={status ? STATUS_BADGE_STYLE : BADGE_STYLE}>{children}</span>
+}
+
+const ColumnTrackOverlay: HeaderSlotCustomComponent = () => <span aria-hidden="true" style={COLUMN_TRACK_OVERLAY_STYLE} />
+
+const SortIconBoundary: HeaderSlotCustomComponent = ({ column }) => {
+  const isActive = column.field === 'updated'
+
+  return (
+    <span aria-hidden="true" style={SORT_ICON_BOUNDARY_STYLE}>
+      <span style={isActive ? ACTIVE_SORT_ICON_STYLE : SORT_ICON_STYLE}>
+        <svg fill="none" height="14" viewBox="0 0 16 16" width="14">
+          <path
+            d="M5 3.5 2.75 5.75h4.5L5 3.5ZM11 12.5l2.25-2.25h-4.5L11 12.5ZM5 5.75v6.5M11 10.25v-6.5"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.5"
+          />
+        </svg>
+      </span>
+      <span data-table-element-role="sort-icon-end-marker" style={SORT_ICON_END_MARKER_STYLE} />
+    </span>
+  )
 }
 
 const PromptResizeHandle: HeaderSlotCustomComponent = ({ columnKey, headerRef }) => {
@@ -255,17 +316,28 @@ function ResizeEdge({ enabled }: { enabled: boolean }) {
   return enabled ? <HeaderEdge component={PromptResizeHandle} /> : null
 }
 
+function SortIconBoundarySlots({ enabled }: { enabled: boolean }) {
+  return enabled ? (
+    <>
+      <HeaderOverlay component={ColumnTrackOverlay} />
+      <HeaderEnd component={SortIconBoundary} />
+    </>
+  ) : null
+}
+
 export function PromptListGrowTable({
   height = TABLE_STYLE.height,
   resizeDescriptionTo,
   resizable = false,
   resizeNameTo,
+  showSortIconBoundaries = false,
   width = '100%',
 }: {
   height?: CSSProperties['height']
   resizeDescriptionTo?: number
   resizable?: boolean
   resizeNameTo?: number
+  showSortIconBoundaries?: boolean
   width?: CSSProperties['width']
 }) {
   return (
@@ -276,6 +348,7 @@ export function PromptListGrowTable({
       <Column id="name" field="name" grow={1}>
         <ColumnHeader>
           <ResizeEdge enabled={resizable} />
+          <SortIconBoundarySlots enabled={showSortIconBoundaries} />
           {() => <HeaderLabel width={PROMPT_COLUMN_BASE_WIDTHS.name}>Name</HeaderLabel>}
         </ColumnHeader>
         <Cell>
@@ -294,6 +367,7 @@ export function PromptListGrowTable({
       <Column id="description" field="description" grow={3}>
         <ColumnHeader>
           <ResizeEdge enabled={resizable} />
+          <SortIconBoundarySlots enabled={showSortIconBoundaries} />
           {() => <HeaderLabel width={PROMPT_COLUMN_BASE_WIDTHS.description}>Description</HeaderLabel>}
         </ColumnHeader>
         <Cell>
@@ -341,6 +415,7 @@ export function PromptListGrowTable({
       <Column id="updated" field="updated">
         <ColumnHeader>
           <ResizeEdge enabled={resizable} />
+          <SortIconBoundarySlots enabled={showSortIconBoundaries} />
           {() => <HeaderLabel width={PROMPT_COLUMN_BASE_WIDTHS.updated}>Updated</HeaderLabel>}
         </ColumnHeader>
         <Cell>{({ cellValue }) => <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{String(cellValue)}</span>}</Cell>

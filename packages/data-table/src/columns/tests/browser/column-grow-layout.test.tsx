@@ -40,6 +40,14 @@ function headerWidth(container: HTMLElement, key: string) {
   return header(container, key).getBoundingClientRect().width
 }
 
+function sortIconEndMarker(container: HTMLElement, key: string) {
+  const element = header(container, key).querySelector('[data-table-element-role="sort-icon-end-marker"]') as HTMLElement | null
+  if (!element) {
+    throw new Error(`Missing sort icon marker for column header ${key}.`)
+  }
+  return element
+}
+
 async function waitForReady(container: HTMLElement) {
   await expect.poll(() => container.querySelector(readySelector)).not.toBeNull()
 }
@@ -93,6 +101,20 @@ describe('column grow layout', () => {
     const expected = expectedGrowWidths(scroller.clientWidth, PROMPT_COLUMN_BASE_WIDTHS)
 
     expectHeaderWidths(screen.container, expected)
+  })
+
+  test('wide prompt-list layout aligns header end slots to rendered column edges', async () => {
+    const screen = await render(<PromptListGrowTable showSortIconBoundaries width={PROMPT_TABLE_WIDTHS.wide} />)
+
+    await waitForReady(screen.container)
+    await waitForAnimationFrames()
+
+    for (const key of ['name', 'description', 'updated']) {
+      const headerRect = header(screen.container, key).getBoundingClientRect()
+      const markerRect = sortIconEndMarker(screen.container, key).getBoundingClientRect()
+
+      expect(markerRect.right).toBeCloseTo(headerRect.right, 1)
+    }
   })
 
   test('narrow prompt-list layout keeps base widths and scrolls horizontally', async () => {
