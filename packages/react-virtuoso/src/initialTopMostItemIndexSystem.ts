@@ -14,6 +14,10 @@ export function getInitialTopMostItemIndexNumber(location: FlatIndexLocationWith
   return Math.max(0, Math.min(index, lastIndex))
 }
 
+export function initialTopMostItemIndexIsZero(location: FlatIndexLocationWithAlign | number): boolean {
+  return typeof location === 'number' ? location === 0 : location.index === 0
+}
+
 export const initialTopMostItemIndexSystem = u.system(
   ([{ defaultItemSize, listRefresh, sizes }, { scrollTop }, { scrollTargetReached, scrollToIndex }, { didMount }]) => {
     const scrolledToInitialItem = u.statefulStream(true)
@@ -24,7 +28,7 @@ export const initialTopMostItemIndexSystem = u.system(
       u.pipe(
         didMount,
         u.withLatestFrom(initialTopMostItemIndex),
-        u.filter(([_, location]) => location !== 0),
+        u.filter(([_, location]) => !initialTopMostItemIndexIsZero(location)),
         u.mapTo(false)
       ),
       scrolledToInitialItem
@@ -33,7 +37,7 @@ export const initialTopMostItemIndexSystem = u.system(
       u.pipe(
         didMount,
         u.withLatestFrom(initialTopMostItemIndex),
-        u.filter(([_, location]) => location !== 0),
+        u.filter(([_, location]) => !initialTopMostItemIndexIsZero(location)),
         u.mapTo(false)
       ),
       initialItemFinalLocationReached
