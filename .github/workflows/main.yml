@@ -95,7 +95,9 @@ jobs:
           case "$PULL_REQUEST_NUMBER" in
             ''|*[!0-9]*) echo "Invalid pull request number: $PULL_REQUEST_NUMBER"; exit 1 ;;
           esac
-          gh pr merge --squash --auto "$PULL_REQUEST_NUMBER"
+          if ! gh pr merge --squash --auto "$PULL_REQUEST_NUMBER"; then
+            echo "::warning title=Release PR not auto-merged::Could not enable auto-merge for pull request #$PULL_REQUEST_NUMBER. Merge it manually or enable repository auto-merge."
+          fi
 
       - name: Upload Playwright report
         if: failure()
