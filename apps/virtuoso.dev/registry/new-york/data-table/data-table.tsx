@@ -67,8 +67,8 @@ const TableRow = React.forwardRef<HTMLDivElement, RowComponentProps & { context?
     <div
       ref={ref}
       className={cn(
-        'border-b border-transparent bg-clip-padding transition-colors hover:bg-muted/50',
-        'after:content-[""] after:absolute after:-bottom-px after:inset-x-0 after:h-px after:bg-border after:z-3'
+        'border-b border-transparent bg-clip-padding transition-colors hover:bg-[var(--data-table-row-hover)]',
+        'after:content-[""] after:absolute after:-bottom-px after:inset-x-0 after:h-px after:bg-[var(--data-table-border)] after:z-3'
       )}
       {...props}
     />
@@ -80,12 +80,12 @@ const TableStickyHeader = React.forwardRef<HTMLDivElement, StickyHeaderComponent
   ref
 ) {
   const mergedStyle = React.useMemo(() => ({ position: 'sticky' as const, top: 0, zIndex: 1, ...style }), [style])
-  return <div ref={ref} className="border-b border-border bg-background" style={mergedStyle} {...props} />
+  return <div ref={ref} className="border-b border-[var(--data-table-border)] bg-[var(--data-table-bg)]" style={mergedStyle} {...props} />
 })
 
 const TableStickyColumnContainer = React.forwardRef<HTMLDivElement, StickyColumnContainerComponentProps & { context?: unknown }>(
   function TableStickyColumnContainer({ context: _context, ...props }, ref) {
-    return <div ref={ref} className="bg-background transition-colors" {...props} />
+    return <div ref={ref} className="bg-[var(--data-table-bg)] transition-colors" {...props} />
   }
 )
 
@@ -95,7 +95,7 @@ function TableLoadingOverlay({ loadingState }: LoadingComponentProps) {
 
   return (
     <div aria-live="polite" className="flex justify-center px-3 pt-3" role="status">
-      <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/90 px-3 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur-xs">
+      <div className="inline-flex items-center gap-2 rounded-full border border-[var(--data-table-border)] bg-[color-mix(in_oklch,var(--data-table-bg)_90%,transparent)] px-3 py-1.5 text-xs text-[var(--data-table-muted-fg)] shadow-sm backdrop-blur-xs">
         {isError ? <AlertCircle className="size-3.5" /> : <Loader2 className="size-3.5 animate-spin" />}
         <span>{message}</span>
       </div>
@@ -109,8 +109,8 @@ function TableLoadingPlaceholder({ loadingState }: LoadingComponentProps) {
 
   return (
     <div aria-live="polite" className="px-3 py-4" role="status">
-      <div className="rounded-xl border border-border/70 bg-muted/20 p-4 shadow-xs">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1.5 text-xs text-muted-foreground">
+      <div className="rounded-xl border border-[var(--data-table-border)] bg-[color-mix(in_oklch,var(--data-table-muted)_20%,transparent)] p-4 shadow-xs">
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--data-table-border)] bg-[var(--data-table-bg)] px-3 py-1.5 text-xs text-[var(--data-table-muted-fg)]">
           {isError ? <AlertCircle className="size-3.5" /> : <Loader2 className="size-3.5 animate-spin" />}
           <span>{message}</span>
         </div>
@@ -118,9 +118,9 @@ function TableLoadingPlaceholder({ loadingState }: LoadingComponentProps) {
           <div className="space-y-3">
             {Array.from({ length: 6 }, (_, index) => (
               <div key={index} className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)_minmax(0,0.6fr)] gap-3">
-                <div className="h-4 animate-pulse rounded bg-muted" />
-                <div className="h-4 animate-pulse rounded bg-muted/80" />
-                <div className="h-4 animate-pulse rounded bg-muted/60" />
+                <div className="h-4 animate-pulse rounded bg-[var(--data-table-muted)]" />
+                <div className="h-4 animate-pulse rounded bg-[color-mix(in_oklch,var(--data-table-muted)_80%,transparent)]" />
+                <div className="h-4 animate-pulse rounded bg-[color-mix(in_oklch,var(--data-table-muted)_60%,transparent)]" />
               </div>
             ))}
           </div>
@@ -137,10 +137,10 @@ function TableLoadingFooter({ loadingState }: LoadingComponentProps) {
   return (
     <div
       aria-live="polite"
-      className="flex min-h-10 items-center justify-center border-t border-border/70 bg-background/95 px-3 py-2 text-xs text-muted-foreground"
+      className="flex min-h-10 items-center justify-center border-t border-[var(--data-table-border)] bg-[color-mix(in_oklch,var(--data-table-bg)_95%,transparent)] px-3 py-2 text-xs text-[var(--data-table-muted-fg)]"
       role="status"
     >
-      <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-muted/60 px-3 py-1 shadow-xs">
+      <div className="inline-flex items-center gap-2 rounded-full border border-[var(--data-table-border)] bg-[color-mix(in_oklch,var(--data-table-muted)_60%,transparent)] px-3 py-1 shadow-xs">
         {isError ? <AlertCircle className="size-3.5" /> : <Loader2 className="size-3.5 animate-spin" />}
         <span>{message}</span>
       </div>
@@ -163,16 +163,21 @@ function DataTable<Data, Context = unknown, Group = unknown>({
   ...props
 }: VirtuosoDataTableProps<Data, Context, Group> & { className?: string }) {
   const mergedComponents = React.useMemo(() => ({ ...TABLE_COMPONENTS, ...components }) as DataTableComponents<Context>, [components])
-  const usesExternalScroll = props.useWindowScroll === true || Object.hasOwn(props, 'customScrollParent')
 
   return (
     <VirtuosoDataTable
       className={cn(
-        'relative w-full bg-background text-foreground text-sm',
-        !usesExternalScroll && 'overflow-x-auto',
-        '**:data-[scope=colgroup]:border-b **:data-[scope=colgroup]:border-border',
-        '**:data-group-row:bg-muted **:data-group-row:font-medium',
-        '[&_[data-table-element-role=row]:hover_[data-sticky]]:bg-[color-mix(in_oklch,var(--color-muted)_50%,var(--color-background))]',
+        'relative w-full overflow-hidden rounded-md border border-[var(--data-table-border)] bg-[var(--data-table-bg)] text-[var(--data-table-fg)] text-sm',
+        '[--data-table-bg:hsl(var(--background))]',
+        '[--data-table-border:hsl(var(--border))]',
+        '[--data-table-fg:hsl(var(--foreground))]',
+        '[--data-table-muted:hsl(var(--muted))]',
+        '[--data-table-muted-fg:hsl(var(--muted-foreground))]',
+        '[--data-table-row-hover:hsl(var(--muted)/0.5)]',
+        '[--data-table-sticky-hover:color-mix(in_oklch,var(--data-table-muted)_50%,var(--data-table-bg))]',
+        '**:data-[scope=colgroup]:border-b **:data-[scope=colgroup]:border-[var(--data-table-border)]',
+        '**:data-group-row:bg-[var(--data-table-muted)] **:data-group-row:font-medium',
+        '[&_[data-table-element-role=row]:hover_[data-sticky]]:bg-[var(--data-table-sticky-hover)]',
         className
       )}
       components={mergedComponents}
@@ -192,7 +197,7 @@ interface DataTableColumnHeaderProps {
 }
 
 function DataTableColumnHeader(props: DataTableColumnHeaderProps) {
-  const measureClassName = 'flex h-10 items-center px-2 align-middle text-sm font-medium text-foreground'
+  const measureClassName = 'flex h-10 items-center px-2 align-middle text-sm font-medium text-[var(--data-table-fg)]'
   const contentClassName = cn('flex min-w-0 items-center overflow-hidden truncate', props.className)
 
   if (props.component) {
@@ -249,7 +254,10 @@ interface CellDefinitionProps {
 }
 
 function DataTableGroupHeader(props: GroupHeaderCellProps) {
-  const className = cn('border-b bg-muted px-2 py-2 text-sm font-medium text-foreground', props.className)
+  const className = cn(
+    'border-b border-[var(--data-table-border)] bg-[var(--data-table-muted)] px-2 py-2 text-sm font-medium text-[var(--data-table-fg)]',
+    props.className
+  )
 
   if ('component' in props) {
     return <GroupHeaderCell className={className} component={props.component} />

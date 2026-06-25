@@ -40,7 +40,7 @@ const model = localModel({ data: products })
 
 export default function App() {
   return (
-    <DataTable className="rounded-xl" model={model} style={{ height: 360 }}>
+    <DataTable model={model} style={{ height: 360 }}>
       <DataTableColumn field="name">
         <DataTableColumnHeader>Product</DataTableColumnHeader>
         <DataTableCell className="font-medium">{({ cellValue }) => String(cellValue)}</DataTableCell>
@@ -126,6 +126,8 @@ For UI far from the table, pass `engineId="orders-table"` and use the same hooks
 ## Customization
 
 - Styling goes through `className` on the wrapper components and semantic data attributes — never use `data-testid` as a styling hook.
+- The shadcn wrapper already renders the app-level table frame (`rounded-md border`) on `DataTable`. Do not add `rounded-md border` at each table instance; use `className` only for intentional frame overrides such as `rounded-xl`, `border-0`, `border-2`, shadows, or table variable overrides.
+- The shadcn wrapper exposes table-level CSS variables (`--data-table-bg`, `--data-table-fg`, `--data-table-border`, `--data-table-muted`, `--data-table-muted-fg`, `--data-table-row-hover`, `--data-table-sticky-hover`) and uses them for sticky headers, sticky columns, rows, and loading surfaces. When adapting to a host design system, override those variables once on `DataTable` or in the copied wrapper defaults instead of styling sticky cells individually.
 - Replace internals via the `components` prop: `Row`, `StickyColumnContainer`, `LoadingPlaceholder`, `LoadingOverlay`, `LoadingFooter` (component overrides must forward refs). Top-level: `EmptyPlaceholder`, `ScrollElement`.
 - `context={{ ... }}` flows to `computeRowKey`, `EmptyPlaceholder`, loading slots, and component overrides — but not to cell/header renderers (use React context there). See [ambient-context](references/7.customization/05.ambient-context.md).
 - Scroll modes: default internal scroller, `useWindowScroll`, or `customScrollParent` — pick exactly one.
@@ -154,6 +156,8 @@ Full guide: [migrating-from-table-virtuoso](references/9.guides/04.migrating-fro
 | Remote rows never appear                | Return the right fetch shape (`{ rows, totalCount }` for offset mode) and pass the `signal` through |
 | Rows remount / lose state after sorting | Add `computeRowKey`                                                                                 |
 | Body cells overlap columns              | Move width classes from `DataTableCell` to `DataTableColumnHeader`; use `DataTableColumn grow={...}` for extra width |
+| Double outer border/frame               | Remove call-site `rounded-md border`; the shadcn wrapper already owns the default table frame                     |
+| Sticky/header colors don't match body   | Override the shadcn wrapper's `--data-table-*` variables on `DataTable` or in the copied wrapper defaults             |
 | Sticky columns clipped                  | Check parent `overflow` and header min-widths                                                       |
 | Empty cells flash on horizontal scroll  | Raise `columnOverscanCount`                                                                         |
 
