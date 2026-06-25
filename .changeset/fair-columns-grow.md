@@ -1,5 +1,5 @@
 ---
-"@virtuoso.dev/data-table": minor
+'@virtuoso.dev/data-table': minor
 ---
 
 Add column-level `grow` sizing so selected columns can absorb leftover table width by ratio while compact columns keep their base widths. Header end slots now align to the rendered edge of grown columns, which keeps sortable header buttons visually anchored at the column boundary.

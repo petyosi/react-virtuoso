@@ -168,20 +168,20 @@ Full guide: [migrating-from-table-virtuoso](references/9.guides/04.migrating-fro
 
 ## Troubleshooting
 
-| Symptom                                 | Fix                                                                                                 |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Blank table or header only              | Give the table a measurable height                                                                  |
+| Symptom                                 | Fix                                                                                                                                          |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Blank table or header only              | Give the table a measurable height                                                                                                           |
 | Table does not fill its panel           | Use the optional flex-height pattern: measured parent, `min-h-0` ancestors, `shrink-0` chrome, `DataTable` as `flex-1` with `height: '100%'` |
-| Shadcn component imports fail           | Run the registry install, or import headless from `@virtuoso.dev/data-table`                        |
-| Page and table both scroll              | Use only one scroll mode                                                                            |
-| Remote rows never appear                | Return the right fetch shape (`{ rows, totalCount }` for offset mode) and pass the `signal` through |
-| Rows remount / lose state after sorting | Add `computeRowKey`                                                                                 |
-| Body cells overlap columns              | Move width classes from `DataTableCell` to `DataTableColumnHeader`; use `DataTableColumn grow={...}` for extra width |
-| Action/display column has no header     | Add an explicit visible `DataTableColumnHeader` label, e.g. `Actions`; `field`/`id` is an identity, not a UI label |
-| Double outer border/frame               | Remove call-site `rounded-md border`; the shadcn wrapper already owns the default table frame                     |
-| Sticky/header colors don't match body   | Override the shadcn wrapper's `--data-table-*` variables on `DataTable` or in the copied wrapper defaults             |
-| Sticky columns clipped                  | Check parent `overflow` and header min-widths                                                       |
-| Empty cells flash on horizontal scroll  | Raise `columnOverscanCount`                                                                         |
+| Shadcn component imports fail           | Run the registry install, or import headless from `@virtuoso.dev/data-table`                                                                 |
+| Page and table both scroll              | Use only one scroll mode                                                                                                                     |
+| Remote rows never appear                | Return the right fetch shape (`{ rows, totalCount }` for offset mode) and pass the `signal` through                                          |
+| Rows remount / lose state after sorting | Add `computeRowKey`                                                                                                                          |
+| Body cells overlap columns              | Move width classes from `DataTableCell` to `DataTableColumnHeader`; use `DataTableColumn grow={...}` for extra width                         |
+| Action/display column has no header     | Add an explicit visible `DataTableColumnHeader` label, e.g. `Actions`; `field`/`id` is an identity, not a UI label                           |
+| Double outer border/frame               | Remove call-site `rounded-md border`; the shadcn wrapper already owns the default table frame                                                |
+| Sticky/header colors don't match body   | Override the shadcn wrapper's `--data-table-*` variables on `DataTable` or in the copied wrapper defaults                                    |
+| Sticky columns clipped                  | Check parent `overflow` and header min-widths                                                                                                |
+| Empty cells flash on horizontal scroll  | Raise `columnOverscanCount`                                                                                                                  |
 
 Before shipping a shadcn table, grep for width utilities on cells and move them to headers:
 

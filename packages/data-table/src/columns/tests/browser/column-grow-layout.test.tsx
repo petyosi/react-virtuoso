@@ -29,7 +29,7 @@ function expectedGrowWidths(viewportWidth: number, baseWidths: PromptColumnWidth
 }
 
 function header(container: HTMLElement, key: string) {
-  const element = container.querySelector(`[data-table-element-role="column-header"][data-column-key="${key}"]`) as HTMLElement | null
+  const element = container.querySelector<HTMLElement>(`[data-table-element-role="column-header"][data-column-key="${key}"]`)
   if (!element) {
     throw new Error(`Missing column header ${key}.`)
   }
@@ -41,7 +41,7 @@ function headerWidth(container: HTMLElement, key: string) {
 }
 
 function sortIconEndMarker(container: HTMLElement, key: string) {
-  const element = header(container, key).querySelector('[data-table-element-role="sort-icon-end-marker"]') as HTMLElement | null
+  const element = header(container, key).querySelector<HTMLElement>('[data-table-element-role="sort-icon-end-marker"]')
   if (!element) {
     throw new Error(`Missing sort icon marker for column header ${key}.`)
   }
