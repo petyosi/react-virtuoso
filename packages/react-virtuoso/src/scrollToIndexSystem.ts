@@ -11,7 +11,7 @@ export type IndexLocation = IndexLocationWithAlign | number
 const SUPPORTS_SCROLL_TO_OPTIONS = typeof document !== 'undefined' && 'scrollBehavior' in document.documentElement.style
 
 export function normalizeIndexLocation(location: IndexLocation) {
-  const result: IndexLocationWithAlign = typeof location === 'number' ? { index: location } : location
+  const result: IndexLocationWithAlign = typeof location === 'number' ? { index: location } : { ...location }
 
   if (!result.align) {
     result.align = 'start'
