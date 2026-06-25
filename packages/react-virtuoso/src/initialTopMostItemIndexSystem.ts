@@ -11,7 +11,7 @@ import type { FlatIndexLocationWithAlign } from './interfaces'
 export function getInitialTopMostItemIndexNumber(location: FlatIndexLocationWithAlign | number, totalCount: number): number {
   const lastIndex = totalCount - 1
   const index = typeof location === 'number' ? location : location.index === 'LAST' ? lastIndex : location.index
-  return index
+  return Math.max(0, Math.min(index, lastIndex))
 }
 
 export const initialTopMostItemIndexSystem = u.system(
