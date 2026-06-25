@@ -1,7 +1,15 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { ranges, walk } from '../src/AATree'
-import { initialSizeState, offsetOf, rangesWithinOffsets, sizeStateReducer, sizeSystem, sizeTreeToRanges } from '../src/sizeSystem'
+import {
+  initialSizeState,
+  offsetOf,
+  originalIndexFromLocation,
+  rangesWithinOffsets,
+  sizeStateReducer,
+  sizeSystem,
+  sizeTreeToRanges,
+} from '../src/sizeSystem'
 import { getValue, init, publish, subscribe } from '../src/urx'
 
 import type { AANode } from '../src/AATree'
@@ -744,3 +752,24 @@ describe.only('benchmarks', () => {
   })
 })
    */
+
+describe('originalIndexFromLocation', () => {
+  const sizes = initialSizeState()
+  const lastIndex = 49
+
+  it('clamps an out-of-range index down to the last index', () => {
+    expect(originalIndexFromLocation({ index: 200 }, sizes, lastIndex)).toBe(lastIndex)
+  })
+
+  it('clamps a negative index up to zero', () => {
+    expect(originalIndexFromLocation({ index: -5 }, sizes, lastIndex)).toBe(0)
+  })
+
+  it('returns an in-range index unchanged', () => {
+    expect(originalIndexFromLocation({ index: 20 }, sizes, lastIndex)).toBe(20)
+  })
+
+  it("resolves 'LAST' to the last index", () => {
+    expect(originalIndexFromLocation({ index: 'LAST' }, sizes, lastIndex)).toBe(lastIndex)
+  })
+})
