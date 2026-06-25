@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.18.8
+
+### Patch Changes
+
+- [#1442](https://github.com/petyosi/react-virtuoso/pull/1442) [`6b1467c`](https://github.com/petyosi/react-virtuoso/commit/6b1467cd808eadcb16fcc8bed8f80671c274f220) Thanks [@Luccas-carvalho](https://github.com/Luccas-carvalho)! - Clamp out-of-range scroll target indexes to the last available item.
+
 ## 4.18.7
 
 ### Patch Changes
