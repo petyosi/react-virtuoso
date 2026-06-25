@@ -52,6 +52,24 @@ export default function App() {
 
 Columns are JSX, not config objects. `field` is both the row-data lookup key and the column's public identifier (used by visibility, reordering, persistence). The table needs a real height, like every Virtuoso component.
 
+Treat `field` and `id` as stable column identities, not as user-facing labels. Add an explicit `DataTableColumnHeader` for every visible column. This is especially important for display-only columns such as `actions`: use a visible label like `Actions` unless the product intentionally wants an icon-only/headerless column, in which case use `sr-only` text for accessibility.
+
+When a table should fill the remaining height in a page, panel, or card, use a measured flex column instead of a fixed pixel height. Every flex ancestor between the measured container and the table needs `min-h-0`; non-table chrome should be `shrink-0`; the table should be the growing child with `style={{ height: '100%' }}`:
+
+```tsx
+<section className="flex h-full min-h-0 flex-col">
+  <PageHeader className="shrink-0" />
+  <div className="flex min-h-0 flex-1 flex-col gap-3">
+    <Toolbar className="shrink-0" />
+    <DataTable className="min-h-0 flex-1" model={model} style={{ height: '100%' }}>
+      {/* columns */}
+    </DataTable>
+  </div>
+</section>
+```
+
+This is optional. If the parent does not have a definite height, keep using a fixed height (`style={{ height: 360 }}`) or choose `useWindowScroll` / `customScrollParent` deliberately.
+
 Column widths are owned by the table through header measurements. Put base width classes such as `w-*`, `min-w-*`, and `basis-*` on `DataTableColumnHeader`, not on `DataTableCell`. Cells render inside tracks sized from header measurements; cell width utilities can force body content outside those tracks and make columns overlap at narrow widths. Use cell `className` for typography, alignment, padding, truncation, and color. For complex cell content, put `min-w-0` on an inner wrapper instead of widening the cell.
 
 When building a table, choose fixed vs growing columns from the data being displayed:
@@ -92,6 +110,8 @@ Example:
 Hold the model in `useState` with lazy init — `const [model] = useState(() => localModel({ data }))`. Do not use `useMemo`; React may discard memoized values, and the model instance must be retained. Module scope is fine for a static singleton table.
 
 Local filtering/sorting/grouping runs through a named-stage pipeline: declare `pipeline: ['filter', 'sort']` plus `actions`, then dispatch with `model.send({ action: 'filter', payload })`. See [local-data-model](references/2.data-model/01.local-data-model.md) and the [local-filter-sort-group example](references/8.examples/07.local-filter-sort-group.md).
+
+For remote sorting/filtering/search controls, keep the action payload in the model rather than mirroring it in React state. Seed defaults with `initialActions`, dispatch changes with `model.send()` or `dispatchModelAction$`, and read `modelActionState$` to paint active controls. This is especially important when `modelStatePersistenceAdapter()` restores saved action state.
 
 Provide `computeRowKey={({ data }) => data.id}` whenever rows can reorder (sort, filter, remote updates) — without it rows remount and lose local state.
 
@@ -151,11 +171,13 @@ Full guide: [migrating-from-table-virtuoso](references/9.guides/04.migrating-fro
 | Symptom                                 | Fix                                                                                                 |
 | --------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | Blank table or header only              | Give the table a measurable height                                                                  |
+| Table does not fill its panel           | Use the optional flex-height pattern: measured parent, `min-h-0` ancestors, `shrink-0` chrome, `DataTable` as `flex-1` with `height: '100%'` |
 | Shadcn component imports fail           | Run the registry install, or import headless from `@virtuoso.dev/data-table`                        |
 | Page and table both scroll              | Use only one scroll mode                                                                            |
 | Remote rows never appear                | Return the right fetch shape (`{ rows, totalCount }` for offset mode) and pass the `signal` through |
 | Rows remount / lose state after sorting | Add `computeRowKey`                                                                                 |
 | Body cells overlap columns              | Move width classes from `DataTableCell` to `DataTableColumnHeader`; use `DataTableColumn grow={...}` for extra width |
+| Action/display column has no header     | Add an explicit visible `DataTableColumnHeader` label, e.g. `Actions`; `field`/`id` is an identity, not a UI label |
 | Double outer border/frame               | Remove call-site `rounded-md border`; the shadcn wrapper already owns the default table frame                     |
 | Sticky/header colors don't match body   | Override the shadcn wrapper's `--data-table-*` variables on `DataTable` or in the copied wrapper defaults             |
 | Sticky columns clipped                  | Check parent `overflow` and header min-widths                                                       |
