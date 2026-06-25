@@ -6,7 +6,7 @@ import { usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
 import { viewportWidth$ } from '../scroll/dom'
 import { columnCount$, columnRanges$ } from './column-sizes'
-import { computeAutoFillColumnWidths } from './column-width-distribution'
+import { computeAutoFillColumnWidths, isValidColumnGrow } from './column-width-distribution'
 import { columnWidthOverrides$ } from './column-width-overrides'
 import { ColumnGroupIdContext } from './ColumnGroup'
 
@@ -113,6 +113,12 @@ export interface ColumnInfo {
    * display-only columns that should not require a matching row-data field.
    */
   accessor?: (row: unknown) => unknown
+  /**
+   * Relative share of extra viewport width after base column widths are known.
+   * Positive finite values participate in grow distribution. Omit this prop or
+   * pass 0 to keep the column fixed when any visible column grows.
+   */
+  grow?: number
   sticky?: 'left' | 'right'
   groupId?: string
   visible?: boolean
@@ -255,6 +261,7 @@ export namespace Column {
    */
   interface BaseProps {
     children?: React.ReactNode
+    grow?: number
     sticky?: 'left' | 'right'
     visible?: boolean
   }
@@ -279,7 +286,7 @@ export namespace Column {
  *
  * @group Components
  */
-export function Column({ children, id, field, accessor, sticky, visible }: Column.Props) {
+export function Column({ children, id, field, accessor, grow, sticky, visible }: Column.Props) {
   const generatedId = useId()
   const colId = id ?? generatedId
   const orderPath = useStableColumnDeclarationPath()
@@ -294,6 +301,13 @@ export function Column({ children, id, field, accessor, sticky, visible }: Colum
     if (accessor) {
       info.accessor = accessor
     }
+    if (isValidColumnGrow(grow)) {
+      info.grow = grow
+    } else if (grow !== undefined && grow !== 0 && process.env.NODE_ENV !== 'production') {
+      console.warn(
+        `[VirtuosoDataTable] Column "${info.id}" ignored invalid grow value ${String(grow)}. Use a positive finite number, or omit grow for a fixed column.`
+      )
+    }
     if (sticky) {
       info.sticky = sticky
     }
@@ -307,7 +321,7 @@ export function Column({ children, id, field, accessor, sticky, visible }: Colum
     return () => {
       columnRegister({ type: 'remove', id: colId })
     }
-  }, [columnRegister, colId, id, field, accessor, sticky, groupId, visible, orderPath])
+  }, [columnRegister, colId, id, field, accessor, grow, sticky, groupId, visible, orderPath])
   return <ColumnIdContext.Provider value={colId}>{children}</ColumnIdContext.Provider>
 }
 

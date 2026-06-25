@@ -52,6 +52,35 @@ export default function App() {
 
 Columns are JSX, not config objects. `field` is both the row-data lookup key and the column's public identifier (used by visibility, reordering, persistence). The table needs a real height, like every Virtuoso component.
 
+Column widths are owned by the table through header measurements. Put base width classes such as `w-*`, `min-w-*`, and `basis-*` on `DataTableColumnHeader`, not on `DataTableCell`. Cells render inside tracks sized from header measurements; cell width utilities can force body content outside those tracks and make columns overlap at narrow widths. Use cell `className` for typography, alignment, padding, truncation, and color. For complex cell content, put `min-w-0` on an inner wrapper instead of widening the cell.
+
+When building a table, choose fixed vs growing columns from the data being displayed:
+
+- Keep compact columns fixed by omitting `grow`: ids, slugs, checkboxes, action menus, icon buttons, status labels, badges, versions, counts, dates, timestamps, and short enum or metadata columns.
+- Mark text-heavy columns as growing with `DataTableColumn grow={number}`: names, titles, descriptions, summaries, messages, notes, paths, and other content where extra horizontal space improves scanning or reduces truncation.
+- Use positive finite grow values. `grow={0}` is equivalent to omitting `grow`; prefer omission for fixed columns unless a generated config shape needs an explicit value.
+- Ground the choice in local understanding of the table. A `name` column often grows, but a short code-like name may be fixed; a `label` column is often fixed, but user-authored labels may grow.
+- Do not make every column grow. `grow` protects compact columns from absorbing leftover space while useful text columns take the room.
+
+Example:
+
+```tsx
+<DataTableColumn field="name" grow={1}>
+  <DataTableColumnHeader className="min-w-72">Name</DataTableColumnHeader>
+  <DataTableCell>{NameCell}</DataTableCell>
+</DataTableColumn>
+
+<DataTableColumn field="description" grow={3}>
+  <DataTableColumnHeader className="min-w-80">Description</DataTableColumnHeader>
+  <DataTableCell>{DescriptionCell}</DataTableCell>
+</DataTableColumn>
+
+<DataTableColumn id="actions">
+  <DataTableColumnHeader className="w-16 justify-center">Actions</DataTableColumnHeader>
+  <DataTableCell>{ActionsCell}</DataTableCell>
+</DataTableColumn>
+```
+
 ## Choosing a data model
 
 | Situation                                                       | Model                                                                                                 |
@@ -124,8 +153,15 @@ Full guide: [migrating-from-table-virtuoso](references/9.guides/04.migrating-fro
 | Page and table both scroll              | Use only one scroll mode                                                                            |
 | Remote rows never appear                | Return the right fetch shape (`{ rows, totalCount }` for offset mode) and pass the `signal` through |
 | Rows remount / lose state after sorting | Add `computeRowKey`                                                                                 |
-| Sticky columns clipped                  | Check parent `overflow` and column min-widths                                                       |
+| Body cells overlap columns              | Move width classes from `DataTableCell` to `DataTableColumnHeader`; use `DataTableColumn grow={...}` for extra width |
+| Sticky columns clipped                  | Check parent `overflow` and header min-widths                                                       |
 | Empty cells flash on horizontal scroll  | Raise `columnOverscanCount`                                                                         |
+
+Before shipping a shadcn table, grep for width utilities on cells and move them to headers:
+
+```bash
+rg 'DataTableCell.*className=.*(w-|min-w|max-w|basis-|grow|shrink|flex-(none|auto|initial|1|\[))'
+```
 
 For tests, wrap in `VirtuosoDataTableTestingContext.Provider value={{ itemHeight, viewportHeight }}` (JSDOM has no layout) and assert behavior, not exact DOM row counts — overscan renders extra rows. Use real-browser tests for sticky columns, resizing, and drag interactions. See [testing](references/9.guides/01.testing.md).
 
@@ -134,7 +170,7 @@ For tests, wrap in `VirtuosoDataTableTestingContext.Provider value={{ itemHeight
 - [references/README.md](references/README.md) — overview
 - `references/1.installation/` — [shadcn](references/1.installation/01.shadcn.md), [headless](references/1.installation/02.headless.md)
 - `references/2.data-model/` — [local](references/2.data-model/01.local-data-model.md), [remote](references/2.data-model/02.remote-data-model.md), [row-keys](references/2.data-model/03.row-keys.md)
-- `references/3.columns/` — [defining-columns](references/3.columns/01.defining-columns.md), [cell-and-header-renderers](references/3.columns/02.cell-and-header-renderers.md), [column-groups](references/3.columns/03.column-groups.md), [sticky-columns](references/3.columns/04.sticky-columns.md), [visibility](references/3.columns/05.column-visibility.md), [resizing](references/3.columns/06.column-resizing.md), [reordering](references/3.columns/07.column-reordering.md), [runtime-columns](references/3.columns/08.runtime-columns.md)
+- `references/3.columns/` — [defining-columns](references/3.columns/01.defining-columns.md), [cell-and-header-renderers](references/3.columns/02.cell-and-header-renderers.md), [column-groups](references/3.columns/03.column-groups.md), [sticky-columns](references/3.columns/04.sticky-columns.md), [visibility](references/3.columns/05.column-visibility.md), [resizing](references/3.columns/06.column-resizing.md), [reordering](references/3.columns/07.column-reordering.md), [runtime-columns](references/3.columns/08.runtime-columns.md), [column-layout](references/3.columns/09.column-layout.md)
 - Features: [grouped-rows](references/4.grouped-rows.md), [state-persistence](references/5.state-persistence.md), [controlling-the-table](references/6.controlling-the-table.md)
 - `references/7.customization/` — [styling](references/7.customization/01.styling.md), [replacing-internals](references/7.customization/02.replacing-internals.md), [empty-and-loading-states](references/7.customization/03.empty-and-loading-states.md), [scroll-containers](references/7.customization/04.scroll-containers.md), [ambient-context](references/7.customization/05.ambient-context.md), [header-slots](references/7.customization/06.header-slots.md), [shadcn-wrapper](references/7.customization/07.shadcn-wrapper.md)
 - `references/8.examples/` — worked examples from basic table to remote pagination, dashboards, and persistence

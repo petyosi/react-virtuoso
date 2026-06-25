@@ -125,4 +125,178 @@ describe('column width state', () => {
       ])
     )
   })
+
+  it('distributes measured widths by grow ratio before resize', () => {
+    engine.pub(
+      columns$,
+      new Map([
+        ['name', { field: 'name', grow: 1 }],
+        ['description', { field: 'description', grow: 3 }],
+        ['updated', { field: 'updated' }],
+      ])
+    )
+    engine.pub(
+      measuredColumnWidths$,
+      new Map([
+        ['name', 120],
+        ['description', 180],
+        ['updated', 100],
+      ])
+    )
+    engine.pub(viewportWidth$, 800)
+
+    expect(engine.getValue(columnWidths$)).toStrictEqual(
+      new Map([
+        ['name', 220],
+        ['description', 480],
+        ['updated', 100],
+      ])
+    )
+  })
+
+  it('lets sticky columns participate in grow distribution', () => {
+    engine.pub(
+      columns$,
+      new Map([
+        ['name', { field: 'name', grow: 1, sticky: 'left' }],
+        ['description', { field: 'description', grow: 3 }],
+        ['updated', { field: 'updated' }],
+      ])
+    )
+    engine.pub(
+      measuredColumnWidths$,
+      new Map([
+        ['name', 120],
+        ['description', 180],
+        ['updated', 100],
+      ])
+    )
+    engine.pub(viewportWidth$, 800)
+
+    expect(engine.getValue(columnWidths$)).toStrictEqual(
+      new Map([
+        ['name', 220],
+        ['description', 480],
+        ['updated', 100],
+      ])
+    )
+  })
+
+  it('falls back to equal visible-column distribution when the only grow column is hidden', () => {
+    engine.pub(
+      columns$,
+      new Map([
+        ['name', { field: 'name', grow: 1, visible: false }],
+        ['status', { field: 'status' }],
+        ['updated', { field: 'updated' }],
+      ])
+    )
+    engine.pub(
+      measuredColumnWidths$,
+      new Map([
+        ['name', 100],
+        ['status', 100],
+        ['updated', 100],
+      ])
+    )
+    engine.pub(viewportWidth$, 600)
+
+    expect(engine.getValue(columnWidths$)).toStrictEqual(
+      new Map([
+        ['status', 300],
+        ['updated', 300],
+      ])
+    )
+  })
+
+  it('returns to grow-aware auto-fill behavior when the last override is cleared', () => {
+    engine.pub(
+      columns$,
+      new Map([
+        ['name', { field: 'name', grow: 1 }],
+        ['description', { field: 'description', grow: 3 }],
+        ['updated', { field: 'updated' }],
+      ])
+    )
+    engine.pub(
+      measuredColumnWidths$,
+      new Map([
+        ['name', 120],
+        ['description', 180],
+        ['updated', 100],
+      ])
+    )
+    engine.pub(viewportWidth$, 800)
+    engine.pub(columnWidthOverrides$, new Map([['name', 220]]))
+
+    engine.pub(clearColumnWidthOverride$, { key: 'name' })
+
+    expect(engine.getValue(columnWidthOverrides$)).toStrictEqual(new Map())
+    expect(engine.getValue(columnWidths$)).toStrictEqual(
+      new Map([
+        ['name', 220],
+        ['description', 480],
+        ['updated', 100],
+      ])
+    )
+  })
+
+  it('uses a resized grow column override as its rendered width and freezes siblings', () => {
+    engine.pub(
+      columns$,
+      new Map([
+        ['name', { field: 'name', grow: 1 }],
+        ['description', { field: 'description', grow: 3 }],
+        ['updated', { field: 'updated' }],
+      ])
+    )
+    engine.pub(
+      measuredColumnWidths$,
+      new Map([
+        ['name', 120],
+        ['description', 180],
+        ['updated', 100],
+      ])
+    )
+    engine.pub(viewportWidth$, 800)
+    engine.pub(columnWidthOverrides$, new Map([['name', 260]]))
+
+    expect(engine.getValue(columnWidths$)).toStrictEqual(
+      new Map([
+        ['name', 260],
+        ['description', 480],
+        ['updated', 100],
+      ])
+    )
+  })
+
+  it('keeps non-overridden grow columns frozen across viewport changes after a resize override exists', () => {
+    engine.pub(
+      columns$,
+      new Map([
+        ['name', { field: 'name', grow: 1 }],
+        ['description', { field: 'description', grow: 3 }],
+        ['updated', { field: 'updated' }],
+      ])
+    )
+    engine.pub(
+      measuredColumnWidths$,
+      new Map([
+        ['name', 120],
+        ['description', 180],
+        ['updated', 100],
+      ])
+    )
+    engine.pub(viewportWidth$, 800)
+    engine.pub(columnWidthOverrides$, new Map([['name', 260]]))
+    engine.pub(viewportWidth$, 1_000)
+
+    expect(engine.getValue(columnWidths$)).toStrictEqual(
+      new Map([
+        ['name', 260],
+        ['description', 480],
+        ['updated', 100],
+      ])
+    )
+  })
 })
