@@ -15,7 +15,15 @@ export function getInitialTopMostItemIndexNumber(location: FlatIndexLocationWith
 }
 
 export function initialTopMostItemIndexIsZero(location: FlatIndexLocationWithAlign | number): boolean {
-  return typeof location === 'number' ? location === 0 : location.index === 0
+  if (typeof location === 'number') {
+    return location === 0
+  }
+
+  return (
+    location.index === 0 &&
+    (location.align === undefined || location.align === 'start') &&
+    (location.offset === undefined || location.offset === 0)
+  )
 }
 
 export const initialTopMostItemIndexSystem = u.system(

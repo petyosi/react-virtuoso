@@ -160,6 +160,37 @@ describe('list engine', () => {
         }, 100)
       })
     })
+
+    it('applies initial location options when the initial index is zero', () => {
+      const SIZE = 30
+      const OFFSET = 40
+      const { fixedItemHeight, initialTopMostItemIndex, listState, propsReady, scrollTo, scrollTop, totalCount, viewportHeight } =
+        init(listSystem)
+
+      publish(initialTopMostItemIndex, { index: 0, offset: OFFSET })
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(totalCount, 1000)
+      publish(propsReady, true)
+      publish(fixedItemHeight, SIZE)
+      expect(getValue(listState)).toMatchObject({
+        items: [],
+      })
+
+      const sub = vi.fn()
+      subscribe(scrollTo, sub)
+
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          expect(sub).toHaveBeenCalledWith({
+            behavior: 'auto',
+            top: OFFSET,
+          })
+
+          resolve(true)
+        }, 100)
+      })
+    })
   })
 
   describe('scroll to index', () => {

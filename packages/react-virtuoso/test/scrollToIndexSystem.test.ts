@@ -18,9 +18,7 @@ describe('normalizeIndexLocation', () => {
 
   it('preserves explicitly provided fields', () => {
     const result = normalizeIndexLocation({ align: 'center', index: 2, offset: 10 })
-    expect(result.align).toBe('center')
-    expect(result.offset).toBe(10)
-    expect(result.index).toBe(2)
+    expect(result).toMatchObject({ align: 'center', index: 2, offset: 10 })
   })
 
   it('wraps a numeric location into an object with defaults', () => {
