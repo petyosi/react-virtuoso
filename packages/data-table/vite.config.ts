@@ -28,6 +28,10 @@ export default inLadle
             replacement: resolve(import.meta.dirname, '../../apps/virtuoso.dev/registry/new-york/data-table/column-resize/index.ts'),
           },
           {
+            find: '@/components/ui/data-table/column-sort',
+            replacement: resolve(import.meta.dirname, '../../apps/virtuoso.dev/registry/new-york/data-table/column-sort/index.ts'),
+          },
+          {
             find: '@/components/ui/data-table',
             replacement: resolve(import.meta.dirname, '../../apps/virtuoso.dev/registry/new-york/data-table/data-table.tsx'),
           },
