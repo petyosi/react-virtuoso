@@ -1,5 +1,14 @@
 # react-virtuoso
 
+## 4.18.9
+
+### Patch Changes
+
+- [#1444](https://github.com/petyosi/react-virtuoso/pull/1444) [`0c68e81`](https://github.com/petyosi/react-virtuoso/commit/0c68e81ff8b5314f23ab8e484908a9f6e13002ec) Thanks [@Luccas-carvalho](https://github.com/Luccas-carvalho)! - Harden scroll-target and initial-index handling:
+  - Clamp the initial top-most item index to the available range, so an out-of-range `initialTopMostItemIndex` (for example after the data set shrinks) no longer starts the list at a blank or mid-list position.
+  - Stop mutating the location object passed to `scrollToIndex`; `normalizeIndexLocation` now applies its defaults to a shallow copy.
+  - Treat a default-positioned `initialTopMostItemIndex` of `{ index: 0 }` the same as `0`, avoiding a redundant initial scroll and a delayed `followOutput`.
+
 ## 4.18.8
 
 ### Patch Changes
