@@ -11,7 +11,19 @@ import type { FlatIndexLocationWithAlign } from './interfaces'
 export function getInitialTopMostItemIndexNumber(location: FlatIndexLocationWithAlign | number, totalCount: number): number {
   const lastIndex = totalCount - 1
   const index = typeof location === 'number' ? location : location.index === 'LAST' ? lastIndex : location.index
-  return index
+  return Math.max(0, Math.min(index, lastIndex))
+}
+
+export function initialTopMostItemIndexIsZero(location: FlatIndexLocationWithAlign | number): boolean {
+  if (typeof location === 'number') {
+    return location === 0
+  }
+
+  return (
+    location.index === 0 &&
+    (location.align === undefined || location.align === 'start') &&
+    (location.offset === undefined || location.offset === 0)
+  )
 }
 
 export const initialTopMostItemIndexSystem = u.system(
@@ -24,7 +36,7 @@ export const initialTopMostItemIndexSystem = u.system(
       u.pipe(
         didMount,
         u.withLatestFrom(initialTopMostItemIndex),
-        u.filter(([_, location]) => location !== 0),
+        u.filter(([_, location]) => !initialTopMostItemIndexIsZero(location)),
         u.mapTo(false)
       ),
       scrolledToInitialItem
@@ -33,7 +45,7 @@ export const initialTopMostItemIndexSystem = u.system(
       u.pipe(
         didMount,
         u.withLatestFrom(initialTopMostItemIndex),
-        u.filter(([_, location]) => location !== 0),
+        u.filter(([_, location]) => !initialTopMostItemIndexIsZero(location)),
         u.mapTo(false)
       ),
       initialItemFinalLocationReached
