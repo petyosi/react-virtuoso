@@ -1,5 +1,11 @@
 # @virtuoso.dev/data-table
 
+## 0.3.1
+
+### Patch Changes
+
+- [`c6bcd5a`](https://github.com/petyosi/react-virtuoso/commit/c6bcd5ad6e6ba2c6db6aaa1af85542efb629172f) Thanks [@petyosi](https://github.com/petyosi)! - Apply `className` only to the internal scroller in default scroll mode, preventing duplicate wrapper styling on the layout root.
+
 ## 0.3.0
 
 ### Minor Changes
