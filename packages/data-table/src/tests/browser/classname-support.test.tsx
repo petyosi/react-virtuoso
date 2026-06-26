@@ -5,6 +5,7 @@ import { Cell, Column, ColumnGroup, ColumnGroupHeader, ColumnHeader, GroupHeader
 import { LocalDataTable as VirtuosoDataTable } from '../LocalDataTable'
 
 const readySelector = '[data-testid=virtuoso-table-root][data-ready]'
+const scrollerSelector = '[data-testid=virtuoso-table-scroller]'
 const groupRowSelector = '[data-testid=virtuoso-table-row][data-group-row]'
 
 const rows = [{ name: 'Desk', category: 'Office', price: 249, stock: 7 }]
@@ -18,6 +19,25 @@ async function waitForReady(screen: Awaited<ReturnType<typeof render>>) {
 }
 
 describe('className support', () => {
+  test('applies table className to the internal scroller, not the layout root', async () => {
+    const screen = await render(
+      <VirtuosoDataTable className="table-frame" style={{ height: 240, width: 400 }} source={rows}>
+        <Column field="name">
+          <ColumnHeader>{() => <span>Name</span>}</ColumnHeader>
+          <Cell>{({ cellValue }) => String(cellValue)}</Cell>
+        </Column>
+      </VirtuosoDataTable>
+    )
+
+    await waitForReady(screen)
+
+    const root = screen.container.querySelector(readySelector) as HTMLElement
+    const scroller = screen.container.querySelector(scrollerSelector) as HTMLElement
+
+    expect(root.classList.contains('table-frame')).toBeFalsy()
+    expect(scroller.classList.contains('table-frame')).toBeTruthy()
+  })
+
   test('applies className to cell wrappers and omits the class attribute when unset', async () => {
     const screen = await render(
       <VirtuosoDataTable style={{ height: 240, width: 400 }} source={rows}>
