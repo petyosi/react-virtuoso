@@ -1,9 +1,9 @@
 sandbox_mode = "workspace-write"
-[mcp_servers.notion]
+[mcp_servers.notion_react_virtuoso]
 url = "https://mcp.notion.com/mcp"
 
-[mcp_servers.notion.tools.notion-update-data-source]
+[mcp_servers.notion_react_virtuoso.tools.notion-update-data-source]
 approval_mode = "approve"
 
-[mcp_servers.notion.tools.notion-update-page]
+[mcp_servers.notion_react_virtuoso.tools.notion-update-page]
 approval_mode = "approve"

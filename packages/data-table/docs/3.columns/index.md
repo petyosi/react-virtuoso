@@ -72,12 +72,15 @@ Omit the header to fall back to the field name; omit the cell to fall back to th
 
 `field` is both the cell lookup key (`row.data[field]`) and the column's persistent identity. Keep it stable across releases if you use any column features that save state — see [State Persistence](/data-table/state-persistence/#field-names-are-the-persistence-contract) for the rules around renaming.
 
+For layout, put base widths on `DataTableColumnHeader` and use `DataTableColumn grow={...}` only for columns that should absorb extra horizontal space. See [Column Layout](/data-table/columns/column-layout/) for the sizing model and guidance on choosing fixed vs growing columns from the data being displayed.
+
 ## Where to go next
 
 Declarative shape:
 
 - [Defining Columns](/data-table/columns/defining-columns/) — `field`, default rendering, declaration order, visibility, generated columns.
 - [Formatting Cells and Headers](/data-table/columns/cell-and-header-renderers/) — render params, extracted renderer functions, custom header content.
+- [Column Layout](/data-table/columns/column-layout/) — base widths, `grow` ratios, fixed metadata columns, and horizontal overflow.
 - [Column Groups](/data-table/columns/column-groups/) — wrap adjacent columns under a shared header.
 - [Sticky Columns](/data-table/columns/sticky-columns/) — pin a column to the left or right edge during horizontal scrolling.
 

@@ -141,7 +141,7 @@ export function originalIndexFromLocation(location: FlatOrGroupedLocation, sizes
   }
   const numericIndex = location.index === 'LAST' ? lastIndex : location.index
   let result = originalIndexFromItemIndex(numericIndex, sizes)
-  result = Math.max(0, result, Math.min(lastIndex, result))
+  result = Math.max(0, Math.min(lastIndex, result))
   return result
 }
 

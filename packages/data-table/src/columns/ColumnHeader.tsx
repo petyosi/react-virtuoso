@@ -5,7 +5,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { useCellValue, usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
 import { useResizeObserver } from '../resize/resize-observer-singleton'
-import { columnWidths$, useColumnId } from './Column'
+import { columnWidths$, measuredColumnWidths$, useColumnId } from './Column'
 import { headerSlotEdgeEntries$, headerSlotEndEntries$, headerSlotOverlayEntries$, headerSlotStartEntries$ } from './header-slots/registry'
 import { createRegistryCell } from './registry'
 
@@ -163,6 +163,7 @@ export function ColumnHeaderRenderer({
   const measureObserverRef = useResizeObserver('border-box')
   const headerRef = useRef<HTMLDivElement>(null)
   const columnWidths = useCellValue(columnWidths$)
+  const measuredColumnWidths = useCellValue(measuredColumnWidths$)
   const headerSlotStartEntries = useCellValue(headerSlotStartEntries$)
   const headerSlotEndEntries = useCellValue(headerSlotEndEntries$)
   const headerSlotEdgeEntries = useCellValue(headerSlotEdgeEntries$)
@@ -239,6 +240,20 @@ export function ColumnHeaderRenderer({
       alignItems: 'center',
     }
   }, [hasSlots, style])
+  const endSlotGroupStyle = useMemo<CSSProperties>(() => {
+    const columnWidth = columnWidths.get(columnKey)
+    const measuredWidth = measuredColumnWidths.get(columnKey)
+    const offset = columnWidth === undefined || measuredWidth === undefined ? 0 : columnWidth - measuredWidth
+
+    if (offset === 0) {
+      return HEADER_END_SLOT_GROUP_STYLE
+    }
+
+    return {
+      ...HEADER_END_SLOT_GROUP_STYLE,
+      transform: `translateX(${offset}px)`,
+    }
+  }, [columnKey, columnWidths, measuredColumnWidths])
 
   return (
     <div
@@ -261,9 +276,13 @@ export function ColumnHeaderRenderer({
               <React.Fragment key={slotId}>{renderHeaderSlot(entry, slotRenderParams)}</React.Fragment>
             ))}
             <div style={HEADER_CONTENT_STYLE}>{content}</div>
-            {endSlots.map(([slotId, entry]) => (
-              <React.Fragment key={slotId}>{renderHeaderSlot(entry, slotRenderParams)}</React.Fragment>
-            ))}
+            {endSlots.length > 0 ? (
+              <div style={endSlotGroupStyle}>
+                {endSlots.map(([slotId, entry]) => (
+                  <React.Fragment key={slotId}>{renderHeaderSlot(entry, slotRenderParams)}</React.Fragment>
+                ))}
+              </div>
+            ) : null}
           </>
         ) : (
           content
@@ -290,6 +309,12 @@ const HEADER_MEASURE_STYLE: CSSProperties = {
   alignItems: 'center',
   minWidth: 'max-content',
   maxWidth: 'none',
+}
+
+const HEADER_END_SLOT_GROUP_STYLE: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  flexShrink: 0,
 }
 
 const OVERLAY_SLOT_STYLE: CSSProperties = {
