@@ -181,6 +181,7 @@ Full guide: [migrating-from-table-virtuoso](references/9.guides/04.migrating-fro
 | Blank table or header only              | Give the table a measurable height                                                                                                           |
 | Table does not fill its panel           | Use the optional flex-height pattern: measured parent, `min-h-0` ancestors, `shrink-0` chrome, `DataTable` as `flex-1` with `height: '100%'` |
 | Shadcn component imports fail           | Run the registry install, or import headless from `@virtuoso.dev/data-table`                                                                 |
+| Shadcn creates a literal `@/` directory | Make the alias resolvable from the root config shadcn reads; with solution-style tsconfigs, mirror `@/*` paths in root `tsconfig.json`        |
 | Page and table both scroll              | Use only one scroll mode                                                                                                                     |
 | Remote rows never appear                | Return the right fetch shape (`{ rows, totalCount }` for offset mode) and pass the `signal` through                                          |
 | Rows remount / lose state after sorting | Add `computeRowKey`                                                                                                                          |
