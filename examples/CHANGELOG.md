@@ -1,5 +1,12 @@
 # @virtuoso.dev/examples
 
+## 0.0.19
+
+### Patch Changes
+
+- Updated dependencies [[`0c68e81`](https://github.com/petyosi/react-virtuoso/commit/0c68e81ff8b5314f23ab8e484908a9f6e13002ec)]:
+  - react-virtuoso@4.18.9
+
 ## 0.0.18
 
 ### Patch Changes
