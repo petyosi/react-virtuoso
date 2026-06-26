@@ -21,6 +21,14 @@ npx shadcn@latest add petyosi/react-virtuoso/data-table
 ```
 
 This installs a styled wrapper at `@/components/ui/data-table` exporting `DataTable`, `DataTableColumn`, `DataTableColumnHeader`, `DataTableCell`.
+Optional feature UI parts are separate registry items:
+
+```bash
+npx shadcn@latest add petyosi/react-virtuoso/data-table-resize-handle
+npx shadcn@latest add petyosi/react-virtuoso/data-table-sort-header-button
+```
+
+The registry item names are hyphenated. The installed imports remain nested (`@/components/ui/data-table/column-resize`, `@/components/ui/data-table/column-sort`). Do not run path-shaped shadcn commands such as `data-table/column-resize` or `data-table/column-sort`; shadcn resolves registry item names, not import paths.
 
 **Headless** — for custom design systems:
 
