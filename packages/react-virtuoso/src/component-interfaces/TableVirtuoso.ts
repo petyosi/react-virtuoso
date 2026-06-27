@@ -232,7 +232,7 @@ export interface TableVirtuosoProps<Data, Context> extends Omit<VirtuosoProps<Da
    * Set to a value between 0 and totalCount - 1 to make the list start scrolled to that item.
    * Pass in an object to achieve additional effects similar to `scrollToIndex`.
    */
-  initialTopMostItemIndex?: IndexLocationWithAlign | number
+  initialTopMostItemIndex?: IndexLocationWithAlign | number | undefined
 
   /**
    * Called when the list starts/stops scrolling.

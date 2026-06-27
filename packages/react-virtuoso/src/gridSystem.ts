@@ -1,6 +1,6 @@
 import { rangeComparator, tupleComparator } from './comparators'
 import { domIOSystem } from './domIOSystem'
-import { getInitialTopMostItemIndexNumber } from './initialTopMostItemIndexSystem'
+import { getInitialTopMostItemIndexNumber, initialTopMostItemIndexIsZero } from './initialTopMostItemIndexSystem'
 import { loggerSystem } from './loggerSystem'
 import { propsReadySystem } from './propsReadySystem'
 import { scrollSeekSystem } from './scrollSeekSystem'
@@ -95,7 +95,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
     const stateChanged = u.stream<GridStateSnapshot>()
     const restoreStateFrom = u.stream<GridStateSnapshot | null | undefined>()
     const stateRestoreInProgress = u.statefulStream(false)
-    const initialTopMostItemIndex = u.statefulStream<GridIndexLocation>(0)
+    const initialTopMostItemIndex = u.statefulStream<GridIndexLocation | undefined>(0)
     const scrolledToInitialItem = u.statefulStream(true)
     const scrollScheduled = u.statefulStream(false)
     const horizontalDirection = u.statefulStream(false)
@@ -104,7 +104,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
       u.pipe(
         didMount,
         u.withLatestFrom(initialTopMostItemIndex),
-        u.filter(([_, location]) => location !== 0)
+        u.filter(([_, location]) => !initialTopMostItemIndexIsZero(location))
       ),
       () => {
         u.publish(scrolledToInitialItem, false)
@@ -119,6 +119,11 @@ export const gridSystem = /*#__PURE__*/ u.system(
         })
       ),
       ([, , , , initialTopMostItemIndex]) => {
+        if (initialTopMostItemIndex === undefined) {
+          u.publish(scrolledToInitialItem, true)
+          return
+        }
+
         u.publish(scrollScheduled, true)
 
         skipFrames(1, () => {

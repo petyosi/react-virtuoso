@@ -11,7 +11,8 @@ import { stateFlagsSystem } from './stateFlagsSystem'
 import * as u from './urx'
 
 import type { Range } from './AATree'
-import type { FlatIndexLocationWithAlign, Item, ListItem, ListRange } from './interfaces'
+import type { InitialTopMostItemIndexLocation } from './initialTopMostItemIndexSystem'
+import type { Item, ListItem, ListRange } from './interfaces'
 import type { Data, SizeState } from './sizeSystem'
 
 export type ListItems = ListItem<unknown>[]
@@ -92,7 +93,7 @@ function buildListState(
 
 export function buildListStateFromItemCount(
   itemCount: number,
-  initialTopMostItemIndex: FlatIndexLocationWithAlign | number,
+  initialTopMostItemIndex: InitialTopMostItemIndexLocation,
   sizes: SizeState,
   firstItemIndex: number,
   gap: number,

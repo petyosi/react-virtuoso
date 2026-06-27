@@ -8,13 +8,23 @@ import { skipFrames } from './utils/skipFrames'
 
 import type { FlatIndexLocationWithAlign } from './interfaces'
 
-export function getInitialTopMostItemIndexNumber(location: FlatIndexLocationWithAlign | number, totalCount: number): number {
+export type InitialTopMostItemIndexLocation = FlatIndexLocationWithAlign | number | undefined
+
+export function getInitialTopMostItemIndexNumber(location: InitialTopMostItemIndexLocation, totalCount: number): number {
+  if (location === undefined) {
+    return 0
+  }
+
   const lastIndex = totalCount - 1
   const index = typeof location === 'number' ? location : location.index === 'LAST' ? lastIndex : location.index
   return Math.max(0, Math.min(index, lastIndex))
 }
 
-export function initialTopMostItemIndexIsZero(location: FlatIndexLocationWithAlign | number): boolean {
+export function initialTopMostItemIndexIsZero(location: InitialTopMostItemIndexLocation): boolean {
+  if (location === undefined) {
+    return true
+  }
+
   if (typeof location === 'number') {
     return location === 0
   }
@@ -29,7 +39,7 @@ export function initialTopMostItemIndexIsZero(location: FlatIndexLocationWithAli
 export const initialTopMostItemIndexSystem = u.system(
   ([{ defaultItemSize, listRefresh, sizes }, { scrollTop }, { scrollTargetReached, scrollToIndex }, { didMount }]) => {
     const scrolledToInitialItem = u.statefulStream(true)
-    const initialTopMostItemIndex = u.statefulStream<FlatIndexLocationWithAlign | number>(0)
+    const initialTopMostItemIndex = u.statefulStream<InitialTopMostItemIndexLocation>(0)
     const initialItemFinalLocationReached = u.statefulStream(true)
 
     u.connect(
@@ -61,6 +71,12 @@ export const initialTopMostItemIndexSystem = u.system(
         u.withLatestFrom(initialTopMostItemIndex)
       ),
       ([, initialTopMostItemIndex]) => {
+        if (initialTopMostItemIndex === undefined) {
+          u.publish(scrolledToInitialItem, true)
+          u.publish(initialItemFinalLocationReached, true)
+          return
+        }
+
         u.handleNext(scrollTargetReached, () => {
           u.publish(initialItemFinalLocationReached, true)
         })

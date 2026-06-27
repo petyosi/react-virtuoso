@@ -152,7 +152,7 @@ export interface VirtuosoGridProps<Data, Context = unknown> extends GridRootProp
    * Set to a value between 0 and totalCount - 1 to make the grid start scrolled to that item.
    * Pass in an object to achieve additional effects similar to `scrollToIndex`.
    */
-  initialTopMostItemIndex?: GridIndexLocation
+  initialTopMostItemIndex?: GridIndexLocation | undefined
 
   /**
    * Called when the list starts/stops scrolling.

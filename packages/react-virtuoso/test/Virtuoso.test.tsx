@@ -146,6 +146,48 @@ describe('Virtuoso', () => {
     expect(listParent.firstElementChild.textContent).toBe('Item 0')
   })
 
+  it('updates when data and an object-form initial index are propagated after an undefined initial index', () => {
+    const Case = () => {
+      const [data, setData] = React.useState([] as { name: string }[])
+      const [initialTopMostItemIndex, setInitialTopMostItemIndex] = React.useState<undefined | { align: 'start'; index: number }>(undefined)
+
+      return (
+        <>
+          <Virtuoso
+            data={data}
+            initialTopMostItemIndex={initialTopMostItemIndex}
+            itemContent={(_: number, item: { name: string }) => item.name}
+          />
+          <button
+            onClick={() => {
+              setData([{ name: 'Item 0' }])
+              setInitialTopMostItemIndex({ align: 'start', index: 0 })
+            }}
+          >
+            Set Data
+          </button>
+        </>
+      )
+    }
+
+    act(() => {
+      ReactDOM.createRoot(container).render(<Case />)
+    })
+
+    const scroller = container.firstElementChild as any
+    const viewport = scroller.firstElementChild
+    const listParent = viewport.firstElementChild
+
+    act(() => {
+      scroller.triggerScroll({ scrollHeight: 700, scrollTop: 0, viewportHeight: 200 })
+      viewport.triggerResize({ getBoundingClientRect: () => ({ height: 100 }) })
+      listParent.triggerChangedChildSizes([{ endIndex: 0, size: 10, startIndex: 0 }])
+      container.querySelector('button')!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    })
+
+    expect(listParent.firstElementChild.textContent).toBe('Item 0')
+  })
+
   it('updates when data is propagated (same length)', () => {
     const Case = () => {
       const [data, setData] = React.useState([{ name: 'Item 0' }] as any[])

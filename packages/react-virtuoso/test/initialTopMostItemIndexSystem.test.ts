@@ -6,6 +6,10 @@ describe('getInitialTopMostItemIndexNumber', () => {
   const totalCount = 50
   const lastIndex = totalCount - 1
 
+  it('returns zero for an undefined location', () => {
+    expect(getInitialTopMostItemIndexNumber(undefined, totalCount)).toBe(0)
+  })
+
   it('clamps an out-of-range numeric index down to the last index', () => {
     expect(getInitialTopMostItemIndexNumber(200, totalCount)).toBe(lastIndex)
   })

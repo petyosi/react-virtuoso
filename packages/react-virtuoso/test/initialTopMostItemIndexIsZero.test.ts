@@ -3,6 +3,10 @@ import { describe, expect, it } from 'vitest'
 import { initialTopMostItemIndexIsZero } from '../src/initialTopMostItemIndexSystem'
 
 describe('initialTopMostItemIndexIsZero', () => {
+  it('treats undefined as zero', () => {
+    expect(initialTopMostItemIndexIsZero(undefined)).toBe(true)
+  })
+
   it('treats the numeric 0 as zero', () => {
     expect(initialTopMostItemIndexIsZero(0)).toBe(true)
   })
