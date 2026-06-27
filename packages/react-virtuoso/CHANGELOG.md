@@ -1,5 +1,12 @@
 # react-virtuoso
 
+## 4.18.10
+
+### Patch Changes
+
+- [`fca20fa`](https://github.com/petyosi/react-virtuoso/commit/fca20fade0aea9f012f885bac97d5088be6a2ae3) Thanks [@petyosi](https://github.com/petyosi)! - Fix explicit `undefined` initial top-most item index values crashing when empty
+  data updates to an object-form initial index.
+
 ## 4.18.9
 
 ### Patch Changes
