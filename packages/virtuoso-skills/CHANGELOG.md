@@ -1,5 +1,11 @@
 # @virtuoso.dev/virtuoso-skills
 
+## 0.1.3
+
+### Patch Changes
+
+- [#1455](https://github.com/petyosi/react-virtuoso/pull/1455) [`b324bbc`](https://github.com/petyosi/react-virtuoso/commit/b324bbc97a25b3eb9564c5245df0ece6783bed33) Thanks [@petyosi](https://github.com/petyosi)! - Correct invalid prepend and grouped-list examples in the React Virtuoso agent skill.
+
 ## 0.1.2
 
 ### Patch Changes
