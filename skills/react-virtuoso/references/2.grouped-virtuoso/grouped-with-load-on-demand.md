@@ -45,12 +45,12 @@ export default function App() {
   const calculateGroupsSoFar = useCallback((totalGroups, count) => {
     const groups = []
     let i = 0
-    do {
+    while (count > 0 && i < totalGroups.length) {
       const group = totalGroups[i]
       groups.push(Math.min(group, count))
       count -= group
       i++
-    } while (count > 0 && i <= totalGroups.length)
+    }
     return groups
   }, [])
 

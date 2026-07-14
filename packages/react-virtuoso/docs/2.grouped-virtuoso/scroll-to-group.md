@@ -23,10 +23,10 @@ export default function App() {
       }))
     })
 
-    const groups = letters.slice(0, 15)
+    const groups = letters
 
-    const groupCounts = letters.map((letter, index) => {
-      return users.filter((user, userIndex) => user.name.startsWith(letter)).length
+    const groupCounts = groups.map((letter) => {
+      return users.filter((user) => user.name.startsWith(letter)).length
     })
     return { users, groups, groupCounts }
   }, [])
