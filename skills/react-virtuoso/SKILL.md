@@ -66,12 +66,13 @@ Prepending naively makes the list jump. Instead, keep a `firstItemIndex` that yo
 ```tsx
 const [firstItemIndex, setFirstItemIndex] = useState(START)
 
-const prepend = (older: Item[]) => {
+const prepend = async () => {
+  const older = await fetchOlderItems()
   setFirstItemIndex((i) => i - older.length)
   setItems((current) => [...older, ...current])
 }
 
-<Virtuoso firstItemIndex={firstItemIndex} initialTopMostItemIndex={START} data={items} startReached={prepend} ... />
+<Virtuoso firstItemIndex={firstItemIndex} initialTopMostItemIndex={START} data={items} startReached={() => void prepend()} ... />
 ```
 
 `firstItemIndex` must stay a positive number, so start it large (e.g. `100000`). For `GroupedVirtuoso`, decrease it by the number of new items only, excluding the group headers. See [endless-scrolling](references/1.virtuoso/endless-scrolling.md).

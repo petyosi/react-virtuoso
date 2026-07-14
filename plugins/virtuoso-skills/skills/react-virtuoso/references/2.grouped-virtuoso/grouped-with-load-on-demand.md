@@ -50,7 +50,7 @@ export default function App() {
       groups.push(Math.min(group, count))
       count -= group
       i++
-    } while (count > 0 && i <= totalGroups.length)
+    } while (count > 0 && i < totalGroups.length)
     return groups
   }, [])
 
