@@ -50,3 +50,23 @@ test.describe('horizontal list in rtl', () => {
     expectClosePosition(position.itemLeft, position.scrollerLeft)
   })
 })
+
+test.describe('horizontal list with a dynamic direction', () => {
+  test.beforeEach(async ({ baseURL, page }) => {
+    await navigateToExample(page, baseURL, 'horizontal-dynamic-direction')
+  })
+
+  test('updates logical offsets after switching from ltr to rtl', async ({ page }) => {
+    const scroller = page.locator('[data-testid=virtuoso-scroller]')
+
+    await expect(page.locator('[data-testid=direction]')).toHaveText('ltr')
+    await page.click('#toggle-direction')
+    await expect(page.locator('[data-testid=direction]')).toHaveText('rtl')
+
+    await scroller.evaluate((element) => {
+      element.scrollLeft = -1000
+    })
+
+    await expect(page.locator('[data-testid=range]')).toHaveText('10-15')
+  })
+})
