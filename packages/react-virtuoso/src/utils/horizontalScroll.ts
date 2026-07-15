@@ -7,10 +7,12 @@ function isRtl(scroller: HTMLElement | Window) {
   return element.ownerDocument.defaultView!.getComputedStyle(element).direction === 'rtl'
 }
 
-export function getLogicalScrollLeft(_scroller: HTMLElement | Window, scrollLeft: number) {
+export function getLogicalScrollLeft(scroller: HTMLElement | Window, scrollLeft: number) {
   // Supported browsers expose RTL horizontal scrolling as 0 at the right edge
-  // and negative values while scrolling left.
-  return Math.abs(scrollLeft)
+  // and negative values while scrolling left. Safari can expose values beyond
+  // the normal range during elastic overscroll, so the direction is required
+  // to distinguish those values from regular RTL offsets.
+  return isRtl(scroller) ? -scrollLeft : scrollLeft
 }
 
 export function getPhysicalScrollLeft(scroller: HTMLElement | Window, scrollLeft: number) {
