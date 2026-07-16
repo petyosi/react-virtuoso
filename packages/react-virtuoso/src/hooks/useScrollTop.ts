@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom'
 import * as u from '../urx'
 import { approximatelyEqual } from '../utils/approximatelyEqual'
 import { correctItemSize } from '../utils/correctItemSize'
-import { clearHorizontalScrollDirectionCache, getLogicalScrollLeft, getPhysicalScrollLeft } from '../utils/horizontalScroll'
+import { getLogicalScrollLeft, getPhysicalScrollLeft } from '../utils/horizontalScroll'
 
 import type { ScrollContainerState } from '../interfaces'
 
@@ -84,13 +84,11 @@ export default function useScrollTop(
   React.useEffect(() => {
     const localRef = customScrollParent ?? scrollerRef.current!
 
-    clearHorizontalScrollDirectionCache(localRef)
     scrollerRefCallback(customScrollParent ?? scrollerRef.current)
     handler({ suppressFlushSync: true, target: localRef } as unknown as Event)
     localRef.addEventListener('scroll', handler, { passive: true })
 
     return () => {
-      clearHorizontalScrollDirectionCache(localRef)
       scrollerRefCallback(null)
       localRef.removeEventListener('scroll', handler)
     }
