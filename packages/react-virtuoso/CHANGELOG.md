@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.18.11
+
+### Patch Changes
+
+- [#1458](https://github.com/petyosi/react-virtuoso/pull/1458) [`0d5214a`](https://github.com/petyosi/react-virtuoso/commit/0d5214a21a0cc5c044ef57db3d53b62431ff4f2c) Thanks [@wanxiankai](https://github.com/wanxiankai)! - Handle horizontal list direction changes between LTR and RTL without remounting the list.
+
 ## 4.18.10
 
 ### Patch Changes
