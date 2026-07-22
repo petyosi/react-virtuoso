@@ -28,7 +28,7 @@
     "provenance": true
   },
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && node scripts/verify-build.ts",
     "test": "vitest --run --passWithNoTests --browser.headless",
     "lint": "oxlint --type-aware --type-check",
     "typecheck": "tsgo --noEmit",
@@ -60,6 +60,7 @@
   },
   "peerDependencies": {
     "@virtuoso.dev/reactive-engine-core": ">=0.0.8",
+    "@virtuoso.dev/reactive-engine-react": ">=0.2.4",
     "react": ">= 18"
   }
 }
