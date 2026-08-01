@@ -341,7 +341,7 @@ describe('engine features', () => {
       sources: [a],
     })
 
-    eng.connect({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         done(value)
       },
@@ -390,6 +390,70 @@ describe('engine features', () => {
 
     expect(spy).toHaveBeenCalledWith(5, eng)
     expect(spy).toHaveBeenCalledTimes(1)
+  })
+
+  it('preserves multiple candidate semantics for one projection', () => {
+    const source$ = Stream<number>()
+    const sink$ = Cell(0)
+    const spy = vi.fn()
+
+    eng.connect<[number]>({
+      map: (done) => (value) => {
+        done(value)
+        done(value + 1)
+      },
+      sink: sink$,
+      sources: [source$],
+    })
+    eng.sub(sink$, spy)
+
+    eng.pub(source$, 1)
+
+    expect(eng.getValue(sink$)).toBe(2)
+    expect(spy).toHaveBeenCalledOnce()
+    expect(spy).toHaveBeenCalledWith(2, eng)
+  })
+
+  it('preserves accepted-then-suppressed behavior across projections', () => {
+    const source$ = Stream<number>()
+    const sink$ = Cell(0)
+    const spy = vi.fn()
+
+    eng.connect({
+      map: (done) => (value) => {
+        done(value)
+      },
+      sink: sink$,
+      sources: [source$],
+    })
+    eng.connect({
+      map: (done) => (value) => {
+        done(value)
+      },
+      sink: sink$,
+      sources: [source$],
+    })
+    eng.sub(sink$, spy)
+
+    eng.pub(source$, 1)
+
+    expect(eng.getValue(sink$)).toBe(1)
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  it('preserves comparator errors', () => {
+    const error = new Error('comparator failed')
+    const cell$ = Cell(0, () => {
+      throw error
+    })
+    const spy = vi.fn()
+    eng.sub(cell$, spy)
+
+    expect(() => {
+      eng.pub(cell$, 1)
+    }).toThrow(error)
+    expect(eng.getValue(cell$)).toBe(0)
+    expect(spy).not.toHaveBeenCalled()
   })
 
   it('pulls from stateful nodes', () => {

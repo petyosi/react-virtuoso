@@ -4,7 +4,7 @@
  */
 
 import { link, pipe } from './combinators'
-import { CELL_TYPE, nodeDefs$$, RESOURCE_TYPE, resourceDefs$$ } from './globals'
+import { CELL_TYPE, nodeDefs$$, RESOURCE_TYPE, resourceDefs$$, TRIGGER_TYPE } from './globals'
 import { addNodeInit } from './nodeUtils'
 import { tap } from './utils'
 
@@ -125,7 +125,7 @@ export function Cell<T>(value: T, distinct: Distinct<T> = true): NodeRef<T> {
  */
 export function Trigger(): NodeRef<void> {
   return tap(Symbol('trigger'), (id) => {
-    nodeDefs$$.set(id, { distinct: false, type: 'stream' })
+    nodeDefs$$.set(id, { distinct: false, type: TRIGGER_TYPE })
   }) as NodeRef<void>
 }
 

@@ -129,6 +129,30 @@ describe('debug utility', () => {
     expect(consoleLogSpy).toHaveBeenCalledWith('[reactive-engine] cell2:', 'world')
   })
 
+  it('keeps debug markers global across engine instances', () => {
+    const cell$ = Cell(0)
+    const secondEngine = new Engine()
+    e.debug(cell$, 'shared')
+
+    eng.pub(cell$, 1)
+    secondEngine.pub(cell$, 2)
+
+    expect(consoleLogSpy).toHaveBeenNthCalledWith(1, '[reactive-engine] shared:', 1)
+    expect(consoleLogSpy).toHaveBeenNthCalledWith(2, '[reactive-engine] shared:', 2)
+  })
+
+  it('does not duplicate console output when diagnostics are observed', () => {
+    const cell$ = Cell(0)
+    const observer = vi.fn()
+    e.debug(cell$, 'observed')
+    eng.observeDiagnostics(observer)
+
+    eng.pub(cell$, 1)
+
+    expect(consoleLogSpy).toHaveBeenCalledTimes(1)
+    expect(observer).toHaveBeenCalledTimes(1)
+  })
+
   it('handles complex objects', () => {
     const cell$ = Cell({ id: 1, name: 'test' })
     e.debug(cell$, 'object')

@@ -1,5 +1,6 @@
 import invariant from 'tiny-invariant'
 
+import { describeNode } from './diagnostics'
 import { getCurrentEngine, nodeDebugLabels$$, nodeInits$$, nodeInitSubscriptions$$ } from './globals'
 
 import type { NodeInit, NodeRef } from './types'
@@ -97,8 +98,8 @@ function extractCallerLocation(stack: string): null | string {
 }
 
 /**
- * Marks a node for debug logging. When the node emits in development mode,
- * its value will be logged to console.
+ * Marks a node for opt-in debug logging in all builds. When the node emits,
+ * its value is logged to the console.
  *
  * @param node$ - The node to debug
  * @param label - Optional custom label. If not provided, attempts to extract
@@ -145,3 +146,5 @@ export function debug<T>(node$: NodeRef<T>, label?: string): () => void {
     nodeDebugLabels$$.delete(node$)
   }
 }
+
+export { describeNode }

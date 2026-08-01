@@ -1,5 +1,5 @@
 import type { Engine } from './Engine'
-import type { CELL_TYPE, STREAM_TYPE } from './globals'
+import type { CELL_TYPE, STREAM_TYPE, TRIGGER_TYPE } from './globals'
 import type { RefCount } from './RefCount'
 import type { SetMap } from './SetMap'
 
@@ -89,7 +89,7 @@ export interface CellDefinition<T> {
 /** @hidden */
 export interface StreamDefinition<T> {
   distinct: Distinct<T>
-  type: typeof STREAM_TYPE
+  type: typeof STREAM_TYPE | typeof TRIGGER_TYPE
 }
 
 /** @hidden */

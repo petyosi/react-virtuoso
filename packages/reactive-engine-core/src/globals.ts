@@ -7,6 +7,8 @@ export const CELL_TYPE = 'cell'
 
 export const STREAM_TYPE = 'stream'
 
+export const TRIGGER_TYPE = 'trigger'
+
 export const RESOURCE_TYPE = 'resource'
 
 export const nodeDefs$$ = new Map<symbol, CellDefinition<any> | StreamDefinition<any>>()

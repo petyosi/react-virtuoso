@@ -1,10 +1,39 @@
 import invariant from 'tiny-invariant'
 
+import {
+  createDiagnosticError,
+  createEngineInstanceId,
+  diagnosticNow,
+  emitDebugRecord,
+  getNodeDiagnosticKind,
+  getNodeDiagnosticLabel,
+  queueDiagnosticCycle,
+  recordDiagnosticAllocation,
+  resolveDiagnosticObserverOptions,
+  runInDiagnosticTransaction,
+  summarizeDiagnosticValue,
+} from './diagnostics'
 import { CELL_TYPE, inEngineContext, nodeDebugLabels$$, nodeDefs$$, nodeInits$$, nodeInitSubscriptions$$, resourceDefs$$ } from './globals'
 import { RefCount } from './RefCount'
 import { SetMap } from './SetMap'
 import { combinedCellProjection, defaultComparator, tap } from './utils'
 
+import type {
+  DiagnosticCandidate,
+  DiagnosticCycleRef,
+  DiagnosticNodeError,
+  DiagnosticNodeEvaluationEvent,
+  DiagnosticNodeIdentity,
+  DiagnosticObserver,
+  DiagnosticObserverOptions,
+  DiagnosticObserverRegistration,
+  DiagnosticPruneEvent,
+  DiagnosticProjectionAttempt,
+  DiagnosticRootPublication,
+  DiagnosticTransaction,
+  DiagnosticValueContext,
+  PropagationCycle,
+} from './diagnostics'
 import type { O } from './operators'
 import type {
   CombinedCellRecord,
@@ -24,6 +53,39 @@ import type {
 // use this so that streams don't skip undefined values
 const emptyStreamValue = Symbol('empty stream')
 
+interface DiagnosticCycleCapture {
+  cycle: MutablePropagationCycle
+  registration: DiagnosticObserverRegistration
+}
+
+interface DiagnosticEventCapture {
+  capture: DiagnosticCycleCapture
+  event: MutableDiagnosticNodeEvaluationEvent
+}
+
+interface DiagnosticAttemptCapture extends DiagnosticEventCapture {
+  attempt: MutableDiagnosticProjectionAttempt
+}
+
+type Mutable<T> = { -readonly [K in keyof T]: T[K] }
+type MutableDiagnosticCandidate = Mutable<DiagnosticCandidate>
+type MutableDiagnosticNodeEvaluationEvent = Omit<Mutable<DiagnosticNodeEvaluationEvent>, 'attempts'> & {
+  attempts: MutableDiagnosticProjectionAttempt[]
+}
+type MutableDiagnosticProjectionAttempt = Omit<Mutable<DiagnosticProjectionAttempt>, 'candidates'> & {
+  candidates: MutableDiagnosticCandidate[]
+}
+type MutableDiagnosticRootPublication = Mutable<DiagnosticRootPublication>
+type MutablePropagationCycle = Omit<Mutable<PropagationCycle>, 'events' | 'roots'> & {
+  events: (DiagnosticPruneEvent | MutableDiagnosticNodeEvaluationEvent)[]
+  roots: MutableDiagnosticRootPublication[]
+}
+
+const emptyDiagnosticAttempts: DiagnosticAttemptCapture[] = []
+const emptyDiagnosticCaptures: DiagnosticCycleCapture[] = []
+const emptyDiagnosticEvents: DiagnosticEventCapture[] = []
+const emptyDiagnosticRegistrations: DiagnosticObserverRegistration[] = []
+
 /**
  * The engine orchestrates any cells and streams that it touches. The engine also stores the state and the dependencies of the nodes that are referred through it.
  * @category Engine
@@ -37,6 +99,13 @@ export class Engine {
   private readonly definitionRegistry = new Set<symbol>()
   private readonly disposeCallbacks = new Set<() => void>()
   private readonly distinctNodes = new Map<symbol, Comparator<unknown>>()
+  private readonly diagnosticInstanceId = createEngineInstanceId()
+  private readonly diagnosticNodeIds = new Map<symbol, string>()
+  private readonly diagnosticNodeKinds = new Map<symbol, DiagnosticNodeIdentity['kind']>()
+  private readonly diagnosticObservers = new Set<DiagnosticObserverRegistration>()
+  private diagnosticCycleId = 0
+  private diagnosticNodeId = 0
+  private diagnosticObserverCountInTree = 0
   private readonly executionMaps = new Map<symbol | symbol[], ExecutionMap>()
   private readonly graph = new SetMap<NodeProjection>()
   private parentEngine: Engine | undefined = undefined
@@ -73,6 +142,7 @@ export class Engine {
    * @typeParam T - The type of values that the cell will emit/accept.
    */
   cellInstance<T>(value: T, distinct: Distinct<T> = true, node = Symbol('cell')): NodeRef<T> {
+    this.diagnosticNodeKinds.set(node, 'cell')
     if (!this.state.has(node)) {
       this.state.set(node, value)
     }
@@ -199,6 +269,7 @@ export class Engine {
 
   dispose() {
     this.isDisposed = true
+    this.parentEngine?.adjustDiagnosticObserverCount(-this.diagnosticObserverCountInTree)
     // Remove self from parent's childEngines array
     if (this.parentEngine) {
       const index = this.parentEngine.childEngines.indexOf(this)
@@ -228,6 +299,10 @@ export class Engine {
 
     this.combinedCells.length = 0
     this.definitionRegistry.clear()
+    this.diagnosticNodeIds.clear()
+    this.diagnosticNodeKinds.clear()
+    this.diagnosticObservers.clear()
+    this.diagnosticObserverCountInTree = 0
     this.distinctNodes.clear()
     this.executionMaps.clear()
     this.graph.clear()
@@ -294,6 +369,26 @@ export class Engine {
   }
 
   /**
+   * Observes structured propagation records for cycles that start in this engine.
+   * Observer registration and options are snapshotted when each cycle starts.
+   */
+  observeDiagnostics(observer: DiagnosticObserver, options: DiagnosticObserverOptions = {}): UnsubscribeHandle {
+    const registration: DiagnosticObserverRegistration = {
+      observer,
+      options: resolveDiagnosticObserverOptions(options),
+    }
+    this.diagnosticObservers.add(registration)
+    this.adjustDiagnosticObserverCount(1)
+    let active = true
+    return () => {
+      if (active && this.diagnosticObservers.delete(registration)) {
+        active = false
+        this.adjustDiagnosticObserverCount(-1)
+      }
+    }
+  }
+
+  /**
    * @typeParam T - The type of values that the source node will emit.
    */
   pipe<T>(source: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef {
@@ -341,6 +436,27 @@ export class Engine {
    * ```
    */
   pubIn(values: Record<symbol, unknown>, skipParent = false) {
+    runInDiagnosticTransaction(this.hasDiagnosticsInFamily(), (transaction) => {
+      this.pubInTransaction(
+        values,
+        skipParent,
+        transaction,
+        skipParent ? 'forwarded-from-parent' : 'publication',
+        transaction?.activeCycle,
+        true
+      )
+    })
+  }
+
+  private pubInTransaction(
+    values: Record<symbol, unknown>,
+    skipParent: boolean,
+    transaction: DiagnosticTransaction | undefined,
+    origin: PropagationCycle['origin'],
+    applicationParentCycle: DiagnosticCycleRef | undefined,
+    applicationBoundary: boolean
+  ) {
+    const previousTransactionFailure = transaction?.failure
     const parentValues: Record<symbol, unknown> = {}
     let ownValues: Record<symbol, unknown> = {}
 
@@ -354,7 +470,7 @@ export class Engine {
           ownValues[key] = val
         }
       }
-      this.parentEngine.pubIn(parentValues)
+      this.parentEngine.pubInTransaction(parentValues, false, transaction, 'forwarded-to-parent', applicationParentCycle, false)
     } else {
       ownValues = values
     }
@@ -367,12 +483,42 @@ export class Engine {
     const transientState = new Map<symbol, unknown>([...this.state, ...this.streamState])
 
     const childChangePayload: Record<symbol, unknown> = {}
+    const registrations = transaction !== undefined && ids.length > 0 ? Array.from(this.diagnosticObservers) : emptyDiagnosticRegistrations
+    let captures = emptyDiagnosticCaptures
+    let cycleRef: DiagnosticCycleRef | undefined
+    let previousCycle: DiagnosticCycleRef | undefined
 
+    if (transaction !== undefined && registrations.length > 0) {
+      captures = []
+      this.diagnosticCycleId += 1
+      recordDiagnosticAllocation('cycle-ref')
+      cycleRef = { cycleId: this.diagnosticCycleId, engineInstanceId: this.diagnosticInstanceId }
+      previousCycle = transaction.activeCycle
+      for (const registration of registrations) {
+        captures.push(this.createDiagnosticCycle(registration, ids, ownValues, transaction, cycleRef, origin, applicationParentCycle))
+      }
+      transaction.activeCycle = cycleRef
+    }
+
+    let currentEvents = emptyDiagnosticEvents
+    let currentAttempts = emptyDiagnosticAttempts
+    let currentCandidateCount = 0
+    let currentAttemptErrorPhase: DiagnosticNodeError['phase'] | undefined
+
+    // oxlint-disable eslint/no-loop-func -- propagation callbacks execute synchronously before their iteration advances.
     const nodeWillNotEmit = (key: symbol) => {
       this.graph.use(key, (projections) => {
         for (const { sink, sources } of projections) {
           if (sources.has(key)) {
             refCount.decrement(sink, () => {
+              for (const capture of captures) {
+                recordDiagnosticAllocation('prune-event')
+                capture.cycle.events.push({
+                  causedBy: this.diagnosticIdentity(key),
+                  node: this.diagnosticIdentity(sink),
+                  type: 'prune',
+                })
+              }
               participatingNodeKeys.splice(participatingNodeKeys.indexOf(sink), 1)
               nodeWillNotEmit(sink)
             })
@@ -381,69 +527,243 @@ export class Engine {
       })
     }
 
-    for (;;) {
-      const nextId = participatingNodeKeys.shift()
-      if (nextId === undefined) {
-        break
-      }
-      const id = nextId
-      let resolved = false
-      const done = (value: unknown) => {
-        const dnRef = this.distinctNodes.get(id)
-        if (transientState.has(id) && dnRef?.(transientState.get(id), value) === true) {
-          resolved = false
-          return
+    try {
+      for (;;) {
+        const nextId = participatingNodeKeys.shift()
+        if (nextId === undefined) {
+          break
         }
-        resolved = true
-        transientState.set(id, value)
-        childChangePayload[id] = value
+        const id = nextId
+        const nodePrevious = transientState.get(id)
+        const nodeHadPrevious = transientState.has(id) && nodePrevious !== emptyStreamValue
+        let resolved = false
+        currentEvents =
+          captures.length === 0
+            ? emptyDiagnosticEvents
+            : captures.map((capture) => {
+                recordDiagnosticAllocation('evaluation-event')
+                const event: MutableDiagnosticNodeEvaluationEvent = {
+                  attempts: [],
+                  node: this.diagnosticIdentity(id),
+                  result: 'not-emitted',
+                  type: 'evaluation',
+                }
+                capture.cycle.events.push(event)
+                return { capture, event }
+              })
 
-        if (this.state.has(id)) {
-          this.state.set(id, value)
-        } else if (this.streamState.has(id)) {
-          this.streamState.set(id, value)
+        const startAttempt = (source: DiagnosticProjectionAttempt['source'], sources: symbol[], pulls: symbol[]) => {
+          currentCandidateCount = 0
+          currentAttemptErrorPhase = undefined
+          currentAttempts =
+            currentEvents.length === 0
+              ? emptyDiagnosticAttempts
+              : currentEvents.map(({ capture, event }) => {
+                  recordDiagnosticAllocation('projection-attempt')
+                  const attempt: MutableDiagnosticProjectionAttempt = {
+                    candidates: [],
+                    outcome: 'no-candidate',
+                    pulls: pulls.map((node) => this.diagnosticIdentity(node)),
+                    source,
+                    sources: sources.map((node) => this.diagnosticIdentity(node)),
+                  }
+                  event.attempts.push(attempt)
+                  return { attempt, capture, event }
+                })
         }
-      }
-      if (Object.hasOwn(ownValues, id)) {
-        done(ownValues[id])
-      } else {
-        inEngineContext(this, () => {
-          map.projections.use(id, (nodeProjections) => {
-            for (const projection of nodeProjections) {
-              const args = [...Array.from(projection.sources), ...Array.from(projection.pulls)].map((nodeId) => transientState.get(nodeId))
-              projection.map(done)(...args)
+
+        const finishAttempt = () => {
+          if (currentAttemptErrorPhase === undefined) {
+            for (const { attempt } of currentAttempts) {
+              attempt.outcome = currentCandidateCount === 0 ? 'no-candidate' : 'completed'
             }
-          })
-        })
-      }
-
-      if (resolved) {
-        const value = transientState.get(id)
-
-        const debugLabel = nodeDebugLabels$$.get(id)
-        if (debugLabel !== undefined) {
-          const displayValue = value === undefined ? '[triggered]' : value
-          // oxlint-disable-next-line no-console
-          console.log(`[reactive-engine] ${debugLabel}:`, displayValue)
+          }
         }
 
-        inEngineContext(this, () => {
-          this.subscriptions.use(id, (nodeSubscriptions) => {
-            for (const subscription of nodeSubscriptions) {
-              subscription(value, this)
+        const done = (value: unknown) => {
+          currentCandidateCount += 1
+          const previous = transientState.get(id)
+          const hadPrevious = transientState.has(id) && previous !== emptyStreamValue
+          const dnRef = this.distinctNodes.get(id)
+          let suppressed = false
+          try {
+            suppressed = transientState.has(id) && dnRef?.(previous, value) === true
+          } catch (error) {
+            currentAttemptErrorPhase = 'comparator'
+            for (const { attempt, capture, event } of currentAttempts) {
+              const diagnosticError = this.diagnosticError(error, 'comparator', event.node, capture)
+              attempt.candidates.push(
+                this.diagnosticCandidate(capture, id, event.node, 'comparator-error', hadPrevious, previous, value, diagnosticError)
+              )
+              attempt.error = diagnosticError
+              attempt.outcome = 'errored'
+              event.result = 'aborted-before-emission'
+              capture.cycle.error = diagnosticError
             }
+            throw error
+          }
+
+          if (suppressed) {
+            resolved = false
+            for (const { attempt, capture, event } of currentAttempts) {
+              if (capture.registration.options.includeSuppressed) {
+                attempt.candidates.push(
+                  this.diagnosticCandidate(capture, id, event.node, 'distinct-suppressed', hadPrevious, previous, value)
+                )
+              }
+            }
+            return
+          }
+
+          resolved = true
+          for (const { attempt, capture, event } of currentAttempts) {
+            attempt.candidates.push(this.diagnosticCandidate(capture, id, event.node, 'accepted', hadPrevious, previous, value))
+          }
+          transientState.set(id, value)
+          childChangePayload[id] = value
+
+          if (this.state.has(id)) {
+            this.state.set(id, value)
+          } else if (this.streamState.has(id)) {
+            this.streamState.set(id, value)
+          }
+        }
+
+        if (Object.hasOwn(ownValues, id)) {
+          startAttempt('root', [], [])
+          done(ownValues[id])
+          finishAttempt()
+        } else {
+          inEngineContext(this, () => {
+            map.projections.use(id, (nodeProjections) => {
+              for (const projection of nodeProjections) {
+                const sources = Array.from(projection.sources)
+                const pulls = Array.from(projection.pulls)
+                const args = [...sources, ...pulls].map((nodeId) => transientState.get(nodeId))
+                startAttempt('projection', sources, pulls)
+                try {
+                  projection.map(done)(...args)
+                } catch (error) {
+                  if (currentAttemptErrorPhase === undefined) {
+                    currentAttemptErrorPhase = 'projection'
+                    for (const { attempt, capture, event } of currentAttempts) {
+                      const diagnosticError = this.diagnosticError(error, 'projection', event.node, capture)
+                      attempt.error = diagnosticError
+                      attempt.outcome = 'errored'
+                      event.result = 'aborted-before-emission'
+                      capture.cycle.error = diagnosticError
+                    }
+                  }
+                  throw error
+                }
+                finishAttempt()
+              }
+            })
           })
-          this.singletonSubscriptions.get(id)?.(value, this)
-        })
-      } else {
-        nodeWillNotEmit(id)
+        }
+
+        if (resolved) {
+          const value = transientState.get(id)
+          for (const { capture, event } of currentEvents) {
+            event.result = 'emitted'
+            const next = this.diagnosticValue(capture, id, event.node, value, 'next')
+            if (nodeHadPrevious) {
+              const previous = this.diagnosticValue(capture, id, event.node, nodePrevious, 'previous')
+              if (previous !== undefined) {
+                event.previous = previous
+              }
+            }
+            if (next !== undefined) {
+              event.next = next
+            }
+          }
+
+          const debugLabel = nodeDebugLabels$$.get(id)
+          if (debugLabel !== undefined) {
+            recordDiagnosticAllocation('debug-emission')
+            const record = {
+              engineInstanceId: this.diagnosticInstanceId,
+              label: debugLabel,
+              node: this.diagnosticIdentity(id),
+              value,
+            }
+            if (this.id !== undefined) {
+              Object.assign(record, { engineLabel: this.id })
+            }
+            if (cycleRef !== undefined) {
+              Object.assign(record, { cycle: cycleRef })
+            }
+            emitDebugRecord(record)
+          }
+
+          try {
+            inEngineContext(this, () => {
+              this.subscriptions.use(id, (nodeSubscriptions) => {
+                for (const subscription of nodeSubscriptions) {
+                  subscription(value, this)
+                }
+              })
+              this.singletonSubscriptions.get(id)?.(value, this)
+            })
+          } catch (error) {
+            for (const { capture, event } of currentEvents) {
+              capture.cycle.error = this.diagnosticError(error, 'subscriber', event.node, capture)
+            }
+            throw error
+          }
+        } else {
+          nodeWillNotEmit(id)
+        }
+      }
+
+      for (const childEngine of this.childEngines) {
+        // the pubIn will clone the passed payload, so the engines won't overlap with each other
+        childEngine.pubInTransaction(childChangePayload, true, transaction, 'forwarded-from-parent', applicationParentCycle, false)
+      }
+    } catch (error) {
+      if (transaction !== undefined) {
+        if (transaction.failure === undefined) {
+          transaction.failure = { engineInstanceId: this.diagnosticInstanceId }
+          if (cycleRef !== undefined) {
+            transaction.failure.cycle = cycleRef
+          }
+        }
+        const failure = transaction.failure
+        if (failure.engineInstanceId !== this.diagnosticInstanceId) {
+          for (const capture of captures) {
+            capture.cycle.error ??= {
+              ...(failure.cycle === undefined ? {} : { childCycle: failure.cycle }),
+              childEngineInstanceId: failure.engineInstanceId,
+              phase: 'child-propagation',
+            }
+          }
+        }
+      }
+      for (const capture of captures) {
+        capture.cycle.status = 'aborted'
+      }
+      if (applicationBoundary && transaction !== undefined) {
+        if (previousTransactionFailure === undefined) {
+          delete transaction.failure
+        } else {
+          transaction.failure = previousTransactionFailure
+        }
+      }
+      throw error
+    } finally {
+      if (transaction !== undefined && cycleRef !== undefined) {
+        if (previousCycle === undefined) {
+          delete transaction.activeCycle
+        } else {
+          transaction.activeCycle = previousCycle
+        }
+        for (const capture of captures) {
+          capture.cycle.durationMs = diagnosticNow() - capture.cycle.startedAt
+          queueDiagnosticCycle(transaction, capture.registration, capture.cycle)
+        }
       }
     }
-
-    for (const childEngine of this.childEngines) {
-      // the pubIn will clone the passed payload, so the engines won't overlap with each other
-      childEngine.pubIn(childChangePayload, true)
-    }
+    // oxlint-enable eslint/no-loop-func
   }
 
   /**
@@ -461,6 +781,7 @@ export class Engine {
     const resourceDef = resourceDefs$$.get(node$)
     if (resourceDef !== undefined) {
       this.definitionRegistry.add(node$)
+      this.diagnosticNodeKinds.set(node$, 'resource')
       const instance = resourceDef.factory(this) as unknown
       this.resources.set(node$, instance)
       this.state.set(node$, instance)
@@ -527,6 +848,7 @@ export class Engine {
    * @typeParam T - The type of values that the stream will emit/accept.
    */
   streamInstance<T>(distinct: Distinct<T> = true, node = Symbol('stream')): NodeRef<T> {
+    this.diagnosticNodeKinds.set(node, getNodeDiagnosticKind(node))
     if (distinct !== false) {
       this.distinctNodes.set(node, distinct === true ? defaultComparator : (distinct as Comparator<unknown>))
       this.streamState.set(node, emptyStreamValue)
@@ -564,6 +886,144 @@ export class Engine {
 
   [Symbol.dispose]() {
     this.dispose()
+  }
+
+  private createDiagnosticCycle(
+    registration: DiagnosticObserverRegistration,
+    ids: symbol[],
+    values: Record<symbol, unknown>,
+    transaction: DiagnosticTransaction,
+    cycleRef: DiagnosticCycleRef,
+    origin: PropagationCycle['origin'],
+    applicationParentCycle: DiagnosticCycleRef | undefined
+  ): DiagnosticCycleCapture {
+    recordDiagnosticAllocation('cycle')
+    const cycle: MutablePropagationCycle = {
+      cycleId: cycleRef.cycleId,
+      durationMs: 0,
+      engineInstanceId: this.diagnosticInstanceId,
+      events: [],
+      origin,
+      roots: [],
+      startedAt: diagnosticNow(),
+      status: 'completed',
+      transactionId: transaction.id,
+    }
+    if (this.id !== undefined) {
+      cycle.engineLabel = this.id
+    }
+    if (applicationParentCycle !== undefined) {
+      cycle.parentCycle = { ...applicationParentCycle }
+    }
+
+    const capture = { cycle, registration }
+    for (const node$ of ids) {
+      const node = this.diagnosticIdentity(node$)
+      recordDiagnosticAllocation('root')
+      const root: MutableDiagnosticRootPublication = { node }
+      const value = this.diagnosticValue(capture, node$, node, values[node$], 'root')
+      if (value !== undefined) {
+        root.value = value
+      }
+      cycle.roots.push(root)
+    }
+    return capture
+  }
+
+  private diagnosticCandidate(
+    capture: DiagnosticCycleCapture,
+    node$: symbol,
+    node: DiagnosticNodeIdentity,
+    outcome: DiagnosticCandidate['outcome'],
+    hadPrevious: boolean,
+    previous: unknown,
+    next: unknown,
+    error?: DiagnosticNodeError
+  ): MutableDiagnosticCandidate {
+    recordDiagnosticAllocation('candidate')
+    const candidate: MutableDiagnosticCandidate = { outcome }
+    const nextValue = this.diagnosticValue(capture, node$, node, next, 'candidate')
+    if (hadPrevious) {
+      const previousValue = this.diagnosticValue(capture, node$, node, previous, 'previous')
+      if (previousValue !== undefined) {
+        candidate.previous = previousValue
+      }
+    }
+    if (nextValue !== undefined) {
+      candidate.next = nextValue
+    }
+    if (error !== undefined) {
+      candidate.error = error
+    }
+    return candidate
+  }
+
+  private diagnosticError(
+    error: unknown,
+    phase: DiagnosticNodeError['phase'],
+    node: DiagnosticNodeIdentity,
+    capture: DiagnosticCycleCapture
+  ): DiagnosticNodeError {
+    const context: Omit<DiagnosticValueContext, 'field' | 'node'> = {
+      cycleId: capture.cycle.cycleId,
+      engineInstanceId: this.diagnosticInstanceId,
+      transactionId: capture.cycle.transactionId,
+    }
+    if (this.id !== undefined) {
+      context.engineLabel = this.id
+    }
+    return createDiagnosticError(error, phase, node, capture.registration.options, context)
+  }
+
+  private diagnosticIdentity(node$: symbol): DiagnosticNodeIdentity {
+    let id = this.diagnosticNodeIds.get(node$)
+    if (id === undefined) {
+      this.diagnosticNodeId += 1
+      id = `node-${this.diagnosticNodeId}`
+      this.diagnosticNodeIds.set(node$, id)
+    }
+    recordDiagnosticAllocation('node-identity')
+    const identity: Mutable<DiagnosticNodeIdentity> = {
+      id,
+      kind: this.diagnosticNodeKinds.get(node$) ?? getNodeDiagnosticKind(node$),
+    }
+    const label = getNodeDiagnosticLabel(node$)
+    if (label !== undefined) {
+      identity.label = label
+    }
+    return identity
+  }
+
+  private diagnosticValue(
+    capture: DiagnosticCycleCapture,
+    node$: symbol,
+    node: DiagnosticNodeIdentity,
+    value: unknown,
+    field: DiagnosticValueContext['field']
+  ) {
+    const context: DiagnosticValueContext = {
+      cycleId: capture.cycle.cycleId,
+      engineInstanceId: this.diagnosticInstanceId,
+      field,
+      node,
+      transactionId: capture.cycle.transactionId,
+    }
+    if (this.id !== undefined) {
+      context.engineLabel = this.id
+    }
+    return summarizeDiagnosticValue(node$, value, capture.registration.options, context)
+  }
+
+  private hasDiagnosticsInFamily(): boolean {
+    if (this.parentEngine !== undefined) {
+      return this.parentEngine.hasDiagnosticsInFamily()
+    }
+    return this.diagnosticObserverCountInTree > 0
+  }
+
+  private adjustDiagnosticObserverCount(delta: number): void {
+    this.diagnosticObserverCountInTree += delta
+    this.parentEngine?.adjustDiagnosticObserverCount(delta)
   }
 
   private calculateExecutionMap(nodes: symbol[]) {

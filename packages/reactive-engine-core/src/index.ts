@@ -1,4 +1,25 @@
 export { changeWith, combine, link, merge, pipe, singletonSub, sub, subMultiple, withResource } from './combinators'
+export { describeNode } from './diagnostics'
+export type {
+  DiagnosticCandidate,
+  DiagnosticCycleEvent,
+  DiagnosticCycleRef,
+  DiagnosticError,
+  DiagnosticNodeError,
+  DiagnosticNodeEvaluationEvent,
+  DiagnosticNodeIdentity,
+  DiagnosticObserver,
+  DiagnosticObserverOptions,
+  DiagnosticPrimitive,
+  DiagnosticProjectionAttempt,
+  DiagnosticPruneEvent,
+  DiagnosticPropagationError,
+  DiagnosticRootPublication,
+  DiagnosticValue,
+  DiagnosticValueContext,
+  NodeDiagnosticMetadata,
+  PropagationCycle,
+} from './diagnostics'
 export { e } from './e'
 export { Engine } from './Engine'
 export { Cell, DerivedCell, Pipe, Resource, Stream, Trigger } from './nodes'

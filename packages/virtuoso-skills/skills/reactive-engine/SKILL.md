@@ -5,8 +5,9 @@ description: >-
   with Cell, Stream, Trigger, or Resource nodes, (2) wiring React components through EngineProvider, useCellValue, useCellValues, or
   usePublisher, (3) fetching data with Query and Mutation from reactive-engine-query, (4) routing with Route, Layout, and Guard from
   reactive-engine-router, (5) persisting cells with linkCellToStorage, (6) architecting a component or library on top of the engine,
-  or (7) any task involving Engine, pub, sub, getValue, combine, pipe, link, changeWith, the e namespace, or the error
-  "No active engine found".
+  (7) observing or troubleshooting propagation with describeNode, observeDiagnostics, useEngineDiagnostics, or
+  useRemoteEngineDiagnostics, or (8) any task involving Engine, pub, sub, getValue, combine, pipe, link, changeWith, the e namespace,
+  missing or duplicate emissions, unexpected distinct suppression, or the error "No active engine found".
 ---
 
 # Reactive Engine
@@ -16,7 +17,7 @@ A reactive state system built on a graph of typed nodes. Five packages compose:
 | Package                                 | Provides                                                                                                            |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `@virtuoso.dev/reactive-engine-core`    | Nodes (`Cell`, `Stream`, `Trigger`, `Resource`, `DerivedCell`), `Engine`, operators, combinators, the `e` namespace |
-| `@virtuoso.dev/reactive-engine-react`   | `EngineProvider`, hooks (`useCellValue`, `usePublisher`, remote hooks)                                              |
+| `@virtuoso.dev/reactive-engine-react`   | `EngineProvider`, state hooks, local and remote diagnostic hooks                                                    |
 | `@virtuoso.dev/reactive-engine-query`   | `Query` and `Mutation` data fetching on top of nodes                                                                |
 | `@virtuoso.dev/reactive-engine-router`  | `Route`, `Layout`, `Guard`, `Router` — routes are nodes                                                             |
 | `@virtuoso.dev/reactive-engine-storage` | `linkCellToStorage` (localStorage / sessionStorage / cookie)                                                        |
@@ -96,9 +97,22 @@ const Counter = () => {
 ```
 
 - `useCellValue(cell$)` subscribes and re-renders; `useCellValues(a$, b$, ...)` returns a tuple with a single combined subscription (prefer it for cells that change together); `useCell` is the `useState` shape; `usePublisher(node$)` returns a stable publish function
-- `EngineProvider` props: `initFn(engine)` (one-time setup: register nodes, seed with `pubIn`, attach bridges), `initWith` (initial cell values), `updateFn`/`updateDeps` (re-publish changed props; use `singletonSub` for callback props so re-renders replace instead of stack), `engineId`, `engineRef`
-- Remote hooks (`useRemoteCellValue`, `useRemotePublisher`, `useRemoteCell`, `useRemoteCellValues`) reach another provider's engine via `useEngineRef()` or a string `engineId` — they return `undefined` until that engine mounts; guard for it
+- `EngineProvider` props: `initFn(engine)` (one-time setup: register nodes, seed with `pubIn`, attach bridges), `initWith` (initial cell values), `updateFn`/`updateDeps` (re-publish changed props; use `singletonSub` for callback props so re-renders replace instead of stack), `engineId`, `engineRef`, and `diagnostics` (attach before `initFn`)
+- Remote hooks (`useRemoteCellValue`, `useRemotePublisher`, `useRemoteCell`, `useRemoteCellValues`, `useRemoteEngineDiagnostics`) reach another provider's engine via `useEngineRef()` or a string `engineId` — value hooks return `undefined` until that engine mounts; diagnostic observation waits and attaches automatically
 - Components stay projection-only: read cells, publish actions. Logic lives in module-scope wiring, testable with a bare `Engine` and no React
+
+## Troubleshoot propagation with diagnostics
+
+Use diagnostics when a value is missing, duplicated, unexpectedly suppressed, routed through the wrong engine, or throws during synchronous propagation:
+
+1. Label the root, expected sink, and intermediate nodes with `describeNode`. Add narrow `summarize` functions only for application-specific values that the built-in bounded summary cannot explain.
+2. Attach at the correct lifecycle: `EngineProvider.diagnostics` includes `initFn`; `useEngineDiagnostics` observes the nearest engine after commit; `useRemoteEngineDiagnostics` is for sibling tools and follows engine availability. Treat provider initialization records as at-least-once in development because React Strict Mode can evaluate initialization more than once.
+3. Start with value capture disabled. Read roots and events in order. Inspect `distinct-suppressed`, `no-candidate`, prune events, and `error.phase` before enabling `captureValues: 'summary'`.
+4. Compare `engineInstanceId` and `engineLabel` when state appears to come from the wrong instance. Use `transactionId`, `origin`, and `parentCycle` for synchronous nested or parent-child propagation. Async work starts a new transaction and needs application-level correlation.
+5. Enable summaries only for the nodes needed to verify the hypothesis. Redact before exporting. Node summarizers receive live values and must not mutate them or cause side effects.
+6. Remove the observer after reproduction. Core and React retain no history; build any diagnostic UI on a bounded external store, not `EngineProvider` state.
+
+Read [propagation diagnostics](references/core/06.diagnostics.md) for the record model, safety rules, and evidence-to-cause table. Read [React integration](references/react/01.react-integration.md) for provider, local-hook, remote-hook, Strict Mode, and SSR timing.
 
 ## Data fetching (reactive-engine-query)
 
@@ -173,7 +187,7 @@ Follow the data-table architecture ([full patterns](references/core/05.building-
 
 Guides in [references/](references/), per package:
 
-- `references/core/` — [core-concepts](references/core/01.core-concepts.md) (node types, distinct, the `e` namespace), [engine-and-lifecycle](references/core/02.engine-and-lifecycle.md) (activation, API flavors, child engines, disposal), [transactions](references/core/03.transactions.md) (cycles, topological execution, RxJS differences), [operators-and-combinators](references/core/04.operators-and-combinators.md) (full reference), [building-on-the-engine](references/core/05.building-on-the-engine.md) (architecture patterns from data-table), [README](references/core/README.md)
+- `references/core/` — [core-concepts](references/core/01.core-concepts.md) (node types, distinct, the `e` namespace), [engine-and-lifecycle](references/core/02.engine-and-lifecycle.md) (activation, API flavors, child engines, disposal), [transactions](references/core/03.transactions.md) (cycles, topological execution, RxJS differences), [operators-and-combinators](references/core/04.operators-and-combinators.md) (full reference), [building-on-the-engine](references/core/05.building-on-the-engine.md) (architecture patterns from data-table), [propagation-diagnostics](references/core/06.diagnostics.md) (records, safety, troubleshooting), [README](references/core/README.md)
 - `references/react/` — [react-integration](references/react/01.react-integration.md) (EngineProvider lifecycle, hooks, remote hooks, SSR), [README](references/react/README.md)
 - `references/query/` — [queries-and-mutations](references/query/01.queries-and-mutations.md) (result states, lifecycle, wiring patterns), [README](references/query/README.md)
 - `references/router/` — [routing](references/router/01.routing.md) (path syntax, navigation, layouts, guards), [README](references/router/README.md)

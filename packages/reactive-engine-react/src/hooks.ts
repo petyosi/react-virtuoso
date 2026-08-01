@@ -2,7 +2,15 @@ import * as React from 'react'
 
 import invariant from 'tiny-invariant'
 
-import type { Engine, Inp, NodeRef, Out, Subscription } from '@virtuoso.dev/reactive-engine-core'
+import type {
+  DiagnosticObserver,
+  DiagnosticObserverOptions,
+  Engine,
+  Inp,
+  NodeRef,
+  Out,
+  Subscription,
+} from '@virtuoso.dev/reactive-engine-core'
 
 export const useIsomorphicLayoutEffect = typeof document === 'undefined' ? React.useEffect : React.useLayoutEffect
 
@@ -35,6 +43,7 @@ const ENGINE_REF_INTERNAL = Symbol('engineRefInternal')
 
 interface EngineRefInternal extends EngineRef {
   [ENGINE_REF_INTERNAL]: {
+    clear(engine: Engine): void
     set(engine: Engine | null): void
     subscribe(callback: () => void): () => void
   }
@@ -43,18 +52,24 @@ interface EngineRefInternal extends EngineRef {
 function createEngineRef(): EngineRef {
   let current: Engine | null = null
   const subscribers = new Set<() => void>()
+  const setCurrent = (engine: Engine | null) => {
+    current = engine
+    subscribers.forEach((cb) => {
+      cb()
+    })
+  }
 
   const ref: EngineRefInternal = {
     get current() {
       return current
     },
     [ENGINE_REF_INTERNAL]: {
-      set(engine: Engine | null) {
-        current = engine
-        subscribers.forEach((cb) => {
-          cb()
-        })
+      clear(engine: Engine) {
+        if (current === engine) {
+          setCurrent(null)
+        }
       },
+      set: setCurrent,
       subscribe(callback: () => void): () => void {
         subscribers.add(callback)
         return () => {
@@ -125,6 +140,12 @@ export function setRegistryEngine(id: string, engine: Engine | null): void {
   }
 }
 
+export function clearRegistryEngine(id: string, engine: Engine): void {
+  if (engineRegistry.get(id)?.engine === engine) {
+    setRegistryEngine(id, null)
+  }
+}
+
 function subscribeToRegistry(id: string, callback: () => void): () => void {
   const entry = getOrCreateEntry(id)
   entry.subscribers.add(callback)
@@ -159,6 +180,32 @@ export function useEngine() {
   const engine = React.useContext(EngineContext)
   invariant(engine !== null, 'useEngine must be used within an EngineProvider')
   return engine
+}
+
+function useDiagnosticsSubscription(
+  engine: Engine | null,
+  observer: DiagnosticObserver | null,
+  options: DiagnosticObserverOptions | undefined
+): void {
+  useIsomorphicLayoutEffect(() => {
+    if (!engine || !observer) {
+      return
+    }
+    return engine.observeDiagnostics(observer, options)
+  }, [engine, observer, options?.captureValues, options?.includeSuppressed, options?.onObserverError, options?.redact])
+}
+
+/**
+ * Observes propagation cycles from the nearest {@link EngineProvider} without retaining them in React state.
+ * Pass `null` as the observer to disable observation without calling the hook conditionally.
+ *
+ * @remarks The subscription starts after commit and therefore does not observe publications from the provider's `initFn`.
+ * Use the provider's `diagnostics` prop when initialization cycles are required.
+ *
+ * @category React Hooks and Components
+ */
+export function useEngineDiagnostics(observer: DiagnosticObserver | null, options?: DiagnosticObserverOptions): void {
+  useDiagnosticsSubscription(useEngine(), observer, options)
 }
 
 function useCellValueWithStore<T>(cell: Out<T>): T {
@@ -376,6 +423,24 @@ function useRemoteEngine(source: EngineSource): Engine | null {
   }, [engineRef])
 
   return isRef ? engineFromRef : engineFromRegistry
+}
+
+/**
+ * Observes propagation cycles from an engine identified by `engineSource`.
+ * The subscription follows engines that mount, unmount, or are replaced under the same source.
+ * Pass `null` as the observer to disable observation without calling the hook conditionally.
+ *
+ * @param engineSource - A string engine ID or an {@link EngineRef} to observe.
+ * @param observer - Receives immutable propagation cycle records, or `null` to disable observation.
+ * @param options - Controls value capture, suppression records, redaction, and observer error handling.
+ * @category React Hooks and Components
+ */
+export function useRemoteEngineDiagnostics(
+  engineSource: EngineSource,
+  observer: DiagnosticObserver | null,
+  options?: DiagnosticObserverOptions
+): void {
+  useDiagnosticsSubscription(useRemoteEngine(engineSource), observer, options)
 }
 
 /**
