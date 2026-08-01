@@ -1,6 +1,6 @@
 {
   "name": "@virtuoso.dev/reactive-engine-query",
-  "version": "0.0.4",
+  "version": "1.0.0",
   "private": false,
   "description": "Reactive data fetching with queries and mutations for the Virtuoso reactive engine.",
   "license": "MIT",
@@ -44,6 +44,6 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@virtuoso.dev/reactive-engine-core": ">=0.0.8"
+    "@virtuoso.dev/reactive-engine-core": ">=0.1.0"
   }
 }

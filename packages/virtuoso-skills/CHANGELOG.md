@@ -1,5 +1,11 @@
 # @virtuoso.dev/virtuoso-skills
 
+## 0.2.0
+
+### Minor Changes
+
+- [`6305890`](https://github.com/petyosi/react-virtuoso/commit/6305890d8b2432990d67d64635f938f22ff0f301) Thanks [@petyosi](https://github.com/petyosi)! - Add provider, local-hook, and remote-hook bindings for structured engine diagnostics, including initialization capture, option updates, and lifecycle guidance for React consumers and coding agents.
+
 ## 0.1.3
 
 ### Patch Changes
