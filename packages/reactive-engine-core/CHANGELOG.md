@@ -1,5 +1,11 @@
 # @virtuoso.dev/reactive-engine-core
 
+## 0.1.0
+
+### Minor Changes
+
+- [`6305890`](https://github.com/petyosi/react-virtuoso/commit/6305890d8b2432990d67d64635f938f22ff0f301) Thanks [@petyosi](https://github.com/petyosi)! - Add opt-in structured propagation diagnostics with node metadata, deeply frozen bounded summaries, error isolation, synchronous causal links, and child-propagation failure evidence.
+
 ## 0.0.8
 
 ### Patch Changes
