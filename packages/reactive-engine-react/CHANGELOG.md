@@ -1,5 +1,14 @@
 # @virtuoso.dev/reactive-engine-react
 
+## 0.3.2
+
+### Patch Changes
+
+- [`e6cef21`](https://github.com/petyosi/react-virtuoso/commit/e6cef21e45bbe37d2cc83f69fe0c0f8c6ae4cdf8) Thanks [@petyosi](https://github.com/petyosi)! - Allow external-state bridges to observe one value type while forwarding a different write-request type.
+
+- Updated dependencies [[`744eb1e`](https://github.com/petyosi/react-virtuoso/commit/744eb1e1015bc8dcb9da6c5a71bb6abdf4d86147)]:
+  - @virtuoso.dev/reactive-engine-core@0.1.2
+
 ## 0.3.1
 
 ### Patch Changes

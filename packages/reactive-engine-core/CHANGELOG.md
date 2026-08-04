@@ -1,5 +1,11 @@
 # @virtuoso.dev/reactive-engine-core
 
+## 0.1.2
+
+### Patch Changes
+
+- [`744eb1e`](https://github.com/petyosi/react-virtuoso/commit/744eb1e1015bc8dcb9da6c5a71bb6abdf4d86147) Thanks [@petyosi](https://github.com/petyosi)! - Allow downstream wiring to reference a computed cell while its initial value is being calculated, while still rejecting recursive reads of unfinished computed state.
+
 ## 0.1.1
 
 ### Patch Changes
