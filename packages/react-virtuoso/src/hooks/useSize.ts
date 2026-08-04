@@ -1,4 +1,5 @@
 import React from 'react'
+import ReactDOM from 'react-dom'
 
 export type CallbackRefParam = HTMLElement | null
 
@@ -23,7 +24,9 @@ export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled: bo
           }
         }
         if (skipAnimationFrame) {
-          code()
+          // A ResizeObserver callback isn't a React-managed event, so an unwrapped setState
+          // here would paint one frame late. Match useScrollTop.ts's treatment of scroll events.
+          ReactDOM.flushSync(code)
         } else {
           requestAnimationFrame(code)
         }
