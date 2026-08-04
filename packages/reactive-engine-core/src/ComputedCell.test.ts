@@ -205,6 +205,47 @@ describe('ComputedCell', () => {
     }).toThrow(error)
   })
 
+  it('allows downstream wiring to reconverge while a dependency activates', () => {
+    const viewport$ = Cell(1)
+    const plan$ = ComputedCell([viewport$] as const, ([value]) => value * 2)
+    const advancement$ = e.combine(viewport$, plan$)
+    const subscriber = vi.fn()
+    e.sub(advancement$, subscriber)
+    const engine = new Engine()
+
+    expect(engine.getValue(plan$)).toBe(2)
+
+    engine.pub(viewport$, 2)
+
+    expect(engine.getValue(plan$)).toBe(4)
+    expect(subscriber).toHaveBeenCalledOnce()
+    expect(subscriber).toHaveBeenCalledWith([2, 4], engine)
+  })
+
+  it('retries initial projection after reconverging downstream wiring activates', () => {
+    const viewport$ = Cell(1)
+    const project = vi.fn(([value]: readonly [number]) => {
+      if (project.mock.calls.length === 1) {
+        throw new Error('projection failed')
+      }
+      return value * 2
+    })
+    const plan$ = ComputedCell([viewport$] as const, project)
+    const advancement$ = e.combine(viewport$, plan$)
+    const subscriber = vi.fn()
+    e.sub(advancement$, subscriber)
+    const engine = new Engine()
+
+    expect(() => engine.getValue(plan$)).toThrow('projection failed')
+    expect(engine.getValue(plan$)).toBe(2)
+    expect(project).toHaveBeenCalledTimes(2)
+
+    engine.pub(viewport$, 2)
+
+    expect(subscriber).toHaveBeenCalledOnce()
+    expect(subscriber).toHaveBeenCalledWith([2, 4], engine)
+  })
+
   it('rejects a computed activation cycle with a clear error', () => {
     const source$ = Cell(1)
     const first$ = ComputedCell([source$] as const, ([value]) => value)
@@ -216,5 +257,19 @@ describe('ComputedCell', () => {
     firstDefinition.dependencies = [second$]
 
     expect(() => new Engine().getValue(first$)).toThrow('ComputedCell activation cycle detected')
+  })
+
+  it('rejects a seeded computed activation cycle instead of reading the seed', () => {
+    const source$ = Cell(1)
+    const first$ = ComputedCell([source$] as const, ([value]) => value)
+    const second$ = ComputedCell([first$] as const, ([value]) => value)
+    const firstDefinition = computedCellDefs$$.get(first$)
+    if (firstDefinition === undefined) {
+      throw new Error('Expected computed definition')
+    }
+    firstDefinition.dependencies = [second$]
+    const engine = new Engine({ [first$]: 1, [second$]: 2 })
+
+    expect(() => engine.getValue(first$)).toThrow('ComputedCell activation cycle detected')
   })
 })

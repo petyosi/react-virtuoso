@@ -344,6 +344,9 @@ export class Engine {
     if (this.parentEngine?.hasOwnOrParentHasRef(node) === true) {
       return this.parentEngine.getValue(node)
     }
+    if (this.computedActivationStack.has(node)) {
+      throw new Error('ComputedCell activation cycle detected')
+    }
     this.register(node)
     return this.state.get(node) as T
   }
@@ -823,7 +826,7 @@ export class Engine {
    */
   register(node$: NodeRef) {
     if (this.computedActivationStack.has(node$) && !this.definitionRegistry.has(node$)) {
-      throw new Error('ComputedCell activation cycle detected')
+      return node$
     }
 
     // Check if already registered in this engine or parent
@@ -849,6 +852,7 @@ export class Engine {
         const initialValue = computedDefinition.project(computedDefinition.dependencies.map((dependency) => this.getValue(dependency)))
         this.definitionRegistry.add(node$)
         this.state.set(node$, initialValue)
+        this.computedActivationStack.delete(node$)
         const instance$ = this.cellInstance(initialValue, computedDefinition.distinct, node$)
 
         if (computedDefinition.dependencies.length > 0) {
