@@ -1,5 +1,24 @@
 # @virtuoso.dev/reactive-engine-core
 
+## 0.1.1
+
+### Patch Changes
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add synchronous after-settle continuations so graph work can wait for current propagation while retaining transaction diagnostics and
+  event ordering.
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add seed-aware computed cells and readable state references so derived state initializes from current per-engine dependency values without
+  manufacturing initial events.
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add diagnostic namespaces and bounded cycle collectors for targeted, application-owned propagation history.
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add explicit comparator, filter-map, and multi-resource graph primitives so consumers can declare observable identity, retained event
+  semantics, and imperative resource dependencies without repeating lower-level wiring.
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add an activation-scoped `Pulsar` node for valueless scheduled emissions from readable cadence state. Disposing a child engine now also removes subscriptions that it delegated to a parent-owned node.
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add `switchMapPromise` for abortable latest-only Promise projections with input-correlated results.
+
 ## 0.1.0
 
 ### Minor Changes
