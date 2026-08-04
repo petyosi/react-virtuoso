@@ -1,5 +1,16 @@
 # @virtuoso.dev/reactive-engine-react
 
+## 0.3.1
+
+### Patch Changes
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add an asymmetric external-state bridge that synchronizes observed values into cells and forwards only explicit write requests outward.
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add stable passive and layout engine subscription hooks that invoke the latest committed callback without resubscribing for callback-only renders.
+
+- Updated dependencies [[`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1)]:
+  - @virtuoso.dev/reactive-engine-core@0.1.1
+
 ## 0.3.0
 
 ### Minor Changes

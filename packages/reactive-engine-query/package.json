@@ -44,6 +44,6 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@virtuoso.dev/reactive-engine-core": ">=0.1.0"
+    "@virtuoso.dev/reactive-engine-core": ">=0.1.1"
   }
 }
