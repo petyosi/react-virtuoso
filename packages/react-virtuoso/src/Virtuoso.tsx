@@ -236,6 +236,7 @@ export const windowViewportStyle = (alignToBottom: boolean, useWindowScroll: boo
 const topItemListStyle: React.CSSProperties = {
   position: positionStickyCssValue(),
   top: 0,
+  left: 0,
   width: '100%',
   zIndex: 1,
 }
