@@ -1,7 +1,50 @@
 import { addNodeInit } from '@virtuoso.dev/reactive-engine-core'
 import invariant from 'tiny-invariant'
 
-import type { Engine, NodeInit, NodeRef } from '@virtuoso.dev/reactive-engine-core'
+import type { Engine, NodeInit, NodeRef, StateRef } from '@virtuoso.dev/reactive-engine-core'
+
+export type StoredValue<T> = { present: false } | { present: true; value: T }
+
+export interface StorageAdapter<T = string> {
+  read(key: string): StoredValue<T>
+  remove(key: string): void
+  subscribe(key: string, listener: (value: StoredValue<T>) => void): () => void
+  write(key: string, value: T): void
+}
+
+export type StorageRemovalPolicy<T> =
+  | { type: 'preserve' }
+  | { type: 'reset'; value: T }
+  | { resolve: (current: T) => StoredValue<T>; type: 'resolve' }
+
+export type StorageAdapterOperation = 'deserialize' | 'read' | 'removal' | 'serialize' | 'subscribe' | 'write'
+
+export interface StorageAdapterFailure {
+  error: unknown
+  key: string
+  operation: StorageAdapterOperation
+}
+
+interface AdapterStorageLinkBase<T, TStored> {
+  adapter: StateRef<StorageAdapter<TStored>>
+  debounceMs?: number
+  key: string
+  onError?: (failure: StorageAdapterFailure) => void
+  removal?: StorageRemovalPolicy<T>
+}
+
+interface StringAdapterCodecs<T> {
+  deserialize?: (value: string) => T
+  serialize?: (value: T) => string
+}
+
+interface CustomAdapterCodecs<T, TStored> {
+  deserialize: (value: TStored) => T
+  serialize: (value: T) => TStored
+}
+
+export type AdapterStorageLinkOptions<T, TStored = string> = AdapterStorageLinkBase<T, TStored> &
+  ([TStored] extends [string] ? StringAdapterCodecs<T> : CustomAdapterCodecs<T, TStored>)
 
 export interface CookieOptions {
   domain?: string
@@ -46,6 +89,43 @@ interface EngineStorageState {
 }
 const engineStorageState$$ = new WeakMap<Engine, EngineStorageState>()
 
+interface AdapterOperationMarker {
+  listenerError?: unknown
+  listenerThrew: boolean
+}
+
+const adapterOperations$$ = new WeakMap<object, AdapterOperationMarker[]>()
+
+function beginAdapterOperation(adapter: object): AdapterOperationMarker {
+  const marker = { listenerThrew: false }
+  const operations = adapterOperations$$.get(adapter) ?? []
+  operations.push(marker)
+  adapterOperations$$.set(adapter, operations)
+  return marker
+}
+
+function endAdapterOperation(adapter: object, marker: AdapterOperationMarker): void {
+  const operations = adapterOperations$$.get(adapter)
+  if (operations === undefined) {
+    return
+  }
+  const index = operations.lastIndexOf(marker)
+  if (index !== -1) {
+    operations.splice(index, 1)
+  }
+  if (operations.length === 0) {
+    adapterOperations$$.delete(adapter)
+  }
+}
+
+function markAdapterListenerError(adapter: object, error: unknown): void {
+  const marker = adapterOperations$$.get(adapter)?.at(-1)
+  if (marker !== undefined) {
+    marker.listenerError = error
+    marker.listenerThrew = true
+  }
+}
+
 /**
  * Links a cell to browser storage for automatic persistence and synchronization.
  *
@@ -75,8 +155,18 @@ const engineStorageState$$ = new WeakMap<Engine, EngineStorageState>()
  * })
  * ```
  */
-export function linkCellToStorage<T>(cell$: NodeRef<T>, options: StorageLinkOptions<T>): void {
+export function linkCellToStorage<T>(cell$: NodeRef<T>, options: StorageLinkOptions<T>): void
+export function linkCellToStorage<T, TStored = string>(cell$: StateRef<T>, options: AdapterStorageLinkOptions<T, TStored>): void
+export function linkCellToStorage<T, TStored>(
+  cell$: NodeRef<T>,
+  options: AdapterStorageLinkOptions<T, TStored> | StorageLinkOptions<T>
+): void {
   invariant(options.key, 'linkCellToStorage: key is required')
+
+  if ('adapter' in options) {
+    linkCellToAdapterStorage(cell$ as StateRef<T>, options)
+    return
+  }
 
   storageLinkMetadata$$.set(cell$, { options } as StorageLinkMetadata<unknown>)
 
@@ -182,6 +272,213 @@ export function linkCellToStorage<T>(cell$: NodeRef<T>, options: StorageLinkOpti
           state.timers.clear()
         })
       }
+    }) as NodeInit<unknown>,
+    cell$
+  )
+}
+
+function linkCellToAdapterStorage<T, TStored>(cell$: StateRef<T>, options: AdapterStorageLinkOptions<T, TStored>): void {
+  const debounceMs = options.debounceMs ?? 0
+  invariant(Number.isFinite(debounceMs) && debounceMs >= 0, 'linkCellToStorage: debounceMs must be a non-negative finite number')
+
+  const providedSerialize = options.serialize as ((value: T) => TStored) | undefined
+  const providedDeserialize = options.deserialize as ((value: TStored) => T) | undefined
+  const serialize: (value: T) => TStored =
+    providedSerialize ??
+    ((value: T) => {
+      const serialized = JSON.stringify(value)
+      if (serialized === undefined) {
+        throw new Error('linkCellToStorage: JSON serialization returned undefined')
+      }
+      return serialized as TStored
+    })
+  const deserialize: (value: TStored) => T = providedDeserialize ?? ((value: TStored) => JSON.parse(value as string) as T)
+
+  addNodeInit(
+    ((engine: Engine, node$: StateRef<T>) => {
+      let adapter = engine.getValue(options.adapter)
+      let adapterUnsubscribe: (() => void) | undefined
+      let disposed = false
+      const inboundEventFrames: { events: T[]; value: T }[] = []
+      let pendingTimer: ReturnType<typeof setTimeout> | undefined
+      let writing = false
+
+      const report = (operation: StorageAdapterOperation, error: unknown) => {
+        options.onError?.({ error, key: options.key, operation })
+      }
+
+      const cancelPendingWrite = () => {
+        if (pendingTimer !== undefined) {
+          clearTimeout(pendingTimer)
+          pendingTimer = undefined
+        }
+      }
+
+      const write = (value: T) => {
+        let stored: TStored
+        try {
+          stored = serialize(value)
+        } catch (error) {
+          report('serialize', error)
+          return
+        }
+
+        const selectedAdapter = adapter
+        const marker = beginAdapterOperation(selectedAdapter)
+        try {
+          writing = true
+          selectedAdapter.write(options.key, stored)
+        } catch (error) {
+          if (marker.listenerThrew && Object.is(error, marker.listenerError)) {
+            throw error
+          }
+          report('write', error)
+        } finally {
+          writing = false
+          endAdapterOperation(selectedAdapter, marker)
+        }
+      }
+
+      const persistExplicit = (value: T) => {
+        if (disposed) {
+          return
+        }
+        cancelPendingWrite()
+        if (debounceMs === 0) {
+          write(value)
+        } else {
+          pendingTimer = setTimeout(() => {
+            pendingTimer = undefined
+            if (!disposed) {
+              write(value)
+            }
+          }, debounceMs)
+        }
+      }
+
+      const publishInbound = (value: T) => {
+        const frame = { events: [] as T[], value }
+        inboundEventFrames.push(frame)
+        try {
+          engine.pub(node$, value)
+        } finally {
+          inboundEventFrames.pop()
+        }
+
+        const inboundIndex = frame.events.findIndex((eventValue) => Object.is(eventValue, frame.value))
+        if (inboundIndex !== -1) {
+          frame.events.splice(inboundIndex, 1)
+        }
+        for (const explicitValue of frame.events) {
+          persistExplicit(explicitValue)
+        }
+      }
+
+      const deserializeAndPublish = (stored: TStored) => {
+        let value: T
+        try {
+          value = deserialize(stored)
+        } catch (error) {
+          report('deserialize', error)
+          return
+        }
+        publishInbound(value)
+      }
+
+      const handleRemoval = () => {
+        const removal = options.removal
+        if (!removal || removal.type === 'preserve') {
+          return
+        }
+        if (removal.type === 'reset') {
+          publishInbound(removal.value)
+          return
+        }
+        let resolved: StoredValue<T>
+        try {
+          resolved = removal.resolve(engine.getValue(node$))
+        } catch (error) {
+          report('removal', error)
+          return
+        }
+        if (resolved.present) {
+          publishInbound(resolved.value)
+        }
+      }
+
+      const observeStoredValue = (selectedAdapter: StorageAdapter<TStored>, stored: StoredValue<TStored>) => {
+        if (disposed || selectedAdapter !== adapter || writing) {
+          return
+        }
+        cancelPendingWrite()
+        if (stored.present) {
+          deserializeAndPublish(stored.value)
+        } else {
+          handleRemoval()
+        }
+      }
+
+      const selectAdapter = (nextAdapter: StorageAdapter<TStored>) => {
+        cancelPendingWrite()
+        adapterUnsubscribe?.()
+        adapter = nextAdapter
+
+        let stored: StoredValue<TStored> | undefined
+        try {
+          stored = adapter.read(options.key)
+        } catch (error) {
+          report('read', error)
+        }
+        if (stored?.present === true) {
+          deserializeAndPublish(stored.value)
+        }
+
+        const selectedAdapter = adapter
+        const marker = beginAdapterOperation(selectedAdapter)
+        try {
+          adapterUnsubscribe = selectedAdapter.subscribe(options.key, (nextStored) => {
+            try {
+              observeStoredValue(selectedAdapter, nextStored)
+            } catch (error) {
+              markAdapterListenerError(selectedAdapter, error)
+              throw error
+            }
+          })
+        } catch (error) {
+          adapterUnsubscribe = undefined
+          if (marker.listenerThrew && Object.is(error, marker.listenerError)) {
+            throw error
+          }
+          report('subscribe', error)
+        } finally {
+          endAdapterOperation(selectedAdapter, marker)
+        }
+      }
+
+      selectAdapter(adapter)
+
+      const cellUnsubscribe = engine.sub(node$, (value) => {
+        const inboundFrame = inboundEventFrames.at(-1)
+        if (inboundFrame !== undefined) {
+          inboundFrame.events.push(value)
+          return
+        }
+        persistExplicit(value)
+      })
+      const selectionUnsubscribe = engine.sub(options.adapter, (nextAdapter) => {
+        if (nextAdapter !== adapter) {
+          selectAdapter(nextAdapter)
+        }
+      })
+
+      engine.onDispose(() => {
+        disposed = true
+        cancelPendingWrite()
+        adapterUnsubscribe?.()
+        adapterUnsubscribe = undefined
+        cellUnsubscribe()
+        selectionUnsubscribe()
+      })
     }) as NodeInit<unknown>,
     cell$
   )

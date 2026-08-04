@@ -7,13 +7,23 @@ import type { Distinct, NodeRef, Out } from './types'
  * @typeParam O - The type of values that the resulting node will emit.
  * @category Operators
  */
-export type Operator<I, TOut> = (source: Out<I>, engine: Engine) => NodeRef<TOut>
+export type Operator<I, TOut> = (source: Out<I>, engine: Engine, context?: OperatorContext) => NodeRef<TOut>
+
+/** @hidden */
+export interface OperatorContext {
+  pipeKey: symbol
+}
 
 /**
  * Shorter alias for {@link Operator}, to avoid extra long type signatures.
  * @category Misc
  */
 export type O<In, TOut> = Operator<In, TOut>
+
+/** Result emitted by {@link switchMapPromise}. */
+export type SwitchMapPromiseResult<TInput, TValue> =
+  | { input: TInput; status: 'success'; value: TValue }
+  | { error: unknown; input: TInput; status: 'error' }
 
 /**
  * Maps a the passed value with a projection function.
@@ -33,6 +43,46 @@ export function map<I, TOut>(mapFunction: (value: I) => TOut, distinct: Distinct
     })
     return sink
   }) satisfies Operator<I, TOut>
+}
+
+/**
+ * Projects source values and drops nullish results.
+ * Distinctness applies only to retained values and defaults to `true`.
+ *
+ * @category Operators
+ */
+export function filterMap<I, TOut>(project: (value: I) => null | TOut | undefined, distinct: Distinct<TOut> = true): Operator<I, TOut> {
+  return (source, eng) => {
+    const sink = eng.streamInstance<TOut>(distinct)
+    eng.connect({
+      map: (done) => (value) => {
+        const projected = project(value as I)
+        if (projected !== null && projected !== undefined) {
+          done(projected)
+        }
+      },
+      sink,
+      sources: [source],
+    })
+    return sink
+  }
+}
+
+/**
+ * Emits every source value after the current synchronous propagation wave settles.
+ * The continuation completes before the outer publication returns.
+ *
+ * @category Operators
+ */
+export function afterSettle<I>(): Operator<I, I> {
+  return (source, eng, context) => {
+    const sink = eng.streamInstance<I>(false)
+    const settleKey = context?.pipeKey ?? Symbol('afterSettle')
+    eng.sub(source, (value) => {
+      eng.scheduleAfterSettle(sink, value, settleKey)
+    })
+    return sink
+  }
 }
 
 /** @hidden */
@@ -261,6 +311,77 @@ export function delayWithMicrotask<I>(): Operator<I, I> {
         eng.pub(sink, value)
       })
     })
+    return sink
+  }
+}
+
+/**
+ * Projects each source value to abortable Promise work and emits only the latest live result.
+ * Results retain the input that created them and repeated equal results remain observable.
+ *
+ * @param project - Starts Promise work with the source input and an operator-owned abort signal.
+ * @category Operators
+ */
+export function switchMapPromise<TInput, TValue>(
+  project: (input: TInput, signal: AbortSignal) => Promise<TValue>
+): Operator<TInput, SwitchMapPromiseResult<TInput, TValue>> {
+  return (source, eng) => {
+    const sink = eng.streamInstance<SwitchMapPromiseResult<TInput, TValue>>(false)
+    let activeController: AbortController | undefined
+    let disposed = false
+    let generation = 0
+
+    eng.sub(source, (input) => {
+      generation += 1
+      const owner = generation
+      const previousController = activeController
+      activeController = undefined
+      previousController?.abort()
+
+      if (disposed || eng.isDisposed || generation !== owner) {
+        return
+      }
+
+      const controller = new AbortController()
+      activeController = controller
+
+      const publish = (result: SwitchMapPromiseResult<TInput, TValue>) => {
+        if (!disposed && !eng.isDisposed && generation === owner && activeController === controller) {
+          activeController = undefined
+          eng.pub(sink, result)
+        }
+      }
+
+      let promise: Promise<TValue>
+      try {
+        promise = project(input, controller.signal)
+      } catch (error) {
+        publish({ error, input, status: 'error' })
+        return
+      }
+
+      // The rejection handler must not catch errors thrown by success-result subscribers.
+      // oxlint-disable-next-line promise/prefer-catch
+      Promise.resolve(promise).then(
+        (value) => {
+          publish({ input, status: 'success', value })
+          return undefined
+        },
+        (error: unknown) => {
+          publish({ error, input, status: 'error' })
+          return undefined
+        }
+      )
+    })
+
+    eng.onDispose(() => {
+      disposed = true
+      generation += 1
+      const controller = activeController
+      activeController = undefined
+      controller?.abort()
+    })
+
     return sink
   }
 }

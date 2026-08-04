@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { observeDiagnosticAllocationsForTests } from './diagnostics'
-import { Cell, describeNode, Engine, Resource, Stream, Trigger } from './index'
+import { Cell, describeNode, e, Engine, Resource, Stream, Trigger } from './index'
 
 import type { DiagnosticAllocationKind, DiagnosticNodeEvaluationEvent, DiagnosticValue, PropagationCycle } from './diagnostics'
 
@@ -637,6 +637,49 @@ describe('engine diagnostics', () => {
     engine.pub(node$, 2)
 
     expect(late).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps after-settle cycles in the scheduling diagnostic transaction', () => {
+    const source$ = Stream<number>(false)
+    const settled$ = e.pipe(source$, e.afterSettle())
+    describeNode(source$, { label: 'source' })
+    describeNode(settled$, { label: 'settled' })
+    const engine = new Engine()
+    const records: PropagationCycle[] = []
+    engine.observeDiagnostics((cycle) => records.push(cycle))
+    engine.sub(settled$, () => undefined)
+
+    engine.pub(source$, 1)
+
+    expect(records.map((cycle) => cycle.origin)).toEqual(['publication', 'after-settle'])
+    expect(new Set(records.map((cycle) => cycle.transactionId)).size).toBe(1)
+    expect(records[1]?.cycleId).not.toBe(records[0]?.cycleId)
+    expect(records[1]?.parentCycle).toEqual({
+      cycleId: records[0]?.cycleId,
+      engineInstanceId: records[0]?.engineInstanceId,
+    })
+  })
+
+  it('records continuation failures before rethrowing them', () => {
+    const source$ = Stream<number>(false)
+    const settled$ = e.pipe(source$, e.afterSettle())
+    const error = new Error('continuation failed')
+    const engine = new Engine()
+    const records: PropagationCycle[] = []
+    engine.observeDiagnostics((cycle) => records.push(cycle))
+    engine.sub(settled$, () => {
+      throw error
+    })
+
+    expect(() => {
+      engine.pub(source$, 1)
+    }).toThrow(error)
+
+    expect(records.at(-1)).toMatchObject({
+      origin: 'after-settle',
+      status: 'aborted',
+    })
+    expect(records.at(-1)?.error?.phase).toBe('subscriber')
   })
 
   it('keeps metadata inert without summary capture and removes observers on disposal', () => {

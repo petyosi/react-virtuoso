@@ -7,8 +7,11 @@ export {
   useCellValues,
   useEngine,
   useEngineDiagnostics,
+  useEngineLayoutSubscription,
   useEngineRef,
+  useEngineSubscription,
   useIsomorphicLayoutEffect,
+  useLinkCellToExternalState,
   usePublisher,
   useRemoteCell,
   useRemoteCellValue,
@@ -16,7 +19,7 @@ export {
   useRemoteEngineDiagnostics,
   useRemotePublisher,
 } from './hooks'
-export type { EngineRef, EngineSource, RemoteCellValuesOptions } from './hooks'
+export type { EngineRef, EngineSource, LinkCellToExternalStateOptions, RemoteCellValuesOptions } from './hooks'
 export type {
   DiagnosticObserver,
   DiagnosticObserverOptions,

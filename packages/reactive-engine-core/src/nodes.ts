@@ -4,12 +4,14 @@
  */
 
 import { link, pipe } from './combinators'
-import { CELL_TYPE, nodeDefs$$, RESOURCE_TYPE, resourceDefs$$, TRIGGER_TYPE } from './globals'
+import { CELL_TYPE, computedCellDefs$$, nodeDefs$$, RESOURCE_TYPE, resourceDefs$$, TRIGGER_TYPE } from './globals'
 import { addNodeInit } from './nodeUtils'
 import { tap } from './utils'
 
 import type { O } from './operators'
-import type { Distinct, Inp, NodeRef, Out, ResourceFactory, ResourceRef } from './types'
+import type { Distinct, Inp, NodeRef, Out, PulsarOptions, ResourceFactory, ResourceRef, StateRef, StateValues } from './types'
+
+const MAX_TIMER_DELAY = 2_147_483_647
 
 /**
  * Defines a new **stateless node** and returns a reference to it.
@@ -97,10 +99,10 @@ export function Stream<T>(distinct: Distinct<T> = true): NodeRef<T> {
  *
  * @category Nodes
  */
-export function Cell<T>(value: T, distinct: Distinct<T> = true): NodeRef<T> {
+export function Cell<T>(value: T, distinct: Distinct<T> = true): StateRef<T> {
   return tap(Symbol('cell'), (id) => {
     nodeDefs$$.set(id, { distinct, initial: value, type: CELL_TYPE })
-  }) as NodeRef<T>
+  }) as StateRef<T>
 }
 
 /**
@@ -127,6 +129,88 @@ export function Trigger(): NodeRef<void> {
   return tap(Symbol('trigger'), (id) => {
     nodeDefs$$.set(id, { distinct: false, type: TRIGGER_TYPE })
   }) as NodeRef<void>
+}
+
+/**
+ * Defines a valueless source that pulses at a cadence stored in readable state.
+ * The timer starts when the output activates in an engine and stops when that engine is disposed.
+ *
+ * A positive finite cadence arms the source and `null` disarms it. Other values throw a `RangeError`.
+ * With `leading: true`, activation with an armed cadence and disarmed-to-armed transitions schedule a zero-delay pulse.
+ * Retuning an armed source restarts the full delay without another leading pulse.
+ *
+ * @param cadence$ - Readable cadence state in milliseconds, or `null` to disarm.
+ * @param options - Scheduled-source behavior.
+ * @returns A valueless output node.
+ * @category Nodes
+ */
+export function Pulsar(cadence$: StateRef<number | null>, options: PulsarOptions = {}): Out<void> {
+  if (nodeDefs$$.get(cadence$)?.type !== CELL_TYPE && !computedCellDefs$$.has(cadence$)) {
+    throw new Error('Pulsar cadence must be state created with Cell, DerivedCell, or ComputedCell')
+  }
+
+  const pulse$ = Trigger()
+  const leading = options.leading === true
+  addNodeInit((eng) => {
+    let cadence: number | null = null
+    let disposed = false
+    let generation = 0
+    let timeout: null | ReturnType<typeof setTimeout> = null
+
+    const clearTimer = () => {
+      if (timeout !== null) {
+        clearTimeout(timeout)
+        timeout = null
+      }
+    }
+
+    const schedule = (delay: number, owner: number) => {
+      const chunk = Math.min(delay, MAX_TIMER_DELAY)
+      timeout = setTimeout(() => {
+        if (disposed || generation !== owner) {
+          return
+        }
+
+        timeout = null
+        if (delay > MAX_TIMER_DELAY) {
+          schedule(delay - MAX_TIMER_DELAY, owner)
+          return
+        }
+        eng.pub(pulse$)
+
+        if (!disposed && generation === owner && cadence !== null) {
+          schedule(cadence, owner)
+        }
+      }, chunk)
+    }
+
+    const applyCadence = (candidate: number | null) => {
+      if (candidate !== null && (!Number.isFinite(candidate) || candidate <= 0)) {
+        throw new RangeError('Pulsar cadence must be null or a positive finite number')
+      }
+
+      const wasArmed = cadence !== null
+      generation += 1
+      clearTimer()
+      cadence = candidate
+
+      if (candidate !== null) {
+        const owner = generation
+        schedule(leading && !wasArmed ? 0 : candidate, owner)
+      }
+    }
+
+    const unsubscribe = eng.sub(cadence$, applyCadence)
+    eng.onDispose(() => {
+      disposed = true
+      generation += 1
+      clearTimer()
+      unsubscribe()
+    })
+    applyCadence(eng.getValue(cadence$))
+  }, pulse$)
+
+  return pulse$
 }
 
 /**
@@ -190,7 +274,7 @@ export function Resource<T>(factory: ResourceFactory<T>): ResourceRef<T> {
  * ```
  * @category Nodes
  */
-export function DerivedCell<T>(value: T, source$: NodeRef<T>, distinct: Distinct<T> = true): NodeRef<T> {
+export function DerivedCell<T>(value: T, source$: NodeRef<T>, distinct: Distinct<T> = true): StateRef<T> {
   return tap(Symbol('derived-cell'), (id) => {
     nodeDefs$$.set(id, {
       distinct,
@@ -201,7 +285,37 @@ export function DerivedCell<T>(value: T, source$: NodeRef<T>, distinct: Distinct
     addNodeInit((r, node$) => {
       r.link(source$, node$)
     }, id as NodeRef<T>)
-  }) as NodeRef<T>
+  }) as StateRef<T>
+}
+
+/**
+ * Defines state computed from the current values of other state nodes.
+ * Activation projects once without emitting. Later dependency changes recompute transactionally.
+ *
+ * @param dependencies - Cells, derived cells, or other computed cells whose current values are readable.
+ * @param project - Pure projection from the dependency tuple to the computed value.
+ * @param distinct - Controls duplicate result emission. Defaults to `true`.
+ * @category Nodes
+ */
+export function ComputedCell<const TDependencies extends readonly StateRef[], T>(
+  dependencies: TDependencies,
+  project: (values: StateValues<TDependencies>) => T,
+  distinct: Distinct<T> = true
+): StateRef<T> {
+  const capturedDependencies = [...dependencies]
+  for (const dependency of capturedDependencies) {
+    if (nodeDefs$$.get(dependency)?.type !== CELL_TYPE && !computedCellDefs$$.has(dependency)) {
+      throw new Error('ComputedCell dependencies must be state nodes created with Cell, DerivedCell, or ComputedCell')
+    }
+  }
+
+  return tap(Symbol('computed-cell'), (id) => {
+    computedCellDefs$$.set(id, {
+      dependencies: capturedDependencies,
+      distinct: distinct as Distinct<unknown>,
+      project: project as (values: readonly unknown[]) => unknown,
+    })
+  }) as StateRef<T>
 }
 
 /**

@@ -9,6 +9,7 @@ import type {
   Inp,
   NodeRef,
   Out,
+  StateRef,
   Subscription,
 } from '@virtuoso.dev/reactive-engine-core'
 
@@ -180,6 +181,100 @@ export function useEngine() {
   const engine = React.useContext(EngineContext)
   invariant(engine !== null, 'useEngine must be used within an EngineProvider')
   return engine
+}
+
+type SubscriptionEffect = typeof React.useEffect
+
+function useEngineSubscriptionInternal<T>(node: Out<T>, callback: Subscription<T>, useSubscriptionEffect: SubscriptionEffect): void {
+  const engine = useEngine()
+  const committedBinding = React.useRef({ callback, engine, node })
+
+  useIsomorphicLayoutEffect(() => {
+    committedBinding.current = { callback, engine, node }
+  }, [callback, engine, node])
+
+  useSubscriptionEffect(() => {
+    return engine.sub(node, (value, emittingEngine) => {
+      const current = committedBinding.current
+      if (current.engine === engine && current.node === node) {
+        return current.callback(value, emittingEngine)
+      }
+      return undefined
+    })
+  }, [engine, node])
+}
+
+/**
+ * Subscribes to an engine node after passive effects commit.
+ * Callback changes do not recreate the engine subscription; later emissions use
+ * the latest callback committed by this hook instance.
+ *
+ * @remarks Attachment is silent and does not replay a cell's current value. Publications
+ * before the passive effect attaches are not observed. Use {@link useEngineLayoutSubscription}
+ * when the subscription must attach in the layout phase.
+ *
+ * @category React Hooks and Components
+ */
+export function useEngineSubscription<T>(node: Out<T>, callback: Subscription<T>): void {
+  useEngineSubscriptionInternal(node, callback, React.useEffect)
+}
+
+/**
+ * Subscribes to an engine node in an isomorphic layout effect.
+ * Callback changes do not recreate the engine subscription; later emissions use
+ * the latest callback committed by this hook instance.
+ *
+ * @remarks Attachment is silent and can observe only publications that occur after its
+ * own layout effect. Place the hook before a same-component layout effect whose
+ * publications it must observe. On the server, attachment follows the package's passive
+ * {@link useIsomorphicLayoutEffect} fallback.
+ *
+ * @category React Hooks and Components
+ */
+export function useEngineLayoutSubscription<T>(node: Out<T>, callback: Subscription<T>): void {
+  useEngineSubscriptionInternal(node, callback, useIsomorphicLayoutEffect)
+}
+
+/** Options for {@link useLinkCellToExternalState}. */
+export interface LinkCellToExternalStateOptions<T> {
+  /** Writable state synchronized from the observed external value. */
+  cell: StateRef<T>
+  /** Controls external-to-cell suppression. Defaults to `Object.is`. */
+  equals?: (current: NoInfer<T>, external: NoInfer<T>) => boolean
+  /** Current value observed from the external owner. */
+  externalValue: NoInfer<T>
+  /** Writes one explicitly requested value to the external owner. */
+  writeExternalValue: (value: NoInfer<T>) => unknown
+  /** Event node whose values represent explicit external write intent. */
+  writeRequested: Out<NoInfer<T>>
+}
+
+/**
+ * Synchronizes observed external state into a cell and forwards explicit write
+ * requests to an external owner.
+ *
+ * @remarks The directions are intentionally asymmetric. Cell publications do not
+ * invoke `writeExternalValue`; only `writeRequested` events do. Inbound synchronization
+ * runs in an isomorphic layout effect and uses `Object.is` unless `equals` is supplied.
+ *
+ * @category React Hooks and Components
+ */
+export function useLinkCellToExternalState<T>({
+  cell,
+  equals,
+  externalValue,
+  writeExternalValue,
+  writeRequested,
+}: LinkCellToExternalStateOptions<T>): void {
+  const engine = useEngine()
+
+  useEngineLayoutSubscription(writeRequested, (value) => writeExternalValue(value))
+
+  useIsomorphicLayoutEffect(() => {
+    if (!(equals ?? Object.is)(engine.getValue(cell), externalValue)) {
+      engine.pub(cell, externalValue)
+    }
+  }, [cell, engine, equals, externalValue])
 }
 
 function useDiagnosticsSubscription(

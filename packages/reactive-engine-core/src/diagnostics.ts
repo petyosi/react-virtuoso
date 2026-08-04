@@ -80,7 +80,7 @@ export interface PropagationCycle {
   readonly engineLabel?: string
   readonly error?: DiagnosticError
   readonly events: readonly DiagnosticCycleEvent[]
-  readonly origin: 'forwarded-from-parent' | 'forwarded-to-parent' | 'publication'
+  readonly origin: 'after-settle' | 'forwarded-from-parent' | 'forwarded-to-parent' | 'publication'
   readonly parentCycle?: DiagnosticCycleRef
   readonly roots: readonly DiagnosticRootPublication[]
   readonly startedAt: number

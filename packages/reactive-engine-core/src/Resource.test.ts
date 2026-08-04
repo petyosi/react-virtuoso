@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { e, Engine, Resource, Stream, withResource } from './index'
+import { e, Engine, Resource, Stream, withResource, withResources } from './index'
 
 describe('Resource', () => {
   it('creates a resource and returns its value', () => {
@@ -80,6 +80,67 @@ describe('Resource', () => {
     engine.pub(input$, ['b', 2])
     expect(cache.get('b')).toBe(2)
     expect(cache.size).toBe(2)
+  })
+
+  it('withResources samples the current resource tuple only when the source emits', () => {
+    const cache$ = Resource(() => new Map<string, number>())
+    const prefix$ = Resource(() => 'initial')
+    const input$ = Stream<string>(false)
+    const action = vi.fn()
+
+    withResources(input$, [cache$, prefix$] as const, action)
+
+    const engine = new Engine()
+    const initialCache = engine.getValue(cache$)
+    engine.pub(input$, 'first')
+
+    const replacementCache = new Map<string, number>()
+    engine.pub(cache$, replacementCache)
+    engine.pub(prefix$, 'next')
+    expect(action).toHaveBeenCalledTimes(1)
+
+    engine.pub(input$, 'second')
+    expect(action).toHaveBeenNthCalledWith(1, 'first', [initialCache, 'initial'])
+    expect(action).toHaveBeenNthCalledWith(2, 'second', [replacementCache, 'next'])
+  })
+
+  it('withResources initializes resources lazily', () => {
+    const factory = vi.fn(() => ({ value: 1 }))
+    const resource$ = Resource(factory)
+    const input$ = Stream<void>(false)
+
+    withResources(input$, [resource$] as const, () => undefined)
+
+    const engine = new Engine()
+    expect(factory).not.toHaveBeenCalled()
+    engine.pub(input$)
+    expect(factory).toHaveBeenCalledTimes(1)
+  })
+
+  it('withResources propagates resource and action errors', () => {
+    const factoryError = new Error('Factory failed')
+    const actionError = new Error('Action failed')
+    const failing$ = Resource(() => {
+      throw factoryError
+    })
+    const inputForFactory$ = Stream<void>(false)
+    withResources(inputForFactory$, [failing$] as const, () => undefined)
+
+    const factoryEngine = new Engine()
+    expect(() => {
+      factoryEngine.pub(inputForFactory$)
+    }).toThrow(factoryError)
+
+    const resource$ = Resource(() => ({ value: 1 }))
+    const inputForAction$ = Stream<void>(false)
+    withResources(inputForAction$, [resource$] as const, () => {
+      throw actionError
+    })
+
+    const actionEngine = new Engine()
+    expect(() => {
+      actionEngine.pub(inputForAction$)
+    }).toThrow(actionError)
   })
 
   it('child engine accesses parent resource', () => {

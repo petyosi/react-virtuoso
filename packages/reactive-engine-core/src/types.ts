@@ -10,6 +10,21 @@ import type { SetMap } from './SetMap'
  */
 export type NodeRef<T = unknown> = symbol & { valType: T }
 
+declare const STATE_REF_TYPE: unique symbol
+
+/**
+ * A node reference with synchronously readable state.
+ * Returned by {@link Cell}, {@link DerivedCell}, and {@link ComputedCell}.
+ * @typeParam T - The type of the current value.
+ * @category Nodes
+ */
+export type StateRef<T = unknown> = NodeRef<T> & { readonly [STATE_REF_TYPE]: true }
+
+/** @hidden */
+export type StateValues<TStates extends readonly StateRef[]> = {
+  [K in keyof TStates]: TStates[K] extends StateRef<infer TValue> ? TValue : never
+}
+
 /** An alias for the NodeRef, signifying that the ref will be used only for publishing.
  * @category Misc
  */
@@ -19,6 +34,12 @@ export type Inp<T = unknown> = NodeRef<T>
  * @category Misc
  */
 export type Out<T = unknown> = NodeRef<T>
+
+/** Options for a {@link Pulsar} scheduled source. */
+export interface PulsarOptions {
+  /** Schedule a zero-delay pulse when activation or a disarmed-to-armed transition supplies a valid cadence. */
+  leading?: boolean
+}
 
 /**
  * A function that is called when a node emits a value.
@@ -55,7 +76,7 @@ export interface ExecutionMap {
 /**
  * A function which determines if two values are equal.
  * Implement custom comparators for distinct nodes that contain non-primitive values.
- * @param previous - The value that previously passed through the node. can be undefined if the node has not emitted a value yet.
+ * @param previous - The node's previous value. It can be undefined when a state node stores undefined. A stream's first candidate bypasses comparison.
  * @param current - The value currently passing.
  * @typeParam T - The type of values that the comparator compares.
  * @returns true if values should be considered equal.
@@ -90,6 +111,13 @@ export interface CellDefinition<T> {
 export interface StreamDefinition<T> {
   distinct: Distinct<T>
   type: typeof STREAM_TYPE | typeof TRIGGER_TYPE
+}
+
+/** @hidden */
+export interface ComputedCellDefinition {
+  dependencies: readonly StateRef[]
+  distinct: Distinct<unknown>
+  project: (values: readonly unknown[]) => unknown
 }
 
 /** @hidden */

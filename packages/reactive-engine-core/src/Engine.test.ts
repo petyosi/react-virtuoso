@@ -582,6 +582,73 @@ describe('instance subscriptions', () => {
     expect(spy1).toHaveBeenCalledTimes(1)
   })
 
+  it('removes delegated subscriptions when a child is disposed', () => {
+    const node$ = Stream<number>(false)
+    const parent = new Engine()
+    const child = new Engine({}, undefined, parent)
+    const subscriber = vi.fn()
+    parent.register(node$)
+    child.sub(node$, subscriber)
+
+    child.dispose()
+    parent.pub(node$, 1)
+
+    expect(subscriber).not.toHaveBeenCalled()
+  })
+
+  it('keeps delegated singleton subscriptions scoped to each child', () => {
+    const node$ = Stream<number>(false)
+    const parent = new Engine()
+    const firstChild = new Engine({}, undefined, parent)
+    const secondChild = new Engine({}, undefined, parent)
+    const firstSubscriber = vi.fn()
+    const secondSubscriber = vi.fn()
+    parent.register(node$)
+    firstChild.singletonSub(node$, firstSubscriber)
+    secondChild.singletonSub(node$, secondSubscriber)
+
+    firstChild.dispose()
+    parent.pub(node$, 1)
+
+    expect(firstSubscriber).not.toHaveBeenCalled()
+    expect(secondSubscriber).toHaveBeenCalledTimes(1)
+  })
+
+  it('replaces and removes a delegated singleton subscription', () => {
+    const node$ = Stream<number>(false)
+    const parent = new Engine()
+    const child = new Engine({}, undefined, parent)
+    const firstSubscriber = vi.fn()
+    const secondSubscriber = vi.fn()
+    parent.register(node$)
+
+    const firstUnsubscribe = child.singletonSub(node$, firstSubscriber)
+    child.singletonSub(node$, secondSubscriber)
+    firstUnsubscribe()
+    parent.pub(node$, 1)
+
+    expect(firstSubscriber).not.toHaveBeenCalled()
+    expect(secondSubscriber).toHaveBeenCalledTimes(1)
+
+    child.singletonSub(node$, undefined)
+    parent.pub(node$, 2)
+    expect(secondSubscriber).toHaveBeenCalledTimes(1)
+  })
+
+  it('resets delegated singleton subscriptions', () => {
+    const node$ = Stream<number>(false)
+    const parent = new Engine()
+    const child = new Engine({}, undefined, parent)
+    const subscriber = vi.fn()
+    parent.register(node$)
+    child.singletonSub(node$, subscriber)
+
+    child.resetSingletonSubs()
+    parent.pub(node$, 1)
+
+    expect(subscriber).not.toHaveBeenCalled()
+  })
+
   it('supports changing a cell value', () => {
     const a = Cell(1)
     const b = Stream<number>(false)

@@ -1,7 +1,7 @@
 import { SetMap } from './SetMap'
 
 import type { Engine } from './Engine'
-import type { CellDefinition, NodeInit, NodeRef, ResourceDefinition, StreamDefinition } from './types'
+import type { CellDefinition, ComputedCellDefinition, NodeInit, NodeRef, ResourceDefinition, StreamDefinition } from './types'
 
 export const CELL_TYPE = 'cell'
 
@@ -13,6 +13,7 @@ export const RESOURCE_TYPE = 'resource'
 
 export const nodeDefs$$ = new Map<symbol, CellDefinition<any> | StreamDefinition<any>>()
 export const resourceDefs$$ = new Map<symbol, ResourceDefinition<any>>()
+export const computedCellDefs$$ = new Map<symbol, ComputedCellDefinition>()
 export const nodeDebugLabels$$ = new Map<symbol, string>()
 export const nodeInits$$ = new SetMap<NodeInit<unknown>>()
 export const nodeInitSubscriptions$$ = new Set<(nodes$: NodeRef[], init: NodeInit<unknown>) => void>()

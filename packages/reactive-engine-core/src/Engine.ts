@@ -13,10 +13,20 @@ import {
   runInDiagnosticTransaction,
   summarizeDiagnosticValue,
 } from './diagnostics'
-import { CELL_TYPE, inEngineContext, nodeDebugLabels$$, nodeDefs$$, nodeInits$$, nodeInitSubscriptions$$, resourceDefs$$ } from './globals'
+import {
+  CELL_TYPE,
+  computedCellDefs$$,
+  inEngineContext,
+  nodeDebugLabels$$,
+  nodeDefs$$,
+  nodeInits$$,
+  nodeInitSubscriptions$$,
+  resourceDefs$$,
+} from './globals'
+import { runInPropagationContext, scheduleAfterSettle } from './propagation'
 import { RefCount } from './RefCount'
 import { SetMap } from './SetMap'
-import { combinedCellProjection, defaultComparator, tap } from './utils'
+import { combinedCellProjection, defaultComparator, noop, tap } from './utils'
 
 import type {
   DiagnosticCandidate,
@@ -96,6 +106,7 @@ export class Engine {
   private readonly calledInits = new Set<NodeInit<unknown>>()
   private readonly childEngines: Engine[] = []
   private readonly combinedCells: CombinedCellRecord[] = []
+  private readonly computedActivationStack = new Set<symbol>()
   private readonly definitionRegistry = new Set<symbol>()
   private readonly disposeCallbacks = new Set<() => void>()
   private readonly distinctNodes = new Map<symbol, Comparator<unknown>>()
@@ -109,8 +120,8 @@ export class Engine {
   private readonly executionMaps = new Map<symbol | symbol[], ExecutionMap>()
   private readonly graph = new SetMap<NodeProjection>()
   private parentEngine: Engine | undefined = undefined
-  private readonly parentEngineSingletonSubscriptions = new Map<symbol, Subscription<unknown>>()
-  private readonly parentEngineSubscriptions = new SetMap<Subscription<unknown>>()
+  private readonly parentEngineSingletonSubscriptions = new Map<symbol, UnsubscribeHandle>()
+  private readonly parentEngineSubscriptions = new Set<UnsubscribeHandle>()
   private readonly resources = new Map<symbol, unknown>()
   private readonly singletonSubscriptions = new Map<symbol, Subscription<unknown>>()
   private readonly state = new Map<symbol, unknown>()
@@ -298,6 +309,7 @@ export class Engine {
     this.resources.clear()
 
     this.combinedCells.length = 0
+    this.computedActivationStack.clear()
     this.definitionRegistry.clear()
     this.diagnosticNodeIds.clear()
     this.diagnosticNodeKinds.clear()
@@ -307,6 +319,12 @@ export class Engine {
     this.executionMaps.clear()
     this.graph.clear()
     this.singletonSubscriptions.clear()
+    for (const unsubscribe of this.parentEngineSingletonSubscriptions.values()) {
+      unsubscribe()
+    }
+    for (const unsubscribe of this.parentEngineSubscriptions) {
+      unsubscribe()
+    }
     this.parentEngineSingletonSubscriptions.clear()
     this.parentEngineSubscriptions.clear()
     this.state.clear()
@@ -392,7 +410,12 @@ export class Engine {
    * @typeParam T - The type of values that the source node will emit.
    */
   pipe<T>(source: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef {
-    return this.combineOperators(...operators)(source)
+    return this.pipeWithKey(source, Symbol('pipe'), operators)
+  }
+
+  /** @hidden */
+  pipeWithKey<T>(source: Out<T>, pipeKey: symbol, operators: O<unknown, unknown>[]): NodeRef {
+    return this.combineOperators(pipeKey, ...operators)(source)
   }
   /**
    * Runs the subscriptions of this node.
@@ -437,15 +460,42 @@ export class Engine {
    */
   pubIn(values: Record<symbol, unknown>, skipParent = false) {
     runInDiagnosticTransaction(this.hasDiagnosticsInFamily(), (transaction) => {
-      this.pubInTransaction(
-        values,
-        skipParent,
-        transaction,
-        skipParent ? 'forwarded-from-parent' : 'publication',
-        transaction?.activeCycle,
-        true
-      )
+      runInPropagationContext(transaction, () => {
+        this.pubInTransaction(
+          values,
+          skipParent,
+          transaction,
+          skipParent ? 'forwarded-from-parent' : 'publication',
+          transaction?.activeCycle,
+          true
+        )
+      })
     })
+  }
+
+  /** @hidden */
+  scheduleAfterSettle<T>(node: Inp<T>, value: T, pipeKey: symbol) {
+    scheduleAfterSettle(
+      (transaction, parentCycle) => {
+        if (!this.isDisposed) {
+          this.pubInTransaction({ [node]: value }, false, transaction, 'after-settle', parentCycle, true)
+          return true
+        }
+        return false
+      },
+      pipeKey,
+      this,
+      (owner) => {
+        let ancestor = this.parentEngine
+        while (ancestor !== undefined) {
+          if (ancestor === owner) {
+            return true
+          }
+          ancestor = ancestor.parentEngine
+        }
+        return false
+      }
+    )
   }
 
   private pubInTransaction(
@@ -587,7 +637,7 @@ export class Engine {
           const dnRef = this.distinctNodes.get(id)
           let suppressed = false
           try {
-            suppressed = transientState.has(id) && dnRef?.(previous, value) === true
+            suppressed = hadPrevious && dnRef?.(previous, value) === true
           } catch (error) {
             currentAttemptErrorPhase = 'comparator'
             for (const { attempt, capture, event } of currentAttempts) {
@@ -772,6 +822,10 @@ export class Engine {
    * The only exception of that rule should be when the interaction is conditional, and the node definition includes an init function that needs to be eagerly evaluated.
    */
   register(node$: NodeRef) {
+    if (this.computedActivationStack.has(node$) && !this.definitionRegistry.has(node$)) {
+      throw new Error('ComputedCell activation cycle detected')
+    }
+
     // Check if already registered in this engine or parent
     if (this.definitionRegistry.has(node$) || this.parentEngine?.hasOwnOrParentHasRef(node$) === true) {
       return node$
@@ -786,6 +840,44 @@ export class Engine {
       this.resources.set(node$, instance)
       this.state.set(node$, instance)
       return node$
+    }
+
+    const computedDefinition = computedCellDefs$$.get(node$)
+    if (computedDefinition !== undefined) {
+      this.computedActivationStack.add(node$)
+      try {
+        const initialValue = computedDefinition.project(computedDefinition.dependencies.map((dependency) => this.getValue(dependency)))
+        this.definitionRegistry.add(node$)
+        this.state.set(node$, initialValue)
+        const instance$ = this.cellInstance(initialValue, computedDefinition.distinct, node$)
+
+        if (computedDefinition.dependencies.length > 0) {
+          this.connect({
+            map:
+              (done) =>
+              (...values) => {
+                done(computedDefinition.project(values))
+              },
+            sink: instance$,
+            sources: [...computedDefinition.dependencies],
+          })
+        }
+
+        inEngineContext(this, () => {
+          nodeInits$$.use(instance$, (inits) => {
+            for (const init of inits) {
+              if (!this.calledInits.has(init)) {
+                this.calledInits.add(init)
+                init(this, node$)
+              }
+            }
+          })
+        })
+
+        return instance$
+      } finally {
+        this.computedActivationStack.delete(node$)
+      }
     }
 
     // Check for node definition
@@ -821,6 +913,10 @@ export class Engine {
    */
   resetSingletonSubs() {
     this.singletonSubscriptions.clear()
+    for (const unsubscribe of this.parentEngineSingletonSubscriptions.values()) {
+      unsubscribe()
+    }
+    this.parentEngineSingletonSubscriptions.clear()
   }
 
   /**
@@ -828,8 +924,19 @@ export class Engine {
    */
   singletonSub<T>(node: Out<T>, subscription: Subscription<T> | undefined): UnsubscribeHandle {
     if (this.parentEngine?.hasOwnOrParentHasRef(node) === true) {
-      // Delegate to parent's singletonSub
-      return this.parentEngine.singletonSub(node, subscription)
+      this.parentEngineSingletonSubscriptions.get(node)?.()
+      this.parentEngineSingletonSubscriptions.delete(node)
+      if (subscription === undefined) {
+        return noop
+      }
+      const unsubscribe = this.parentEngine.sub(node, subscription)
+      this.parentEngineSingletonSubscriptions.set(node, unsubscribe)
+      return () => {
+        if (this.parentEngineSingletonSubscriptions.get(node) === unsubscribe) {
+          this.parentEngineSingletonSubscriptions.delete(node)
+          unsubscribe()
+        }
+      }
     }
     this.register(node)
     if (subscription === undefined) {
@@ -861,8 +968,13 @@ export class Engine {
    */
   sub<T>(node: Out<T>, subscription: Subscription<T>): UnsubscribeHandle {
     if (this.parentEngine?.hasOwnOrParentHasRef(node) === true) {
-      // Delegate to parent's sub
-      return this.parentEngine.sub(node, subscription)
+      const unsubscribe = this.parentEngine.sub(node, subscription)
+      this.parentEngineSubscriptions.add(unsubscribe)
+      return () => {
+        if (this.parentEngineSubscriptions.delete(unsubscribe)) {
+          unsubscribe()
+        }
+      }
     }
     this.register(node)
     const nodeSubscriptions = this.subscriptions.getOrCreate(node)
@@ -1066,23 +1178,31 @@ export class Engine {
     return { participatingNodes, pendingPulls, projections, refCount }
   }
 
-  private combineOperators<T>(...o: []): (s: Out<T>) => NodeRef<T> // prettier-ignore
-  private combineOperators<T, O1>(...o: [O<T, O1>]): (s: Out<T>) => NodeRef<O1> // prettier-ignore
-  private combineOperators<T, O1, O2>(...o: [O<T, O1>, O<O1, O2>]): (s: Out<T>) => NodeRef<O2> // prettier-ignore
-  private combineOperators<T, O1, O2, O3>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>]): (s: Out<T>) => NodeRef<O3> // prettier-ignore
-  private combineOperators<T, O1, O2, O3, O4>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>]): (s: Out<T>) => NodeRef<O4> // prettier-ignore
-  private combineOperators<T, O1, O2, O3, O4, O5>(...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>]): (s: Out<T>) => NodeRef<O5> // prettier-ignore
+  private combineOperators<T>(pipeKey: symbol, ...o: []): (s: Out<T>) => NodeRef<T> // prettier-ignore
+  private combineOperators<T, O1>(pipeKey: symbol, ...o: [O<T, O1>]): (s: Out<T>) => NodeRef<O1> // prettier-ignore
+  private combineOperators<T, O1, O2>(pipeKey: symbol, ...o: [O<T, O1>, O<O1, O2>]): (s: Out<T>) => NodeRef<O2> // prettier-ignore
+  private combineOperators<T, O1, O2, O3>(pipeKey: symbol, ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>]): (s: Out<T>) => NodeRef<O3> // prettier-ignore
+  private combineOperators<T, O1, O2, O3, O4>(
+    pipeKey: symbol,
+    ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>]
+  ): (s: Out<T>) => NodeRef<O4> // prettier-ignore
+  private combineOperators<T, O1, O2, O3, O4, O5>(
+    pipeKey: symbol,
+    ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>]
+  ): (s: Out<T>) => NodeRef<O5> // prettier-ignore
   private combineOperators<T, O1, O2, O3, O4, O5, O6>(
+    pipeKey: symbol,
     ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>]
   ): (s: Out<T>) => NodeRef<O6> // prettier-ignore
   private combineOperators<T, O1, O2, O3, O4, O5, O6, O7>(
+    pipeKey: symbol,
     ...o: [O<T, O1>, O<O1, O2>, O<O2, O3>, O<O3, O4>, O<O4, O5>, O<O5, O6>, O<O6, O7>]
   ): (s: Out<T>) => NodeRef<O7> // prettier-ignore
-  private combineOperators<T>(...o: O<unknown, unknown>[]): (s: Out<T>) => NodeRef
-  private combineOperators<T>(...o: O<unknown, unknown>[]): (s: Out<T>) => NodeRef {
+  private combineOperators<T>(pipeKey: symbol, ...o: O<unknown, unknown>[]): (s: Out<T>) => NodeRef
+  private combineOperators<T>(pipeKey: symbol, ...o: O<unknown, unknown>[]): (s: Out<T>) => NodeRef {
     return (source: Out) => {
       for (const op of o) {
-        source = op(source, this)
+        source = op(source, this, { pipeKey })
       }
       return source as NodeRef
     }
