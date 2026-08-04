@@ -40,7 +40,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Upgrade npm for OIDC trusted publishing
-        run: npm install -g npm@latest
+        run: npm install -g npm@12.0.2
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -74,7 +74,7 @@ jobs:
 
       - name: Create Release Pull Request or Publish
         id: changesets
-        uses: changesets/action@63a615b9cd06ba9a3e6d13796c7fbcb080a60a0b # v1
+        uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
         with:
           version: pnpm changeset-version
           publish: pnpm release
