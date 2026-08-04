@@ -235,18 +235,22 @@ export function useEngineLayoutSubscription<T>(node: Out<T>, callback: Subscript
   useEngineSubscriptionInternal(node, callback, useIsomorphicLayoutEffect)
 }
 
-/** Options for {@link useLinkCellToExternalState}. */
-export interface LinkCellToExternalStateOptions<T> {
+/**
+ * Options for {@link useLinkCellToExternalState}.
+ * @typeParam TValue - The observed external value and cell value type.
+ * @typeParam TWrite - The explicit external write-request type. Defaults to `TValue`.
+ */
+export interface LinkCellToExternalStateOptions<TValue, TWrite = TValue> {
   /** Writable state synchronized from the observed external value. */
-  cell: StateRef<T>
+  cell: StateRef<TValue>
   /** Controls external-to-cell suppression. Defaults to `Object.is`. */
-  equals?: (current: NoInfer<T>, external: NoInfer<T>) => boolean
+  equals?: (current: NoInfer<TValue>, external: NoInfer<TValue>) => boolean
   /** Current value observed from the external owner. */
-  externalValue: NoInfer<T>
-  /** Writes one explicitly requested value to the external owner. */
-  writeExternalValue: (value: NoInfer<T>) => unknown
+  externalValue: NoInfer<TValue>
+  /** Writes one explicit request to the external owner. */
+  writeExternalValue: (request: NoInfer<TWrite>) => unknown
   /** Event node whose values represent explicit external write intent. */
-  writeRequested: Out<NoInfer<T>>
+  writeRequested: Out<TWrite>
 }
 
 /**
@@ -259,13 +263,13 @@ export interface LinkCellToExternalStateOptions<T> {
  *
  * @category React Hooks and Components
  */
-export function useLinkCellToExternalState<T>({
+export function useLinkCellToExternalState<TValue, TWrite = TValue>({
   cell,
   equals,
   externalValue,
   writeExternalValue,
   writeRequested,
-}: LinkCellToExternalStateOptions<T>): void {
+}: LinkCellToExternalStateOptions<TValue, TWrite>): void {
   const engine = useEngine()
 
   useEngineLayoutSubscription(writeRequested, (value) => writeExternalValue(value))

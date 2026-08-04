@@ -59,6 +59,37 @@ function trackNodeSubscriptions(engine: Engine, target: Out) {
 }
 
 describe('useLinkCellToExternalState', () => {
+  it('forwards a write request whose type differs from the observed value', async () => {
+    const range = { since: new Date(0), until: new Date(1) }
+    const range$ = Cell(range)
+    const writeRequested$ = Stream<{ last?: string; since?: string; until?: string }>()
+    const writer = vi.fn()
+    let engine: Engine | undefined
+
+    const Bridge = () => {
+      useLinkCellToExternalState({
+        cell: range$,
+        externalValue: range,
+        writeExternalValue: writer,
+        writeRequested: writeRequested$,
+      })
+      return null
+    }
+
+    await render(
+      <EngineProvider initFn={(currentEngine) => (engine = currentEngine)}>
+        <Bridge />
+      </EngineProvider>
+    )
+
+    const patch = { since: '2026-08-04T12:00:00.000Z' }
+    engine!.pub(writeRequested$, patch)
+
+    expect(writer).toHaveBeenCalledOnce()
+    expect(writer).toHaveBeenCalledWith(patch)
+    expect(engine!.getValue(range$)).toBe(range)
+  })
+
   it('synchronizes initial and later external values before later same-component layout work', async () => {
     const state$ = Cell({ id: 'cell' })
     const writeRequested$ = Stream<{ id: string }>(false)

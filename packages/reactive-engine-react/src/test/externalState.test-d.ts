@@ -40,6 +40,33 @@ test('supports function-valued and undefined state', () => {
   })
 })
 
+test('supports different observed value and write request types', () => {
+  interface TimeRange {
+    since: Date
+    until: Date
+  }
+  interface QueryRangePatch {
+    last?: string
+    since?: string
+    until?: string
+  }
+
+  const range$ = Cell<TimeRange>({ since: new Date(0), until: new Date(1) })
+  const writeRequested$ = Stream<QueryRangePatch>()
+
+  useLinkCellToExternalState({
+    cell: range$,
+    equals: (current, external) => {
+      expectTypeOf(current).toEqualTypeOf<TimeRange>()
+      expectTypeOf(external).toEqualTypeOf<TimeRange>()
+      return current.since === external.since && current.until === external.until
+    },
+    externalValue: { since: new Date(2), until: new Date(3) },
+    writeExternalValue: (request) => expectTypeOf(request).toEqualTypeOf<QueryRangePatch>(),
+    writeRequested: writeRequested$,
+  })
+})
+
 test('rejects invalid targets and mismatched channels', () => {
   const state$ = Cell(0)
   const request$ = Stream<number>()
@@ -64,12 +91,12 @@ test('rejects invalid targets and mismatched channels', () => {
     })
   }
 
-  const useInvalidRequest = () => {
-    useLinkCellToExternalState({
+  const useInvalidDefaultRequest = () => {
+    useLinkCellToExternalState<number>({
       cell: state$,
       externalValue: 0,
       writeExternalValue: () => undefined,
-      // @ts-expect-error The request value must match the cell.
+      // @ts-expect-error An explicit value type defaults the request to the same type.
       writeRequested: Stream<string>(),
     })
   }
@@ -86,6 +113,6 @@ test('rejects invalid targets and mismatched channels', () => {
 
   expectTypeOf(useInvalidTarget).toBeFunction()
   expectTypeOf(useInvalidExternal).toBeFunction()
-  expectTypeOf(useInvalidRequest).toBeFunction()
+  expectTypeOf(useInvalidDefaultRequest).toBeFunction()
   expectTypeOf(useInvalidWriter).toBeFunction()
 })
