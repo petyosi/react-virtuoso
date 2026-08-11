@@ -267,7 +267,7 @@ describe('data change sizing', () => {
     await expect
       .poll(() => {
         const rows = [...screen.container.querySelectorAll(rowSelector)] as HTMLElement[]
-        const tableBody = screen.container.querySelector(tableBodySelector) as HTMLElement | null
+        const tableBody = screen.container.querySelector<HTMLElement>(tableBodySelector)
 
         return {
           actualSizes: rows.map((row) => Math.round(row.getBoundingClientRect().height)),
