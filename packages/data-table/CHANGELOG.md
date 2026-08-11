@@ -1,5 +1,11 @@
 # @virtuoso.dev/data-table
 
+## 0.3.5
+
+### Patch Changes
+
+- [#1484](https://github.com/petyosi/react-virtuoso/pull/1484) [`7800931`](https://github.com/petyosi/react-virtuoso/commit/78009318353b4cffe314ccc785925b03853c0c5a) Thanks [@Guflly](https://github.com/Guflly)! - Keep grouped row measurements accurate after local model data updates.
+
 ## 0.3.4
 
 ### Patch Changes
