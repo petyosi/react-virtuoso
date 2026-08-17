@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.18.12
+
+### Patch Changes
+
+- [#1487](https://github.com/petyosi/react-virtuoso/pull/1487) [`d975e6c`](https://github.com/petyosi/react-virtuoso/commit/d975e6c4eab2d56b23948c8b958c1d9b5c508c0c) Thanks [@petyosi](https://github.com/petyosi)! - Measure window-scrolling lists before they enter the viewport so their estimated height is included in the document layout.
+
 ## 4.18.11
 
 ### Patch Changes
