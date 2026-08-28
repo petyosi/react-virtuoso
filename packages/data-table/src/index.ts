@@ -75,6 +75,7 @@ export { remoteModel, defaultOffsetViewportHandler, defaultAppendViewportHandler
 export type {
   DataModelHandle,
   DataModelPersistenceCapability,
+  DataOperation,
   DataResult,
   MessageEnvelope,
   ModelPersistenceState,

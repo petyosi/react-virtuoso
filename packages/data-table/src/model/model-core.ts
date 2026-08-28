@@ -1,4 +1,4 @@
-import type { DataModelHandle, DataResult, FrameAdapter, MessageEnvelope } from './types'
+import type { DataModelHandle, DataOperation, DataResult, FrameAdapter, MessageEnvelope } from './types'
 
 interface InFlightRequest {
   requestId: string
@@ -161,7 +161,7 @@ export function createModel<T, G = never>(adapter: FrameAdapter<T, G>): DataMode
       emitError(viewId, action, message, requestId)
 
       if (view.lastKnownGood) {
-        emitResult(viewId, view.lastKnownGood as DataResult<T, G>, view.operationVersion)
+        emitResult(viewId, { ...view.lastKnownGood, operation: 'replace' } as DataResult<T, G>, view.operationVersion)
       }
       return true
     }
@@ -187,7 +187,8 @@ export function createModel<T, G = never>(adapter: FrameAdapter<T, G>): DataMode
       const view = getOrCreateView(viewId)
       const requestId = msg.requestId ?? nextRequestId()
       const result = adapter.handleHandshake(viewId)
-      emitResult(viewId, result, view.operationVersion, requestId)
+      const operation = (msg.payload as { operation?: DataOperation } | undefined)?.operation
+      emitResult(viewId, operation === undefined ? result : { ...result, operation }, view.operationVersion, requestId)
       return
     }
 
@@ -348,7 +349,7 @@ export function createModel<T, G = never>(adapter: FrameAdapter<T, G>): DataMode
     }
 
     if (view.lastKnownGood) {
-      emitResult(viewId, view.lastKnownGood as DataResult<T, G>, view.operationVersion)
+      emitResult(viewId, { ...view.lastKnownGood, operation: 'replace' } as DataResult<T, G>, view.operationVersion)
     }
   })
 
