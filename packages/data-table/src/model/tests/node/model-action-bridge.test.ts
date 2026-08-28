@@ -1,9 +1,10 @@
 import { Engine } from '@virtuoso.dev/reactive-engine-core'
 import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest'
 
-import { data$, groupIndices$ } from '../../../core/data'
+import { data$, dataOperation$, groupIndices$ } from '../../../core/data'
 import { loadingState$ } from '../../../core/loading'
 import { dispatchModelAction$, modelActionState$ } from '../../../core/model-actions'
+import { ranges$, sizeState$ } from '../../../resize/sizes'
 import { localModel } from '../../local-model'
 import { bridgeModelToEngine, dataModel$, dataModelViewId$ } from '../../model-bridge'
 
@@ -30,12 +31,14 @@ const groupHandler: PipelineHandler<Item> = ({ data, payload }) => ({
 function createEngine() {
   const engine = new Engine()
   engine.register(data$)
+  engine.register(dataOperation$)
   engine.register(groupIndices$)
   engine.register(loadingState$)
   engine.register(dataModel$)
   engine.register(dataModelViewId$)
   engine.register(dispatchModelAction$)
   engine.register(modelActionState$)
+  engine.register(sizeState$)
   return engine
 }
 
@@ -194,5 +197,86 @@ describe('model action bridge', () => {
 
     expect(send).toHaveBeenCalledWith({ action: 'refresh', payload: undefined, viewId: 'default' })
     expect(engine.getValue(modelActionState$)).toStrictEqual({})
+  })
+
+  it('downgrades an update result to replace when the row count changes, resetting sizes', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    let listener: ((msg: MessageEnvelope) => void) | null = null
+    const model: DataModelHandle<Item> = {
+      destroy: vi.fn(),
+      send: vi.fn((msg: Parameters<DataModelHandle<Item>['send']>[0]) => {
+        if (msg.action === 'grow') {
+          listener?.({
+            action: 'result',
+            payload: { data: [...ITEMS, { id: 3, status: 'open' }], groups: [], operation: 'update' } satisfies DataResult<Item>,
+            requestId: 'grow',
+            type: 'result',
+            viewId: 'default',
+          })
+        }
+      }),
+      subscribe(nextListener) {
+        listener = nextListener
+        nextListener({
+          action: 'result',
+          payload: { data: ITEMS, groups: [] } satisfies DataResult<Item>,
+          requestId: 'initial',
+          type: 'result',
+          viewId: 'default',
+        })
+        return vi.fn()
+      },
+    }
+
+    bridgeModelToEngine(model, engine, 'default')
+    engine.pub(ranges$, [{ size: 20, startIndex: 0, endIndex: 0 }])
+    expect(engine.getValue(sizeState$).offsetTree).toMatchObject([{ size: 20, index: 0, offset: 0 }])
+
+    model.send({ action: 'grow', viewId: 'default' })
+
+    expect(engine.getValue(dataOperation$)).toBe('replace')
+    expect(engine.getValue(sizeState$).offsetTree).toHaveLength(0)
+    expect(warn).toHaveBeenCalledOnce()
+  })
+
+  it('updateData sets dataOperation$ to update and preserves the offset tree', () => {
+    const model = localModel<Item>({ data: ITEMS })
+    bridgeModelToEngine(model, engine, 'default')
+
+    engine.pub(ranges$, [{ size: 20, startIndex: 0, endIndex: 0 }])
+    const offsetTreeBefore = engine.getValue(sizeState$).offsetTree
+    expect(offsetTreeBefore).toMatchObject([{ size: 20, index: 0, offset: 0 }])
+
+    model.updateData?.([
+      { id: 1, status: 'closed' },
+      { id: 2, status: 'done' },
+    ])
+
+    expect(engine.getValue(dataOperation$)).toBe('update')
+    expect(engine.getValue(sizeState$).offsetTree).toStrictEqual(offsetTreeBefore)
+  })
+
+  it('replays lastKnownGood as replace after an action error, even if it was tagged update', () => {
+    const model = localModel<Item>({
+      data: ITEMS,
+      actions: {
+        boom: {
+          handler: () => {
+            throw new Error('boom')
+          },
+        },
+      },
+    })
+    bridgeModelToEngine(model, engine, 'default')
+
+    model.updateData?.([
+      { id: 1, status: 'closed' },
+      { id: 2, status: 'done' },
+    ])
+    expect(engine.getValue(dataOperation$)).toBe('update')
+
+    model.send({ action: 'boom', viewId: 'default' })
+
+    expect(engine.getValue(dataOperation$)).toBe('replace')
   })
 })
