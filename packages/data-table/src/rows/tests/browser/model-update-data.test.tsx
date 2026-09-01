@@ -144,8 +144,8 @@ describe('model updateData vs setData', () => {
     const updateButton = screen.container.querySelector('[data-testid="update"]') as HTMLButtonElement
     updateButton.click()
 
-    // updateData never resets sizeState$, so the height check right after the synchronous
-    // click-driven render is as meaningful as a mid-flight sample would be.
+    // Guards the lastSize fallback in computeTotalSize, not updateData specifically — a same-length
+    // setData holds this height steady too, so this does not on its own distinguish the two paths.
     expect(tableBody().style.height).toBe(expectedHeight)
 
     await expect.poll(() => capturedRow().querySelector(cellTextSelector)?.textContent).toBe(UPDATED_ITEMS[0]!.name)
