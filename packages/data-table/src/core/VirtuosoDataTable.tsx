@@ -38,7 +38,7 @@ import {
   stickyHeaderWrapper$,
 } from './components'
 import { computeRowKey$, defaultComputeRowKey } from './content'
-import { context$, data$, groupLevelMap$, groupStickyConfig$, initialData$ } from './data'
+import { context$, data$, dataOperation$, groupLevelMap$, groupStickyConfig$, initialData$ } from './data'
 import { loadingState$ } from './loading'
 import { dispatchModelAction$, modelActionState$ } from './model-actions'
 
@@ -118,6 +118,7 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
         e.register(groupLevelMap$)
         e.register(viewportRange$)
         e.register(data$)
+        e.register(dataOperation$)
         e.register(loadingState$)
         e.register(initialData$)
         e.register(dataModel$)

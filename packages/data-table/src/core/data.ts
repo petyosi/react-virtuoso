@@ -5,12 +5,16 @@ import { processStickyConfig } from '../sizing/stickyItems'
 import { loadingState$ } from './loading'
 
 import type { DataArray } from '../interfaces'
+import type { DataOperation } from '../model/types'
 import type { ProcessedStickyGroup, StickyItemsConfig } from '../sizing/stickyItems'
 
 export const totalCount$ = Cell(0)
 export const context$ = Cell<unknown>(null)
 
 export const data$ = Cell<DataArray | null>(null)
+
+/** The operation that produced the current `data$` value — `'replace'` unless a model tagged it `'update'`. */
+export const dataOperation$ = Cell<DataOperation>('replace')
 
 export const initialData$ = Cell<DataArray | null>(null)
 
