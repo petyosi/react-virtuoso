@@ -1,5 +1,11 @@
 # @virtuoso.dev/data-table
 
+## 0.4.0
+
+### Minor Changes
+
+- [#1491](https://github.com/petyosi/react-virtuoso/pull/1491) [`bbf108f`](https://github.com/petyosi/react-virtuoso/commit/bbf108fad247b8190109492bfce5728d24ec021c) Thanks [@deshiknaves](https://github.com/deshiknaves)! - Add `model.updateData(data)` for applying a same-shape data snapshot (same length, same rows and stable row keys at the same indices) without resetting the known row-size tree, so mounted cells keep their DOM nodes and local state (focused inputs, popovers, etc.) across the update. `setData()` is unchanged and still resets the size tree.
+
 ## 0.3.5
 
 ### Patch Changes
