@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useState } from 'react'
 
 import { expect, test, describe } from 'vitest'
 import { render } from 'vitest-browser-react'
@@ -10,11 +10,13 @@ import { localModel } from '../../../model/local-model'
 
 const HEADER_HEIGHT = 40
 const ROW_HEIGHT = 30
+const RESIZED_ROW_HEIGHT = 60
 const CONTAINER_HEIGHT = 300
 const CONTAINER_WIDTH = 300
 const COLUMN_WIDTH = 150
 
 interface DataItem {
+  height: number
   id: number
   name: string
 }
@@ -27,12 +29,15 @@ const VISIBLE_ROW_COUNT = Math.ceil((CONTAINER_HEIGHT - HEADER_HEIGHT) / ROW_HEI
 const NON_ANCHOR_ROW_INDEX = Math.min(3, VISIBLE_ROW_COUNT - 1)
 
 function buildItems(prefix: string): DataItem[] {
-  return Array.from({ length: ITEM_COUNT }, (_, i) => ({ id: i, name: `${prefix}${i}` }))
+  return Array.from({ length: ITEM_COUNT }, (_, i) => ({ height: ROW_HEIGHT, id: i, name: `${prefix}${i}` }))
 }
 
 const INITIAL_ITEMS = buildItems('initial-')
 const UPDATED_ITEMS = buildItems('updated-')
 const REPLACED_ITEMS = buildItems('replaced-')
+const RESIZED_ITEMS = INITIAL_ITEMS.map((item, index) =>
+  index === NON_ANCHOR_ROW_INDEX ? { ...item, height: RESIZED_ROW_HEIGHT, name: `resized-${index}` } : item
+)
 
 const readySelector = '[data-testid=virtuoso-table-root][data-ready]'
 const tableBodySelector = '[data-testid=virtuoso-table-body]'
@@ -46,7 +51,7 @@ async function waitForReady(screen: Awaited<ReturnType<typeof render>>) {
 }
 
 function TestComponent() {
-  const model = useMemo(() => localModel<DataItem>({ data: INITIAL_ITEMS }), [])
+  const [model] = useState(() => localModel<DataItem>({ data: INITIAL_ITEMS }))
 
   return (
     <>
@@ -56,12 +61,15 @@ function TestComponent() {
       <button data-testid="replace" onClick={() => model.setData?.(REPLACED_ITEMS)}>
         Replace
       </button>
+      <button data-testid="resize" onClick={() => model.updateData?.(RESIZED_ITEMS)}>
+        Resize
+      </button>
       <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} model={model}>
         <Column field="name">
           <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Name</div>}</ColumnHeader>
           <Cell>
-            {({ cellValue }) => (
-              <div style={{ height: ROW_HEIGHT }}>
+            {({ cellValue, row }) => (
+              <div style={{ height: (row.data as DataItem).height }}>
                 <span data-testid="cell-text">{String(cellValue ?? '')}</span>
                 <input data-testid="cell-input" defaultValue="" />
               </div>
@@ -151,6 +159,26 @@ describe('model updateData vs setData', () => {
     await expect.poll(() => capturedRow().querySelector(cellTextSelector)?.textContent).toBe(UPDATED_ITEMS[0]!.name)
 
     expect(tableBody().style.height).toBe(expectedHeight)
+  })
+
+  test('updateData remeasures changed row heights without remounting the row', async () => {
+    const screen = await render(<TestComponent />)
+    await waitForReady(screen)
+
+    const capturedRow = screen.container.querySelector(nonAnchorRowSelector) as HTMLElement
+    expect(capturedRow.dataset.knownSize).toBe(String(ROW_HEIGHT))
+
+    const resizeButton = screen.container.querySelector('[data-testid="resize"]') as HTMLButtonElement
+    resizeButton.click()
+
+    await expect.poll(() => capturedRow.querySelector(cellTextSelector)?.textContent).toBe(RESIZED_ITEMS[NON_ANCHOR_ROW_INDEX]!.name)
+    await expect.poll(() => capturedRow.dataset.knownSize).toBe(String(RESIZED_ROW_HEIGHT))
+
+    expect(capturedRow.isConnected).toBe(true)
+    expect(screen.container.querySelector(nonAnchorRowSelector)).toBe(capturedRow)
+    expect((screen.container.querySelector(tableBodySelector) as HTMLElement).style.height).toBe(
+      `${ITEM_COUNT * ROW_HEIGHT + RESIZED_ROW_HEIGHT - ROW_HEIGHT}px`
+    )
   })
 
   test('setData still resets the known row-size tree and unmounts non-anchor rows', async () => {

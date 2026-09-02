@@ -7,9 +7,10 @@ import { dispatchModelAction$, modelActionState$ } from '../../../core/model-act
 import { ranges$, sizeState$ } from '../../../resize/sizes'
 import { localModel } from '../../local-model'
 import { bridgeModelToEngine, dataModel$, dataModelViewId$ } from '../../model-bridge'
+import { createModel } from '../../model-core'
 
 import type { PipelineHandler, SourceMutator } from '../../local-model'
-import type { DataModelHandle, DataResult, MessageEnvelope } from '../../types'
+import type { AsyncErrorEmitter, DataModelHandle, DataResult, MessageEnvelope } from '../../types'
 
 interface Item {
   id: number
@@ -256,6 +257,20 @@ describe('model action bridge', () => {
     expect(engine.getValue(sizeState$).offsetTree).toStrictEqual(offsetTreeBefore)
   })
 
+  it('updateData preserves static group metadata', () => {
+    const groups = [{ index: 0, level: 0 }]
+    const model = localModel<Item>({ data: ITEMS, groups })
+    bridgeModelToEngine(model, engine, 'default')
+
+    model.updateData?.([
+      { id: 1, status: 'closed' },
+      { id: 2, status: 'done' },
+    ])
+
+    expect(engine.getValue(dataOperation$)).toBe('update')
+    expect(engine.getValue(groupIndices$)).toStrictEqual(groups)
+  })
+
   it('replays lastKnownGood as replace after an action error, even if it was tagged update', () => {
     const model = localModel<Item>({
       data: ITEMS,
@@ -278,5 +293,34 @@ describe('model action bridge', () => {
     model.send({ action: 'boom', viewId: 'default' })
 
     expect(engine.getValue(dataOperation$)).toBe('replace')
+  })
+
+  it('replays lastKnownGood as replace after an async action error', () => {
+    const emitAsyncError = vi.fn<AsyncErrorEmitter>()
+    const updatedItems = [
+      { id: 1, status: 'closed' },
+      { id: 2, status: 'done' },
+    ]
+    const model = createModel<Item>({
+      handleAction(_viewId, action) {
+        return action === 'update' ? { data: updatedItems, groups: [], operation: 'update' } : null
+      },
+      handleHandshake() {
+        return { data: ITEMS, groups: [] }
+      },
+      setAsyncErrorEmitter(emitter) {
+        emitAsyncError.mockImplementation(emitter)
+      },
+    })
+    bridgeModelToEngine(model, engine, 'default')
+
+    model.send({ action: 'update', requestId: 'update', viewId: 'default' })
+    expect(engine.getValue(dataOperation$)).toBe('update')
+
+    model.send({ action: 'load', requestId: 'load', viewId: 'default' })
+    emitAsyncError('default', 'load failed', 'load')
+
+    expect(engine.getValue(dataOperation$)).toBe('replace')
+    expect(engine.getValue(data$)).toStrictEqual(updatedItems)
   })
 })
