@@ -144,13 +144,18 @@ export const upwardScrollFixSystem = u.system(
         })
       ),
       (offset) => {
+        // The deviation makes room for the prepended items by pushing the list
+        // DOWN; the scroll cancels that push. Both have to land in the same
+        // frame. Deferring the scroll by a `requestAnimationFrame` leaves one
+        // painted frame in which the content is displaced by the full size of
+        // the page with nothing compensating it — and because prepends
+        // typically fire near scrollTop 0, that displacement is the whole
+        // viewport, so the list renders empty for a frame.
         u.publish(deviation, offset)
+        u.publish(scrollBy, { top: offset })
         requestAnimationFrame(() => {
-          u.publish(scrollBy, { top: offset })
-          requestAnimationFrame(() => {
-            u.publish(deviation, 0)
-            u.publish(recalcInProgress, false)
-          })
+          u.publish(deviation, 0)
+          u.publish(recalcInProgress, false)
         })
       }
     )
