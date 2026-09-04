@@ -20,7 +20,7 @@ type UpwardFixState = [number, ListItem<any>[], number, number]
  */
 export const upwardScrollFixSystem = u.system(
   ([
-    { deviation, scrollBy, scrollingInProgress, scrollTop },
+    { deviation, deviationCommitted, scrollBy, scrollingInProgress, scrollTop },
     { isAtBottom, isScrolling, lastJumpDueToItemResize, scrollDirection },
     { listState },
     { beforeUnshiftWith, gap, shiftWithOffset, sizes },
@@ -104,6 +104,34 @@ export const upwardScrollFixSystem = u.system(
       scrollBy
     )
 
+    // A prepend's compensation is pending from the moment its deviation is
+    // published until it is applied — exactly once, by whichever comes first:
+    // the renderer's acknowledgement that the deviation reached the DOM, or the
+    // next-frame fallback. A second prepend replaces a pending one, which is
+    // correct: `deviation` is absolute, so the later offset already subsumes it.
+    let pendingPrepend: { acknowledgeable: boolean; offset: number } | null = null
+
+    function compensatePrepend() {
+      if (pendingPrepend === null) return
+      const { offset } = pendingPrepend
+      pendingPrepend = null
+      u.publish(scrollBy, { top: offset })
+      requestAnimationFrame(() => {
+        u.publish(deviation, 0)
+        u.publish(recalcInProgress, false)
+      })
+    }
+
+    u.subscribe(deviationCommitted, (committed) => {
+      if (pendingPrepend === null || !pendingPrepend.acknowledgeable) return
+      // `deviation` is also published by the resize and mobile-Safari paths, so
+      // the commit has to carry the pending offset. That is only unambiguous
+      // because a pending compensation is `acknowledgeable` exclusively when
+      // its own publish changed the value — see the publish site.
+      if (committed !== pendingPrepend.offset) return
+      compensatePrepend()
+    })
+
     u.subscribe(
       u.pipe(
         beforeUnshiftWith,
@@ -145,18 +173,39 @@ export const upwardScrollFixSystem = u.system(
       ),
       (offset) => {
         // The deviation makes room for the prepended items by pushing the list
-        // DOWN; the scroll cancels that push. Both have to land in the same
-        // frame. Deferring the scroll by a `requestAnimationFrame` leaves one
+        // DOWN; the scroll cancels that push. Both have to reach the DOM before
+        // the same paint. Deferring the scroll by a whole frame leaves one
         // painted frame in which the content is displaced by the full size of
-        // the page with nothing compensating it — and because prepends
-        // typically fire near scrollTop 0, that displacement is the whole
-        // viewport, so the list renders empty for a frame.
+        // the page with nothing compensating it — and because prepends fire
+        // near scrollTop 0, that displacement is the whole viewport, so the
+        // list paints empty.
+        //
+        // They cannot just be published together either. `deviation` reaches
+        // the DOM through React state, so until that commit lands the content
+        // has not grown and `scrollBy` is clamped to the old maxScrollTop,
+        // silently losing part of the compensation — the upward jump on a large
+        // prepend into a short list that the deferral was introduced to fix.
+        //
+        // So the scroll waits for the renderer to acknowledge the committed
+        // deviation from a layout effect: after the DOM mutation, still before
+        // paint. Ordering is then structural rather than a timing assumption.
+        //
+        // Acknowledgements are matched by value, so a compensation may only wait
+        // for one when this publish actually changes the rendered deviation. If
+        // it does not — a second prepend of the same size before the first has
+        // been cleared — no commit and no acknowledgement can follow, and
+        // waiting would leave it releasable by the *previous* prepend's
+        // acknowledgement, which carries the same value. Such a compensation
+        // takes the fallback instead, which is the behaviour before this change:
+        // the blank frame is not removed in that case, but nothing regresses,
+        // and no acknowledgement can be misattributed.
+        pendingPrepend = { acknowledgeable: u.getValue(deviation) !== offset, offset }
         u.publish(deviation, offset)
-        u.publish(scrollBy, { top: offset })
-        requestAnimationFrame(() => {
-          u.publish(deviation, 0)
-          u.publish(recalcInProgress, false)
-        })
+        // If nothing acknowledges by the next frame — no renderer mounted, a
+        // subtree without layout effects, SSR — fall back to the historic
+        // deferred scroll. The worst case is the behaviour before this change,
+        // never worse.
+        requestAnimationFrame(compensatePrepend)
       }
     )
 
