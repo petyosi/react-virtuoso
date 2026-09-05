@@ -104,10 +104,18 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
   const [deviation, setDeviation] = React.useState(0)
   useEmitter('deviation', (value) => {
     if (deviation !== value) {
-      // ref.current!.style.marginTop = `${value}px`
       setDeviation(value)
     }
   })
+
+  // The margin below is what grows the scrollable content for a prepend, and it
+  // is applied by React. This runs once that commit is in the DOM and before
+  // paint, which is the point at which `upwardScrollFixSystem` can safely
+  // scroll to cancel it without being clamped.
+  const deviationCommitted = usePublisher('deviationCommitted')
+  useIsomorphicLayoutEffect(() => {
+    deviationCommitted(deviation)
+  }, [deviation, deviationCommitted])
 
   const EmptyPlaceholder = useEmitterValue('EmptyPlaceholder')
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder') ?? DefaultScrollSeekPlaceholder

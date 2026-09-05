@@ -7,6 +7,10 @@ export const domIOSystem = u.system(
     const scrollContainerState = u.stream<ScrollContainerState>()
     const scrollTop = u.stream<number>()
     const deviation = u.statefulStream(0)
+    // Published by the list renderer from a layout effect once a `deviation`
+    // has actually reached the DOM. `upwardScrollFixSystem` waits for it before
+    // scrolling, so the scroll never runs against the pre-deviation layout.
+    const deviationCommitted = u.stream<number>()
     const smoothScrollTargetReached = u.stream<true>()
     const statefulScrollTop = u.statefulStream(0)
     const viewportHeight = u.stream<number>()
@@ -41,6 +45,7 @@ export const domIOSystem = u.system(
 
     return {
       deviation,
+      deviationCommitted,
       fixedFooterHeight,
       fixedHeaderHeight,
       footerHeight,
