@@ -185,6 +185,34 @@ describe('grid system', () => {
     expect(items[items.length - 1]!.index).toBe(11)
   })
 
+  it('clamps an out-of-range scrollToIndex to the last item', () => {
+    const { itemDimensions, scrollTo, scrollToIndex, totalCount, viewportDimensions } = init(gridSystem)
+
+    publish(totalCount, 10)
+    publish(viewportDimensions, {
+      height: 100,
+      width: 300,
+    })
+    publish(itemDimensions, {
+      height: 100,
+      width: 100,
+    })
+
+    const sub = vi.fn()
+    subscribe(scrollTo, sub)
+
+    const lastScrollTop = () => sub.mock.calls[sub.mock.calls.length - 1]![0].top
+
+    // three items per row, so the last item (index 9) sits on row 3 → top 300
+    publish(scrollToIndex, 9)
+    const lastItemTop = lastScrollTop()
+    expect(lastItemTop).toBe(300)
+
+    // an index past the end must scroll to the last item, not into empty space
+    publish(scrollToIndex, 500)
+    expect(lastScrollTop()).toBe(lastItemTop)
+  })
+
   it('correctly calculates items per row', () => {
     const { gap, gridState, itemDimensions, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
 

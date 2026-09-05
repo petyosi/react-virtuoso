@@ -384,7 +384,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
             index = totalCount - 1
           }
 
-          index = max(0, index, min(totalCount - 1, index))
+          index = max(0, min(totalCount - 1, index))
 
           let top = itemTop(viewportDimensions, gap, itemDimensions, index)
 
