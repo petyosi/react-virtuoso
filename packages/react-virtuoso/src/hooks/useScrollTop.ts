@@ -173,15 +173,19 @@ export default function useScrollTop(
     scrollerElement.scrollTo(location)
   }
 
-  function scrollByCallback(location: ScrollToOptions) {
-    if (horizontalDirection === true) {
-      location = {
-        ...(location.behavior === undefined ? {} : { behavior: location.behavior }),
-        ...(location.top === undefined ? {} : { left: getPhysicalScrollLeft(scrollerRef.current!, location.top) }),
+  // Keep the subscription attached when a child layout effect publishes prepend compensation.
+  const scrollByCallback = React.useCallback(
+    (location: ScrollToOptions) => {
+      if (horizontalDirection === true) {
+        location = {
+          ...(location.behavior === undefined ? {} : { behavior: location.behavior }),
+          ...(location.top === undefined ? {} : { left: getPhysicalScrollLeft(scrollerRef.current!, location.top) }),
+        }
       }
-    }
-    scrollerRef.current!.scrollBy(location)
-  }
+      scrollerRef.current!.scrollBy(location)
+    },
+    [horizontalDirection]
+  )
 
   return { scrollByCallback, scrollerRef, scrollToCallback }
 }

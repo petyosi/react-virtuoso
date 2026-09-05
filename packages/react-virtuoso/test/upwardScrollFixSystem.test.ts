@@ -39,7 +39,9 @@ function heldFrames() {
     },
     runNext: () => {
       const cb = callbacks.shift()
-      if (cb) cb(0)
+      if (cb) {
+        cb(0)
+      }
     },
     get pending() {
       return callbacks.length

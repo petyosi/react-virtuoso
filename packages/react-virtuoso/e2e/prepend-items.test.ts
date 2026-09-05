@@ -42,12 +42,16 @@ test.describe('list with prependable items', () => {
   async function blankFramesDuringPrepend(page: Page) {
     await page.evaluate(() => {
       const scroller = document.querySelector('[data-testid=virtuoso-scroller]')
-      if (!scroller) throw new Error('no scroller')
+      if (!scroller) {
+        throw new Error('no scroller')
+      }
       const w = window as unknown as { __blankFrames: number; __stopSampling: () => void }
       w.__blankFrames = 0
       let running = true
       const sample = () => {
-        if (!running) return
+        if (!running) {
+          return
+        }
         const view = scroller.getBoundingClientRect()
         const rows = Array.from(scroller.querySelectorAll('[data-index]'))
         if (rows.length > 0) {
@@ -55,7 +59,9 @@ test.describe('list with prependable items', () => {
             const r = row.getBoundingClientRect()
             return r.bottom > view.top && r.top < view.bottom
           })
-          if (!anyVisible) w.__blankFrames += 1
+          if (!anyVisible) {
+            w.__blankFrames += 1
+          }
         }
         requestAnimationFrame(sample)
       }

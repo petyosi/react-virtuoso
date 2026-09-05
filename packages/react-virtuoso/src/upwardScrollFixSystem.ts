@@ -112,7 +112,9 @@ export const upwardScrollFixSystem = u.system(
     let pendingPrepend: { acknowledgeable: boolean; offset: number } | null = null
 
     function compensatePrepend() {
-      if (pendingPrepend === null) return
+      if (pendingPrepend === null) {
+        return
+      }
       const { offset } = pendingPrepend
       pendingPrepend = null
       u.publish(scrollBy, { top: offset })
@@ -123,12 +125,16 @@ export const upwardScrollFixSystem = u.system(
     }
 
     u.subscribe(deviationCommitted, (committed) => {
-      if (pendingPrepend === null || !pendingPrepend.acknowledgeable) return
+      if (pendingPrepend === null || !pendingPrepend.acknowledgeable) {
+        return
+      }
       // `deviation` is also published by the resize and mobile-Safari paths, so
       // the commit has to carry the pending offset. That is only unambiguous
       // because a pending compensation is `acknowledgeable` exclusively when
       // its own publish changed the value — see the publish site.
-      if (committed !== pendingPrepend.offset) return
+      if (committed !== pendingPrepend.offset) {
+        return
+      }
       compensatePrepend()
     })
 
