@@ -109,7 +109,7 @@ export function buildListStateFromItemCount(
     }
   }
 
-  const adjustedCount = itemCount + includedGroupsCount
+  const adjustedCount = data.length > 0 ? Math.min(itemCount + includedGroupsCount, data.length) : itemCount + includedGroupsCount
   const initialTopMostItemIndexNumber = getInitialTopMostItemIndexNumber(initialTopMostItemIndex, adjustedCount)
 
   const items = Array.from({ length: adjustedCount }).map((_, index) => ({

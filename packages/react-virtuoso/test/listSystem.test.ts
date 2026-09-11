@@ -45,6 +45,18 @@ describe('list engine', () => {
       expect(getValue(listState).items).toHaveLength(10)
     })
 
+    it('clamps initialItemCount to data length when data has fewer items', () => {
+      const { data, initialItemCount, listState, propsReady } = init(listSystem)
+
+      publish(data, ['a', 'b', 'c'])
+      publish(initialItemCount, 10)
+      publish(propsReady, true)
+
+      const items = getValue(listState).items
+      expect(items).toHaveLength(3)
+      expect(items.every((item) => item.data !== undefined)).toBe(true)
+    })
+
     it('returns the full set if a fixed item height is set', () => {
       const { fixedItemHeight, listState, propsReady, scrollTop, totalCount, viewportHeight } = init(listSystem)
 
