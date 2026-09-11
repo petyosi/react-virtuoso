@@ -285,11 +285,22 @@ export interface GridItem<Data> {
 export type GridItemContent<Data, Context> = (index: number, data: Data, context: Context) => React.ReactNode
 
 /**
+ * Host element type for custom List/Item `ref`s.
+ *
+ * Custom wrappers may render any HTML element (`div`, `ul`, `li`, `span`, …).
+ * `React.forwardRef` types the callback as `ForwardedRef<T>`, which includes an
+ * invariant `RefObject`, so a concrete host type such as `HTMLDivElement` is not
+ * assignable to a different tag. `any` is the only `T` that remains assignable to
+ * every host `ref` (https://github.com/petyosi/react-virtuoso/issues/864).
+ */
+type CustomComponentHostElement = any
+
+/**
  * Passed to the GridComponents.Item custom component
  * @group VirtuosoGrid
  */
 export type GridItemProps = Pick<React.ComponentProps<'div'>, 'children' | 'className' | 'style'> &
-  React.RefAttributes<HTMLDivElement> & {
+  React.RefAttributes<CustomComponentHostElement> & {
     'data-index': number
   }
 
@@ -298,7 +309,7 @@ export type GridItemProps = Pick<React.ComponentProps<'div'>, 'children' | 'clas
  * @group VirtuosoGrid
  */
 export type GridListProps = Pick<React.ComponentProps<'div'>, 'children' | 'className' | 'style'> &
-  React.RefAttributes<HTMLDivElement> & {
+  React.RefAttributes<CustomComponentHostElement> & {
     'data-testid': string
   }
 
@@ -444,13 +455,14 @@ export type ItemContent<Data, Context> = (index: number, data: Data, context: Co
  * Passed to the Components.Item custom component
  * @group Virtuoso
  */
-export type ItemProps<Data> = Pick<React.ComponentProps<'div'>, 'children' | 'style'> & {
-  'data-index': number
-  'data-item-group-index'?: number | undefined
-  'data-item-index': number
-  'data-known-size': number
-  item: Data
-}
+export type ItemProps<Data> = Pick<React.ComponentProps<'div'>, 'children' | 'style'> &
+  React.RefAttributes<CustomComponentHostElement> & {
+    'data-index': number
+    'data-item-group-index'?: number | undefined
+    'data-item-index': number
+    'data-known-size': number
+    item: Data
+  }
 
 /**
  * Union type representing either a regular item or a group header item in the list.
@@ -468,7 +480,7 @@ export type ListItem<Data> = GroupItem<Data> | RecordItem<Data>
  * @group Virtuoso
  */
 export type ListProps = Pick<React.ComponentProps<'div'>, 'children' | 'style'> &
-  React.RefAttributes<HTMLDivElement> & {
+  React.RefAttributes<CustomComponentHostElement> & {
     'data-testid': string
   }
 
