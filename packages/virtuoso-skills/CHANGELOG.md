@@ -1,5 +1,11 @@
 # @virtuoso.dev/virtuoso-skills
 
+## 0.2.1
+
+### Patch Changes
+
+- [#1499](https://github.com/petyosi/react-virtuoso/pull/1499) [`e14ec64`](https://github.com/petyosi/react-virtuoso/commit/e14ec640c4313344e563fa415e6c581e250b7568) Thanks [@petyosi](https://github.com/petyosi)! - Document stable live tails with replacement anchors and retargetable smooth scrolling. Backfill guidance for anchored mapping and bottom-visible scroll location fields.
+
 ## 0.2.0
 
 ### Minor Changes
