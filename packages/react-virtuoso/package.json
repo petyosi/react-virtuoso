@@ -75,7 +75,7 @@
     "react-dom": "catalog:",
     "react-router-dom": "^6.14.0",
     "typescript": "catalog:",
-    "uuid": "^11.1.0",
+    "uuid": "^14.0.0",
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",
     "vitest": "catalog:"
