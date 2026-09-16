@@ -1,5 +1,11 @@
 # @virtuoso.dev/data-table
 
+## 0.5.0
+
+### Minor Changes
+
+- [#1501](https://github.com/petyosi/react-virtuoso/pull/1501) [`64e187e`](https://github.com/petyosi/react-virtuoso/commit/64e187e3d65b3e8d4a3882832be41cbdd427b189) Thanks [@petyosi](https://github.com/petyosi)! - Add controlled table/card presentation with custom card content and operation headers. Cards use automatically measured uniform CSS layouts, with measurements separate from table rows. Preserve the model and its operations across switches, and support existing scrolling and loading APIs. Grouped data remains table-only.
+
 ## 0.4.0
 
 ### Minor Changes
