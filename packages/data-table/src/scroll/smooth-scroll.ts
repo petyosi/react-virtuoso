@@ -34,6 +34,8 @@ export function useSmoothScroll(
     }
   }, [])
 
+  React.useLayoutEffect(() => cancelScroll, [cancelScroll])
+
   React.useEffect(() => {
     return engine.sub(scrolledWithMouseWheel$, (direction) => {
       if (direction !== smoothScrollDirectionRef.current) {
@@ -88,7 +90,9 @@ export function useSmoothScroll(
 
       if (scrollTopIsAlmostEqual(location, element.scrollTop) || element.scrollHeight <= element.clientHeight) {
         // this is necessary to avoid sync/async discrepancies
-        requestAnimationFrame(() => {
+        cancelScroll()
+        animationFrameRef.current = requestAnimationFrame(() => {
+          animationFrameRef.current = null
           engine.pub(scrollTargetReached$, scrollerRef.current?.scrollTop)
         })
         return

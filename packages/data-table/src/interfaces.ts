@@ -128,8 +128,8 @@ export interface DataTableLoadingState {
 }
 
 /**
- * Resolves the measured height of a data item. Returns `0` when the item is not part of the
- * current table data or has not been measured yet.
+ * Resolves the table-row height of a data item, never its card height. Returns `0` when
+ * the item is not part of the current table data or its row has not been measured yet.
  *
  * @typeParam Data - The type of the data items in the table.
  * @group Remote Control
@@ -226,14 +226,34 @@ export interface StickyColumnContainerComponentProps {
 }
 
 /**
- * Component overrides for internal DOM elements of the data table.
- * Each override receives the same props the default `<div>` would get, plus the table's `context` value.
+ * Content props for a card. The library owns and measures its surrounding wrapper.
  *
+ * @typeParam Data - The type of an ungrouped model item.
  * @typeParam Context - The type of the context passed to the table.
  *
  * @group Customization
  */
-export interface DataTableComponents<Context = unknown> {
+export interface CardComponentProps<Data = unknown, Context = unknown> {
+  /** The model item, including consumer-provided placeholders for unloaded items. */
+  data: Data
+  /** The model item index, not the visual grid row index. */
+  index: number
+  /** The current value of the table's context prop. */
+  context: Context
+}
+
+/**
+ * Component overrides and presentation content for the data table.
+ *
+ * @typeParam Context - The type of the context passed to the table.
+ * @typeParam Data - The type of an ungrouped model item passed to Card.
+ * @group Customization
+ */
+export interface DataTableComponents<Context = unknown, Data = unknown> {
+  /** Content of an automatically measured, uniformly sized card. */
+  Card?: React.ComponentType<CardComponentProps<Data, Context>>
+  /** Sticky operation controls shown once above cards, inside the table engine. */
+  CardHeader?: ContextAwareComponent<Context>
   /**
    * Override the element used for data rows (not group header rows).
    * Must forward ref, style, children, and data attributes to the root element.
@@ -324,6 +344,12 @@ export type ScrollerProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data'
  * @group Components
  */
 export interface VirtuosoDataTableProps<Data, Context, Group = unknown> extends ScrollerProps {
+  /** Externally controlled presentation. Switching starts at the first item without reconnecting the model. */
+  mode?: 'table' | 'card'
+  /** CSS grid or wrapping flex layout with equal-sized items and CSS gaps. */
+  cardListClassName?: string
+  /** Class applied to each measurable card wrapper. */
+  cardItemClassName?: string
   /**
    * A data model handle that provides data to the table through a message-exchange protocol.
    */
@@ -397,7 +423,7 @@ export interface VirtuosoDataTableProps<Data, Context, Group = unknown> extends 
    * Component overrides for internal DOM elements like rows, sticky headers, and sticky column containers.
    * See {@link DataTableComponents} for available slots.
    */
-  components?: NoInfer<DataTableComponents<Context>>
+  components?: NoInfer<DataTableComponents<Context, Data>>
 
   /**
    * Any children passed to the component.

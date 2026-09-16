@@ -6,9 +6,9 @@ import { useCellValues } from '@virtuoso.dev/reactive-engine-react'
 import { scrollBarScrollerWidth$, stickyHeaderHeight$ } from '../scroll/dom'
 import { tableReady$ } from './table-ready'
 
-type TableLayoutRootProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data' | 'onScroll'>
+type TableLayoutRootProps = Omit<React.HTMLProps<HTMLDivElement>, 'ref' | 'data' | 'onScroll'> & { ready?: boolean }
 
-export function TableLayoutRoot({ children, style: passedStyle = {}, ...htmlProps }: TableLayoutRootProps) {
+export function TableLayoutRoot({ children, ready, style: passedStyle = {}, ...htmlProps }: TableLayoutRootProps) {
   const [scrollbarScrollerWidth, headerHeight, tableReady] = useCellValues(scrollBarScrollerWidth$, stickyHeaderHeight$, tableReady$)
 
   const rootStyle = useMemo(
@@ -25,7 +25,7 @@ export function TableLayoutRoot({ children, style: passedStyle = {}, ...htmlProp
   )
 
   return (
-    <div {...htmlProps} data-testid="virtuoso-table-root" data-ready={tableReady || undefined} style={rootStyle}>
+    <div {...htmlProps} data-testid="virtuoso-table-root" data-ready={(ready ?? tableReady) || undefined} style={rootStyle}>
       {children}
     </div>
   )
