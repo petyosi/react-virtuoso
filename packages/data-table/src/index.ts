@@ -46,6 +46,7 @@ export type {
   ScrollerProps,
   VirtuosoDataTableProps,
   DataTableComponents,
+  CardComponentProps,
   RowComponentProps,
   StickyHeaderComponentProps,
   StickyColumnContainerComponentProps,
