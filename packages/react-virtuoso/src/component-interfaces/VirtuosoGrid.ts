@@ -103,7 +103,7 @@ export interface VirtuosoGridProps<Data, Context = unknown> extends GridRootProp
   /**
    * Use the `components` property for advanced customization of the elements rendered by the list.
    */
-  components?: GridComponents<Context>
+  components?: GridComponents<Context, any, any>
 
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.

@@ -51,7 +51,12 @@ export interface ContextProp<Context> {
  * @see {@link VirtuosoProps.components} for usage in Virtuoso
  * @group Virtuoso
  */
-export interface Components<Data = unknown, Context = unknown> {
+export interface Components<
+  Data = unknown,
+  Context = unknown,
+  ListEl extends HTMLElement = HTMLDivElement,
+  ItemEl extends HTMLElement = HTMLDivElement,
+> {
   /**
    * Set to render a custom UI when the list is empty.
    */
@@ -74,12 +79,12 @@ export interface Components<Data = unknown, Context = unknown> {
   /**
    * Set to customize the item wrapping element. Use only if you would like to render list from elements different than a `div`.
    */
-  Item?: React.ComponentType<ItemProps<Data> & ContextProp<Context>>
+  Item?: React.ComponentType<ItemProps<Data, ItemEl> & ContextProp<Context>>
 
   /**
    * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
    */
-  List?: React.ComponentType<ListProps & ContextProp<Context>>
+  List?: React.ComponentType<ListProps<ListEl> & ContextProp<Context>>
 
   /**
    * Set to customize the outermost scrollable element. This should not be necessary in general,
@@ -203,7 +208,7 @@ export type FollowOutputScalarType = 'auto' | 'smooth' | boolean
  * @see {@link VirtuosoGridProps.components} for usage in VirtuosoGrid
  * @group VirtuosoGrid
  */
-export interface GridComponents<Context = any> {
+export interface GridComponents<Context = any, ListEl extends HTMLElement = HTMLDivElement, ItemEl extends HTMLElement = HTMLDivElement> {
   /**
    * Set to render a component at the bottom of the list.
    */
@@ -219,12 +224,12 @@ export interface GridComponents<Context = any> {
   /**
    * Set to customize the item wrapping element. Use only if you would like to render list from elements different than a `div`.
    */
-  Item?: React.ComponentType<GridItemProps & ContextProp<Context>>
+  Item?: React.ComponentType<GridItemProps<ItemEl> & ContextProp<Context>>
 
   /**
    * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
    */
-  List?: React.ComponentType<GridListProps & ContextProp<Context>>
+  List?: React.ComponentType<GridListProps<ListEl> & ContextProp<Context>>
 
   /**
    * Set to customize the outermost scrollable element. This should not be necessary in general,
@@ -285,22 +290,11 @@ export interface GridItem<Data> {
 export type GridItemContent<Data, Context> = (index: number, data: Data, context: Context) => React.ReactNode
 
 /**
- * Host element type for custom List/Item `ref`s.
- *
- * Custom wrappers may render any HTML element (`div`, `ul`, `li`, `span`, …).
- * `React.forwardRef` types the callback as `ForwardedRef<T>`, which includes an
- * invariant `RefObject`, so a concrete host type such as `HTMLDivElement` is not
- * assignable to a different tag. `any` is the only `T` that remains assignable to
- * every host `ref` (https://github.com/petyosi/react-virtuoso/issues/864).
- */
-type CustomComponentHostElement = any
-
-/**
  * Passed to the GridComponents.Item custom component
  * @group VirtuosoGrid
  */
-export type GridItemProps = Pick<React.ComponentProps<'div'>, 'children' | 'className' | 'style'> &
-  React.RefAttributes<CustomComponentHostElement> & {
+export type GridItemProps<El extends HTMLElement = HTMLDivElement> = Pick<React.ComponentProps<'div'>, 'children' | 'className' | 'style'> &
+  React.RefAttributes<El> & {
     'data-index': number
   }
 
@@ -308,8 +302,8 @@ export type GridItemProps = Pick<React.ComponentProps<'div'>, 'children' | 'clas
  * Passed to the GridComponents.List custom component
  * @group VirtuosoGrid
  */
-export type GridListProps = Pick<React.ComponentProps<'div'>, 'children' | 'className' | 'style'> &
-  React.RefAttributes<CustomComponentHostElement> & {
+export type GridListProps<El extends HTMLElement = HTMLDivElement> = Pick<React.ComponentProps<'div'>, 'children' | 'className' | 'style'> &
+  React.RefAttributes<El> & {
     'data-testid': string
   }
 
@@ -455,8 +449,8 @@ export type ItemContent<Data, Context> = (index: number, data: Data, context: Co
  * Passed to the Components.Item custom component
  * @group Virtuoso
  */
-export type ItemProps<Data> = Pick<React.ComponentProps<'div'>, 'children' | 'style'> &
-  React.RefAttributes<CustomComponentHostElement> & {
+export type ItemProps<Data, El extends HTMLElement = HTMLDivElement> = Pick<React.ComponentProps<'div'>, 'children' | 'style'> &
+  React.RefAttributes<El> & {
     'data-index': number
     'data-item-group-index'?: number | undefined
     'data-item-index': number
@@ -479,8 +473,8 @@ export type ListItem<Data> = GroupItem<Data> | RecordItem<Data>
  * Passed to the Components.List custom component
  * @group Virtuoso
  */
-export type ListProps = Pick<React.ComponentProps<'div'>, 'children' | 'style'> &
-  React.RefAttributes<CustomComponentHostElement> & {
+export type ListProps<El extends HTMLElement = HTMLDivElement> = Pick<React.ComponentProps<'div'>, 'children' | 'style'> &
+  React.RefAttributes<El> & {
     'data-testid': string
   }
 
@@ -785,7 +779,7 @@ export interface TableComponents<Data = unknown, Context = unknown> {
   /**
    * Set to customize the item wrapping element. Default is `tr`.
    */
-  TableRow?: React.ComponentType<ItemProps<Data> & ContextProp<Context>>
+  TableRow?: React.ComponentType<ItemProps<Data, HTMLTableRowElement> & ContextProp<Context>>
 }
 
 /**

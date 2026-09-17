@@ -4,6 +4,8 @@ import type { Components, GridComponents } from '../src'
 
 /**
  * Issue #864: custom List/Item wrappers may be any HTML element, not only div.
+ * The host element is a type parameter on `Components`/`GridComponents`, so the
+ * forwarded `ref` stays fully typed for whichever element the wrapper renders.
  * Checked by `pnpm typecheck` (this file is not a runtime vitest case).
  */
 const DivList: Components['List'] = React.forwardRef(function DivList({ style, children }, ref) {
@@ -14,7 +16,7 @@ const DivList: Components['List'] = React.forwardRef(function DivList({ style, c
   )
 })
 
-const UlList: Components['List'] = React.forwardRef(function UlList({ style, children }, ref) {
+const UlList: Components<unknown, unknown, HTMLUListElement>['List'] = React.forwardRef(function UlList({ style, children }, ref) {
   return (
     <ul ref={ref} style={style}>
       {children}
@@ -22,7 +24,7 @@ const UlList: Components['List'] = React.forwardRef(function UlList({ style, chi
   )
 })
 
-const SpanList: Components['List'] = React.forwardRef(function SpanList({ style, children }, ref) {
+const SpanList: Components<unknown, unknown, HTMLSpanElement>['List'] = React.forwardRef(function SpanList({ style, children }, ref) {
   return (
     <span ref={ref} style={style}>
       {children}
@@ -30,11 +32,14 @@ const SpanList: Components['List'] = React.forwardRef(function SpanList({ style,
   )
 })
 
-const LiItem: Components['Item'] = function LiItem({ children, ...props }) {
+const LiItem: Components<unknown, unknown, HTMLDivElement, HTMLLIElement>['Item'] = function LiItem({ children, ...props }) {
   return <li {...props}>{children}</li>
 }
 
-const ForwardedLiItem: Components['Item'] = React.forwardRef(function ForwardedLiItem({ children, ...props }, ref) {
+const ForwardedLiItem: Components<unknown, unknown, HTMLDivElement, HTMLLIElement>['Item'] = React.forwardRef(function ForwardedLiItem(
+  { children, ...props },
+  ref
+) {
   return (
     <li ref={ref} {...props}>
       {children}
@@ -42,7 +47,7 @@ const ForwardedLiItem: Components['Item'] = React.forwardRef(function ForwardedL
   )
 })
 
-const GridUlList: GridComponents['List'] = React.forwardRef(function GridUlList({ style, children, ...props }, ref) {
+const GridUlList: GridComponents<any, HTMLUListElement>['List'] = React.forwardRef(function GridUlList({ style, children, ...props }, ref) {
   return (
     <ul ref={ref} style={style} {...props}>
       {children}
@@ -50,7 +55,10 @@ const GridUlList: GridComponents['List'] = React.forwardRef(function GridUlList(
   )
 })
 
-const GridLiItem: GridComponents['Item'] = React.forwardRef(function GridLiItem({ children, ...props }, ref) {
+const GridLiItem: GridComponents<any, HTMLDivElement, HTMLLIElement>['Item'] = React.forwardRef(function GridLiItem(
+  { children, ...props },
+  ref
+) {
   return (
     <li ref={ref} {...props}>
       {children}
