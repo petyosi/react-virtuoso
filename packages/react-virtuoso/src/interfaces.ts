@@ -51,7 +51,7 @@ export interface ContextProp<Context> {
  * @see {@link VirtuosoProps.components} for usage in Virtuoso
  * @group Virtuoso
  */
-export interface Components<Data = unknown, Context = unknown> {
+export interface Components<Data = unknown, Context = unknown, ListEl extends HTMLDivElement | HTMLUListElement = HTMLDivElement> {
   /**
    * Set to render a custom UI when the list is empty.
    */
@@ -79,7 +79,7 @@ export interface Components<Data = unknown, Context = unknown> {
   /**
    * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
    */
-  List?: React.ComponentType<ListProps & ContextProp<Context>>
+  List?: React.ComponentType<ListProps<ListEl> & ContextProp<Context>>
 
   /**
    * Set to customize the outermost scrollable element. This should not be necessary in general,
@@ -203,7 +203,7 @@ export type FollowOutputScalarType = 'auto' | 'smooth' | boolean
  * @see {@link VirtuosoGridProps.components} for usage in VirtuosoGrid
  * @group VirtuosoGrid
  */
-export interface GridComponents<Context = any> {
+export interface GridComponents<Context = any, ListEl extends HTMLDivElement | HTMLUListElement = HTMLDivElement> {
   /**
    * Set to render a component at the bottom of the list.
    */
@@ -224,7 +224,7 @@ export interface GridComponents<Context = any> {
   /**
    * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
    */
-  List?: React.ComponentType<GridListProps & ContextProp<Context>>
+  List?: React.ComponentType<GridListProps<ListEl> & ContextProp<Context>>
 
   /**
    * Set to customize the outermost scrollable element. This should not be necessary in general,
@@ -297,8 +297,11 @@ export type GridItemProps = Pick<React.ComponentProps<'div'>, 'children' | 'clas
  * Passed to the GridComponents.List custom component
  * @group VirtuosoGrid
  */
-export type GridListProps = Pick<React.ComponentProps<'div'>, 'children' | 'className' | 'style'> &
-  React.RefAttributes<HTMLDivElement> & {
+export type GridListProps<El extends HTMLDivElement | HTMLUListElement = HTMLDivElement> = Pick<
+  React.ComponentProps<'div'>,
+  'children' | 'className' | 'style'
+> &
+  React.RefAttributes<El> & {
     'data-testid': string
   }
 
@@ -467,8 +470,11 @@ export type ListItem<Data> = GroupItem<Data> | RecordItem<Data>
  * Passed to the Components.List custom component
  * @group Virtuoso
  */
-export type ListProps = Pick<React.ComponentProps<'div'>, 'children' | 'style'> &
-  React.RefAttributes<HTMLDivElement> & {
+export type ListProps<El extends HTMLDivElement | HTMLUListElement = HTMLDivElement> = Pick<
+  React.ComponentProps<'div'>,
+  'children' | 'style'
+> &
+  React.RefAttributes<El> & {
     'data-testid': string
   }
 
