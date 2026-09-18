@@ -188,7 +188,7 @@ export interface VirtuosoProps<Data, Context> extends ListRootProps {
   /**
    * Use the `components` property for advanced customization of the elements rendered by the list.
    */
-  components?: Components<Data, Context, any, any>
+  components?: Components<Data, Context, any>
 
   /**
    * If specified, the component will use the function to generate the `key` property for each list item.

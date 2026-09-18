@@ -2,4 +2,4 @@
 'react-virtuoso': patch
 ---
 
-Allow custom List and Item wrappers to attach their `ref` to any HTML element, not only `div`.
+Allow a custom `List` wrapper to render a `ul` instead of a `div`, keeping its forwarded `ref` typed to the chosen element. `Item` is unchanged.

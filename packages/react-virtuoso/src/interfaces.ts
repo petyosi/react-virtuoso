@@ -51,12 +51,7 @@ export interface ContextProp<Context> {
  * @see {@link VirtuosoProps.components} for usage in Virtuoso
  * @group Virtuoso
  */
-export interface Components<
-  Data = unknown,
-  Context = unknown,
-  ListEl extends HTMLElement = HTMLDivElement,
-  ItemEl extends HTMLElement = HTMLDivElement,
-> {
+export interface Components<Data = unknown, Context = unknown, ListEl extends HTMLDivElement | HTMLUListElement = HTMLDivElement> {
   /**
    * Set to render a custom UI when the list is empty.
    */
@@ -79,7 +74,7 @@ export interface Components<
   /**
    * Set to customize the item wrapping element. Use only if you would like to render list from elements different than a `div`.
    */
-  Item?: React.ComponentType<ItemProps<Data, ItemEl> & ContextProp<Context>>
+  Item?: React.ComponentType<ItemProps<Data> & ContextProp<Context>>
 
   /**
    * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
@@ -208,7 +203,7 @@ export type FollowOutputScalarType = 'auto' | 'smooth' | boolean
  * @see {@link VirtuosoGridProps.components} for usage in VirtuosoGrid
  * @group VirtuosoGrid
  */
-export interface GridComponents<Context = any, ListEl extends HTMLElement = HTMLDivElement, ItemEl extends HTMLElement = HTMLDivElement> {
+export interface GridComponents<Context = any, ListEl extends HTMLDivElement | HTMLUListElement = HTMLDivElement> {
   /**
    * Set to render a component at the bottom of the list.
    */
@@ -224,7 +219,7 @@ export interface GridComponents<Context = any, ListEl extends HTMLElement = HTML
   /**
    * Set to customize the item wrapping element. Use only if you would like to render list from elements different than a `div`.
    */
-  Item?: React.ComponentType<GridItemProps<ItemEl> & ContextProp<Context>>
+  Item?: React.ComponentType<GridItemProps & ContextProp<Context>>
 
   /**
    * Set to customize the items wrapper. Use only if you would like to render list from elements different than a `div`.
@@ -293,8 +288,8 @@ export type GridItemContent<Data, Context> = (index: number, data: Data, context
  * Passed to the GridComponents.Item custom component
  * @group VirtuosoGrid
  */
-export type GridItemProps<El extends HTMLElement = HTMLDivElement> = Pick<React.ComponentProps<'div'>, 'children' | 'className' | 'style'> &
-  React.RefAttributes<El> & {
+export type GridItemProps = Pick<React.ComponentProps<'div'>, 'children' | 'className' | 'style'> &
+  React.RefAttributes<HTMLDivElement> & {
     'data-index': number
   }
 
@@ -302,7 +297,10 @@ export type GridItemProps<El extends HTMLElement = HTMLDivElement> = Pick<React.
  * Passed to the GridComponents.List custom component
  * @group VirtuosoGrid
  */
-export type GridListProps<El extends HTMLElement = HTMLDivElement> = Pick<React.ComponentProps<'div'>, 'children' | 'className' | 'style'> &
+export type GridListProps<El extends HTMLDivElement | HTMLUListElement = HTMLDivElement> = Pick<
+  React.ComponentProps<'div'>,
+  'children' | 'className' | 'style'
+> &
   React.RefAttributes<El> & {
     'data-testid': string
   }
@@ -449,14 +447,13 @@ export type ItemContent<Data, Context> = (index: number, data: Data, context: Co
  * Passed to the Components.Item custom component
  * @group Virtuoso
  */
-export type ItemProps<Data, El extends HTMLElement = HTMLDivElement> = Pick<React.ComponentProps<'div'>, 'children' | 'style'> &
-  React.RefAttributes<El> & {
-    'data-index': number
-    'data-item-group-index'?: number | undefined
-    'data-item-index': number
-    'data-known-size': number
-    item: Data
-  }
+export type ItemProps<Data> = Pick<React.ComponentProps<'div'>, 'children' | 'style'> & {
+  'data-index': number
+  'data-item-group-index'?: number | undefined
+  'data-item-index': number
+  'data-known-size': number
+  item: Data
+}
 
 /**
  * Union type representing either a regular item or a group header item in the list.
@@ -473,7 +470,10 @@ export type ListItem<Data> = GroupItem<Data> | RecordItem<Data>
  * Passed to the Components.List custom component
  * @group Virtuoso
  */
-export type ListProps<El extends HTMLElement = HTMLDivElement> = Pick<React.ComponentProps<'div'>, 'children' | 'style'> &
+export type ListProps<El extends HTMLDivElement | HTMLUListElement = HTMLDivElement> = Pick<
+  React.ComponentProps<'div'>,
+  'children' | 'style'
+> &
   React.RefAttributes<El> & {
     'data-testid': string
   }
@@ -779,7 +779,7 @@ export interface TableComponents<Data = unknown, Context = unknown> {
   /**
    * Set to customize the item wrapping element. Default is `tr`.
    */
-  TableRow?: React.ComponentType<ItemProps<Data, HTMLTableRowElement> & ContextProp<Context>>
+  TableRow?: React.ComponentType<ItemProps<Data> & ContextProp<Context>>
 }
 
 /**
