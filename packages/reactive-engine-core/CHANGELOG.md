@@ -1,5 +1,11 @@
 # @virtuoso.dev/reactive-engine-core
 
+## 0.2.0
+
+### Minor Changes
+
+- [`22ac6c5`](https://github.com/petyosi/react-virtuoso/commit/22ac6c5e69314e4113046a7da4bcadde2a082b25) Thanks [@petyosi](https://github.com/petyosi)! - Add a `distinct` parameter to `debounceTime` and `throttleTime`, mirroring `map`. Both operators emit through a distinct stream by default, so a valueless `Trigger` piped through them fires once and is then suppressed forever. Pass `false` to re-emit equal values, or a comparator to define equality.
+
 ## 0.1.2
 
 ### Patch Changes
