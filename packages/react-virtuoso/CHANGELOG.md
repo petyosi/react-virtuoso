@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.18.14
+
+### Patch Changes
+
+- [#1497](https://github.com/petyosi/react-virtuoso/pull/1497) [`ac8a5f4`](https://github.com/petyosi/react-virtuoso/commit/ac8a5f404bac665d70c07cb8b68566af55efb853) Thanks [@cpruijsen](https://github.com/cpruijsen)! - Allow a custom `List` wrapper to render a `ul` instead of a `div`, keeping its forwarded `ref` typed to the chosen element. `Item` is unchanged.
+
 ## 4.18.13
 
 ### Patch Changes
