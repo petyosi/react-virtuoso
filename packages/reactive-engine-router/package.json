@@ -1,6 +1,6 @@
 {
   "name": "@virtuoso.dev/reactive-engine-router",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": false,
   "description": "Reactive router with routes, layouts, and guards for the Virtuoso reactive engine.",
   "license": "MIT",
@@ -59,8 +59,8 @@
     "vitest-browser-react": "^2.0.2"
   },
   "peerDependencies": {
-    "@virtuoso.dev/reactive-engine-core": ">=0.1.2",
-    "@virtuoso.dev/reactive-engine-react": ">=0.3.2",
+    "@virtuoso.dev/reactive-engine-core": ">=0.2.0",
+    "@virtuoso.dev/reactive-engine-react": ">=1.0.0",
     "react": ">= 18"
   }
 }
