@@ -245,12 +245,18 @@ export function scan<I, TOut>(accumulator: (current: TOut, value: I) => TOut, se
 
 /**
  * Throttles the output of a node with the specified delay.
+ *
+ * The resulting node is distinct by default: after the delay, a value equal to the previously
+ * emitted one is suppressed. A valueless source such as a `Trigger` therefore passes only once.
+ * Pass `false` as `distinct` when every throttled window must emit, or a comparator to define equality.
+ * @param delay - The throttle window in milliseconds.
+ * @param distinct - `true` by default. Pass `false` to re-emit equal values, or a comparator function.
  * @typeParam I - The type of values that the node will emit.
  * @category Operators
  */
-export function throttleTime<I>(delay: number): Operator<I, I> {
+export function throttleTime<I>(delay: number, distinct: Distinct<I> = true): Operator<I, I> {
   return (source, eng) => {
-    const sink = eng.streamInstance<I>()
+    const sink = eng.streamInstance<I>(distinct)
     let currentValue: I | undefined
     let timeout: null | ReturnType<typeof setTimeout> = null
 
@@ -273,12 +279,19 @@ export function throttleTime<I>(delay: number): Operator<I, I> {
 
 /**
  * Debounces the output of a node with the specified delay.
+ *
+ * The resulting node is distinct by default: after the source goes quiet, a value equal to the
+ * previously emitted one is suppressed. A valueless source such as a `Trigger` therefore passes only
+ * once. Pass `false` as `distinct` when every settled burst must emit, for example when debouncing
+ * refetch requests, or a comparator to define equality.
+ * @param delay - The quiet period in milliseconds.
+ * @param distinct - `true` by default. Pass `false` to re-emit equal values, or a comparator function.
  * @typeParam I - The type of values that the node will emit.
  * @category Operators
  */
-export function debounceTime<I>(delay: number): Operator<I, I> {
+export function debounceTime<I>(delay: number, distinct: Distinct<I> = true): Operator<I, I> {
   return (source, eng) => {
-    const sink = eng.streamInstance<I>()
+    const sink = eng.streamInstance<I>(distinct)
     let currentValue: I | undefined
     let timeout: null | ReturnType<typeof setTimeout> = null
 
