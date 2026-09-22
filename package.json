@@ -44,7 +44,7 @@
     },
     "runtime": {
       "name": "node",
-      "version": ">=22.0.0",
+      "version": ">=22.12.0",
       "onFail": "error"
     }
   },
