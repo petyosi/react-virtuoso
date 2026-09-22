@@ -45,6 +45,89 @@ describe('list engine', () => {
       expect(getValue(listState).items).toHaveLength(10)
     })
 
+    it('clamps initialItemCount to data length when data has fewer items', () => {
+      const { data, initialItemCount, listState, propsReady } = init(listSystem)
+
+      publish(data, ['a', 'b', 'c'])
+      publish(initialItemCount, 10)
+      publish(propsReady, true)
+
+      const items = getValue(listState).items
+      expect(items).toHaveLength(3)
+      expect(items.every((item) => item.data !== undefined)).toBe(true)
+    })
+
+    it('does not render phantom items when data shrinks while initialItemCount is stale', () => {
+      const { data, initialItemCount, listState, propsReady } = init(listSystem)
+
+      publish(data, ['a', 'b', 'c'])
+      publish(initialItemCount, 3)
+      publish(propsReady, true)
+      expect(getValue(listState).items).toHaveLength(3)
+
+      // same-render re-publish: data shrinks first, before the new initialItemCount lands in its cell
+      publish(data, ['a', 'b'])
+      let items = getValue(listState).items
+      expect(items).toHaveLength(2)
+      expect(items.every((item) => item.data !== undefined)).toBe(true)
+
+      publish(initialItemCount, 2)
+      items = getValue(listState).items
+      expect(items).toHaveLength(2)
+      expect(items.every((item) => item.data !== undefined)).toBe(true)
+    })
+
+    it('recomputes the list state when initialItemCount changes after data changes', () => {
+      const { data, initialItemCount, listState, propsReady } = init(listSystem)
+
+      publish(data, ['a', 'b', 'c'])
+      publish(initialItemCount, 3)
+      publish(propsReady, true)
+      expect(getValue(listState).items).toHaveLength(3)
+
+      publish(data, ['a', 'b', 'c', 'd', 'e'])
+      expect(getValue(listState).items).toHaveLength(3)
+
+      publish(initialItemCount, 5)
+      const items = getValue(listState).items
+      expect(items).toHaveLength(5)
+      expect(items.every((item) => item.data !== undefined)).toBe(true)
+    })
+
+    it('clamps initialItemCount to the data remaining after initialTopMostItemIndex', () => {
+      const { data, initialItemCount, initialTopMostItemIndex, listState, propsReady } = init(listSystem)
+
+      publish(data, ['a', 'b', 'c'])
+      publish(initialTopMostItemIndex, 1)
+      publish(initialItemCount, 3)
+      publish(propsReady, true)
+
+      const items = getValue(listState).items
+      expect(items).toHaveLength(2)
+      expect(items.map((item) => item.data)).toEqual(['b', 'c'])
+    })
+
+    it('renders no items on mount when data is explicitly empty', () => {
+      const { data, initialItemCount, listState, propsReady } = init(listSystem)
+
+      publish(data, [])
+      publish(initialItemCount, 3)
+      publish(propsReady, true)
+
+      expect(getValue(listState).items).toHaveLength(0)
+    })
+
+    it('renders initialItemCount items on mount when data is omitted', () => {
+      const { initialItemCount, listState, propsReady } = init(listSystem)
+
+      publish(initialItemCount, 3)
+      publish(propsReady, true)
+
+      const items = getValue(listState).items
+      expect(items).toHaveLength(3)
+      expect(items.every((item) => item.data === undefined)).toBe(true)
+    })
+
     it('returns the full set if a fixed item height is set', () => {
       const { fixedItemHeight, listState, propsReady, scrollTop, totalCount, viewportHeight } = init(listSystem)
 

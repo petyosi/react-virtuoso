@@ -97,7 +97,7 @@ export function buildListStateFromItemCount(
   sizes: SizeState,
   firstItemIndex: number,
   gap: number,
-  data: readonly unknown[]
+  data: readonly unknown[] | undefined
 ) {
   let includedGroupsCount = 0
   if (sizes.groupIndices.length > 0) {
@@ -109,11 +109,16 @@ export function buildListStateFromItemCount(
     }
   }
 
-  const adjustedCount = itemCount + includedGroupsCount
-  const initialTopMostItemIndexNumber = getInitialTopMostItemIndexNumber(initialTopMostItemIndex, adjustedCount)
+  const unadjustedCount = itemCount + includedGroupsCount
+  const hasData = data !== undefined
+  const dataLength = data?.length ?? 0
+  const initialTopMostItemIndexNumber = getInitialTopMostItemIndexNumber(initialTopMostItemIndex, hasData ? dataLength : unadjustedCount)
+  // when the data prop is set, items are read from it starting at initialTopMostItemIndexNumber,
+  // so the count cannot exceed the items remaining after it - an explicitly empty data renders no items
+  const adjustedCount = hasData ? Math.max(0, Math.min(unadjustedCount, dataLength - initialTopMostItemIndexNumber)) : unadjustedCount
 
   const items = Array.from({ length: adjustedCount }).map((_, index) => ({
-    data: data[index + initialTopMostItemIndexNumber],
+    data: data?.[index + initialTopMostItemIndexNumber],
     index: index + initialTopMostItemIndexNumber,
     offset: 0,
     size: 0,
@@ -209,7 +214,8 @@ export const listStateSystem = u.system(
           u.duc(firstItemIndex),
           u.duc(gap),
           u.duc(minOverscanItemCount),
-          data
+          data,
+          u.duc(initialItemCount)
         ),
         u.filter(([mount, recalcInProgress, , totalCount, , , , , , , , data]) => {
           // When data length changes, it is synced to totalCount, both of which trigger a recalc separately.
@@ -231,10 +237,10 @@ export const listStateSystem = u.system(
             gap,
             minOverscanItemCountValue,
             data,
+            initialItemCountValue,
           ]) => {
             const sizesValue = sizes
             const { offsetTree, sizeTree } = sizesValue
-            const initialItemCountValue = u.getValue(initialItemCount)
 
             if (totalCount === 0) {
               return { ...EMPTY_LIST_STATE, totalCount }
@@ -245,7 +251,7 @@ export const listStateSystem = u.system(
               if (initialItemCountValue === 0) {
                 return { ...EMPTY_LIST_STATE, totalCount }
               }
-              return buildListStateFromItemCount(initialItemCountValue, initialTopMostItemIndex, sizes, firstItemIndex, gap, data || [])
+              return buildListStateFromItemCount(initialItemCountValue, initialTopMostItemIndex, sizes, firstItemIndex, gap, data)
             }
 
             if (empty(sizeTree)) {
