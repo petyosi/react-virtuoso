@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.18.15
+
+### Patch Changes
+
+- [#1461](https://github.com/petyosi/react-virtuoso/pull/1461) [`364c071`](https://github.com/petyosi/react-virtuoso/commit/364c071dc1e044b52d1cfbce65851440d39be77e) Thanks [@aehmt](https://github.com/aehmt)! - Fixed "Zero-sized element, this should not happen" error when `initialItemCount` exceeds the available `data`. The initial list state builder now clamps the item count to the data remaining after `initialTopMostItemIndex`, and renders no items when `data` is explicitly empty, preventing phantom items with `undefined` data from being rendered. `initialItemCount` also became a reactive input of the list state computation, so changing it after mount recomputes the list instead of leaving stale state until an unrelated update.
+
 ## 4.18.14
 
 ### Patch Changes
