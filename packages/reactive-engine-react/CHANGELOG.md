@@ -1,5 +1,43 @@
 # @virtuoso.dev/reactive-engine-react
 
+## 1.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`22ac6c5`](https://github.com/petyosi/react-virtuoso/commit/22ac6c5e69314e4113046a7da4bcadde2a082b25)]:
+  - @virtuoso.dev/reactive-engine-core@0.2.0
+
+## 0.3.2
+
+### Patch Changes
+
+- [`e6cef21`](https://github.com/petyosi/react-virtuoso/commit/e6cef21e45bbe37d2cc83f69fe0c0f8c6ae4cdf8) Thanks [@petyosi](https://github.com/petyosi)! - Allow external-state bridges to observe one value type while forwarding a different write-request type.
+
+- Updated dependencies [[`744eb1e`](https://github.com/petyosi/react-virtuoso/commit/744eb1e1015bc8dcb9da6c5a71bb6abdf4d86147)]:
+  - @virtuoso.dev/reactive-engine-core@0.1.2
+
+## 0.3.1
+
+### Patch Changes
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add an asymmetric external-state bridge that synchronizes observed values into cells and forwards only explicit write requests outward.
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add stable passive and layout engine subscription hooks that invoke the latest committed callback without resubscribing for callback-only renders.
+
+- Updated dependencies [[`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1)]:
+  - @virtuoso.dev/reactive-engine-core@0.1.1
+
+## 0.3.0
+
+### Minor Changes
+
+- [`6305890`](https://github.com/petyosi/react-virtuoso/commit/6305890d8b2432990d67d64635f938f22ff0f301) Thanks [@petyosi](https://github.com/petyosi)! - Add provider, local-hook, and remote-hook bindings for structured engine diagnostics, including initialization capture, option updates, and lifecycle guidance for React consumers and coding agents.
+
+### Patch Changes
+
+- Updated dependencies [[`6305890`](https://github.com/petyosi/react-virtuoso/commit/6305890d8b2432990d67d64635f938f22ff0f301)]:
+  - @virtuoso.dev/reactive-engine-core@0.1.0
+
 ## 0.2.4
 
 ### Patch Changes

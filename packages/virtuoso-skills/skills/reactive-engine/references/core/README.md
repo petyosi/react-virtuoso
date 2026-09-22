@@ -41,6 +41,35 @@ engine.getValue(count$) // 1
 - **Combinators** (`link`, `pipe`, `combine`, `merge`) wire nodes into a graph.
 - **Engine** instances activate node definitions, propagate published values, and manage subscriptions.
 
+## Propagation diagnostics
+
+Diagnostics provide structured records of node evaluations, projection attempts, distinct-value suppression, pruning, forwarding between parent and child engines, and propagation errors. Recording is inactive until an engine observer is registered.
+
+```ts
+import { Cell, describeNode, Engine } from '@virtuoso.dev/reactive-engine-core'
+
+const count$ = Cell(0)
+describeNode(count$, { label: 'count' })
+
+const engine = new Engine()
+const stop = engine.observeDiagnostics(
+  (cycle) => {
+    sendToTelemetry(cycle)
+  },
+  {
+    captureValues: 'summary',
+    redact: (value, context) => (context.node.label === 'count' ? '[redacted]' : value),
+  }
+)
+
+engine.pub(count$, 1)
+stop()
+```
+
+Observers run after the outer synchronous publication finishes. Observer failures do not change application propagation. Value capture defaults to `none`. In `summary` mode, values are converted to bounded JSON-safe snapshots before the optional redactor receives them. A node-specific `summarize` function registered through `describeNode` receives the live value, so it must not mutate it or cause application side effects.
+
+Diagnostics record only synchronous transaction relationships. Publications from a later microtask or timer start a new transaction. The API intentionally does not retain history; consumers decide whether and where to store records.
+
 ## License
 
 MIT

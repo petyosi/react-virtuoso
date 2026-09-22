@@ -28,7 +28,7 @@ export function Route<T extends string>(routeDefinition: T, component?: React.Co
     routeComponents$$.set(route$ as symbol, component as React.ComponentType<unknown>)
   }
 
-  return route$ as CreateRouteReference<T>
+  return route$ as unknown as CreateRouteReference<T>
 }
 
 /**

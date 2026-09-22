@@ -4,6 +4,36 @@ import { listSystem } from '../src/listSystem'
 import * as u from '../src/urx'
 
 describe('window scroller system', () => {
+  it('measures the list before it enters the window viewport', () => {
+    const {
+      fixedHeaderHeight,
+      headerHeight,
+      listState,
+      propsReady,
+      sizeRanges,
+      totalCount,
+      totalListHeight,
+      windowScrollContainerState,
+      windowViewportRect,
+    } = u.init(listSystem)
+
+    u.publish(totalCount, 100)
+    u.publish(propsReady, true)
+    u.publish(headerHeight, 60)
+    u.publish(fixedHeaderHeight, 20)
+    u.publish(windowViewportRect, { listHeight: 0, offsetTop: 1200, visibleHeight: -400 })
+    u.publish(windowScrollContainerState, { scrollHeight: 1200, scrollTop: 0, viewportHeight: 800 })
+
+    expect(u.getValue(listState)).toMatchObject({
+      items: [{ index: 0, offset: 0, size: 0 }],
+    })
+
+    u.publish(sizeRanges, [{ endIndex: 0, size: 40, startIndex: 0 }])
+
+    expect(u.getValue(totalListHeight)).toBe(4080)
+    expect(u.getValue(listState).items).toHaveLength(1)
+  })
+
   it('offsets the window scroll top with the element offset top', () => {
     const { scrollTop, windowScrollContainerState, windowViewportRect } = u.init(listSystem)
     const sub = vi.fn()

@@ -1,6 +1,6 @@
 import { Cell, DerivedCell, e, Stream } from '@virtuoso.dev/reactive-engine-core'
 
-import { data$, groupIndices$, groupIndexSet$, totalCount$ } from '../core/data'
+import { data$, dataOperation$, groupIndices$, groupIndexSet$, totalCount$ } from '../core/data'
 import { findMaxKeyValue } from '../sizing/AATree'
 import { computeTotalSize } from '../sizing/offsetOf'
 import { EMPTY_SIZE_STATE, updateSizeState } from '../sizing/SizeState'
@@ -54,7 +54,10 @@ function expandGroupHeaderRanges(ranges: SizeRange[], groupIndicesList: { index:
   }
   return extra.length > 0 ? [...ranges, ...extra] : ranges
 }
-e.changeWith(sizeState$, data$, (current) => ({ ...EMPTY_SIZE_STATE, lastSize: current.lastSize }))
+const dataWithOperation$ = e.pipe(data$, e.withLatestFrom(dataOperation$))
+e.changeWith(sizeState$, dataWithOperation$, (current, [, operation]) =>
+  operation === 'update' ? current : { ...EMPTY_SIZE_STATE, lastSize: current.lastSize }
+)
 
 export const totalHeight$ = DerivedCell(
   0,

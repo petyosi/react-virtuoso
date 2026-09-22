@@ -1,5 +1,34 @@
 # react-virtuoso
 
+## 4.18.14
+
+### Patch Changes
+
+- [#1497](https://github.com/petyosi/react-virtuoso/pull/1497) [`ac8a5f4`](https://github.com/petyosi/react-virtuoso/commit/ac8a5f404bac665d70c07cb8b68566af55efb853) Thanks [@cpruijsen](https://github.com/cpruijsen)! - Allow a custom `List` wrapper to render a `ul` instead of a `div`, keeping its forwarded `ref` typed to the chosen element. `Item` is unchanged.
+
+## 4.18.13
+
+### Patch Changes
+
+- [#1493](https://github.com/petyosi/react-virtuoso/pull/1493) [`d3c437e`](https://github.com/petyosi/react-virtuoso/commit/d3c437eaf55946143dea4b70d4116fe1b44bdfe8) Thanks [@albertcalasanzs](https://github.com/albertcalasanzs)! - Fix the transcript blanking for a frame when an older page is prepended.
+
+  The compensation for a prepend was a deviation that grows the content followed, one
+  `requestAnimationFrame` later, by the scroll that cancels it. In between there is a painted frame in
+  which the list is displaced by the whole page — and because prepends fire near `scrollTop` 0, that
+  displacement is the entire viewport.
+
+  The scroll now runs as soon as the renderer acknowledges, from a layout effect, that the deviation
+  has reached the DOM: after the mutation, before paint. Both land in the same paint, and because the
+  content has already grown the scroll can no longer be clamped to the old maximum. If nothing
+  acknowledges by the next frame the previous deferred behaviour still applies, so the worst case is
+  unchanged.
+
+## 4.18.12
+
+### Patch Changes
+
+- [#1487](https://github.com/petyosi/react-virtuoso/pull/1487) [`d975e6c`](https://github.com/petyosi/react-virtuoso/commit/d975e6c4eab2d56b23948c8b958c1d9b5c508c0c) Thanks [@petyosi](https://github.com/petyosi)! - Measure window-scrolling lists before they enter the viewport so their estimated height is included in the document layout.
+
 ## 4.18.11
 
 ### Patch Changes

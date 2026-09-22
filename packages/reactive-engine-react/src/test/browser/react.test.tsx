@@ -12,12 +12,17 @@ import {
   useCellValue,
   useCellValues,
   useEngineRef,
+  useEngineDiagnostics,
   usePublisher,
   useRemoteCell,
   useRemoteCellValue,
   useRemoteCellValues,
+  useRemoteEngineDiagnostics,
   useRemotePublisher,
 } from '../../'
+
+import type { EngineDiagnosticsConfig } from '../../'
+import type { PropagationCycle } from '@virtuoso.dev/reactive-engine-core'
 
 const cell$ = Cell('hello')
 const noop = () => {}
@@ -129,6 +134,214 @@ describe('Reactive Engine in React', () => {
       void screen.rerender(<Wrapper value="2" />)
 
       await expect.element(screen.getByTestId('cell-value')).toHaveTextContent('2')
+    })
+
+    it('observes diagnostics from initFn', async () => {
+      const initCell$ = Cell('before')
+      const records: Readonly<PropagationCycle>[] = []
+
+      await render(
+        <EngineProvider
+          diagnostics={{ observer: (cycle) => records.push(cycle) }}
+          initFn={(engine) => {
+            engine.pub(initCell$, 'after')
+          }}
+        >
+          <div>Mounted</div>
+        </EngineProvider>
+      )
+
+      expect(records).toHaveLength(1)
+      expect(records[0]?.roots[0]?.value).toBeUndefined()
+    })
+
+    it('applies changed diagnostic options to future cycles', async () => {
+      const diagnosticCell$ = Cell(0)
+      const records: Readonly<PropagationCycle>[] = []
+      const observer = (cycle: Readonly<PropagationCycle>) => records.push(cycle)
+
+      const PublishButton = ({ value }: { value: number }) => {
+        const publish = usePublisher(diagnosticCell$)
+        return (
+          <button
+            data-testid="diagnostic-publish"
+            onClick={() => {
+              publish(value)
+            }}
+          >
+            Publish
+          </button>
+        )
+      }
+
+      const Wrapper = ({ captureValues, value }: { captureValues: 'none' | 'summary'; value: number }) => (
+        <EngineProvider diagnostics={{ observer, options: { captureValues } }}>
+          <PublishButton value={value} />
+        </EngineProvider>
+      )
+
+      const screen = await render(<Wrapper captureValues="none" value={1} />)
+      await screen.getByTestId('diagnostic-publish').click()
+      expect(records[0]?.roots[0]?.value).toBeUndefined()
+
+      void screen.rerender(<Wrapper captureValues="summary" value={2} />)
+      await screen.getByTestId('diagnostic-publish').click()
+      expect(records[1]?.roots[0]?.value).toBe(2)
+    })
+
+    it('detects diagnostic option changes on a stable config object', async () => {
+      const diagnosticCell$ = Cell(0)
+      const records: Readonly<PropagationCycle>[] = []
+      const diagnostics: EngineDiagnosticsConfig = {
+        observer: (cycle) => records.push(cycle),
+        options: { captureValues: 'none' },
+      }
+
+      const PublishButton = ({ value }: { value: number }) => {
+        const publish = usePublisher(diagnosticCell$)
+        return (
+          <button
+            data-testid="stable-diagnostic-publish"
+            onClick={() => {
+              publish(value)
+            }}
+          >
+            Publish
+          </button>
+        )
+      }
+      const App = ({ value }: { value: number }) => (
+        <EngineProvider diagnostics={diagnostics}>
+          <PublishButton value={value} />
+        </EngineProvider>
+      )
+
+      const screen = await render(<App value={1} />)
+      await screen.getByTestId('stable-diagnostic-publish').click()
+      expect(records[0]?.roots[0]?.value).toBeUndefined()
+
+      diagnostics.options!.captureValues = 'summary'
+      await screen.rerender(<App value={2} />)
+      await screen.getByTestId('stable-diagnostic-publish').click()
+      expect(records[1]?.roots[0]?.value).toBe(2)
+    })
+  })
+
+  describe('diagnostic hooks', () => {
+    it('observes the nearest engine without retaining cycles in React state', async () => {
+      const diagnosticCell$ = Cell('before')
+      const records: Readonly<PropagationCycle>[] = []
+
+      const DiagnosticChild = () => {
+        useEngineDiagnostics((cycle) => records.push(cycle), { captureValues: 'summary' })
+        const publish = usePublisher(diagnosticCell$)
+        return (
+          <button
+            data-testid="local-diagnostic-publish"
+            onClick={() => {
+              publish('after')
+            }}
+          >
+            Publish
+          </button>
+        )
+      }
+
+      const screen = await render(
+        <EngineProvider>
+          <DiagnosticChild />
+        </EngineProvider>
+      )
+
+      await screen.getByTestId('local-diagnostic-publish').click()
+      expect(records).toHaveLength(1)
+      expect(records[0]?.roots[0]?.value).toBe('after')
+    })
+
+    it('follows remote engine availability and unsubscribes on unmount', async () => {
+      const diagnosticCell$ = Cell(0)
+      const records: Readonly<PropagationCycle>[] = []
+      const engineId = 'diagnostic-engine'
+
+      const RemoteObserver = () => {
+        useRemoteEngineDiagnostics(engineId, (cycle) => records.push(cycle))
+        return null
+      }
+
+      const PublishButton = () => {
+        const publish = usePublisher(diagnosticCell$)
+        return (
+          <button
+            data-testid="remote-diagnostic-publish"
+            onClick={() => {
+              publish(1)
+            }}
+          >
+            Publish
+          </button>
+        )
+      }
+
+      const App = ({ observe }: { observe: boolean }) => (
+        <>
+          {observe ? <RemoteObserver /> : null}
+          <EngineProvider engineId={engineId}>
+            <PublishButton />
+          </EngineProvider>
+        </>
+      )
+
+      const screen = await render(<App observe={true} />)
+      await screen.getByTestId('remote-diagnostic-publish').click()
+      expect(records).toHaveLength(1)
+
+      void screen.rerender(<App observe={false} />)
+      await screen.getByTestId('remote-diagnostic-publish').click()
+      expect(records).toHaveLength(1)
+    })
+
+    it('moves a remote diagnostic subscription to a replacement engine', async () => {
+      const diagnosticCell$ = Cell(0)
+      const records: Readonly<PropagationCycle>[] = []
+      const engineId = 'replacement-diagnostic-engine'
+
+      const RemoteObserver = () => {
+        useRemoteEngineDiagnostics(engineId, (cycle) => records.push(cycle))
+        return null
+      }
+
+      const PublishButton = ({ value }: { value: number }) => {
+        const publish = usePublisher(diagnosticCell$)
+        return (
+          <button
+            data-testid="replacement-diagnostic-publish"
+            onClick={() => {
+              publish(value)
+            }}
+          >
+            Publish
+          </button>
+        )
+      }
+
+      const App = ({ engineKey, value }: { engineKey: string; value: number }) => (
+        <>
+          <RemoteObserver />
+          <EngineProvider key={engineKey} engineId={engineId}>
+            <PublishButton value={value} />
+          </EngineProvider>
+        </>
+      )
+
+      const screen = await render(<App engineKey="first" value={1} />)
+      await screen.getByTestId('replacement-diagnostic-publish').click()
+      const firstEngineInstanceId = records[0]?.engineInstanceId
+
+      await screen.rerender(<App engineKey="second" value={2} />)
+      await screen.getByTestId('replacement-diagnostic-publish').click()
+
+      expect(records).toHaveLength(2)
+      expect(records[1]?.engineInstanceId).not.toBe(firstEngineInstanceId)
     })
   })
 })
@@ -712,6 +925,36 @@ describe('Remote hooks with EngineRef', () => {
   })
 
   describe('React.StrictMode', () => {
+    it('does not duplicate provider diagnostic observers after recovery', async () => {
+      const diagnosticCell$ = Cell('before')
+      const records: Readonly<PropagationCycle>[] = []
+
+      const PublishButton = () => {
+        const publish = usePublisher(diagnosticCell$)
+        return (
+          <button
+            data-testid="strict-diagnostic-publish"
+            onClick={() => {
+              publish('after')
+            }}
+          >
+            Publish
+          </button>
+        )
+      }
+
+      const screen = await render(
+        <React.StrictMode>
+          <EngineProvider diagnostics={{ observer: (cycle) => records.push(cycle) }}>
+            <PublishButton />
+          </EngineProvider>
+        </React.StrictMode>
+      )
+
+      await screen.getByTestId('strict-diagnostic-publish').click()
+      expect(records).toHaveLength(1)
+    })
+
     it('recovers after strict mode double-invoke disposes the engine', async () => {
       const strictCell$ = Cell('strict-hello')
 

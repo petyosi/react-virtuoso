@@ -341,7 +341,7 @@ describe('engine features', () => {
       sources: [a],
     })
 
-    eng.connect({
+    eng.connect<[number]>({
       map: (done) => (value) => {
         done(value)
       },
@@ -390,6 +390,70 @@ describe('engine features', () => {
 
     expect(spy).toHaveBeenCalledWith(5, eng)
     expect(spy).toHaveBeenCalledTimes(1)
+  })
+
+  it('preserves multiple candidate semantics for one projection', () => {
+    const source$ = Stream<number>()
+    const sink$ = Cell(0)
+    const spy = vi.fn()
+
+    eng.connect<[number]>({
+      map: (done) => (value) => {
+        done(value)
+        done(value + 1)
+      },
+      sink: sink$,
+      sources: [source$],
+    })
+    eng.sub(sink$, spy)
+
+    eng.pub(source$, 1)
+
+    expect(eng.getValue(sink$)).toBe(2)
+    expect(spy).toHaveBeenCalledOnce()
+    expect(spy).toHaveBeenCalledWith(2, eng)
+  })
+
+  it('preserves accepted-then-suppressed behavior across projections', () => {
+    const source$ = Stream<number>()
+    const sink$ = Cell(0)
+    const spy = vi.fn()
+
+    eng.connect({
+      map: (done) => (value) => {
+        done(value)
+      },
+      sink: sink$,
+      sources: [source$],
+    })
+    eng.connect({
+      map: (done) => (value) => {
+        done(value)
+      },
+      sink: sink$,
+      sources: [source$],
+    })
+    eng.sub(sink$, spy)
+
+    eng.pub(source$, 1)
+
+    expect(eng.getValue(sink$)).toBe(1)
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  it('preserves comparator errors', () => {
+    const error = new Error('comparator failed')
+    const cell$ = Cell(0, () => {
+      throw error
+    })
+    const spy = vi.fn()
+    eng.sub(cell$, spy)
+
+    expect(() => {
+      eng.pub(cell$, 1)
+    }).toThrow(error)
+    expect(eng.getValue(cell$)).toBe(0)
+    expect(spy).not.toHaveBeenCalled()
   })
 
   it('pulls from stateful nodes', () => {
@@ -516,6 +580,73 @@ describe('instance subscriptions', () => {
     unsub()
     engine.pub(a, 3)
     expect(spy1).toHaveBeenCalledTimes(1)
+  })
+
+  it('removes delegated subscriptions when a child is disposed', () => {
+    const node$ = Stream<number>(false)
+    const parent = new Engine()
+    const child = new Engine({}, undefined, parent)
+    const subscriber = vi.fn()
+    parent.register(node$)
+    child.sub(node$, subscriber)
+
+    child.dispose()
+    parent.pub(node$, 1)
+
+    expect(subscriber).not.toHaveBeenCalled()
+  })
+
+  it('keeps delegated singleton subscriptions scoped to each child', () => {
+    const node$ = Stream<number>(false)
+    const parent = new Engine()
+    const firstChild = new Engine({}, undefined, parent)
+    const secondChild = new Engine({}, undefined, parent)
+    const firstSubscriber = vi.fn()
+    const secondSubscriber = vi.fn()
+    parent.register(node$)
+    firstChild.singletonSub(node$, firstSubscriber)
+    secondChild.singletonSub(node$, secondSubscriber)
+
+    firstChild.dispose()
+    parent.pub(node$, 1)
+
+    expect(firstSubscriber).not.toHaveBeenCalled()
+    expect(secondSubscriber).toHaveBeenCalledTimes(1)
+  })
+
+  it('replaces and removes a delegated singleton subscription', () => {
+    const node$ = Stream<number>(false)
+    const parent = new Engine()
+    const child = new Engine({}, undefined, parent)
+    const firstSubscriber = vi.fn()
+    const secondSubscriber = vi.fn()
+    parent.register(node$)
+
+    const firstUnsubscribe = child.singletonSub(node$, firstSubscriber)
+    child.singletonSub(node$, secondSubscriber)
+    firstUnsubscribe()
+    parent.pub(node$, 1)
+
+    expect(firstSubscriber).not.toHaveBeenCalled()
+    expect(secondSubscriber).toHaveBeenCalledTimes(1)
+
+    child.singletonSub(node$, undefined)
+    parent.pub(node$, 2)
+    expect(secondSubscriber).toHaveBeenCalledTimes(1)
+  })
+
+  it('resets delegated singleton subscriptions', () => {
+    const node$ = Stream<number>(false)
+    const parent = new Engine()
+    const child = new Engine({}, undefined, parent)
+    const subscriber = vi.fn()
+    parent.register(node$)
+    child.singletonSub(node$, subscriber)
+
+    child.resetSingletonSubs()
+    parent.pub(node$, 1)
+
+    expect(subscriber).not.toHaveBeenCalled()
   })
 
   it('supports changing a cell value', () => {

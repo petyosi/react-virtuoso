@@ -1,6 +1,7 @@
 import React from 'react'
 
 import useChangedListContentsSizes from './hooks/useChangedChildSizes'
+import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
 import { listSystem } from './listSystem'
@@ -216,6 +217,14 @@ const TableBody = /*#__PURE__*/ React.memo(function TableVirtuosoBody() {
       setDeviation(value)
     }
   })
+
+  // Same acknowledgement as the list renderer: the padding below carries the
+  // deviation through React, so a prepend's compensating scroll waits for this
+  // commit rather than for a whole frame. See `upwardScrollFixSystem`.
+  const deviationCommitted = usePublisher('deviationCommitted')
+  useIsomorphicLayoutEffect(() => {
+    deviationCommitted(deviation)
+  }, [deviation, deviationCommitted])
   const EmptyPlaceholder = useEmitterValue('EmptyPlaceholder')
   const FillerRow = useEmitterValue('FillerRow') ?? DefaultFillerRow
   const TableBodyComponent = useEmitterValue('TableBodyComponent')!

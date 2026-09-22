@@ -1,5 +1,27 @@
 # @virtuoso.dev/reactive-engine-router
 
+## 2.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`22ac6c5`](https://github.com/petyosi/react-virtuoso/commit/22ac6c5e69314e4113046a7da4bcadde2a082b25)]:
+  - @virtuoso.dev/reactive-engine-core@0.2.0
+  - @virtuoso.dev/reactive-engine-react@1.0.0
+
+## 1.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`6305890`](https://github.com/petyosi/react-virtuoso/commit/6305890d8b2432990d67d64635f938f22ff0f301), [`6305890`](https://github.com/petyosi/react-virtuoso/commit/6305890d8b2432990d67d64635f938f22ff0f301)]:
+  - @virtuoso.dev/reactive-engine-react@0.3.0
+  - @virtuoso.dev/reactive-engine-core@0.1.0
+
+## 0.0.5
+
+### Patch Changes
+
+- [`60672a2`](https://github.com/petyosi/react-virtuoso/commit/60672a221d8a6f6c80664e0e9d6fb4704c97b37e) Thanks [@petyosi](https://github.com/petyosi)! - Use the shared reactive-engine React context and hooks at runtime instead of bundling private copies into the router package.
+
 ## 0.0.4
 
 ### Patch Changes

@@ -46,6 +46,7 @@ export type {
   ScrollerProps,
   VirtuosoDataTableProps,
   DataTableComponents,
+  CardComponentProps,
   RowComponentProps,
   StickyHeaderComponentProps,
   StickyColumnContainerComponentProps,
@@ -75,6 +76,7 @@ export { remoteModel, defaultOffsetViewportHandler, defaultAppendViewportHandler
 export type {
   DataModelHandle,
   DataModelPersistenceCapability,
+  DataOperation,
   DataResult,
   MessageEnvelope,
   ModelPersistenceState,

@@ -2,7 +2,16 @@ import * as React from 'react'
 
 import invariant from 'tiny-invariant'
 
-import type { Engine, Inp, NodeRef, Out, Subscription } from '@virtuoso.dev/reactive-engine-core'
+import type {
+  DiagnosticObserver,
+  DiagnosticObserverOptions,
+  Engine,
+  Inp,
+  NodeRef,
+  Out,
+  StateRef,
+  Subscription,
+} from '@virtuoso.dev/reactive-engine-core'
 
 export const useIsomorphicLayoutEffect = typeof document === 'undefined' ? React.useEffect : React.useLayoutEffect
 
@@ -35,6 +44,7 @@ const ENGINE_REF_INTERNAL = Symbol('engineRefInternal')
 
 interface EngineRefInternal extends EngineRef {
   [ENGINE_REF_INTERNAL]: {
+    clear(engine: Engine): void
     set(engine: Engine | null): void
     subscribe(callback: () => void): () => void
   }
@@ -43,18 +53,24 @@ interface EngineRefInternal extends EngineRef {
 function createEngineRef(): EngineRef {
   let current: Engine | null = null
   const subscribers = new Set<() => void>()
+  const setCurrent = (engine: Engine | null) => {
+    current = engine
+    subscribers.forEach((cb) => {
+      cb()
+    })
+  }
 
   const ref: EngineRefInternal = {
     get current() {
       return current
     },
     [ENGINE_REF_INTERNAL]: {
-      set(engine: Engine | null) {
-        current = engine
-        subscribers.forEach((cb) => {
-          cb()
-        })
+      clear(engine: Engine) {
+        if (current === engine) {
+          setCurrent(null)
+        }
       },
+      set: setCurrent,
       subscribe(callback: () => void): () => void {
         subscribers.add(callback)
         return () => {
@@ -125,6 +141,12 @@ export function setRegistryEngine(id: string, engine: Engine | null): void {
   }
 }
 
+export function clearRegistryEngine(id: string, engine: Engine): void {
+  if (engineRegistry.get(id)?.engine === engine) {
+    setRegistryEngine(id, null)
+  }
+}
+
 function subscribeToRegistry(id: string, callback: () => void): () => void {
   const entry = getOrCreateEntry(id)
   entry.subscribers.add(callback)
@@ -159,6 +181,130 @@ export function useEngine() {
   const engine = React.useContext(EngineContext)
   invariant(engine !== null, 'useEngine must be used within an EngineProvider')
   return engine
+}
+
+type SubscriptionEffect = typeof React.useEffect
+
+function useEngineSubscriptionInternal<T>(node: Out<T>, callback: Subscription<T>, useSubscriptionEffect: SubscriptionEffect): void {
+  const engine = useEngine()
+  const committedBinding = React.useRef({ callback, engine, node })
+
+  useIsomorphicLayoutEffect(() => {
+    committedBinding.current = { callback, engine, node }
+  }, [callback, engine, node])
+
+  useSubscriptionEffect(() => {
+    return engine.sub(node, (value, emittingEngine) => {
+      const current = committedBinding.current
+      if (current.engine === engine && current.node === node) {
+        return current.callback(value, emittingEngine)
+      }
+      return undefined
+    })
+  }, [engine, node])
+}
+
+/**
+ * Subscribes to an engine node after passive effects commit.
+ * Callback changes do not recreate the engine subscription; later emissions use
+ * the latest callback committed by this hook instance.
+ *
+ * @remarks Attachment is silent and does not replay a cell's current value. Publications
+ * before the passive effect attaches are not observed. Use {@link useEngineLayoutSubscription}
+ * when the subscription must attach in the layout phase.
+ *
+ * @category React Hooks and Components
+ */
+export function useEngineSubscription<T>(node: Out<T>, callback: Subscription<T>): void {
+  useEngineSubscriptionInternal(node, callback, React.useEffect)
+}
+
+/**
+ * Subscribes to an engine node in an isomorphic layout effect.
+ * Callback changes do not recreate the engine subscription; later emissions use
+ * the latest callback committed by this hook instance.
+ *
+ * @remarks Attachment is silent and can observe only publications that occur after its
+ * own layout effect. Place the hook before a same-component layout effect whose
+ * publications it must observe. On the server, attachment follows the package's passive
+ * {@link useIsomorphicLayoutEffect} fallback.
+ *
+ * @category React Hooks and Components
+ */
+export function useEngineLayoutSubscription<T>(node: Out<T>, callback: Subscription<T>): void {
+  useEngineSubscriptionInternal(node, callback, useIsomorphicLayoutEffect)
+}
+
+/**
+ * Options for {@link useLinkCellToExternalState}.
+ * @typeParam TValue - The observed external value and cell value type.
+ * @typeParam TWrite - The explicit external write-request type. Defaults to `TValue`.
+ */
+export interface LinkCellToExternalStateOptions<TValue, TWrite = TValue> {
+  /** Writable state synchronized from the observed external value. */
+  cell: StateRef<TValue>
+  /** Controls external-to-cell suppression. Defaults to `Object.is`. */
+  equals?: (current: NoInfer<TValue>, external: NoInfer<TValue>) => boolean
+  /** Current value observed from the external owner. */
+  externalValue: NoInfer<TValue>
+  /** Writes one explicit request to the external owner. */
+  writeExternalValue: (request: NoInfer<TWrite>) => unknown
+  /** Event node whose values represent explicit external write intent. */
+  writeRequested: Out<TWrite>
+}
+
+/**
+ * Synchronizes observed external state into a cell and forwards explicit write
+ * requests to an external owner.
+ *
+ * @remarks The directions are intentionally asymmetric. Cell publications do not
+ * invoke `writeExternalValue`; only `writeRequested` events do. Inbound synchronization
+ * runs in an isomorphic layout effect and uses `Object.is` unless `equals` is supplied.
+ *
+ * @category React Hooks and Components
+ */
+export function useLinkCellToExternalState<TValue, TWrite = TValue>({
+  cell,
+  equals,
+  externalValue,
+  writeExternalValue,
+  writeRequested,
+}: LinkCellToExternalStateOptions<TValue, TWrite>): void {
+  const engine = useEngine()
+
+  useEngineLayoutSubscription(writeRequested, (value) => writeExternalValue(value))
+
+  useIsomorphicLayoutEffect(() => {
+    if (!(equals ?? Object.is)(engine.getValue(cell), externalValue)) {
+      engine.pub(cell, externalValue)
+    }
+  }, [cell, engine, equals, externalValue])
+}
+
+function useDiagnosticsSubscription(
+  engine: Engine | null,
+  observer: DiagnosticObserver | null,
+  options: DiagnosticObserverOptions | undefined
+): void {
+  useIsomorphicLayoutEffect(() => {
+    if (!engine || !observer) {
+      return
+    }
+    return engine.observeDiagnostics(observer, options)
+  }, [engine, observer, options?.captureValues, options?.includeSuppressed, options?.onObserverError, options?.redact])
+}
+
+/**
+ * Observes propagation cycles from the nearest {@link EngineProvider} without retaining them in React state.
+ * Pass `null` as the observer to disable observation without calling the hook conditionally.
+ *
+ * @remarks The subscription starts after commit and therefore does not observe publications from the provider's `initFn`.
+ * Use the provider's `diagnostics` prop when initialization cycles are required.
+ *
+ * @category React Hooks and Components
+ */
+export function useEngineDiagnostics(observer: DiagnosticObserver | null, options?: DiagnosticObserverOptions): void {
+  useDiagnosticsSubscription(useEngine(), observer, options)
 }
 
 function useCellValueWithStore<T>(cell: Out<T>): T {
@@ -376,6 +522,24 @@ function useRemoteEngine(source: EngineSource): Engine | null {
   }, [engineRef])
 
   return isRef ? engineFromRef : engineFromRegistry
+}
+
+/**
+ * Observes propagation cycles from an engine identified by `engineSource`.
+ * The subscription follows engines that mount, unmount, or are replaced under the same source.
+ * Pass `null` as the observer to disable observation without calling the hook conditionally.
+ *
+ * @param engineSource - A string engine ID or an {@link EngineRef} to observe.
+ * @param observer - Receives immutable propagation cycle records, or `null` to disable observation.
+ * @param options - Controls value capture, suppression records, redaction, and observer error handling.
+ * @category React Hooks and Components
+ */
+export function useRemoteEngineDiagnostics(
+  engineSource: EngineSource,
+  observer: DiagnosticObserver | null,
+  options?: DiagnosticObserverOptions
+): void {
+  useDiagnosticsSubscription(useRemoteEngine(engineSource), observer, options)
 }
 
 /**

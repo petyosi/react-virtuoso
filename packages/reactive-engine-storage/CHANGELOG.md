@@ -1,5 +1,31 @@
 # @virtuoso.dev/reactive-engine-storage
 
+## 4.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`22ac6c5`](https://github.com/petyosi/react-virtuoso/commit/22ac6c5e69314e4113046a7da4bcadde2a082b25)]:
+  - @virtuoso.dev/reactive-engine-core@0.2.0
+  - @virtuoso.dev/reactive-engine-react@1.0.0
+
+## 3.0.1
+
+### Patch Changes
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add per-engine synchronous storage adapters with identity-based sharing, replacement, removal, debounce, and disposal contracts while preserving legacy storage links. Browser adapters retain cookie identity during removal and resolve native storage identity when subscribing so later events do not re-enter protected storage accessors.
+
+- Updated dependencies [[`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1)]:
+  - @virtuoso.dev/reactive-engine-core@0.1.1
+  - @virtuoso.dev/reactive-engine-react@0.3.1
+
+## 3.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`6305890`](https://github.com/petyosi/react-virtuoso/commit/6305890d8b2432990d67d64635f938f22ff0f301), [`6305890`](https://github.com/petyosi/react-virtuoso/commit/6305890d8b2432990d67d64635f938f22ff0f301)]:
+  - @virtuoso.dev/reactive-engine-react@0.3.0
+  - @virtuoso.dev/reactive-engine-core@0.1.0
+
 ## 2.0.2
 
 ### Patch Changes

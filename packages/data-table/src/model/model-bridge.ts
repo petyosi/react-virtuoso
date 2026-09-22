@@ -1,10 +1,10 @@
 import { Cell } from '@virtuoso.dev/reactive-engine-core'
 
-import { data$, groupIndices$ } from '../core/data'
+import { data$, dataOperation$, groupIndices$ } from '../core/data'
 import { EMPTY_LOADING_STATE, loadingState$ } from '../core/loading'
 import { dispatchModelAction$, modelActionState$ } from '../core/model-actions'
 import { viewportRange$ } from '../rows/row-state'
-import { RESERVED_ACTION_NAMES, warnReservedModelActionInDev } from './reserved-actions'
+import { RESERVED_ACTION_NAMES, warnModelActionInDev, warnReservedModelActionInDev } from './reserved-actions'
 
 import type { DataTableLoadingState } from '../interfaces'
 import type { RemoteModelLoadingEvent, RemoteModelLoadingReason } from './remote-model'
@@ -82,9 +82,16 @@ export function bridgeModelToEngine(model: DataModelHandle, engine: Engine, view
 
     if (msg.type === 'result') {
       const result = msg.payload as DataResult
+      const nextData = [...result.data]
+      let operation = result.operation ?? 'replace'
+      if (operation === 'update' && nextData.length !== engine.getValue(data$)?.length) {
+        warnModelActionInDev("A model result tagged operation: 'update' changed the row count; falling back to a full replace.")
+        operation = 'replace'
+      }
       engine.pubIn({
-        [data$]: [...result.data],
+        [data$]: nextData,
         [groupIndices$]: result.groups,
+        [dataOperation$]: operation,
       })
     }
   })

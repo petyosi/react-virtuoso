@@ -162,7 +162,7 @@ function DataTable<Data, Context = unknown, Group = unknown>({
   components,
   ...props
 }: VirtuosoDataTableProps<Data, Context, Group> & { className?: string }) {
-  const mergedComponents = React.useMemo(() => ({ ...TABLE_COMPONENTS, ...components }) as DataTableComponents<Context>, [components])
+  const mergedComponents = React.useMemo(() => ({ ...TABLE_COMPONENTS, ...components }) as DataTableComponents<Context, Data>, [components])
 
   return (
     <VirtuosoDataTable

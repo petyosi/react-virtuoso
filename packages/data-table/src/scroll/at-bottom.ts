@@ -1,5 +1,6 @@
 import { Cell, e } from '@virtuoso.dev/reactive-engine-core'
 
+import { presentation$ } from '../core/presentation'
 import { sizeState$ } from '../resize/sizes'
 import { empty } from '../sizing/AATree'
 import { approximatelyEqual } from '../utils'
@@ -174,7 +175,7 @@ e.sub(
     )
   ),
   (val) => {
-    if (val.delta) {
+    if (val.delta && e.getValue(presentation$) === 'table') {
       e.pub(scrollBy$, val.delta)
     }
   }

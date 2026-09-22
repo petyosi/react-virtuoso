@@ -13,7 +13,14 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'tiny-invariant', '@virtuoso.dev/reactive-engine-core'],
+      external: [
+        'react',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
+        'tiny-invariant',
+        '@virtuoso.dev/reactive-engine-core',
+        '@virtuoso.dev/reactive-engine-react',
+      ],
       output: { exports: 'named' },
     },
   },

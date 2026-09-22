@@ -5,6 +5,10 @@ import { tap } from './utils'
 import type { O } from './operators'
 import type { Inp, NodeRef, Out, Subscription } from './types'
 
+type Values<TNodes extends readonly Out[]> = {
+  [K in keyof TNodes]: TNodes[K] extends Out<infer TValue> ? TValue : never
+}
+
 /** @hidden */
 export function combine<T1>(...nodes: [Out<T1>]): Out<T1> // prettier-ignore
 /** @hidden */
@@ -707,8 +711,7 @@ export function pipe<T>(source$: Out<T>, ...operators: O<unknown, unknown>[]): N
 export function pipe<T>(source$: Out<T>, ...operators: O<unknown, unknown>[]): NodeRef {
   return tap(Stream<unknown>(), (sink$) => {
     addNodeInit((eng) => {
-      // oxlint-disable-next-line no-useless-call
-      const pipe$ = eng.pipe.apply(eng, [source$, ...operators])
+      const pipe$ = eng.pipeWithKey(source$, sink$, operators)
       eng.link(pipe$, sink$)
       // call this after the sink has been linked
       eng.copyDistinctValue(pipe$, sink$)
@@ -904,6 +907,25 @@ export function withResource<K, R>(source$: Out<K>, resource$: Out<R>, action: (
     eng.sub(source$, (value) => {
       const resource = eng.getValue(resource$)
       action(value, resource)
+    })
+  }, source$)
+}
+
+/**
+ * Subscribes to a source node and invokes an action with the current values of several resources.
+ * Resource changes alone do not invoke the action.
+ *
+ * @category Combinators
+ */
+export function withResources<K, const TResources extends readonly Out[]>(
+  source$: Out<K>,
+  resources$: TResources,
+  action: (sourceValue: K, resources: Values<TResources>) => void
+) {
+  addNodeInit((eng) => {
+    eng.sub(source$, (value) => {
+      const resources = resources$.map((resource$) => eng.getValue(resource$)) as Values<TResources>
+      action(value, resources)
     })
   }, source$)
 }

@@ -1,5 +1,55 @@
 # @virtuoso.dev/data-table
 
+## 0.5.1
+
+### Patch Changes
+
+- Updated dependencies [[`22ac6c5`](https://github.com/petyosi/react-virtuoso/commit/22ac6c5e69314e4113046a7da4bcadde2a082b25)]:
+  - @virtuoso.dev/reactive-engine-core@0.2.0
+  - @virtuoso.dev/reactive-engine-react@1.0.0
+
+## 0.5.0
+
+### Minor Changes
+
+- [#1501](https://github.com/petyosi/react-virtuoso/pull/1501) [`64e187e`](https://github.com/petyosi/react-virtuoso/commit/64e187e3d65b3e8d4a3882832be41cbdd427b189) Thanks [@petyosi](https://github.com/petyosi)! - Add controlled table/card presentation with custom card content and operation headers. Cards use automatically measured uniform CSS layouts, with measurements separate from table rows. Preserve the model and its operations across switches, and support existing scrolling and loading APIs. Grouped data remains table-only.
+
+## 0.4.0
+
+### Minor Changes
+
+- [#1491](https://github.com/petyosi/react-virtuoso/pull/1491) [`bbf108f`](https://github.com/petyosi/react-virtuoso/commit/bbf108fad247b8190109492bfce5728d24ec021c) Thanks [@deshiknaves](https://github.com/deshiknaves)! - Add `model.updateData(data)` for applying a same-shape data snapshot (same length, same rows and stable row keys at the same indices) without resetting the known row-size tree, so mounted cells keep their DOM nodes and local state (focused inputs, popovers, etc.) across the update. `setData()` is unchanged and still resets the size tree.
+
+## 0.3.5
+
+### Patch Changes
+
+- [#1484](https://github.com/petyosi/react-virtuoso/pull/1484) [`7800931`](https://github.com/petyosi/react-virtuoso/commit/78009318353b4cffe314ccc785925b03853c0c5a) Thanks [@Guflly](https://github.com/Guflly)! - Keep grouped row measurements accurate after local model data updates.
+
+## 0.3.4
+
+### Patch Changes
+
+- Updated dependencies [[`744eb1e`](https://github.com/petyosi/react-virtuoso/commit/744eb1e1015bc8dcb9da6c5a71bb6abdf4d86147), [`e6cef21`](https://github.com/petyosi/react-virtuoso/commit/e6cef21e45bbe37d2cc83f69fe0c0f8c6ae4cdf8)]:
+  - @virtuoso.dev/reactive-engine-core@0.1.2
+  - @virtuoso.dev/reactive-engine-react@0.3.2
+
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [[`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1), [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1)]:
+  - @virtuoso.dev/reactive-engine-core@0.1.1
+  - @virtuoso.dev/reactive-engine-react@0.3.1
+
+## 0.3.2
+
+### Patch Changes
+
+- Updated dependencies [[`6305890`](https://github.com/petyosi/react-virtuoso/commit/6305890d8b2432990d67d64635f938f22ff0f301), [`6305890`](https://github.com/petyosi/react-virtuoso/commit/6305890d8b2432990d67d64635f938f22ff0f301)]:
+  - @virtuoso.dev/reactive-engine-react@0.3.0
+  - @virtuoso.dev/reactive-engine-core@0.1.0
+
 ## 0.3.1
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @virtuoso.dev/virtuoso-skills
 
+## 0.2.1
+
+### Patch Changes
+
+- [#1499](https://github.com/petyosi/react-virtuoso/pull/1499) [`e14ec64`](https://github.com/petyosi/react-virtuoso/commit/e14ec640c4313344e563fa415e6c581e250b7568) Thanks [@petyosi](https://github.com/petyosi)! - Document stable live tails with replacement anchors and retargetable smooth scrolling. Backfill guidance for anchored mapping and bottom-visible scroll location fields.
+
+## 0.2.0
+
+### Minor Changes
+
+- [`6305890`](https://github.com/petyosi/react-virtuoso/commit/6305890d8b2432990d67d64635f938f22ff0f301) Thanks [@petyosi](https://github.com/petyosi)! - Add provider, local-hook, and remote-hook bindings for structured engine diagnostics, including initialization capture, option updates, and lifecycle guidance for React consumers and coding agents.
+
 ## 0.1.3
 
 ### Patch Changes

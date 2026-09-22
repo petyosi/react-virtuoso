@@ -37,8 +37,28 @@ export function App() {
 - `useCellValue` / `useCellValues` - subscribe to one or several cells
 - `useCell` - read a cell value and get a publisher for it
 - `usePublisher` - get a publisher function for a node
+- `useEngineDiagnostics` - observe propagation cycles from the nearest engine
 - `useEngine` / `useEngineRef` - access the engine instance from context
-- `useRemoteCell`, `useRemoteCellValue`, `useRemoteCellValues`, `useRemotePublisher` - work with cells from another engine instance
+- `useRemoteCell`, `useRemoteCellValue`, `useRemoteCellValues`, `useRemotePublisher`, `useRemoteEngineDiagnostics` - work with another engine instance
+
+## Diagnostics
+
+Use the provider configuration when initialization publications must be included:
+
+```tsx
+<EngineProvider
+  diagnostics={{
+    observer: (cycle) => sendToTelemetry(cycle),
+    options: { captureValues: 'summary', redact },
+  }}
+>
+  <App />
+</EngineProvider>
+```
+
+Use `useEngineDiagnostics(observer, options)` inside a provider, or `useRemoteEngineDiagnostics(engineSource, observer, options)` from a sibling or external tool. Hook subscriptions start after commit. They do not observe `initFn` publications.
+
+Diagnostics do not retain cycles or update React state. Store records explicitly in a bounded external store if a diagnostic interface needs history.
 
 ## License
 

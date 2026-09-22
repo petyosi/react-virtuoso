@@ -1,5 +1,42 @@
 # @virtuoso.dev/reactive-engine-core
 
+## 0.2.0
+
+### Minor Changes
+
+- [`22ac6c5`](https://github.com/petyosi/react-virtuoso/commit/22ac6c5e69314e4113046a7da4bcadde2a082b25) Thanks [@petyosi](https://github.com/petyosi)! - Add a `distinct` parameter to `debounceTime` and `throttleTime`, mirroring `map`. Both operators emit through a distinct stream by default, so a valueless `Trigger` piped through them fires once and is then suppressed forever. Pass `false` to re-emit equal values, or a comparator to define equality.
+
+## 0.1.2
+
+### Patch Changes
+
+- [`744eb1e`](https://github.com/petyosi/react-virtuoso/commit/744eb1e1015bc8dcb9da6c5a71bb6abdf4d86147) Thanks [@petyosi](https://github.com/petyosi)! - Allow downstream wiring to reference a computed cell while its initial value is being calculated, while still rejecting recursive reads of unfinished computed state.
+
+## 0.1.1
+
+### Patch Changes
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add synchronous after-settle continuations so graph work can wait for current propagation while retaining transaction diagnostics and
+  event ordering.
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add seed-aware computed cells and readable state references so derived state initializes from current per-engine dependency values without
+  manufacturing initial events.
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add diagnostic namespaces and bounded cycle collectors for targeted, application-owned propagation history.
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add explicit comparator, filter-map, and multi-resource graph primitives so consumers can declare observable identity, retained event
+  semantics, and imperative resource dependencies without repeating lower-level wiring.
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add an activation-scoped `Pulsar` node for valueless scheduled emissions from readable cadence state. Disposing a child engine now also removes subscriptions that it delegated to a parent-owned node.
+
+- [`a563e58`](https://github.com/petyosi/react-virtuoso/commit/a563e581ce6df68b52da897bb4e46600436e8de1) Thanks [@petyosi](https://github.com/petyosi)! - Add `switchMapPromise` for abortable latest-only Promise projections with input-correlated results.
+
+## 0.1.0
+
+### Minor Changes
+
+- [`6305890`](https://github.com/petyosi/react-virtuoso/commit/6305890d8b2432990d67d64635f938f22ff0f301) Thanks [@petyosi](https://github.com/petyosi)! - Add opt-in structured propagation diagnostics with node metadata, deeply frozen bounded summaries, error isolation, synchronous causal links, and child-propagation failure evidence.
+
 ## 0.0.8
 
 ### Patch Changes

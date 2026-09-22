@@ -1,6 +1,7 @@
 import { Cell, e, Stream } from '@virtuoso.dev/reactive-engine-core'
 
 import { totalCount$ } from '../core/data'
+import { presentation$, presentationEpoch$ } from '../core/presentation'
 import { sizeState$, totalHeight$ } from '../resize/sizes'
 import { empty, findMaxKeyValue } from '../sizing/AATree'
 import { itemOffsetAndSize as rowOffsetAndHeight, offsetOf } from '../sizing/offsetOf'
@@ -20,6 +21,7 @@ import { initialLocation$, pendingScrollToInitialLocation$, scrollIntoView$, scr
 
 import type { RowLocation } from '../interfaces'
 import type { SizeState } from '../sizing/SizeState'
+import type { ScrollToParams } from './dom'
 import type { NodeRef } from '@virtuoso.dev/reactive-engine-core'
 
 export { initialLocation$, pendingScrollToInitialLocation$, scrollIntoView$, scrollToRow$ } from './state'
@@ -29,8 +31,8 @@ export function normalizeRowLocation(location: RowLocation, lastIndex: number) {
     return {
       index: Math.max(0, Math.min(location, lastIndex)),
       offset: 0,
-      behavior: 'auto',
-      align: 'start-no-overflow',
+      behavior: 'auto' as const,
+      align: 'start-no-overflow' as const,
     }
   }
 
@@ -107,23 +109,50 @@ export function scrollToLocationFromScrollToRowLocation({
 
   top = Math.max(0, top)
 
-  return { top, behavior, align, forceBottomSpace } as ScrollToOptions
+  return { top, behavior, align, forceBottomSpace }
 }
 
 const lastScrollToRowLocation$ = Cell<RowLocation | null>(null)
 const listHasRefreshed$ = Cell(false)
 const scrollToRowComplete$ = Cell(true)
 
-const cancelScrollToRow$ = Stream<true>()
-e.link(e.pipe(cancelScrollToRow$, e.mapTo(true)), scrollToRowComplete$)
+const cancelScrollToRow$ = Stream<true>(false)
+e.link(
+  e.pipe(
+    presentation$,
+    e.map(() => true as const, false)
+  ),
+  cancelScrollToRow$
+)
+const tableScrollToRow$ = e.pipe(
+  scrollToRow$,
+  e.map((location) => ({ location })),
+  e.filter(() => e.getValue(presentation$) === 'table'),
+  e.map(({ location }) => location, false)
+)
+e.link(
+  e.pipe(
+    cancelScrollToRow$,
+    e.map(() => true, false)
+  ),
+  scrollToRowComplete$
+)
 
-e.link(e.pipe(cancelScrollToRow$, e.mapTo(null)), lastScrollToRowLocation$)
+e.link(
+  e.pipe(
+    cancelScrollToRow$,
+    e.map(() => null, false)
+  ),
+  lastScrollToRowLocation$
+)
 
 e.link(
   e.pipe(
     scrollIntoView$,
+    e.map((location) => ({ location })),
+    e.filter(() => e.getValue(presentation$) === 'table'),
     e.withLatestFrom(totalCount$, sizeState$, scrollLocation$),
-    e.map(([location, totalCount, { offsetTree }, scrollLocation]) => {
+    e.map(([{ location }, totalCount, { offsetTree }, scrollLocation]) => {
       const normalized = normalizeRowLocation(location, totalCount - 1)
       const { behavior, offset, index } = normalized
       let { align } = normalized
@@ -149,8 +178,8 @@ e.link(
   scrollToRow$
 )
 
-const scrollToLocation$: NodeRef<ScrollOptions> = e.pipe(
-  scrollToRow$,
+const scrollToLocation$: NodeRef<ScrollToParams> = e.pipe(
+  tableScrollToRow$,
   e.withLatestFrom(sizeState$, totalCount$, viewportHeight$, headerHeight$, stickyHeaderHeight$, stickyFooterHeight$, totalHeight$),
   e.map(([location, sizeState, totalCount, viewportHeight, headerHeight, stickyHeaderHeight, stickyFooterHeight, totalHeight]) => {
     try {
@@ -171,13 +200,13 @@ const scrollToLocation$: NodeRef<ScrollOptions> = e.pipe(
   e.filter((value) => value !== null)
 )
 
-e.link(scrollToRow$, lastScrollToRowLocation$)
+e.link(tableScrollToRow$, lastScrollToRowLocation$)
 
 e.link(scrollToLocation$, scrollTo$)
 
 e.link(
   e.pipe(
-    scrollToRow$,
+    tableScrollToRow$,
     e.filter((location) => {
       return typeof location !== 'number' && location.index === 'LAST'
     }),
@@ -186,7 +215,13 @@ e.link(
   isScrollingToBottom$
 )
 
-e.link(e.pipe(scrollToLocation$, e.mapTo(false)), scrollToRowComplete$)
+e.link(
+  e.pipe(
+    scrollToLocation$,
+    e.map(() => false, false)
+  ),
+  scrollToRowComplete$
+)
 e.link(e.pipe(scrollToLocation$, e.mapTo(false)), listHasRefreshed$)
 
 e.link(
@@ -196,7 +231,7 @@ e.link(
     e.debounceTime(0),
     e.withLatestFrom(scrollToRowComplete$, lastScrollToRowLocation$),
     e.filter(([, complete, location]) => {
-      return !complete && location !== null
+      return e.getValue(presentation$) === 'table' && !complete && location !== null
     }),
     e.map(([, , location]) => {
       return location
@@ -206,23 +241,34 @@ e.link(
 )
 
 // wait for the retry to potentially activate
-e.sub(e.pipe(scrollTargetReached$, e.debounceTime(10)), () => {
-  const location = e.getValue(lastScrollToRowLocation$)
-  if (location !== null && typeof location !== 'number' && location.done !== undefined) {
-    location.done()
+e.sub(
+  e.pipe(
+    scrollTargetReached$,
+    e.map(() => ({ presentation: e.getValue(presentation$), epoch: e.getValue(presentationEpoch$) })),
+    e.debounceTime(10)
+  ),
+  ({ presentation, epoch }) => {
+    if (presentation !== 'table' || e.getValue(presentation$) !== 'table' || epoch !== e.getValue(presentationEpoch$)) {
+      return
+    }
+    const location = e.getValue(lastScrollToRowLocation$)
+    if (location !== null && typeof location !== 'number' && location.done !== undefined) {
+      location.done()
+    }
+    e.pubIn({
+      [lastScrollToRowLocation$]: null,
+      [scrollToRowComplete$]: true,
+      ...(location === null ? {} : { [pendingScrollToInitialLocation$]: null }),
+    })
   }
-  e.pubIn({
-    [lastScrollToRowLocation$]: null,
-    [scrollToRowComplete$]: true,
-  })
-})
+)
 
 e.link(
   e.pipe(
     scrollOffset$,
     // wait for the list to render with the specified scrollOffset, so that enough space is available to scroll by
     e.delayWithMicrotask(),
-    e.filter((value) => value !== 0)
+    e.filter((value) => value !== 0 && e.getValue(presentation$) === 'table')
   ),
   scrollBy$
 )
@@ -250,21 +296,20 @@ const scrollToTheInitialLocation$ = e.pipe(
   e.combine(initialLocation$, sizeState$),
   e.withLatestFrom(pendingScrollToInitialLocation$),
   e.filter(([[initialLocation, { sizeTree }], pending]) => {
-    return initialLocation !== null && !empty(sizeTree) && pending !== null
+    return e.getValue(presentation$) === 'table' && initialLocation !== null && !empty(sizeTree) && pending !== null
   }),
-  e.map(([[location]]) => location)
+  // Commands are events: repeated zero-position resets must not be deduplicated.
+  e.map(([[location]]) => ({ location, epoch: e.getValue(presentationEpoch$) }))
 )
 
 // delay prevents conflicting resolutions for the scrollToRow value in the update cycle
 // conflict is with the retry logic
-e.link(e.pipe(scrollToTheInitialLocation$, e.throttleTime(0)), scrollToRow$)
-
 e.link(
   e.pipe(
     scrollToTheInitialLocation$,
-    e.onNext(e.pipe(scrollToRowComplete$, e.filter(Boolean))),
-    e.mapTo(null)
-    // unset the location after the scroll completes
+    e.throttleTime(0),
+    e.filter(({ epoch }) => e.getValue(presentation$) === 'table' && epoch === e.getValue(presentationEpoch$)),
+    e.map(({ location }) => location, false)
   ),
-  pendingScrollToInitialLocation$
+  scrollToRow$
 )

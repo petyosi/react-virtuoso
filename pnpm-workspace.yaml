@@ -7,6 +7,7 @@ strictPeerDependencies: false
 
 minimumReleaseAge: 10080
 minimumReleaseAgeExclude:
+  - '@virtuoso.dev/message-list@1.18.0'
   - oxlint
   - oxfmt
   - oxlint-tsgolint
