@@ -5,9 +5,25 @@ packages:
 
 strictPeerDependencies: false
 
+peerDependencyRules:
+  allowedVersions:
+    'react-inspector>react': '19'
+
+# sharp is excluded: its platform binaries arrive as optionalDependencies
+# and the install-time check script is unreliable
+allowBuilds:
+  '@swc/core': true
+  esbuild: true
+  lefthook: true
+  msw: true
+  sharp: false
+
 minimumReleaseAge: 10080
 minimumReleaseAgeExclude:
   - '@virtuoso.dev/message-list@1.18.0'
+  # the pnpm version is pinned by the packageManager field and locked
+  # through the lockfile, release age gating adds nothing here
+  - '@pnpm/*'
   - oxlint
   - oxfmt
   - oxlint-tsgolint

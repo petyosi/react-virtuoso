@@ -39,7 +39,7 @@
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
-      "version": ">=10.24",
+      "version": ">=12.5",
       "onFail": "error"
     },
     "runtime": {
@@ -48,12 +48,5 @@
       "onFail": "error"
     }
   },
-  "packageManager": "pnpm@10.24.0",
-  "pnpm": {
-    "peerDependencyRules": {
-      "allowedVersions": {
-        "react-inspector>react": "19"
-      }
-    }
-  }
+  "packageManager": "pnpm@12.5.1"
 }
