@@ -254,34 +254,16 @@ export function Query<TParams, TData>(options: QueryOptions<TParams, TData>) {
     }
   )
 
-  // Subscribe to enabled$ changes - execute query when enabled
-  e.sub(
-    e.pipe(
-      enabled$,
-      e.filter((enabled) => enabled),
-      e.withLatestFrom(params$)
-    ),
-    ([, params], engine) => {
-      executeQuery(params, engine)
+  // Subscribe to the cell itself: a filtered stream is distinct, so it would pass only the first
+  // enable and the first disable, and a query toggled again would never fetch or stop polling.
+  e.sub(enabled$, (enabled, engine) => {
+    if (enabled) {
+      executeQuery(engine.getValue(params$), engine)
+      return
     }
-  )
-
-  // Subscribe to enabled$ changes - cleanup when disabled
-  e.sub(
-    e.pipe(
-      enabled$,
-      e.filter((enabled) => !enabled)
-    ),
-    (_, engine) => {
-      // Abort current fetch
-      const controller = abortControllers.get(engine)
-      if (controller) {
-        controller.abort()
-      }
-      // Clear polling
-      clearPolling(engine)
-    }
-  )
+    abortControllers.get(engine)?.abort()
+    clearPolling(engine)
+  })
 
   // Subscribe to invalidate$ - only execute when enabled and set isFetching for success state
   e.sub(

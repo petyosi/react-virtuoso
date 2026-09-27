@@ -489,6 +489,65 @@ describe('Query', () => {
     expect(queryFn.mock.calls.length).toBe(callCountAfterDisable)
   })
 
+  it('should fetch with the latest params each time enabled$ turns true again', async () => {
+    const queryFn = vi.fn(({ id }: { id: string }) => Promise.resolve(id))
+
+    const query = Query({
+      enabled: false,
+      initialParams: { id: '' },
+      queryFn,
+    })
+
+    const engine = new Engine()
+    engine.sub(query.data$, vi.fn())
+
+    const enableWith = async (id: string) => {
+      engine.pub(query.params$, { id })
+      engine.pub(query.enabled$, true)
+      await vi.waitFor(() => {
+        expect(engine.getValue(query.data$).data).toBe(id)
+      })
+      engine.pub(query.enabled$, false)
+    }
+
+    await enableWith('first')
+    await enableWith('second')
+    await enableWith('third')
+
+    expect(queryFn.mock.calls.map(([params]) => params.id)).toEqual(['first', 'second', 'third'])
+  })
+
+  it('should stop polling each time enabled$ turns false again', async () => {
+    const queryFn = vi.fn(() => Promise.resolve('Result'))
+
+    const query = Query({
+      initialParams: {} as Record<string, never>,
+      queryFn,
+      refetchInterval: 20,
+    })
+
+    const engine = new Engine()
+    engine.sub(query.data$, vi.fn())
+
+    await vi.waitFor(() => {
+      expect(queryFn.mock.calls.length).toBeGreaterThanOrEqual(2)
+    })
+    engine.pub(query.enabled$, false)
+    engine.pub(query.enabled$, true)
+    const callsAfterReenable = queryFn.mock.calls.length
+    await vi.waitFor(() => {
+      expect(queryFn.mock.calls.length).toBeGreaterThan(callsAfterReenable + 1)
+    })
+
+    engine.pub(query.enabled$, false)
+    const callsAfterSecondDisable = queryFn.mock.calls.length
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100)
+    })
+    expect(queryFn.mock.calls.length).toBe(callsAfterSecondDisable)
+  })
+
   describe('unload', () => {
     it('should transition to pending from success state', async () => {
       const queryFn = vi.fn(() => 'User data')
