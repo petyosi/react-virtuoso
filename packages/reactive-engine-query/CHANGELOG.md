@@ -1,5 +1,11 @@
 # @virtuoso.dev/reactive-engine-query
 
+## 2.0.1
+
+### Patch Changes
+
+- [#1509](https://github.com/petyosi/react-virtuoso/pull/1509) [`3dbb0c4`](https://github.com/petyosi/react-virtuoso/commit/3dbb0c4857965f1e3db62fd72e7d16630323cb71) Thanks [@petyosi](https://github.com/petyosi)! - Fix a `Query` that stopped reacting to `enabled$` after its first toggle. Setting `enabled$` back to `true` now fetches with the current params every time, and setting it to `false` again aborts the in-flight request and stops `refetchInterval` polling. Both reactions previously ran through filtered streams, which are distinct, so only the first enable and the first disable took effect.
+
 ## 2.0.0
 
 ### Patch Changes
