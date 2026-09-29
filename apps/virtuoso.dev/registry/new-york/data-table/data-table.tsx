@@ -287,6 +287,7 @@ export {
   type ColumnHeaderRenderParams,
   type ColumnHeaderRenderFunction,
   type ColumnHeaderCustomComponent,
+  type ColumnHeaderContainerProps,
   type HeaderSlotRenderParams,
   type HeaderSlotRenderFunction,
   type HeaderSlotCustomComponent,

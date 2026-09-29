@@ -344,7 +344,7 @@ const HEADER_CONTENT_STYLE: CSSProperties = {
 // The measured width is the column's base width, so the measured header must keep its natural size.
 // This box is as wide as the header's own content, so a consumer class that stretches the header,
 // with flex-grow or a percentage width, resolves against that size instead of the column. A fixed or
-// minimum width on the header still applies. Without it, the next measurement reads the grown width
+// minimum width on the header becomes the base width. Without it, the next measurement reads the grown width
 // as the base, and the column never gives the extra width back when the table narrows.
 const HEADER_MEASURE_BOUNDARY_STYLE: CSSProperties = {
   display: 'inline-flex',
