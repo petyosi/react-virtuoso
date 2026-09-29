@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.18.16
+
+### Patch Changes
+
+- [#1512](https://github.com/petyosi/react-virtuoso/pull/1512) [`b7238f3`](https://github.com/petyosi/react-virtuoso/commit/b7238f3856ae51afcbf8045a7c61b8f1c42e9a0c) Thanks [@cpruijsen](https://github.com/cpruijsen)! - Map `skipAnimationFrameInResizeObserver` through TableVirtuoso's urx optional props so the table resize observer consumes it instead of leaving the leftover prop on the scroller DOM.
+
 ## 4.18.15
 
 ### Patch Changes
