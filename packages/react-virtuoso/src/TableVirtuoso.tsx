@@ -404,6 +404,7 @@ const {
       customScrollParent: 'customScrollParent',
       scrollerRef: 'scrollerRef',
       logLevel: 'logLevel',
+      skipAnimationFrameInResizeObserver: 'skipAnimationFrameInResizeObserver',
     },
     methods: {
       scrollToIndex: 'scrollToIndex',
