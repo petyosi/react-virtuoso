@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { expect, test, describe } from 'vitest'
 import { render } from 'vitest-browser-react'
 
 import { PROMPT_COLUMN_BASE_WIDTHS, PROMPT_TABLE_WIDTHS, PromptListGrowTable } from '../../../_stories/column-grow.fixture'
+
+import type { ColumnHeaderContainerProps } from '../../..'
 
 const readySelector = '[data-testid=virtuoso-table-root][data-ready]'
 const scrollerSelector = '[data-testid=virtuoso-table-scroller]'
@@ -84,6 +86,60 @@ function ResizedPromptListWithWidthControl() {
   )
 }
 
+const MEASURED_HEADER_SELECTOR = '[data-table-element-role="column-header"] [data-column-key]'
+// Consumer stylesheets that let the measured header fill its column, as a styled wrapper does when it
+// wants the whole header to be one hover and click target.
+const STRETCHED_HEADER_STYLES = {
+  'flex-grow': `${MEASURED_HEADER_SELECTOR} { flex: 1 1 auto; }`,
+  'a percentage width': `${MEASURED_HEADER_SELECTOR} { width: 100%; }`,
+}
+const FIXED_VERSIONS_HEADER_WIDTH = 200
+const COMPACT_VERSIONS_HEADER_WIDTH = 96
+
+function StretchedHeaderPromptList({ css, resizable = true }: { css: string; resizable?: boolean }) {
+  const [width, setWidth] = useState<number>(PROMPT_TABLE_WIDTHS.wide)
+
+  return (
+    <>
+      <style>{css}</style>
+      <button data-testid="narrow-table" onClick={() => setWidth(PROMPT_TABLE_WIDTHS.narrow)} type="button">
+        Narrow
+      </button>
+      <PromptListGrowTable resizable={resizable} width={width} />
+    </>
+  )
+}
+
+function InteractiveHeaderSurfacePromptList() {
+  const [activatedColumn, setActivatedColumn] = useState('none')
+  const headerContainerProps = useCallback(
+    (columnKey: string): ColumnHeaderContainerProps => ({
+      'data-testid': `header-surface-${columnKey}`,
+      onClick: () => setActivatedColumn(columnKey),
+      style: { backgroundColor: columnKey === 'name' ? 'rgb(219, 234, 254)' : undefined },
+    }),
+    []
+  )
+
+  return (
+    <>
+      <output data-testid="activated-column">{activatedColumn}</output>
+      <PromptListGrowTable headerContainerProps={headerContainerProps} width={PROMPT_TABLE_WIDTHS.wide} />
+    </>
+  )
+}
+
+function ProtectedHeaderGeometryPromptList() {
+  const headerContainerProps = useCallback(
+    (): ColumnHeaderContainerProps => ({
+      style: { width: 10, minWidth: 10, flexBasis: 10, flexGrow: 5 },
+    }),
+    []
+  )
+
+  return <PromptListGrowTable headerContainerProps={headerContainerProps} resizable width={PROMPT_TABLE_WIDTHS.wide} />
+}
+
 function DescriptionResizedPromptList() {
   const descriptionWidth = expectedGrowWidths(PROMPT_TABLE_WIDTHS.wide, PROMPT_COLUMN_BASE_WIDTHS).description + 100
 
@@ -128,6 +184,144 @@ describe('column grow layout', () => {
     expect(scroller.clientWidth).toBeLessThan(totalBaseWidth(PROMPT_COLUMN_BASE_WIDTHS))
     expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth)
     expectHeaderWidths(screen.container, PROMPT_COLUMN_BASE_WIDTHS)
+  })
+
+  test.each(Object.entries(STRETCHED_HEADER_STYLES))(
+    'a header stretched by %s gives its grow width back when the table narrows',
+    async (_, css) => {
+      const screen = await render(<StretchedHeaderPromptList css={css} />)
+
+      await waitForReady(screen.container)
+      await waitForAnimationFrames()
+
+      const scroller = screen.container.querySelector(scrollerSelector) as HTMLElement
+      expectHeaderWidths(screen.container, expectedGrowWidths(scroller.clientWidth, PROMPT_COLUMN_BASE_WIDTHS))
+
+      const narrowButton = screen.container.querySelector('[data-testid="narrow-table"]') as HTMLButtonElement
+      narrowButton.click()
+
+      await expect.poll(() => headerWidth(screen.container, 'description')).toBeCloseTo(PROMPT_COLUMN_BASE_WIDTHS.description, 1)
+      expectHeaderWidths(screen.container, PROMPT_COLUMN_BASE_WIDTHS)
+    }
+  )
+
+  test('a percentage-width header without slots gives its grow width back when the table narrows', async () => {
+    const screen = await render(<StretchedHeaderPromptList css={STRETCHED_HEADER_STYLES['a percentage width']} resizable={false} />)
+
+    await waitForReady(screen.container)
+    await waitForAnimationFrames()
+
+    const narrowButton = screen.container.querySelector('[data-testid="narrow-table"]') as HTMLButtonElement
+    narrowButton.click()
+
+    await expect.poll(() => headerWidth(screen.container, 'description')).toBeCloseTo(PROMPT_COLUMN_BASE_WIDTHS.description, 1)
+    expectHeaderWidths(screen.container, PROMPT_COLUMN_BASE_WIDTHS)
+  })
+
+  test('container props style and activate the full rendered header without changing its measured width', async () => {
+    const screen = await render(<InteractiveHeaderSurfacePromptList />)
+
+    await waitForReady(screen.container)
+    await waitForAnimationFrames()
+
+    const surface = screen.container.querySelector('[data-testid="header-surface-name"]') as HTMLElement
+    const measureBoundary = surface.querySelector('[data-table-element-role="column-header-measure-boundary"]') as HTMLElement
+    const surfaceRect = surface.getBoundingClientRect()
+    const boundaryRect = measureBoundary.getBoundingClientRect()
+    const scroller = screen.container.querySelector(scrollerSelector) as HTMLElement
+    const expectedSurfaceWidth = expectedGrowWidths(scroller.clientWidth, PROMPT_COLUMN_BASE_WIDTHS).name
+
+    expect(boundaryRect.width).toBeCloseTo(PROMPT_COLUMN_BASE_WIDTHS.name, 1)
+    expect(surfaceRect.width).toBeCloseTo(expectedSurfaceWidth, 1)
+    expect(getComputedStyle(surface).backgroundColor).toBe('rgb(219, 234, 254)')
+
+    const hitTarget = document.elementFromPoint(
+      (boundaryRect.right + surfaceRect.right) / 2,
+      surfaceRect.top + surfaceRect.height / 2
+    ) as HTMLElement
+    expect(hitTarget).toBe(surface)
+    hitTarget.click()
+
+    await expect.poll(() => screen.container.querySelector('[data-testid="activated-column"]')?.textContent).toBe('name')
+  })
+
+  test('table geometry overrides container styles when header slots are present', async () => {
+    const screen = await render(<ProtectedHeaderGeometryPromptList />)
+
+    await waitForReady(screen.container)
+    await waitForAnimationFrames()
+
+    const scroller = screen.container.querySelector(scrollerSelector) as HTMLElement
+    const expected = expectedGrowWidths(scroller.clientWidth, PROMPT_COLUMN_BASE_WIDTHS)
+    const nameHeader = header(screen.container, 'name')
+
+    expectHeaderWidths(screen.container, expected)
+    expect(nameHeader.style.width).toBe(`${expected.name}px`)
+    expect(nameHeader.style.minWidth).toBe(`${expected.name}px`)
+    expect(nameHeader.style.flexBasis).toBe(`${expected.name}px`)
+    expect(nameHeader.style.flexGrow).toBe('0')
+    expect(nameHeader.style.display).toBe('flex')
+    expect(nameHeader.style.position).toBe('relative')
+  })
+
+  test('a fixed width on the measured header sets the base width', async () => {
+    const css = `[data-table-element-role="column-header"] [data-column-key="versions"] { width: ${FIXED_VERSIONS_HEADER_WIDTH}px; }`
+    const screen = await render(
+      <>
+        <style>{css}</style>
+        <PromptListGrowTable resizable width={PROMPT_TABLE_WIDTHS.narrow} />
+      </>
+    )
+
+    await waitForReady(screen.container)
+
+    await expect.poll(() => headerWidth(screen.container, 'versions')).toBeCloseTo(FIXED_VERSIONS_HEADER_WIDTH, 1)
+  })
+
+  test('a fixed width smaller than the content sets the base width', async () => {
+    const css = `[data-table-element-role="column-header-measure"][data-column-key="versions"] { width: ${COMPACT_VERSIONS_HEADER_WIDTH}px; }`
+    const screen = await render(
+      <>
+        <style>{css}</style>
+        <PromptListGrowTable width={PROMPT_TABLE_WIDTHS.narrow} />
+      </>
+    )
+
+    await waitForReady(screen.container)
+
+    await expect.poll(() => headerWidth(screen.container, 'versions')).toBeCloseTo(COMPACT_VERSIONS_HEADER_WIDTH, 1)
+  })
+
+  test('a minimum width on the measured header sets the base width', async () => {
+    const minimumWidth = FIXED_VERSIONS_HEADER_WIDTH + 24
+    const css = `[data-table-element-role="column-header-measure"][data-column-key="versions"] { min-width: ${minimumWidth}px; }`
+    const screen = await render(
+      <>
+        <style>{css}</style>
+        <PromptListGrowTable width={PROMPT_TABLE_WIDTHS.narrow} />
+      </>
+    )
+
+    await waitForReady(screen.container)
+
+    await expect.poll(() => headerWidth(screen.container, 'versions')).toBeCloseTo(minimumWidth, 1)
+  })
+
+  test('a stretched header keeps its end slot aligned with the rendered column edge', async () => {
+    const screen = await render(
+      <>
+        <style>{STRETCHED_HEADER_STYLES['a percentage width']}</style>
+        <PromptListGrowTable showSortIconBoundaries width={PROMPT_TABLE_WIDTHS.wide} />
+      </>
+    )
+
+    await waitForReady(screen.container)
+    await waitForAnimationFrames()
+
+    const headerRect = header(screen.container, 'description').getBoundingClientRect()
+    const markerRect = sortIconEndMarker(screen.container, 'description').getBoundingClientRect()
+
+    expect(markerRect.right).toBeCloseTo(headerRect.right, 1)
   })
 
   test('resized grow column keeps its rendered width and freezes sibling widths', async () => {

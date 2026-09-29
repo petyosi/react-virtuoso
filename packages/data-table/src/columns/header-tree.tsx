@@ -260,6 +260,7 @@ export function HeaderNodeRenderer({
         renderer={header?.renderer}
         rendererType={header?.type}
         {...(header?.className === undefined ? {} : { className: header.className })}
+        {...(header?.containerProps === undefined ? {} : { containerProps: header.containerProps })}
       />
     )
   }

@@ -33,6 +33,7 @@ import type {
   ColumnHeaderRenderParams,
   ColumnHeaderRenderFunction,
   ColumnHeaderCustomComponent,
+  ColumnHeaderContainerProps,
   HeaderSlotRenderParams,
   HeaderSlotRenderFunction,
   HeaderSlotCustomComponent,
@@ -194,14 +195,16 @@ interface DataTableColumnHeaderProps {
   children?: unknown
   component?: ColumnHeaderCustomComponent
   className?: string
+  containerProps?: ColumnHeaderContainerProps
 }
 
 function DataTableColumnHeader(props: DataTableColumnHeaderProps) {
   const measureClassName = 'flex h-10 items-center px-2 align-middle text-sm font-medium text-[var(--data-table-fg)]'
   const contentClassName = cn('flex min-w-0 items-center overflow-hidden truncate', props.className)
+  const containerProps = props.containerProps === undefined ? {} : { containerProps: props.containerProps }
 
   if (props.component) {
-    return <ColumnHeader className={cn(measureClassName, props.className)} component={props.component} />
+    return <ColumnHeader className={cn(measureClassName, props.className)} component={props.component} {...containerProps} />
   }
 
   const wrapRender =
@@ -217,7 +220,7 @@ function DataTableColumnHeader(props: DataTableColumnHeaderProps) {
   ) {
     const userRender = props.children
     return (
-      <ColumnHeader className={measureClassName}>
+      <ColumnHeader className={measureClassName} {...containerProps}>
         {wrapRender((params) => (typeof userRender === 'function' ? userRender(params) : userRender))}
       </ColumnHeader>
     )
@@ -236,7 +239,11 @@ function DataTableColumnHeader(props: DataTableColumnHeaderProps) {
     return children
   }
 
-  return <ColumnHeader className={measureClassName}>{wrapChildren(props.children) as ColumnHeaderChildren}</ColumnHeader>
+  return (
+    <ColumnHeader className={measureClassName} {...containerProps}>
+      {wrapChildren(props.children) as ColumnHeaderChildren}
+    </ColumnHeader>
+  )
 }
 
 function DataTableCell(props: CellDefinitionProps) {
@@ -280,6 +287,7 @@ export {
   type ColumnHeaderRenderParams,
   type ColumnHeaderRenderFunction,
   type ColumnHeaderCustomComponent,
+  type ColumnHeaderContainerProps,
   type HeaderSlotRenderParams,
   type HeaderSlotRenderFunction,
   type HeaderSlotCustomComponent,
