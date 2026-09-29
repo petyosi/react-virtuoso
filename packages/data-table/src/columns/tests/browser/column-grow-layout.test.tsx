@@ -84,6 +84,24 @@ function ResizedPromptListWithWidthControl() {
   )
 }
 
+// A consumer stylesheet that lets the measured header element fill its flex track, as a styled
+// wrapper does when it wants the whole header to be one hover and click target.
+const STRETCHED_HEADER_CSS = '[data-table-element-role="column-header"] > [data-column-key] { flex: 1 1 auto; }'
+
+function StretchedHeaderPromptList() {
+  const [width, setWidth] = useState<number>(PROMPT_TABLE_WIDTHS.wide)
+
+  return (
+    <>
+      <style>{STRETCHED_HEADER_CSS}</style>
+      <button data-testid="narrow-table" onClick={() => setWidth(PROMPT_TABLE_WIDTHS.narrow)} type="button">
+        Narrow
+      </button>
+      <PromptListGrowTable resizable width={width} />
+    </>
+  )
+}
+
 function DescriptionResizedPromptList() {
   const descriptionWidth = expectedGrowWidths(PROMPT_TABLE_WIDTHS.wide, PROMPT_COLUMN_BASE_WIDTHS).description + 100
 
@@ -127,6 +145,22 @@ describe('column grow layout', () => {
 
     expect(scroller.clientWidth).toBeLessThan(totalBaseWidth(PROMPT_COLUMN_BASE_WIDTHS))
     expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth)
+    expectHeaderWidths(screen.container, PROMPT_COLUMN_BASE_WIDTHS)
+  })
+
+  test('a stretched header gives its grow width back when the table narrows', async () => {
+    const screen = await render(<StretchedHeaderPromptList />)
+
+    await waitForReady(screen.container)
+    await waitForAnimationFrames()
+
+    const scroller = screen.container.querySelector(scrollerSelector) as HTMLElement
+    expectHeaderWidths(screen.container, expectedGrowWidths(scroller.clientWidth, PROMPT_COLUMN_BASE_WIDTHS))
+
+    const narrowButton = screen.container.querySelector('[data-testid="narrow-table"]') as HTMLButtonElement
+    narrowButton.click()
+
+    await expect.poll(() => headerWidth(screen.container, 'description')).toBeCloseTo(PROMPT_COLUMN_BASE_WIDTHS.description, 1)
     expectHeaderWidths(screen.container, PROMPT_COLUMN_BASE_WIDTHS)
   })
 

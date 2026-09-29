@@ -304,9 +304,13 @@ const HEADER_CONTENT_STYLE: CSSProperties = {
   minWidth: 0,
 }
 
+// The measured width is the column's base width, so this element must keep its natural size. If a
+// consumer class lets it grow into a wider track, the next measurement reads the grown width as the
+// base, and the column never gives the extra width back when the table narrows.
 const HEADER_MEASURE_STYLE: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
+  flex: '0 0 auto',
   minWidth: 'max-content',
   maxWidth: 'none',
 }
