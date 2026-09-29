@@ -269,24 +269,26 @@ export function ColumnHeaderRenderer({
             {renderHeaderSlot(entry, slotRenderParams)}
           </div>
         ))}
-      <div ref={measureRef} className={className} data-column-key={columnKey} style={HEADER_MEASURE_STYLE}>
-        {hasSlots ? (
-          <>
-            {startSlots.map(([slotId, entry]) => (
-              <React.Fragment key={slotId}>{renderHeaderSlot(entry, slotRenderParams)}</React.Fragment>
-            ))}
-            <div style={HEADER_CONTENT_STYLE}>{content}</div>
-            {endSlots.length > 0 ? (
-              <div style={endSlotGroupStyle}>
-                {endSlots.map(([slotId, entry]) => (
-                  <React.Fragment key={slotId}>{renderHeaderSlot(entry, slotRenderParams)}</React.Fragment>
-                ))}
-              </div>
-            ) : null}
-          </>
-        ) : (
-          content
-        )}
+      <div style={HEADER_MEASURE_BOUNDARY_STYLE}>
+        <div ref={measureRef} className={className} data-column-key={columnKey} style={HEADER_MEASURE_STYLE}>
+          {hasSlots ? (
+            <>
+              {startSlots.map(([slotId, entry]) => (
+                <React.Fragment key={slotId}>{renderHeaderSlot(entry, slotRenderParams)}</React.Fragment>
+              ))}
+              <div style={HEADER_CONTENT_STYLE}>{content}</div>
+              {endSlots.length > 0 ? (
+                <div style={endSlotGroupStyle}>
+                  {endSlots.map(([slotId, entry]) => (
+                    <React.Fragment key={slotId}>{renderHeaderSlot(entry, slotRenderParams)}</React.Fragment>
+                  ))}
+                </div>
+              ) : null}
+            </>
+          ) : (
+            content
+          )}
+        </div>
       </div>
       {hasSlots &&
         edgeSlots.map(([slotId, entry]) => (
@@ -304,13 +306,20 @@ const HEADER_CONTENT_STYLE: CSSProperties = {
   minWidth: 0,
 }
 
-// The measured width is the column's base width, so this element must keep its natural size. If a
-// consumer class lets it grow into a wider track, the next measurement reads the grown width as the
-// base, and the column never gives the extra width back when the table narrows.
+// The measured width is the column's base width, so the measured header must keep its natural size.
+// This box is as wide as the header's own content, so a consumer class that stretches the header,
+// with flex-grow or a percentage width, resolves against that size instead of the column. A fixed or
+// minimum width on the header still applies. Without it, the next measurement reads the grown width
+// as the base, and the column never gives the extra width back when the table narrows.
+const HEADER_MEASURE_BOUNDARY_STYLE: CSSProperties = {
+  display: 'flex',
+  flex: '0 0 auto',
+  width: 'max-content',
+}
+
 const HEADER_MEASURE_STYLE: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
-  flex: '0 0 auto',
   minWidth: 'max-content',
   maxWidth: 'none',
 }
