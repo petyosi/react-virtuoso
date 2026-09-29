@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'react'
-import type { CSSProperties, ReactNode } from 'react'
+import type { CSSProperties, HTMLAttributes, ReactNode } from 'react'
 
 import { useCellValue, usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
@@ -40,10 +40,22 @@ export type ColumnHeaderCustomComponent = React.ComponentType<ColumnHeaderRender
 export type ColumnHeaderChild = React.ReactElement | ColumnHeaderRenderFunction | null | undefined | false
 export type ColumnHeaderChildren = ColumnHeaderRenderFunction | React.ReactElement | readonly ColumnHeaderChild[]
 
+/**
+ * Props applied to the rendered-width header container.
+ *
+ * Use this surface for whole-column visuals and interaction. The header's `className` remains on the
+ * intrinsic measurement surface that determines the column's base width.
+ *
+ * @group Components
+ */
+export type ColumnHeaderContainerProps = Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'dangerouslySetInnerHTML'> &
+  Record<`data-${string}`, boolean | number | string | undefined>
+
 export interface ColumnHeaderEntry {
   type?: 'function' | 'component'
   renderer?: ColumnHeaderRenderFunction | ColumnHeaderCustomComponent
   className?: string
+  containerProps?: ColumnHeaderContainerProps
 }
 
 const { cell$: columnHeaders$, register$: columnHeaderRegister$ } = createRegistryCell<ColumnHeaderEntry>()
@@ -59,10 +71,12 @@ export namespace ColumnHeader {
     | {
         children?: ColumnHeaderChildren
         className?: string
+        containerProps?: ColumnHeaderContainerProps
       }
     | {
         component: ColumnHeaderCustomComponent
         className?: string
+        containerProps?: ColumnHeaderContainerProps
       }
 }
 
@@ -117,7 +131,7 @@ function parseSlotModeChildren(children: unknown) {
 export function ColumnHeader(props: ColumnHeader.Props) {
   const colId = useColumnId()
   const columnHeaderRegister = usePublisher(columnHeaderRegister$)
-  const { className } = props
+  const { className, containerProps } = props
   const parsedChildren = 'component' in props ? undefined : parseSlotModeChildren(props.children)
   const renderer = 'component' in props ? props.component : parsedChildren?.contentRenderer
   const rendererType = 'component' in props ? 'component' : renderer ? 'function' : undefined
@@ -128,18 +142,20 @@ export function ColumnHeader(props: ColumnHeader.Props) {
       id: colId,
       value: {
         ...(className === undefined ? {} : { className }),
+        ...(containerProps === undefined ? {} : { containerProps }),
         ...(rendererType === undefined || renderer === undefined ? {} : { type: rendererType, renderer }),
       },
     })
     return () => {
       columnHeaderRegister({ type: 'remove', id: colId })
     }
-  }, [className, columnHeaderRegister, rendererType, colId, renderer])
+  }, [className, containerProps, columnHeaderRegister, rendererType, colId, renderer])
 
   return parsedChildren && parsedChildren.slotChildren.length > 0 ? parsedChildren.slotChildren : null
 }
 
 const DEFAULT_COLUMN_HEADER_STYLE: CSSProperties = {}
+const DEFAULT_COLUMN_HEADER_CONTAINER_PROPS: ColumnHeaderContainerProps = {}
 
 export interface ColumnHeaderRendererProps {
   columnKey: string
@@ -149,6 +165,7 @@ export interface ColumnHeaderRendererProps {
   rendererType: 'component' | 'function' | undefined
   overlaidByScrollbar: boolean
   className?: string
+  containerProps?: ColumnHeaderContainerProps
 }
 
 export function ColumnHeaderRenderer({
@@ -159,6 +176,7 @@ export function ColumnHeaderRenderer({
   rendererType,
   overlaidByScrollbar,
   className,
+  containerProps,
 }: ColumnHeaderRendererProps) {
   const measureObserverRef = useResizeObserver('border-box')
   const headerRef = useRef<HTMLDivElement>(null)
@@ -254,14 +272,25 @@ export function ColumnHeaderRenderer({
       transform: `translateX(${offset}px)`,
     }
   }, [columnKey, columnWidths, measuredColumnWidths])
+  const {
+    className: containerClassName,
+    style: containerCustomStyle,
+    ...containerAttributes
+  } = containerProps ?? DEFAULT_COLUMN_HEADER_CONTAINER_PROPS
+  const containerStyle = useMemo<CSSProperties>(
+    () => ({ ...containerCustomStyle, ...slotModeStyle }),
+    [containerCustomStyle, slotModeStyle]
+  )
 
   return (
     <div
+      {...containerAttributes}
       ref={ref}
+      className={containerClassName}
       data-table-element-role="column-header"
       data-column-key={columnKey}
       data-observer-group="column-header"
-      style={slotModeStyle}
+      style={containerStyle}
     >
       {hasSlots &&
         overlaySlots.map(([slotId, entry]) => (
@@ -269,8 +298,14 @@ export function ColumnHeaderRenderer({
             {renderHeaderSlot(entry, slotRenderParams)}
           </div>
         ))}
-      <div style={HEADER_MEASURE_BOUNDARY_STYLE}>
-        <div ref={measureRef} className={className} data-column-key={columnKey} style={HEADER_MEASURE_STYLE}>
+      <div data-table-element-role="column-header-measure-boundary" style={HEADER_MEASURE_BOUNDARY_STYLE}>
+        <div
+          ref={measureRef}
+          className={className}
+          data-column-key={columnKey}
+          data-table-element-role="column-header-measure"
+          style={HEADER_MEASURE_STYLE}
+        >
           {hasSlots ? (
             <>
               {startSlots.map(([slotId, entry]) => (
@@ -312,7 +347,7 @@ const HEADER_CONTENT_STYLE: CSSProperties = {
 // minimum width on the header still applies. Without it, the next measurement reads the grown width
 // as the base, and the column never gives the extra width back when the table narrows.
 const HEADER_MEASURE_BOUNDARY_STYLE: CSSProperties = {
-  display: 'flex',
+  display: 'inline-flex',
   flex: '0 0 auto',
   width: 'max-content',
 }
@@ -320,7 +355,6 @@ const HEADER_MEASURE_BOUNDARY_STYLE: CSSProperties = {
 const HEADER_MEASURE_STYLE: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
-  minWidth: 'max-content',
   maxWidth: 'none',
 }
 
