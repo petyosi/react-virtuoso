@@ -118,6 +118,9 @@ export class Engine {
   private diagnosticNodeId = 0
   private diagnosticObserverCountInTree = 0
   private readonly executionMaps = new Map<symbol | symbol[], ExecutionMap>()
+  // A subscriber can publish while a cycle runs. The nested cycle writes its accepted values into every
+  // running cycle on this engine, so an outer cycle does not compute or forward a value older than the engine state.
+  private readonly activeCycles: { childChangePayload: Record<symbol, unknown>; transientState: Map<symbol, unknown> }[] = []
   private readonly graph = new SetMap<NodeProjection>()
   private parentEngine: Engine | undefined = undefined
   private readonly parentEngineSingletonSubscriptions = new Map<symbol, UnsubscribeHandle>()
@@ -580,6 +583,7 @@ export class Engine {
       })
     }
 
+    this.activeCycles.push({ childChangePayload, transientState })
     try {
       for (;;) {
         const nextId = participatingNodeKeys.shift()
@@ -672,7 +676,12 @@ export class Engine {
           for (const { attempt, capture, event } of currentAttempts) {
             attempt.candidates.push(this.diagnosticCandidate(capture, id, event.node, 'accepted', hadPrevious, previous, value))
           }
-          transientState.set(id, value)
+          for (const activeCycle of this.activeCycles) {
+            activeCycle.transientState.set(id, value)
+            if (Object.hasOwn(activeCycle.childChangePayload, id)) {
+              activeCycle.childChangePayload[id] = value
+            }
+          }
           childChangePayload[id] = value
 
           if (this.state.has(id)) {
@@ -804,6 +813,7 @@ export class Engine {
       }
       throw error
     } finally {
+      this.activeCycles.pop()
       if (transaction !== undefined && cycleRef !== undefined) {
         if (previousCycle === undefined) {
           delete transaction.activeCycle
