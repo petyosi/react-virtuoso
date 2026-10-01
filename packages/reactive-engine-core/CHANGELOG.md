@@ -1,5 +1,11 @@
 # @virtuoso.dev/reactive-engine-core
 
+## 0.2.1
+
+### Patch Changes
+
+- [#1517](https://github.com/petyosi/react-virtuoso/pull/1517) [`fcb22cb`](https://github.com/petyosi/react-virtuoso/commit/fcb22cb8d07b0000c2b887e9cac9354c931c9256) Thanks [@petyosi](https://github.com/petyosi)! - Fix derived nodes that kept a stale value after a subscriber published during a cycle. When the outer cycle later recomputed a `combineCells`, `ComputedCell`, or `withLatestFrom` node, it read the value from before the nested publication and overwrote the correct result. `useCellValues` then kept rendering the old value while `useCellValue` showed the new one. A nested cycle now writes its accepted values into every running cycle on the engine, including the values forwarded to child engines.
+
 ## 0.2.0
 
 ### Minor Changes
