@@ -335,10 +335,19 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
           return isFullyRendered && isLastItemRendered
         }),
-        u.map(([[, totalCount]]) => {
-          return totalCount - 1
+        // Pair the emitted count with the last rendered item's own data (read directly off the
+        // already-computed gridState, rather than a separate withLatestFrom(data) read, which can
+        // observe a stale value while gridState and totalCount are still settling against each
+        // other). Without this, replacing the data (e.g. applying a filter) that happens to bring
+        // totalCount back to a previously seen value is indistinguishable, under a plain
+        // distinctUntilChanged, from the already-reported end -- so endReached would never fire
+        // again even though there is new data to load.
+        u.map(([[gridState, totalCount]]) => {
+          const lastItemData = gridState.items[gridState.items.length - 1]!.data
+          return [totalCount - 1, lastItemData] as [number, unknown]
         }),
-        u.distinctUntilChanged()
+        u.distinctUntilChanged(tupleComparator),
+        u.map(([count]) => count)
       )
     )
 
