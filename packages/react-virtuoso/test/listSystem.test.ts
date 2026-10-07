@@ -761,6 +761,88 @@ describe('list engine', () => {
     })
   })
 
+  describe('endReached', () => {
+    it('reports the last item index for a flat list', () => {
+      const { defaultItemHeight, endReached, propsReady, scrollTop, totalCount, viewportHeight } = init(listSystem)
+
+      publish(scrollTop, 0)
+      publish(totalCount, 10)
+      publish(defaultItemHeight, 50)
+      publish(propsReady, true)
+      publish(viewportHeight, 200)
+
+      const sub = vi.fn()
+      subscribe(endReached, sub)
+
+      publish(scrollTop, 350)
+
+      expect(sub).toHaveBeenCalledWith(9)
+    })
+
+    it('reports the last item index for a grouped list, excluding group headers', () => {
+      const { endReached, groupCounts, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+
+      publish(groupCounts, [2, 1])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      const sub = vi.fn()
+      subscribe(endReached, sub)
+
+      publish(sizeRanges, [
+        { endIndex: 0, size: 30, startIndex: 0 },
+        { endIndex: 4, size: 20, startIndex: 1 },
+      ])
+
+      // the last rendered row is the data item at index 2 (internal index 4),
+      // group headers must not be counted in the reported index
+      expect(sub).toHaveBeenCalledWith(2)
+    })
+
+    it('reports the last item index when the last group is empty', () => {
+      const { endReached, groupCounts, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+
+      publish(groupCounts, [2, 0])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      const sub = vi.fn()
+      subscribe(endReached, sub)
+
+      publish(sizeRanges, [
+        { endIndex: 0, size: 30, startIndex: 0 },
+        { endIndex: 3, size: 20, startIndex: 1 },
+      ])
+
+      // the last rendered row is the empty group's header (internal index 3),
+      // the last real item is at index 1
+      expect(sub).toHaveBeenCalledWith(1)
+    })
+
+    it('reports the last item index after the group counts change', () => {
+      const { endReached, groupCounts, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+
+      publish(groupCounts, [2, 1])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      const sub = vi.fn()
+      subscribe(endReached, sub)
+
+      publish(sizeRanges, [
+        { endIndex: 0, size: 30, startIndex: 0 },
+        { endIndex: 4, size: 20, startIndex: 1 },
+      ])
+
+      publish(groupCounts, [2, 1, 2])
+
+      expect(sub).toHaveBeenLastCalledWith(4)
+    })
+  })
+
   describe('minOverscanItemCount', () => {
     it('appends extra items after the visible range', () => {
       const { defaultItemHeight, listState, minOverscanItemCount, propsReady, scrollTop, totalCount, viewportHeight } = init(listSystem)
