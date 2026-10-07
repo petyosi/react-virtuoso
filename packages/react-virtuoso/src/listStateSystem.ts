@@ -30,9 +30,17 @@ export interface ListState {
 
 export type MinOverscanItemCount = number | { bottom: number; top: number }
 
-function probeItemSet(index: number, sizes: SizeState, data: Data) {
+function probeItemSet(index: number, sizes: SizeState, data: Data, totalCount: number) {
   if (hasGroups(sizes)) {
-    const itemIndex = originalIndexFromItemIndex(index, sizes)
+    // totalCount includes the group headers
+    const itemCount = totalCount - sizes.groupIndices.length
+
+    // all groups are empty - one header avoids the two-range group/item probe protocol
+    if (itemCount <= 0) {
+      return [{ index: sizes.groupIndices[0]!, offset: 0, size: 0 }]
+    }
+
+    const itemIndex = originalIndexFromItemIndex(Math.min(index, itemCount - 1), sizes)
     const groupIndex = findMaxKeyValue(sizes.groupOffsetTree, itemIndex)[0]
 
     return [
@@ -259,7 +267,7 @@ export const listStateSystem = u.system(
                 return null
               }
               const state = buildListState(
-                probeItemSet(getInitialTopMostItemIndexNumber(initialTopMostItemIndex, totalCount), sizesValue, data),
+                probeItemSet(getInitialTopMostItemIndexNumber(initialTopMostItemIndex, totalCount), sizesValue, data, totalCount),
                 [],
                 totalCount,
                 gap,

@@ -511,6 +511,75 @@ describe('list engine', () => {
       })
     })
 
+    it('probes only the group header when the only group is empty', () => {
+      const { groupCounts, listState, propsReady, scrollTop, viewportHeight } = init(listSystem)
+      publish(groupCounts, [0])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      expect(getValue(listState)).toMatchObject({
+        items: [{ index: 0, offset: 0, size: 0, type: 'group' }],
+      })
+    })
+
+    it('probes only group headers when all groups are empty', () => {
+      const { groupCounts, listState, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+      publish(groupCounts, [0, 0, 0])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      expect(getValue(listState)).toMatchObject({
+        items: [{ index: 0, offset: 0, size: 0, type: 'group' }],
+      })
+
+      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
+      publish(sizeRanges, [
+        { startIndex: 1, endIndex: 1, size: 50 },
+        { startIndex: 2, endIndex: 2, size: 70 },
+      ])
+
+      expect(getValue(listState)).toMatchObject({
+        topItems: [{ index: 0, offset: 0, size: 30, type: 'group' }],
+        items: [
+          { index: 1, offset: 30, size: 50, type: 'group' },
+          { index: 2, offset: 80, size: 70, type: 'group' },
+        ],
+      })
+    })
+
+    it('probes the first non-empty group after leading empty groups', () => {
+      const { groupCounts, listState, propsReady, scrollTop, viewportHeight } = init(listSystem)
+      publish(groupCounts, [0, 3])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      expect(getValue(listState)).toMatchObject({
+        items: [
+          { index: 1, offset: 0, size: 0, type: 'group' },
+          { groupIndex: 1, index: 0, offset: 0, size: 0 },
+        ],
+      })
+    })
+
+    it('probes the last item when the initial topmost item is LAST', () => {
+      const { groupCounts, initialTopMostItemIndex, listState, propsReady, scrollTop, viewportHeight } = init(listSystem)
+      publish(groupCounts, [3, 3])
+      publish(initialTopMostItemIndex, { index: 'LAST' })
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      expect(getValue(listState)).toMatchObject({
+        items: [
+          { index: 1, offset: 0, size: 0, type: 'group' },
+          { groupIndex: 1, index: 5, offset: 0, size: 0 },
+        ],
+      })
+    })
+
     it('renders groups and items', () => {
       const { groupCounts, listState, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
       publish(groupCounts, [3, 3, 3, 10])
