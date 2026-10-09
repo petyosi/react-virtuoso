@@ -83,7 +83,6 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
   const itemDimensions = usePublisher('itemDimensions')
   const gridGap = usePublisher('gap')
   const log = useEmitterValue('log')
-  const stateRestoreInProgress = useEmitterValue('stateRestoreInProgress')
   const reportReadyState = usePublisher('reportReadyState')
 
   const listRef = useSize(
@@ -112,10 +111,6 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
       reportReadyState(true)
     }
   }, [gridState])
-
-  if (stateRestoreInProgress) {
-    return null
-  }
 
   return (
     <ListComponent

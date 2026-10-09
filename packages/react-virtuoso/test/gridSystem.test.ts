@@ -238,4 +238,49 @@ describe('grid system', () => {
     expect(itemsPerRow(getValue(viewportDimensions).width, getValue(itemDimensions).width, getValue(gap).column)).toBe(6)
     expect(getValue(gridState).items).toHaveLength(30)
   })
+
+  describe('state restoration', () => {
+    function setup() {
+      const system = init(gridSystem)
+      const { itemDimensions, scrollTop, totalCount, viewportDimensions } = system
+      publish(totalCount, 1000)
+      publish(scrollTop, 0)
+      publish(viewportDimensions, { height: 300, width: 1200 })
+      publish(itemDimensions, { height: 80, width: 300 })
+      return system
+    }
+
+    it('keeps the full list height while the scroll position is restored', () => {
+      const { gridState, stateRestoreInProgress } = setup()
+
+      publish(stateRestoreInProgress, true)
+
+      // the scroller needs the full height to reach the restored position
+      expect(getValue(gridState)).toMatchObject({ items: [], offsetBottom: 250 * 80, offsetTop: 0 })
+    })
+
+    it('renders the items at the restored position once the scroller gets there', () => {
+      const { gridState, scrollTop, stateRestoreInProgress } = setup()
+
+      publish(stateRestoreInProgress, true)
+      publish(scrollTop, 2000)
+      publish(stateRestoreInProgress, false)
+
+      expect(getValue(gridState).items[0]).toMatchObject({ index: 100 })
+    })
+
+    it('does not report the state while the scroll position is restored', () => {
+      const { scrollTop, stateChanged, stateRestoreInProgress } = setup()
+      const sub = vi.fn()
+      subscribe(stateChanged, sub)
+
+      publish(stateRestoreInProgress, true)
+      publish(scrollTop, 2000)
+      expect(sub).not.toHaveBeenCalled()
+
+      publish(stateRestoreInProgress, false)
+      expect(sub).toHaveBeenCalledTimes(1)
+      expect(sub).toHaveBeenLastCalledWith(expect.objectContaining({ scrollTop: 2000 }))
+    })
+  })
 })
