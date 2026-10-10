@@ -203,6 +203,15 @@ export const listStateSystem = u.system(
   ]) => {
     const topItemsIndexes = u.statefulStream<number[]>([])
     const initialItemCount = u.statefulStream(0)
+    // the initial items wait for their sizes only before anything is measured - a later size reset probes instead
+    const sizesMeasured = u.statefulStreamFromEmitter(
+      u.pipe(
+        sizes,
+        u.filter(({ sizeTree }) => !empty(sizeTree)),
+        u.mapTo(true)
+      ),
+      false
+    )
     const itemsRendered = u.stream<ListItems>()
     const minOverscanItemCount = u.statefulStream<MinOverscanItemCount>(0)
 
@@ -263,7 +272,7 @@ export const listStateSystem = u.system(
             }
 
             if (empty(sizeTree)) {
-              if (initialItemCountValue > 0) {
+              if (initialItemCountValue > 0 && !u.getValue(sizesMeasured)) {
                 return null
               }
               const state = buildListState(
