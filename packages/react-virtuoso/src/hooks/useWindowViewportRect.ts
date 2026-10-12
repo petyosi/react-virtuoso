@@ -3,11 +3,13 @@ import React from 'react'
 import { useSizeWithElRef } from './useSize'
 
 import type { WindowViewportInfo } from '../interfaces'
+import type { SizeObserverGroup } from './sizeObserverGroup'
 
 export default function useWindowViewportRectRef(
   callback: (info: WindowViewportInfo) => void,
   customScrollParent: HTMLElement | undefined,
-  skipAnimationFrame: boolean
+  skipAnimationFrame: boolean,
+  group?: SizeObserverGroup
 ) {
   const viewportInfo = React.useRef<null | WindowViewportInfo>(null)
 
@@ -45,17 +47,29 @@ export default function useWindowViewportRectRef(
     [callback, customScrollParent]
   )
 
-  const { callbackRef, ref } = useSizeWithElRef(calculateInfo, true, skipAnimationFrame)
+  const { callbackRef, ref } = useSizeWithElRef(calculateInfo, true, skipAnimationFrame, group)
 
   const scrollAndResizeEventHandler = React.useCallback(() => {
     calculateInfo(ref.current)
   }, [calculateInfo, ref])
 
+  const resizeEventHandler = React.useCallback(() => {
+    if (group) {
+      group.measure()
+    } else {
+      scrollAndResizeEventHandler()
+    }
+  }, [group, scrollAndResizeEventHandler])
+
   React.useEffect(() => {
     if (customScrollParent) {
       customScrollParent.addEventListener('scroll', scrollAndResizeEventHandler)
       const observer = new ResizeObserver(() => {
-        requestAnimationFrame(scrollAndResizeEventHandler)
+        if (group) {
+          group.measure()
+        } else {
+          requestAnimationFrame(scrollAndResizeEventHandler)
+        }
       })
       observer.observe(customScrollParent)
       return () => {
@@ -67,12 +81,12 @@ export default function useWindowViewportRectRef(
     const theElementWindow = ref.current?.ownerDocument.defaultView
 
     theElementWindow?.addEventListener('scroll', scrollAndResizeEventHandler)
-    theElementWindow?.addEventListener('resize', scrollAndResizeEventHandler)
+    theElementWindow?.addEventListener('resize', resizeEventHandler)
     return () => {
       theElementWindow?.removeEventListener('scroll', scrollAndResizeEventHandler)
-      theElementWindow?.removeEventListener('resize', scrollAndResizeEventHandler)
+      theElementWindow?.removeEventListener('resize', resizeEventHandler)
     }
-  }, [scrollAndResizeEventHandler, customScrollParent, ref])
+  }, [scrollAndResizeEventHandler, resizeEventHandler, customScrollParent, ref, group])
 
   return callbackRef
 }
