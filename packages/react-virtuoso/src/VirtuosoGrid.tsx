@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { gridSystem } from './gridSystem'
+import { createSizeObserverGroup } from './hooks/sizeObserverGroup'
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 import useSize from './hooks/useSize'
 import useWindowViewportRectRef from './hooks/useWindowViewportRect'
@@ -36,6 +37,8 @@ const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
     )
   }
 
+  const sizeObserverGroup = u.statefulStream(createSizeObserverGroup())
+
   const readyStateChanged = u.statefulStream(false)
 
   const reportReadyState = u.statefulStream(false)
@@ -43,6 +46,7 @@ const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
 
   return {
     components,
+    sizeObserverGroup,
     computeItemKey,
     context,
     FooterComponent: distinctProp('Footer'),
@@ -104,7 +108,8 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
       [scrollHeightCallback, itemDimensions, gridGap, log]
     ),
     true,
-    false
+    false,
+    useEmitterValue('sizeObserverGroup')
   )
 
   useIsomorphicLayoutEffect(() => {
@@ -207,7 +212,8 @@ const Viewport: React.FC<React.PropsWithChildren> = ({ children }) => {
       [viewportDimensions]
     ),
     true,
-    false
+    false,
+    useEmitterValue('sizeObserverGroup')
   )
 
   React.useEffect(() => {
@@ -230,7 +236,7 @@ const WindowViewport: React.FC<React.PropsWithChildren> = ({ children }) => {
   const itemDimensions = usePublisher('itemDimensions')
   const customScrollParent = useEmitterValue('customScrollParent')
   const useWindowScroll = useEmitterValue('useWindowScroll')
-  const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent, false)
+  const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent, false, useEmitterValue('sizeObserverGroup'))
 
   React.useEffect(() => {
     if (ctx) {
