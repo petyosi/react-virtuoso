@@ -55,6 +55,14 @@ describe('rowsState$ stable field', () => {
     expect(state.stable).toBeFalsy()
   })
 
+  it('becomes stable when a pending zero-position scroll completes without changing the range', () => {
+    publishBase({ pendingLocation: 0 })
+    expect(engine.getValue(rowsState$).stable).toBeFalsy()
+    engine.pub(pendingScrollToInitialLocation$, null)
+    expect(engine.getValue(rowsState$).stable).toBe(true)
+    expect(engine.getValue(viewportRange$)).toEqual({ startIndex: 0, endIndex: 9 })
+  })
+
   it('stable=false during pending initial location', () => {
     publishBase({ pendingLocation: { index: 10, align: 'start' } })
     const state = engine.getValue(rowsState$)

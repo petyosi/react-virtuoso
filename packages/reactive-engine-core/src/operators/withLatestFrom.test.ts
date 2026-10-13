@@ -289,4 +289,30 @@ describe('withLatestFrom operator', () => {
     expect(spy1.history).toHaveLength(1)
     expect(spy2.history).toHaveLength(1)
   })
+
+  it('picks up the pulled node new value when published together with the source in one pubIn (source key first)', () => {
+    const source = Stream<number>()
+    const pulled = Cell('old')
+    const combined = e.pipe(source, e.withLatestFrom(pulled))
+    const { history, spy } = createSpyWithHistory<[number, string]>()
+
+    e.sub(combined, spy)
+
+    // A projection is registered under both its sources and its pulls (Engine.ts:264-266), and
+    // calculateExecutionMap orders a pulled root before its sink regardless of key order (Engine.ts:1145-1183)
+    eng.pubIn({ [source]: 1, [pulled]: 'new' })
+    expect(history).toEqual([[1, 'new']])
+  })
+
+  it('picks up the pulled node new value when published together with the source in one pubIn (pulled key first)', () => {
+    const source = Stream<number>()
+    const pulled = Cell('old')
+    const combined = e.pipe(source, e.withLatestFrom(pulled))
+    const { history, spy } = createSpyWithHistory<[number, string]>()
+
+    e.sub(combined, spy)
+
+    eng.pubIn({ [pulled]: 'new', [source]: 1 })
+    expect(history).toEqual([[1, 'new']])
+  })
 })

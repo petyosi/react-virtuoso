@@ -1,5 +1,58 @@
 # react-virtuoso
 
+## 4.18.18
+
+### Patch Changes
+
+- [#1521](https://github.com/petyosi/react-virtuoso/pull/1521) [`c923e6d`](https://github.com/petyosi/react-virtuoso/commit/c923e6d7e51b2807f6c71fddee3e2e5a944a302f) Thanks [@cpruijsen](https://github.com/cpruijsen)! - Fixed `GroupedVirtuoso` calling `computeItemKey` and `itemContent` with a non-existent item index when all groups are empty (e.g. `groupCounts={[0]}`) or when `initialTopMostItemIndex` is `LAST`. The initial size probe now stays within the existing items, and probes only the group headers when there are no items. When the empty groups later receive items, the size state is reset, so the list measures a group header and an item again instead of sizing every item as a header.
+
+## 4.18.17
+
+### Patch Changes
+
+- [#1520](https://github.com/petyosi/react-virtuoso/pull/1520) [`e519b85`](https://github.com/petyosi/react-virtuoso/commit/e519b85996200758dc92119dc818456357dfdb62) Thanks [@cpruijsen](https://github.com/cpruijsen)! - Fixed `endReached` receiving an index that includes the group headers in `GroupedVirtuoso` and `GroupedTableVirtuoso`. The callback now receives the index of the last real item - e.g. 499 instead of 522 for a list of 500 items with 23 groups. If your `endReached` handler subtracts the group count from the index as a workaround, remove that adjustment. `endReached` no longer fires when every group is empty.
+
+## 4.18.16
+
+### Patch Changes
+
+- [#1512](https://github.com/petyosi/react-virtuoso/pull/1512) [`b7238f3`](https://github.com/petyosi/react-virtuoso/commit/b7238f3856ae51afcbf8045a7c61b8f1c42e9a0c) Thanks [@cpruijsen](https://github.com/cpruijsen)! - Map `skipAnimationFrameInResizeObserver` through TableVirtuoso's urx optional props so the table resize observer consumes it instead of leaving the leftover prop on the scroller DOM.
+
+## 4.18.15
+
+### Patch Changes
+
+- [#1461](https://github.com/petyosi/react-virtuoso/pull/1461) [`364c071`](https://github.com/petyosi/react-virtuoso/commit/364c071dc1e044b52d1cfbce65851440d39be77e) Thanks [@aehmt](https://github.com/aehmt)! - Fixed "Zero-sized element, this should not happen" error when `initialItemCount` exceeds the available `data`. The initial list state builder now clamps the item count to the data remaining after `initialTopMostItemIndex`, and renders no items when `data` is explicitly empty, preventing phantom items with `undefined` data from being rendered. `initialItemCount` also became a reactive input of the list state computation, so changing it after mount recomputes the list instead of leaving stale state until an unrelated update.
+
+## 4.18.14
+
+### Patch Changes
+
+- [#1497](https://github.com/petyosi/react-virtuoso/pull/1497) [`ac8a5f4`](https://github.com/petyosi/react-virtuoso/commit/ac8a5f404bac665d70c07cb8b68566af55efb853) Thanks [@cpruijsen](https://github.com/cpruijsen)! - Allow a custom `List` wrapper to render a `ul` instead of a `div`, keeping its forwarded `ref` typed to the chosen element. `Item` is unchanged.
+
+## 4.18.13
+
+### Patch Changes
+
+- [#1493](https://github.com/petyosi/react-virtuoso/pull/1493) [`d3c437e`](https://github.com/petyosi/react-virtuoso/commit/d3c437eaf55946143dea4b70d4116fe1b44bdfe8) Thanks [@albertcalasanzs](https://github.com/albertcalasanzs)! - Fix the transcript blanking for a frame when an older page is prepended.
+
+  The compensation for a prepend was a deviation that grows the content followed, one
+  `requestAnimationFrame` later, by the scroll that cancels it. In between there is a painted frame in
+  which the list is displaced by the whole page — and because prepends fire near `scrollTop` 0, that
+  displacement is the entire viewport.
+
+  The scroll now runs as soon as the renderer acknowledges, from a layout effect, that the deviation
+  has reached the DOM: after the mutation, before paint. Both land in the same paint, and because the
+  content has already grown the scroll can no longer be clamped to the old maximum. If nothing
+  acknowledges by the next frame the previous deferred behaviour still applies, so the worst case is
+  unchanged.
+
+## 4.18.12
+
+### Patch Changes
+
+- [#1487](https://github.com/petyosi/react-virtuoso/pull/1487) [`d975e6c`](https://github.com/petyosi/react-virtuoso/commit/d975e6c4eab2d56b23948c8b958c1d9b5c508c0c) Thanks [@petyosi](https://github.com/petyosi)! - Measure window-scrolling lists before they enter the viewport so their estimated height is included in the document layout.
+
 ## 4.18.11
 
 ### Patch Changes

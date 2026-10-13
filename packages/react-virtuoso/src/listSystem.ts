@@ -97,8 +97,10 @@ export const listSystem = u.system(
     u.connect(rangeChanged, featureGroup1.scrollSeekRangeChanged)
     u.connect(
       u.pipe(
-        featureGroup1.windowViewportRect,
-        u.map((value) => value.visibleHeight)
+        u.combineLatest(featureGroup1.windowViewportRect, domIO.headerHeight, domIO.fixedHeaderHeight),
+        // Keep a measurement range active when a window-scrolling list starts below the viewport.
+        // One content pixel beyond the headers is enough to render the probe item and estimate the full list height.
+        u.map(([viewport, headerHeight, fixedHeaderHeight]) => Math.max(headerHeight + fixedHeaderHeight + 1, viewport.visibleHeight))
       ),
       domIO.viewportHeight
     )

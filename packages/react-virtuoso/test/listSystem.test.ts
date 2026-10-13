@@ -45,6 +45,89 @@ describe('list engine', () => {
       expect(getValue(listState).items).toHaveLength(10)
     })
 
+    it('clamps initialItemCount to data length when data has fewer items', () => {
+      const { data, initialItemCount, listState, propsReady } = init(listSystem)
+
+      publish(data, ['a', 'b', 'c'])
+      publish(initialItemCount, 10)
+      publish(propsReady, true)
+
+      const items = getValue(listState).items
+      expect(items).toHaveLength(3)
+      expect(items.every((item) => item.data !== undefined)).toBe(true)
+    })
+
+    it('does not render phantom items when data shrinks while initialItemCount is stale', () => {
+      const { data, initialItemCount, listState, propsReady } = init(listSystem)
+
+      publish(data, ['a', 'b', 'c'])
+      publish(initialItemCount, 3)
+      publish(propsReady, true)
+      expect(getValue(listState).items).toHaveLength(3)
+
+      // same-render re-publish: data shrinks first, before the new initialItemCount lands in its cell
+      publish(data, ['a', 'b'])
+      let items = getValue(listState).items
+      expect(items).toHaveLength(2)
+      expect(items.every((item) => item.data !== undefined)).toBe(true)
+
+      publish(initialItemCount, 2)
+      items = getValue(listState).items
+      expect(items).toHaveLength(2)
+      expect(items.every((item) => item.data !== undefined)).toBe(true)
+    })
+
+    it('recomputes the list state when initialItemCount changes after data changes', () => {
+      const { data, initialItemCount, listState, propsReady } = init(listSystem)
+
+      publish(data, ['a', 'b', 'c'])
+      publish(initialItemCount, 3)
+      publish(propsReady, true)
+      expect(getValue(listState).items).toHaveLength(3)
+
+      publish(data, ['a', 'b', 'c', 'd', 'e'])
+      expect(getValue(listState).items).toHaveLength(3)
+
+      publish(initialItemCount, 5)
+      const items = getValue(listState).items
+      expect(items).toHaveLength(5)
+      expect(items.every((item) => item.data !== undefined)).toBe(true)
+    })
+
+    it('clamps initialItemCount to the data remaining after initialTopMostItemIndex', () => {
+      const { data, initialItemCount, initialTopMostItemIndex, listState, propsReady } = init(listSystem)
+
+      publish(data, ['a', 'b', 'c'])
+      publish(initialTopMostItemIndex, 1)
+      publish(initialItemCount, 3)
+      publish(propsReady, true)
+
+      const items = getValue(listState).items
+      expect(items).toHaveLength(2)
+      expect(items.map((item) => item.data)).toEqual(['b', 'c'])
+    })
+
+    it('renders no items on mount when data is explicitly empty', () => {
+      const { data, initialItemCount, listState, propsReady } = init(listSystem)
+
+      publish(data, [])
+      publish(initialItemCount, 3)
+      publish(propsReady, true)
+
+      expect(getValue(listState).items).toHaveLength(0)
+    })
+
+    it('renders initialItemCount items on mount when data is omitted', () => {
+      const { initialItemCount, listState, propsReady } = init(listSystem)
+
+      publish(initialItemCount, 3)
+      publish(propsReady, true)
+
+      const items = getValue(listState).items
+      expect(items).toHaveLength(3)
+      expect(items.every((item) => item.data === undefined)).toBe(true)
+    })
+
     it('returns the full set if a fixed item height is set', () => {
       const { fixedItemHeight, listState, propsReady, scrollTop, totalCount, viewportHeight } = init(listSystem)
 
@@ -428,6 +511,270 @@ describe('list engine', () => {
       })
     })
 
+    it('probes only the group header when the only group is empty', () => {
+      const { groupCounts, listState, propsReady, scrollTop, viewportHeight } = init(listSystem)
+      publish(groupCounts, [0])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      expect(getValue(listState)).toMatchObject({
+        items: [{ index: 0, offset: 0, size: 0, type: 'group' }],
+      })
+    })
+
+    it('probes only group headers when all groups are empty', () => {
+      const { groupCounts, listState, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+      publish(groupCounts, [0, 0, 0])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      expect(getValue(listState)).toMatchObject({
+        items: [{ index: 0, offset: 0, size: 0, type: 'group' }],
+      })
+
+      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
+      publish(sizeRanges, [
+        { startIndex: 1, endIndex: 1, size: 50 },
+        { startIndex: 2, endIndex: 2, size: 70 },
+      ])
+
+      expect(getValue(listState)).toMatchObject({
+        topItems: [{ index: 0, offset: 0, size: 30, type: 'group' }],
+        items: [
+          { index: 1, offset: 30, size: 50, type: 'group' },
+          { index: 2, offset: 80, size: 70, type: 'group' },
+        ],
+      })
+    })
+
+    it('probes a group header and an item again when empty groups receive items', () => {
+      const { groupCounts, listState, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+      publish(groupCounts, [0])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
+
+      publish(groupCounts, [5])
+
+      expect(getValue(listState)).toMatchObject({
+        items: [
+          { index: 0, offset: 0, size: 0, type: 'group' },
+          { groupIndex: 0, index: 0, offset: 0, size: 0 },
+        ],
+      })
+
+      publish(sizeRanges, [
+        { startIndex: 0, endIndex: 0, size: 30 },
+        { startIndex: 1, endIndex: 1, size: 100 },
+      ])
+
+      expect(getValue(listState)).toMatchObject({
+        topItems: [{ index: 0, offset: 0, size: 30, type: 'group' }],
+        items: [
+          { groupIndex: 0, index: 0, offset: 30, size: 100 },
+          { groupIndex: 0, index: 1, offset: 130, size: 100 },
+        ],
+      })
+    })
+
+    it('probes again when empty groups receive items without growing the total count', () => {
+      const { groupCounts, listState, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+      publish(groupCounts, [0, 0, 0, 0])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
+
+      publish(groupCounts, [3])
+
+      expect(getValue(listState)).toMatchObject({
+        items: [
+          { index: 0, offset: 0, size: 0, type: 'group' },
+          { groupIndex: 0, index: 0, offset: 0, size: 0 },
+        ],
+      })
+
+      publish(sizeRanges, [
+        { startIndex: 0, endIndex: 0, size: 30 },
+        { startIndex: 1, endIndex: 1, size: 100 },
+      ])
+
+      expect(getValue(listState)).toMatchObject({
+        topItems: [{ index: 0, offset: 0, size: 30, type: 'group' }],
+        items: [
+          { groupIndex: 0, index: 0, offset: 30, size: 100 },
+          { groupIndex: 0, index: 1, offset: 130, size: 100 },
+        ],
+      })
+    })
+
+    it('probes the new groups when fewer empty groups receive items behind a leading empty group', () => {
+      const { groupCounts, listState, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+      publish(groupCounts, [0, 0, 0])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
+
+      publish(groupCounts, [0, 1])
+
+      expect(getValue(listState)).toMatchObject({
+        items: [
+          { index: 1, offset: 0, size: 0, type: 'group' },
+          { groupIndex: 1, index: 0, offset: 0, size: 0 },
+        ],
+      })
+
+      publish(sizeRanges, [
+        { startIndex: 1, endIndex: 1, size: 30 },
+        { startIndex: 2, endIndex: 2, size: 100 },
+      ])
+
+      expect(getValue(listState)).toMatchObject({
+        topItems: [{ index: 0, offset: 0, size: 30, type: 'group' }],
+        items: [
+          { index: 1, offset: 30, size: 30, type: 'group' },
+          { groupIndex: 1, index: 0, offset: 60, size: 100 },
+        ],
+      })
+    })
+
+    it.each([
+      [[0], [5]],
+      [[0, 0, 0, 0, 0, 0, 0, 0], [4]],
+      [
+        [0, 0, 0, 0, 0, 0],
+        [0, 3],
+      ],
+      [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 20],
+      ],
+    ])('does not report endReached before the items are measured when %j receives items as %j', (from, to) => {
+      const { endReached, groupCounts, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+      publish(groupCounts, from)
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
+
+      const sub = vi.fn()
+      subscribe(endReached, sub)
+      publish(groupCounts, to)
+
+      expect(sub).not.toHaveBeenCalled()
+    })
+
+    it('keeps the measured item size when items return after every group was empty', () => {
+      const { groupCounts, listState, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+      publish(groupCounts, [3])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+      publish(sizeRanges, [
+        { startIndex: 0, endIndex: 0, size: 30 },
+        { startIndex: 1, endIndex: 1, size: 100 },
+      ])
+
+      publish(groupCounts, [0])
+      publish(groupCounts, [3])
+
+      expect(getValue(listState)).toMatchObject({
+        topItems: [{ index: 0, offset: 0, size: 30, type: 'group' }],
+        items: [
+          { groupIndex: 0, index: 0, offset: 30, size: 100 },
+          { groupIndex: 0, index: 1, offset: 130, size: 100 },
+        ],
+      })
+    })
+
+    it('keeps the header size when more empty groups arrive', () => {
+      const { groupCounts, listState, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+      publish(groupCounts, [0, 0])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
+
+      publish(groupCounts, [0, 0, 0])
+
+      expect(getValue(listState)).toMatchObject({
+        topItems: [{ index: 0, offset: 0, size: 30, type: 'group' }],
+        items: [
+          { index: 1, offset: 30, size: 30, type: 'group' },
+          { index: 2, offset: 60, size: 30, type: 'group' },
+        ],
+      })
+    })
+
+    it('probes again after empty groups receive items when initialItemCount is set', () => {
+      const { groupCounts, initialItemCount, listState, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+      publish(initialItemCount, 1)
+      publish(groupCounts, [0])
+      publish(propsReady, true)
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(sizeRanges, [{ startIndex: 0, endIndex: 0, size: 30 }])
+
+      publish(groupCounts, [5])
+
+      expect(getValue(listState)).toMatchObject({
+        items: [
+          { index: 0, offset: 0, size: 0, type: 'group' },
+          { groupIndex: 0, index: 0, offset: 0, size: 0 },
+        ],
+      })
+    })
+
+    it('keeps fixed item sizes when empty groups receive items', () => {
+      const { fixedItemHeight, groupCounts, listState, propsReady, scrollTop, viewportHeight } = init(listSystem)
+      publish(fixedItemHeight, 100)
+      publish(groupCounts, [0])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      publish(groupCounts, [5])
+
+      expect(getValue(listState)).toMatchObject({
+        items: [{ groupIndex: 0, index: 0, offset: 100, size: 100 }],
+      })
+    })
+
+    it('probes the first non-empty group after leading empty groups', () => {
+      const { groupCounts, listState, propsReady, scrollTop, viewportHeight } = init(listSystem)
+      publish(groupCounts, [0, 3])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      expect(getValue(listState)).toMatchObject({
+        items: [
+          { index: 1, offset: 0, size: 0, type: 'group' },
+          { groupIndex: 1, index: 0, offset: 0, size: 0 },
+        ],
+      })
+    })
+
+    it('probes the last item when the initial topmost item is LAST', () => {
+      const { groupCounts, initialTopMostItemIndex, listState, propsReady, scrollTop, viewportHeight } = init(listSystem)
+      publish(groupCounts, [3, 3])
+      publish(initialTopMostItemIndex, { index: 'LAST' })
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      expect(getValue(listState)).toMatchObject({
+        items: [
+          { index: 1, offset: 0, size: 0, type: 'group' },
+          { groupIndex: 1, index: 5, offset: 0, size: 0 },
+        ],
+      })
+    })
+
     it('renders groups and items', () => {
       const { groupCounts, listState, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
       publish(groupCounts, [3, 3, 3, 10])
@@ -675,6 +1022,122 @@ describe('list engine', () => {
         [6, 30],
         [7, 20],
       ])
+    })
+  })
+
+  describe('endReached', () => {
+    it('reports the last item index for a flat list', () => {
+      const { defaultItemHeight, endReached, propsReady, scrollTop, totalCount, viewportHeight } = init(listSystem)
+
+      publish(scrollTop, 0)
+      publish(totalCount, 10)
+      publish(defaultItemHeight, 50)
+      publish(propsReady, true)
+      publish(viewportHeight, 200)
+
+      const sub = vi.fn()
+      subscribe(endReached, sub)
+
+      publish(scrollTop, 350)
+
+      expect(sub).toHaveBeenCalledWith(9)
+    })
+
+    it('reports the last item index for a grouped list, excluding group headers', () => {
+      const { endReached, groupCounts, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+
+      publish(groupCounts, [2, 1])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      const sub = vi.fn()
+      subscribe(endReached, sub)
+
+      publish(sizeRanges, [
+        { endIndex: 0, size: 30, startIndex: 0 },
+        { endIndex: 4, size: 20, startIndex: 1 },
+      ])
+
+      // the last rendered row is the data item at index 2 (internal index 4),
+      // group headers must not be counted in the reported index
+      expect(sub).toHaveBeenCalledWith(2)
+    })
+
+    it('reports the last item index when the last group is empty', () => {
+      const { endReached, groupCounts, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+
+      publish(groupCounts, [2, 0])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      const sub = vi.fn()
+      subscribe(endReached, sub)
+
+      publish(sizeRanges, [
+        { endIndex: 0, size: 30, startIndex: 0 },
+        { endIndex: 3, size: 20, startIndex: 1 },
+      ])
+
+      // the last rendered row is the empty group's header (internal index 3),
+      // the last real item is at index 1
+      expect(sub).toHaveBeenCalledWith(1)
+    })
+
+    it('does not fire when every group is empty', () => {
+      const { endReached, groupCounts, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+
+      publish(groupCounts, [0, 0])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      const sub = vi.fn()
+      subscribe(endReached, sub)
+
+      publish(sizeRanges, [{ endIndex: 1, size: 30, startIndex: 0 }])
+
+      expect(sub).not.toHaveBeenCalled()
+    })
+
+    it('fires again when an item returns after every group was empty', () => {
+      const { endReached, groupCounts, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+
+      publish(groupCounts, [1, 0])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      const sub = vi.fn()
+      subscribe(endReached, sub)
+
+      publish(sizeRanges, [{ endIndex: 2, size: 30, startIndex: 0 }])
+      publish(groupCounts, [0, 0])
+      publish(groupCounts, [1, 0])
+
+      expect(sub.mock.calls).toEqual([[0], [0]])
+    })
+
+    it('reports the last item index after the group counts change', () => {
+      const { endReached, groupCounts, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+
+      publish(groupCounts, [2, 1])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      const sub = vi.fn()
+      subscribe(endReached, sub)
+
+      publish(sizeRanges, [
+        { endIndex: 0, size: 30, startIndex: 0 },
+        { endIndex: 4, size: 20, startIndex: 1 },
+      ])
+
+      publish(groupCounts, [2, 1, 2])
+
+      expect(sub).toHaveBeenLastCalledWith(4)
     })
   })
 

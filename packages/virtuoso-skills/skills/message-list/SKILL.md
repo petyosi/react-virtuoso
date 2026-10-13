@@ -5,8 +5,8 @@ description: >-
   messaging interface, (2) streaming AI assistant responses into a conversation, (3) loading older messages when scrolling up,
   (4) adding scroll-to-bottom buttons or unseen-message indicators, (5) switching between channels/conversations, or (6) any task
   involving VirtuosoMessageList, VirtuosoMessageListLicense, useVirtuosoMethods, useVirtuosoLocation, scrollModifier,
-  notifyItemsChanged, scrollToBottomIfAtBottom, scrollToBottomAlways, or data.append/prepend/map. The package is commercial
-  and requires a license key.
+  notifyItemsChanged, scrollToBottomIfAtBottom, scrollToBottomAlways, smooth-scroll retargeting, replacement anchors, or
+  data.append/prepend/map/replace. The package is commercial and requires a license key.
 ---
 
 # @virtuoso.dev/message-list
@@ -102,6 +102,43 @@ setData((current) => ({
 
 `items-change` keeps the view pinned to the bottom while the message grows, without jumping if the user scrolled up. See [ai-chatbot](references/3.examples/02.ai-chatbot.md) and [gemini](references/3.examples/03.gemini.md) (question pinned to top, answer streams below).
 
+### Live tail with spliced records
+
+For `@virtuoso.dev/message-list` 1.18.0 and later, combine a replacement anchor with a retargetable smooth-scroll behavior when live updates can insert or reorder records above the tail:
+
+```tsx
+const liveTailScroll = () => ({
+  animationFrameCount: 15,
+  easing: (progress: number) => 1 - (1 - progress) * (1 - progress),
+  retarget: true,
+})
+
+<VirtuosoMessageList
+  ref={ref}
+  computeItemKey={({ data }) => data.id}
+  itemIdentity={(item) => item.id}
+  ItemContent={ItemContent}
+/>
+
+ref.current.data.batch(
+  () => {
+    ref.current.data.replace(nextData, { anchor: { index: 'LAST', position: 'preserve' } })
+  },
+  ({ atBottom, scrollInProgress }) =>
+    atBottom || scrollInProgress
+      ? {
+          index: 'LAST',
+          align: 'end',
+          behavior: liveTailScroll,
+        }
+      : false
+)
+```
+
+The anchor keeps the previous last record at its viewport position during replacement. Retargeting updates the active animation's destination instead of restarting it as the bottom moves. The old and new requests must both use a behavior with `retarget: true`. Return `false` when the user has scrolled away from the live tail.
+
+`itemIdentity` must return a stable identity when updates recreate record objects. Default object identity cannot match recreated wrappers, so the anchor becomes a no-op in that case.
+
 ### External row state changed size
 
 Use `notifyItemsChanged` when row content changes size without changing the data array:
@@ -167,7 +204,9 @@ Via `ref={useRef<VirtuosoMessageListMethods<Message>>(null)}` from outside, or `
 
 - `data.append(items, scrollToBottom?)`, `data.prepend(items)`
 - `data.map(fn, autoscrollBehavior?)` — update items (reactions, edits, streaming)
-- `data.findAndDelete(predicate)`, `data.deleteRange(start, length)`, `data.replace(data, options?)`
+- `data.mapWithAnchor(fn, anchorItemIndex)` — update item sizes while keeping one current item at its viewport position (since 1.15.0)
+- `data.findAndDelete(predicate)`, `data.deleteRange(start, length)`
+- `data.replace(data, { anchor?, initialLocation?, purgeItemSizes?, suppressItemMeasure? })` — replace records, optionally preserving an existing item (replacement anchors require 1.18.0)
 - `data.find(predicate)`, `data.findIndex(predicate)`, `data.get()`, `data.getCurrentlyRendered()`
 - `notifyItemsChanged({ scrollToBottom })` — use after context or side-state changes that can resize rendered rows without changing the data array
 - `scrollToItem({ index: number | 'LAST', align, behavior })`
@@ -179,17 +218,17 @@ The declarative `data` prop and the imperative `data.*` methods are alternative 
 - `ItemContent: ({ data, index, context }) => JSX` — message renderer
 - `context` — shared state (current user, loading flags) available to `ItemContent` and all custom slots; avoids prop drilling
 - `computeItemKey({ data })` — stable message key; required for prepending/streaming to work without remounts
-- `itemIdentity(item)` — stable item identity for controlled prepend/remove-from-start matching when reducers recreate item objects
+- `itemIdentity(item)` — stable item identity for controlled prepend/remove-from-start and anchored replacement matching when updates recreate item objects
 - Slots: `Header`, `Footer` (scroll with content), `StickyHeader`, `StickyFooter` (fixed, measured to avoid overlap), `EmptyPlaceholder`
 - `initialLocation: { index: 'LAST', align: 'end' }` — start at the bottom
-- Hooks (inside the list): `useVirtuosoMethods()`, `useVirtuosoLocation()` (`atBottom`, `bottomOffset`, `listOffset`, `scrollInProgress`), `useCurrentlyRenderedData()`
+- Hooks (inside the list): `useVirtuosoMethods()`, `useVirtuosoLocation()` (`isAtBottom`, `bottomOffset`, `listOffset`, `lastVisibleItemIndex`, `lastItemBottomOffset`), `useCurrentlyRenderedData()`; the last-visible fields require 1.16.0
 
 ## Pitfalls
 
 - **No height → nothing renders.** The component needs a real height (`style={{ height: '100%' }}` with a sized parent).
 - **Missing license wrapper → runtime error.** Wrap with `VirtuosoMessageListLicense`; an empty key is only for non-production evaluation.
 - **Missing `computeItemKey`** causes remounts and scroll jumps on prepend and streaming updates.
-- **Missing `itemIdentity` in controlled mode** can break prepend/remove-from-start matching when reducers recreate item objects.
+- **Missing `itemIdentity`** can break controlled prepend/remove-from-start matching and anchored replacement when updates recreate item objects.
 - **Margins on measured message rows** break height measurement because ResizeObserver excludes margins. Use padding or inner wrappers.
 - **Implicit scroll policy** causes chat regressions. Decide per source: local send usually forces bottom, remote receive preserves scrolled-up users, streaming uses `items-change`, and context-only row growth uses `notifyItemsChanged`.
 - **"ResizeObserver loop" errors are benign** — filter them in dev overlays and error tracking; see [resize-observer-errors](references/19.resize-observer-errors.md).

@@ -2,18 +2,42 @@ import React from 'react'
 
 import { EngineProvider } from '@virtuoso.dev/reactive-engine-react'
 
+import { CardPresentation } from '../cards/CardPresentation'
+import { EMPTY_CARD_MEASUREMENT } from '../cards/geometry'
+import { cardMeasurement$, cardViewportRange$, cardRenderedData$ } from '../cards/state'
 import { ColumnDeclarationOrderProvider, columnDeclarationOrder$, columns$ } from '../columns/Column'
 import { columnItemsState$, columnOverscanCount$ } from '../columns/column-state'
-import { VirtualizedTableContent } from '../layout/VirtualizedTableContent'
 import { bridgeModelToEngine, dataModel$, dataModelViewId$ } from '../model/model-bridge'
 import { dataTableStructureEntries$ } from '../resize/resize-observing'
-import { itemHeight$ } from '../resize/sizes'
+import { sizeState$, itemHeight$ } from '../resize/sizes'
 import { currentlyRenderedRows$, rowsState$, viewportRange$ } from '../rows/row-state'
 import { atBottomState$ } from '../scroll/at-bottom'
-import { customScrollParent$, increaseViewportBy$, onScroll$, scrollerElement$, scrollToPending$, useWindowScroll$ } from '../scroll/dom'
+import {
+  cancelSmoothScroll$,
+  scrollTop$,
+  scrollLeft$,
+  stickyHeaderHeight$,
+  scrollableHeaderHeight$,
+  stickyFooterHeight$,
+  scrollableFooterHeight$,
+  scrollOffset$,
+  deviation$,
+  transformDeviation$,
+  tableBodyMarginTop$,
+  tableBodyCssTransition$,
+  scrollTo$,
+  scrollToInProgress$,
+  customScrollParent$,
+  increaseViewportBy$,
+  onScroll$,
+  scrollerElement$,
+  scrollToPending$,
+  useWindowScroll$,
+} from '../scroll/dom'
 import { deviationDelta$ } from '../scroll/reverse-scroll-fix'
 import { initialLocation$ } from '../scroll/scroll-to-row'
-import { scrollDirection$ } from '../scroll/state'
+import { pendingScrollToInitialLocation$, isScrollingToBottom$, scrollDirection$ } from '../scroll/state'
+import { EMPTY_SIZE_STATE } from '../sizing/SizeState'
 import {
   DefaultFooterWrapper,
   DefaultHeaderWrapper,
@@ -38,9 +62,10 @@ import {
   stickyHeaderWrapper$,
 } from './components'
 import { computeRowKey$, defaultComputeRowKey } from './content'
-import { context$, data$, groupLevelMap$, groupStickyConfig$, initialData$ } from './data'
+import { context$, data$, dataOperation$, groupLevelMap$, groupStickyConfig$, initialData$ } from './data'
 import { loadingState$ } from './loading'
 import { dispatchModelAction$, modelActionState$ } from './model-actions'
+import { presentation$ } from './presentation'
 
 import type { VirtuosoDataTableProps } from '../interfaces'
 
@@ -63,6 +88,9 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
   const hasCustomScrollParentProp = Object.hasOwn(props, 'customScrollParent')
   const {
     model,
+    mode = 'table',
+    cardListClassName,
+    cardItemClassName,
     computeRowKey = defaultComputeRowKey,
     context = null,
     engineId,
@@ -103,6 +131,7 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
       {...engineProviderProps}
       // oxlint-disable-next-line jsx-no-new-function-as-prop
       initFn={(e) => {
+        e.pub(presentation$, mode)
         e.register(columns$)
         e.register(rowsState$)
         e.register(columnDeclarationOrder$)
@@ -118,6 +147,7 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
         e.register(groupLevelMap$)
         e.register(viewportRange$)
         e.register(data$)
+        e.register(dataOperation$)
         e.register(loadingState$)
         e.register(initialData$)
         e.register(dataModel$)
@@ -160,6 +190,34 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
       }}
       // oxlint-disable-next-line jsx-no-new-function-as-prop
       updateFn={(e) => {
+        if (e.getValue(presentation$) !== mode) {
+          e.pub(cancelSmoothScroll$)
+          e.pubIn({
+            [presentation$]: mode,
+            [cardMeasurement$]: EMPTY_CARD_MEASUREMENT,
+            [cardViewportRange$]: null,
+            [cardRenderedData$]: [],
+            [sizeState$]: EMPTY_SIZE_STATE,
+            // External scrollers can clamp while the destination renders its probe.
+            // Reapply the reset once that layout has measured and has scroll space.
+            [initialLocation$]: 0,
+            [pendingScrollToInitialLocation$]: 0,
+            [scrollTop$]: 0,
+            [scrollLeft$]: 0,
+            [stickyHeaderHeight$]: 0,
+            [scrollableHeaderHeight$]: 0,
+            [stickyFooterHeight$]: 0,
+            [scrollableFooterHeight$]: 0,
+            [scrollOffset$]: 0,
+            [deviation$]: 0,
+            [transformDeviation$]: 0,
+            [tableBodyMarginTop$]: 0,
+            [tableBodyCssTransition$]: '',
+            [scrollToInProgress$]: false,
+            [isScrollingToBottom$]: false,
+          })
+          e.pub(scrollTo$, { top: 0, left: 0, behavior: 'instant' })
+        }
         e.pubIn({
           [context$]: context,
           [customScrollParent$]: customScrollParent,
@@ -179,6 +237,7 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
       }}
       // oxlint-disable-next-line jsx-no-new-array-as-prop
       updateDeps={[
+        mode,
         context,
         customScrollParent,
         increaseViewportBy,
@@ -191,7 +250,13 @@ function VirtuosoDataTableComponent(props: VirtuosoDataTableProps<unknown, unkno
       ]}
     >
       <ColumnDeclarationOrderProvider>{children}</ColumnDeclarationOrderProvider>
-      <VirtualizedTableContent {...scrollerProps} />
+      <CardPresentation
+        scrollerProps={scrollerProps}
+        Card={components?.Card}
+        CardHeader={components?.CardHeader}
+        listClassName={cardListClassName}
+        itemClassName={cardItemClassName}
+      />
     </EngineProvider>
   )
 }

@@ -1,6 +1,8 @@
 import { e, DerivedCell, Cell } from '@virtuoso.dev/reactive-engine-core'
 
+import { cardViewportRange$, cardRenderedData$ } from '../cards/state'
 import { data$, groupIndexSet$, groupStickyConfig$, totalCount$ } from '../core/data'
+import { presentation$ } from '../core/presentation'
 import { recalcInProgress$, sizeState$, totalHeight$ } from '../resize/sizes'
 import {
   deviation$,
@@ -155,7 +157,7 @@ e.link(
       const mobileSafariIsReadjusting = args.at(-4) as boolean
       const recalcInProgress = args.at(-5) as boolean
       const muteRowsChange = args.at(-6) as boolean
-      return !recalcInProgress && !mobileSafariIsReadjusting && !muteRowsChange
+      return e.getValue(presentation$) === 'table' && !recalcInProgress && !mobileSafariIsReadjusting && !muteRowsChange
     }),
     e.withLatestFrom(viewportHeight$, headerHeight$, scrollTop$, scrollToPending$, scrollDirection$, lastJumpDueToRowResize$),
     e.scan(
@@ -261,6 +263,7 @@ e.link(
           current.offsetTree === sizeState.offsetTree &&
           current.totalCount === totalCount &&
           current.data === data &&
+          current.stable === (pendingScrollToInitialLocation === null && !tableBelowExternalViewport) &&
           current.stickySignature === stickySignature &&
           renderViewportTop >= current.listStart &&
           renderViewportBottom <= current.listEnd
@@ -381,9 +384,12 @@ export interface ViewportRange {
 export const viewportRange$ = DerivedCell(
   null as ViewportRange | null,
   e.pipe(
-    rowsState$,
-    e.filter((state) => state.stable),
-    e.map((state) => {
+    e.combine(rowsState$, presentation$, cardViewportRange$),
+    e.filter(([state, presentation]) => presentation === 'card' || state.stable),
+    e.map(([state, presentation, cardRange]) => {
+      if (presentation === 'card') {
+        return cardRange
+      }
       const { rows } = state
       if (rows.length === 0) {
         return null
@@ -410,8 +416,11 @@ export const viewportRange$ = DerivedCell(
 export const currentlyRenderedRows$ = DerivedCell(
   [] as unknown[],
   e.pipe(
-    e.combine(rowsState$, scrollTop$, groupIndexSet$),
-    e.map(([rowsState, scrollTop, groupIndexSet]) => {
+    e.combine(rowsState$, scrollTop$, groupIndexSet$, presentation$, cardRenderedData$),
+    e.map(([rowsState, scrollTop, groupIndexSet, presentation, cardData]) => {
+      if (presentation === 'card') {
+        return cardData
+      }
       const allRows = rowsState.rows
       const startIdx = allRows.findIndex((r) => r.offset + r.size >= scrollTop)
       const rows = startIdx === -1 ? [] : allRows.slice(startIdx)

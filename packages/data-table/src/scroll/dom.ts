@@ -1,10 +1,12 @@
 import { DerivedCell, Trigger, Cell, Stream, e } from '@virtuoso.dev/reactive-engine-core'
 
+import { cardTotalHeight$ } from '../cards/state'
+import { presentation$ } from '../core/presentation'
 import { recalcInProgress$, totalHeight$ } from '../resize/sizes'
 import { easeOutExpo } from '../utils'
 import { pendingScrollToInitialLocation$, mobileSafariIsReadjusting$, atBottomThreshold$, isScrollingToBottom$ } from './state'
 
-import type { ListScrollLocation } from '../interfaces'
+import type { ListScrollLocation, ScrollBehavior } from '../interfaces'
 
 export const scrollToPending$ = Stream<boolean>()
 export const scrollToInProgress$ = Cell<boolean>(false)
@@ -155,16 +157,24 @@ export const tableBodyForceBottomSpace$ = Cell(0)
     minScrollTop$
   )*/
 
-const minScrollTop$ = Cell(0)
+export const minScrollTop$ = Cell(0)
+const activeTotalHeight$ = DerivedCell(
+  0,
+  e.pipe(
+    e.combine(presentation$, totalHeight$, cardTotalHeight$),
+    e.map(([mode, tableHeight, cardHeight]) => (mode === 'card' ? cardHeight : tableHeight))
+  )
+)
 
 e.link(
   e.pipe(
-    e.combine(minScrollTop$, totalHeight$, viewportHeight$, headerHeight$, stickyHeaderHeight$),
-    e.map(([minScrollTop, totalHeight, viewportHeight, headerHeight, stickyHeaderHeight]) => {
+    e.combine(minScrollTop$, activeTotalHeight$, viewportHeight$, headerHeight$, stickyHeaderHeight$, presentation$),
+    e.map(([minScrollTop, totalHeight, viewportHeight, headerHeight, stickyHeaderHeight, presentation]) => {
       if (minScrollTop === 0) {
         return 0
       }
-      return Math.max(0, Math.min(minScrollTop - (totalHeight + headerHeight + stickyHeaderHeight - viewportHeight), viewportHeight))
+      const extraHeader = presentation === 'card' ? 0 : stickyHeaderHeight
+      return Math.max(0, Math.min(minScrollTop - (totalHeight + headerHeight + extraHeader - viewportHeight), viewportHeight))
     })
   ),
   tableBodyForceBottomSpace$
@@ -174,7 +184,7 @@ export interface ScrollToParams {
   left?: number
   top?: number
   behavior?: ScrollBehavior
-  align?: 'start' | 'end' | 'center'
+  align?: 'start' | 'start-no-overflow' | 'end' | 'center'
 }
 
 export const scrollTo$ = Stream<ScrollToParams>()

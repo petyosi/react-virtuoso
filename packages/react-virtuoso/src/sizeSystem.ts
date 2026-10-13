@@ -307,9 +307,27 @@ export const sizeSystem = u.system(
     const data = u.statefulStream<Data>(undefined)
     const gap = u.statefulStream(0)
     const initial = initialSizeState()
+    const resetSizes = u.stream<null>()
 
     const sizes = u.statefulStreamFromEmitter(
-      u.pipe(sizeRanges, u.withLatestFrom(groupIndices, log, gap), u.scan(sizeStateReducer, initial), u.distinctUntilChanged()),
+      u.pipe(
+        u.merge<SizeRange[] | null>(sizeRanges, resetSizes),
+        u.withLatestFrom(groupIndices, log, gap),
+        u.scan((state, [ranges, ...rest]) => {
+          // a reset keeps the groups, so that the list probes a group header and an item.
+          // The scan state can hold outdated groups, so take the current ones.
+          if (ranges === null) {
+            const [currentGroupIndices] = rest
+            return {
+              ...initialSizeState(),
+              groupIndices: currentGroupIndices,
+              groupOffsetTree: currentGroupIndices.reduce((tree, index, idx) => insert(tree, index, idx), newTree<number>()),
+            }
+          }
+          return sizeStateReducer(state, [ranges, ...rest])
+        }, initial),
+        u.distinctUntilChanged()
+      ),
       initial
     )
 
@@ -711,6 +729,7 @@ export const sizeSystem = u.system(
       heightEstimates,
       itemSize,
       listRefresh,
+      resetSizes,
       shiftWith,
       shiftWithOffset,
       sizeRanges,

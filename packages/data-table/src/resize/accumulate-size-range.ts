@@ -7,8 +7,9 @@ export function accumulateSizeRange(results: SizeRange[], element: HTMLElement, 
 
   const index = Number.parseInt(element.dataset.index, 10)
   const knownSize = Number.parseFloat(element.dataset.knownSize ?? '')
+  const isGroupRow = element.dataset.groupRow !== undefined
 
-  if (size === knownSize) {
+  if (size === knownSize && !isGroupRow) {
     return
   }
 

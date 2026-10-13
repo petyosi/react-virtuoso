@@ -1,6 +1,7 @@
 import { e } from '@virtuoso.dev/reactive-engine-core'
 
 import { columnEntries$ } from '../columns/Column'
+import { presentation$ } from '../core/presentation'
 import {
   customScrollParent$,
   customScrollParentWrapper$,
@@ -59,6 +60,9 @@ e.singletonSub(dataTableStructureEntries$, (entries) => {
   for (let i = 0; i < length; i++) {
     const entry = entries[i]!
     const element = entry.target as HTMLDivElement
+    if (!element.isConnected) {
+      continue
+    }
     const elementRole = element.dataset.tableElementRole
 
     if (elementRole === HEADER_ROLE) {
@@ -136,7 +140,7 @@ e.singletonSub(dataTableStructureEntries$, (entries) => {
       columnEntries.push(entry)
     }
 
-    if (elementRole === ROW_ROLE) {
+    if (elementRole === ROW_ROLE && e.getValue(presentation$) === 'table') {
       accumulateSizeRange(results, element, readBorderBoxBlockSize(entry, element))
     }
   }

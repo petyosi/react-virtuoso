@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { e, Engine, Stream } from '../index'
+import { e, Engine, Stream, Trigger } from '../index'
 import { createSpyWithHistory } from '../testUtils'
 
 describe('throttleTime operator', () => {
@@ -217,5 +217,57 @@ describe('throttleTime operator', () => {
 
     vi.advanceTimersByTime(100)
     expect(history).toEqual([2, 4]) // Latest value from second batch
+  })
+
+  // Distinctness
+  it('suppresses repeated equal values by default', () => {
+    const source = Trigger()
+    const settled = e.pipe(source, e.throttleTime(50))
+    const spy = vi.fn()
+
+    e.sub(settled, spy)
+
+    eng.pub(source)
+    vi.advanceTimersByTime(50)
+    eng.pub(source)
+    vi.advanceTimersByTime(50)
+
+    expect(spy).toHaveBeenCalledTimes(1)
+  })
+
+  it('re-emits equal values when distinct is false', () => {
+    const source = Trigger()
+    const settled = e.pipe(source, e.throttleTime(50, false))
+    const spy = vi.fn()
+
+    e.sub(settled, spy)
+
+    for (let round = 0; round < 3; round++) {
+      eng.pub(source)
+      eng.pub(source)
+      vi.advanceTimersByTime(50)
+    }
+
+    expect(spy).toHaveBeenCalledTimes(3)
+  })
+
+  it('accepts a comparator as distinct', () => {
+    const source = Stream<{ id: number }>()
+    const settled = e.pipe(
+      source,
+      e.throttleTime(50, (a, b) => a?.id === b?.id)
+    )
+    const { history, spy } = createSpyWithHistory<{ id: number }>()
+
+    e.sub(settled, spy)
+
+    eng.pub(source, { id: 1 })
+    vi.advanceTimersByTime(50)
+    eng.pub(source, { id: 1 })
+    vi.advanceTimersByTime(50)
+    eng.pub(source, { id: 2 })
+    vi.advanceTimersByTime(50)
+
+    expect(history).toEqual([{ id: 1 }, { id: 2 }])
   })
 })

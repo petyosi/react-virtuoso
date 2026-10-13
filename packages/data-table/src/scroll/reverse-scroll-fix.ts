@@ -1,5 +1,6 @@
 import { e } from '@virtuoso.dev/reactive-engine-core'
 
+import { presentation$ } from '../core/presentation'
 import { rowsState$ } from '../rows/row-state'
 import { scrollBy$ } from './dom'
 import { deviationDelta$ } from './state'
@@ -15,4 +16,10 @@ e.link(
   deviationDelta$
 )
 
-e.link(deviationDelta$, scrollBy$)
+e.link(
+  e.pipe(
+    deviationDelta$,
+    e.filter(() => e.getValue(presentation$) === 'table')
+  ),
+  scrollBy$
+)

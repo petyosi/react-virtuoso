@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { Cell, DerivedCell, e, Engine, Pipe, Stream, Trigger } from './index'
+import { Cell, ComputedCell, DerivedCell, e, Engine, Pipe, Stream, Trigger } from './index'
 import { map } from './operators'
 
 describe('cells/streams', () => {
@@ -1076,5 +1076,98 @@ describe('child engine', () => {
         void 0
       })
     }
+  })
+})
+
+describe('nested publication', () => {
+  it('recomputes outer-cycle projections from the value a nested cycle published', () => {
+    const a$ = Cell(0)
+    const b$ = Cell('old')
+    const trigger$ = Stream<number>()
+    e.sub(trigger$, () => {
+      e.pub(b$, 'new')
+    })
+    e.link(trigger$, a$)
+    const computed$ = ComputedCell([a$, b$], ([a, b]) => `${a}:${b}`)
+    const latest$ = e.pipe(
+      a$,
+      e.withLatestFrom(b$),
+      map(([a, b]) => `${a}:${b}`)
+    )
+
+    const engine = new Engine()
+    const combined$ = engine.combineCells([a$, b$])
+    const latestSpy = vi.fn()
+    engine.sub(latest$, latestSpy)
+    engine.pub(trigger$, 1)
+
+    expect(engine.getValue(b$)).toEqual('new')
+    expect(engine.getValue(combined$)).toEqual([1, 'new'])
+    expect(engine.getValue(computed$)).toEqual('1:new')
+    expect(latestSpy).toHaveBeenCalledExactlyOnceWith('1:new', engine)
+  })
+
+  it('recomputes a projection whose other source is a root of the same publication', () => {
+    const a$ = Cell(0)
+    const b$ = Cell('old')
+    const trigger$ = Stream<number>()
+    e.sub(trigger$, () => {
+      e.pub(b$, 'new')
+    })
+
+    const engine = new Engine()
+    const combined$ = engine.combineCells([a$, b$])
+    engine.pubIn({ [trigger$]: 1, [a$]: 1 })
+
+    expect(engine.getValue(combined$)).toEqual([1, 'new'])
+  })
+
+  it('keeps the outer-cycle value when the outer cycle writes the cell after the nested cycle', () => {
+    const a$ = Cell(0)
+    const b$ = Cell('old')
+    const trigger$ = Stream<number>()
+    e.sub(trigger$, () => {
+      e.pub(b$, 'nested')
+    })
+    e.link(
+      e.pipe(
+        trigger$,
+        map(() => 'outer')
+      ),
+      b$
+    )
+
+    const engine = new Engine()
+    const combined$ = engine.combineCells([a$, b$])
+    engine.pub(trigger$, 1)
+
+    expect(engine.getValue(b$)).toEqual('outer')
+    expect(engine.getValue(combined$)).toEqual([0, 'outer'])
+  })
+
+  it('forwards the nested value to child engines when the outer cycle emitted the cell first', () => {
+    const b$ = Cell('old')
+    const trigger$ = Stream<number>()
+    e.sub(trigger$, () => {
+      e.pub(b$, 'new')
+    })
+    const parent = new Engine()
+    parent.register(b$)
+    parent.register(trigger$)
+
+    const childValue$ = Cell('none')
+    const child = new Engine({}, undefined, parent)
+    child.connect({
+      map: (done) => (value: string) => {
+        done(value)
+      },
+      sink: childValue$,
+      sources: [b$],
+    })
+
+    parent.pubIn({ [b$]: 'outer', [trigger$]: 1 })
+
+    expect(parent.getValue(b$)).toEqual('new')
+    expect(child.getValue(childValue$)).toEqual('new')
   })
 })

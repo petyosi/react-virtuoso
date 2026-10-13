@@ -2,7 +2,7 @@ import { Engine } from '@virtuoso.dev/reactive-engine-core'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { itemHeight$, ranges$, sizeState$, totalHeight$ } from '../../../resize/sizes'
-import { data$, totalCount$ } from '../../data'
+import { data$, dataOperation$, totalCount$ } from '../../data'
 
 const HUNDRED_ITEMS = Array.from({ length: 100 }, (_, i) => i)
 describe('data logic', () => {
@@ -13,6 +13,7 @@ describe('data logic', () => {
     e.register(totalHeight$)
     e.register(itemHeight$)
     e.register(data$)
+    e.register(dataOperation$)
     e.register(totalCount$)
   })
 
@@ -38,7 +39,7 @@ describe('data logic', () => {
     expect(e.getValue(totalCount$)).toBe(103)
   })
 
-  it('data change resets per-index sizes but preserves default row size', () => {
+  it('replace: data change resets per-index sizes but preserves default row size', () => {
     e.pub(data$, HUNDRED_ITEMS)
     e.pub(ranges$, [{ size: 30, startIndex: 0, endIndex: 0 }])
 
@@ -46,7 +47,7 @@ describe('data logic', () => {
     expect(heightBefore).toBe(30 * 100)
 
     const sizeStateBefore = e.getValue(sizeState$)
-    expect(sizeStateBefore.offsetTree.length).toBeGreaterThan(0)
+    expect(sizeStateBefore.offsetTree).toMatchObject([{ size: 30, index: 0, offset: 0 }])
 
     e.pub(
       data$,
@@ -58,6 +59,38 @@ describe('data logic', () => {
 
     const heightAfter = e.getValue(totalHeight$)
     expect(heightAfter).toBe(30 * 102)
+  })
+
+  it('update: same-length data swap preserves the size/offset tree', () => {
+    e.pub(data$, HUNDRED_ITEMS)
+    e.pub(ranges$, [{ size: 30, startIndex: 0, endIndex: 0 }])
+
+    const sizeStateBefore = e.getValue(sizeState$)
+    expect(sizeStateBefore.offsetTree).toMatchObject([{ size: 30, index: 0, offset: 0 }])
+    expect(e.getValue(totalHeight$)).toBe(30 * 100)
+
+    e.pubIn({
+      [data$]: Array.from({ length: 100 }, (_, i) => i + 1000),
+      [dataOperation$]: 'update',
+    })
+
+    const sizeStateAfter = e.getValue(sizeState$)
+    expect(sizeStateAfter.offsetTree).toStrictEqual(sizeStateBefore.offsetTree)
+    expect(e.getValue(totalHeight$)).toBe(30 * 100)
+  })
+
+  it('replace: same-length data swap still resets the size/offset tree', () => {
+    e.pub(data$, HUNDRED_ITEMS)
+    e.pub(ranges$, [{ size: 30, startIndex: 0, endIndex: 0 }])
+
+    expect(e.getValue(sizeState$).offsetTree).toMatchObject([{ size: 30, index: 0, offset: 0 }])
+
+    e.pubIn({
+      [data$]: Array.from({ length: 100 }, (_, i) => i + 1000),
+      [dataOperation$]: 'replace',
+    })
+
+    expect(e.getValue(sizeState$).offsetTree).toHaveLength(0)
   })
 
   it('resolves the known item height from the current size state', () => {

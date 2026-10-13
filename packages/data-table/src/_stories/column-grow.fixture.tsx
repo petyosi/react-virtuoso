@@ -8,7 +8,7 @@ import { Cell, Column, ColumnHeader, HeaderEdge, HeaderEnd, HeaderOverlay } from
 import { resizeColumn$, clearColumnWidthOverride$ } from '../features/column-resize'
 import { LocalDataTable as VirtuosoDataTable } from '../tests/LocalDataTable'
 
-import type { HeaderSlotCustomComponent } from '..'
+import type { ColumnHeaderContainerProps, HeaderSlotCustomComponent } from '..'
 
 interface PromptRow {
   id: string
@@ -327,6 +327,7 @@ function SortIconBoundarySlots({ enabled }: { enabled: boolean }) {
 
 export function PromptListGrowTable({
   height = TABLE_STYLE.height,
+  headerContainerProps,
   resizeDescriptionTo,
   resizable = false,
   resizeNameTo,
@@ -334,19 +335,25 @@ export function PromptListGrowTable({
   width = '100%',
 }: {
   height?: CSSProperties['height']
+  headerContainerProps?: (columnKey: keyof typeof PROMPT_COLUMN_BASE_WIDTHS) => ColumnHeaderContainerProps | undefined
   resizeDescriptionTo?: number
   resizable?: boolean
   resizeNameTo?: number
   showSortIconBoundaries?: boolean
   width?: CSSProperties['width']
 }) {
+  const headerSurface = (columnKey: keyof typeof PROMPT_COLUMN_BASE_WIDTHS) => {
+    const containerProps = headerContainerProps?.(columnKey)
+    return containerProps === undefined ? {} : { containerProps }
+  }
+
   return (
     <VirtuosoDataTable style={{ height, width }} source={PROMPTS}>
       <ResizeColumnOnMount columnKey="name" width={resizeNameTo} />
       <ResizeColumnOnMount columnKey="description" width={resizeDescriptionTo} />
 
       <Column id="name" field="name" grow={1}>
-        <ColumnHeader>
+        <ColumnHeader {...headerSurface('name')}>
           <ResizeEdge enabled={resizable} />
           <SortIconBoundarySlots enabled={showSortIconBoundaries} />
           {() => <HeaderLabel width={PROMPT_COLUMN_BASE_WIDTHS.name}>Name</HeaderLabel>}
@@ -365,7 +372,7 @@ export function PromptListGrowTable({
       </Column>
 
       <Column id="description" field="description" grow={3}>
-        <ColumnHeader>
+        <ColumnHeader {...headerSurface('description')}>
           <ResizeEdge enabled={resizable} />
           <SortIconBoundarySlots enabled={showSortIconBoundaries} />
           {() => <HeaderLabel width={PROMPT_COLUMN_BASE_WIDTHS.description}>Description</HeaderLabel>}
@@ -380,7 +387,7 @@ export function PromptListGrowTable({
       </Column>
 
       <Column id="versions" field="versions">
-        <ColumnHeader>
+        <ColumnHeader {...headerSurface('versions')}>
           <ResizeEdge enabled={resizable} />
           {() => <HeaderLabel width={PROMPT_COLUMN_BASE_WIDTHS.versions}>Versions</HeaderLabel>}
         </ColumnHeader>
@@ -396,7 +403,7 @@ export function PromptListGrowTable({
       </Column>
 
       <Column id="labels" field="labels">
-        <ColumnHeader>
+        <ColumnHeader {...headerSurface('labels')}>
           <ResizeEdge enabled={resizable} />
           {() => <HeaderLabel width={PROMPT_COLUMN_BASE_WIDTHS.labels}>Labels</HeaderLabel>}
         </ColumnHeader>
@@ -413,7 +420,7 @@ export function PromptListGrowTable({
       </Column>
 
       <Column id="updated" field="updated">
-        <ColumnHeader>
+        <ColumnHeader {...headerSurface('updated')}>
           <ResizeEdge enabled={resizable} />
           <SortIconBoundarySlots enabled={showSortIconBoundaries} />
           {() => <HeaderLabel width={PROMPT_COLUMN_BASE_WIDTHS.updated}>Updated</HeaderLabel>}
@@ -422,7 +429,7 @@ export function PromptListGrowTable({
       </Column>
 
       <Column id="actions">
-        <ColumnHeader>
+        <ColumnHeader {...headerSurface('actions')}>
           <ResizeEdge enabled={resizable} />
           {() => (
             <HeaderLabel justify="center" width={PROMPT_COLUMN_BASE_WIDTHS.actions}>

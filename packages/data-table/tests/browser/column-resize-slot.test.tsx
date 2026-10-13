@@ -90,6 +90,27 @@ function TestTable() {
   )
 }
 
+function ClickableHeaderTestTable({ onHeaderClick }: { onHeaderClick: (field: string) => void }) {
+  return (
+    <VirtuosoDataTable style={{ height: 320, width: 520 }} source={ITEMS}>
+      {(['name', 'status', 'region'] as const).map((field) => (
+        <Column key={field} field={field}>
+          <ColumnHeader
+            className="flex h-10 items-center px-3 text-sm font-medium whitespace-nowrap"
+            containerProps={{ onClick: () => onHeaderClick(field), onDoubleClick: () => onHeaderClick(field) }}
+          >
+            <HeaderEdge component={ResizeHandle} />
+            {({ column }) => (
+              <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT, display: 'flex', alignItems: 'center' }}>{column.field}</div>
+            )}
+          </ColumnHeader>
+          <Cell>{({ cellValue }) => <div style={{ width: COLUMN_WIDTH, height: ROW_HEIGHT }}>{String(cellValue)}</div>}</Cell>
+        </Column>
+      ))}
+    </VirtuosoDataTable>
+  )
+}
+
 function PersistentTestTable({ storage }: { storage: DataTableStatePersistenceStorage }) {
   return (
     <VirtuosoDataTable style={{ height: 320, width: 520 }} source={ITEMS}>
@@ -900,4 +921,32 @@ test('double clicking the resize handle clears the width override', async () => 
   await userEvent.dblClick(handle!)
 
   await expect.poll(() => Math.round(firstHeader!.getBoundingClientRect().width), { timeout: 2000 }).toBe(initialWidth)
+})
+
+test('resizing through the handle does not activate the header container', async () => {
+  const headerClicks: string[] = []
+  const screen = await render(<ClickableHeaderTestTable onHeaderClick={(field) => headerClicks.push(field)} />)
+  const headers = screen.container.querySelectorAll<HTMLElement>('[data-table-element-role="column-header"]')
+  const firstHeader = headers[0]
+  const handle = firstHeader?.querySelector<HTMLElement>('[data-table-element-role="resize-handle"]')
+  const secondHeader = headers[1]
+
+  expect(handle).not.toBeNull()
+  expect(secondHeader).not.toBeNull()
+
+  await expect
+    .poll(() => [...headers].reduce((sum, header) => sum + Math.round(header.getBoundingClientRect().width), 0), { timeout: 2000 })
+    .toBeGreaterThan(COLUMN_WIDTH * headers.length)
+  const initialWidth = Math.round(firstHeader!.getBoundingClientRect().width)
+
+  await userEvent.dragAndDrop(handle!, secondHeader!)
+  await expect.poll(() => Math.round(firstHeader!.getBoundingClientRect().width), { timeout: 2000 }).toBeGreaterThan(initialWidth + 20)
+
+  await userEvent.dblClick(handle!)
+  await expect.poll(() => Math.round(firstHeader!.getBoundingClientRect().width), { timeout: 2000 }).toBe(initialWidth)
+
+  expect(headerClicks).toEqual([])
+
+  await userEvent.click(firstHeader!, { position: { x: 20, y: 20 } })
+  expect(headerClicks).toEqual(['name'])
 })

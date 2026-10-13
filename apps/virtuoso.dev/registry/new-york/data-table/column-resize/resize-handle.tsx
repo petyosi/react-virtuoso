@@ -40,8 +40,14 @@ export const ResizeHandle: HeaderSlotCustomComponent = ({ columnKey, headerRef }
       data-resizing={isResizing ? 'true' : undefined}
       className="group flex cursor-col-resize touch-none items-stretch"
       style={HANDLE_STYLE}
+      // The handle captures the pointer, so the browser ends every drag with a click on the handle. The
+      // header container can have its own click handler, and a resize must not activate it.
+      onClick={(event) => {
+        event.stopPropagation()
+      }}
       onDoubleClick={(event) => {
         event.preventDefault()
+        event.stopPropagation()
         clearColumnWidthOverride({ key: columnKey })
       }}
       onPointerDown={(event) => {

@@ -1,5 +1,17 @@
 # @virtuoso.dev/reactive-engine-core
 
+## 0.2.1
+
+### Patch Changes
+
+- [#1517](https://github.com/petyosi/react-virtuoso/pull/1517) [`fcb22cb`](https://github.com/petyosi/react-virtuoso/commit/fcb22cb8d07b0000c2b887e9cac9354c931c9256) Thanks [@petyosi](https://github.com/petyosi)! - Fix derived nodes that kept a stale value after a subscriber published during a cycle. When the outer cycle later recomputed a `combineCells`, `ComputedCell`, or `withLatestFrom` node, it read the value from before the nested publication and overwrote the correct result. `useCellValues` then kept rendering the old value while `useCellValue` showed the new one. A nested cycle now writes its accepted values into every running cycle on the engine, including the values forwarded to child engines.
+
+## 0.2.0
+
+### Minor Changes
+
+- [`22ac6c5`](https://github.com/petyosi/react-virtuoso/commit/22ac6c5e69314e4113046a7da4bcadde2a082b25) Thanks [@petyosi](https://github.com/petyosi)! - Add a `distinct` parameter to `debounceTime` and `throttleTime`, mirroring `map`. Both operators emit through a distinct stream by default, so a valueless `Trigger` piped through them fires once and is then suppressed forever. Pass `false` to re-emit equal values, or a comparator to define equality.
+
 ## 0.1.2
 
 ### Patch Changes

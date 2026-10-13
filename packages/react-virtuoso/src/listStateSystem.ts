@@ -30,9 +30,17 @@ export interface ListState {
 
 export type MinOverscanItemCount = number | { bottom: number; top: number }
 
-function probeItemSet(index: number, sizes: SizeState, data: Data) {
+function probeItemSet(index: number, sizes: SizeState, data: Data, totalCount: number) {
   if (hasGroups(sizes)) {
-    const itemIndex = originalIndexFromItemIndex(index, sizes)
+    // totalCount includes the group headers
+    const itemCount = totalCount - sizes.groupIndices.length
+
+    // all groups are empty - one header avoids the two-range group/item probe protocol
+    if (itemCount <= 0) {
+      return [{ index: sizes.groupIndices[0]!, offset: 0, size: 0 }]
+    }
+
+    const itemIndex = originalIndexFromItemIndex(Math.min(index, itemCount - 1), sizes)
     const groupIndex = findMaxKeyValue(sizes.groupOffsetTree, itemIndex)[0]
 
     return [
@@ -97,7 +105,7 @@ export function buildListStateFromItemCount(
   sizes: SizeState,
   firstItemIndex: number,
   gap: number,
-  data: readonly unknown[]
+  data: readonly unknown[] | undefined
 ) {
   let includedGroupsCount = 0
   if (sizes.groupIndices.length > 0) {
@@ -109,11 +117,16 @@ export function buildListStateFromItemCount(
     }
   }
 
-  const adjustedCount = itemCount + includedGroupsCount
-  const initialTopMostItemIndexNumber = getInitialTopMostItemIndexNumber(initialTopMostItemIndex, adjustedCount)
+  const unadjustedCount = itemCount + includedGroupsCount
+  const hasData = data !== undefined
+  const dataLength = data?.length ?? 0
+  const initialTopMostItemIndexNumber = getInitialTopMostItemIndexNumber(initialTopMostItemIndex, hasData ? dataLength : unadjustedCount)
+  // when the data prop is set, items are read from it starting at initialTopMostItemIndexNumber,
+  // so the count cannot exceed the items remaining after it - an explicitly empty data renders no items
+  const adjustedCount = hasData ? Math.max(0, Math.min(unadjustedCount, dataLength - initialTopMostItemIndexNumber)) : unadjustedCount
 
   const items = Array.from({ length: adjustedCount }).map((_, index) => ({
-    data: data[index + initialTopMostItemIndexNumber],
+    data: data?.[index + initialTopMostItemIndexNumber],
     index: index + initialTopMostItemIndexNumber,
     offset: 0,
     size: 0,
@@ -190,6 +203,15 @@ export const listStateSystem = u.system(
   ]) => {
     const topItemsIndexes = u.statefulStream<number[]>([])
     const initialItemCount = u.statefulStream(0)
+    // the initial items wait for their sizes only before anything is measured - a later size reset probes instead
+    const sizesMeasured = u.statefulStreamFromEmitter(
+      u.pipe(
+        sizes,
+        u.filter(({ sizeTree }) => !empty(sizeTree)),
+        u.mapTo(true)
+      ),
+      false
+    )
     const itemsRendered = u.stream<ListItems>()
     const minOverscanItemCount = u.statefulStream<MinOverscanItemCount>(0)
 
@@ -209,7 +231,8 @@ export const listStateSystem = u.system(
           u.duc(firstItemIndex),
           u.duc(gap),
           u.duc(minOverscanItemCount),
-          data
+          data,
+          u.duc(initialItemCount)
         ),
         u.filter(([mount, recalcInProgress, , totalCount, , , , , , , , data]) => {
           // When data length changes, it is synced to totalCount, both of which trigger a recalc separately.
@@ -231,10 +254,10 @@ export const listStateSystem = u.system(
             gap,
             minOverscanItemCountValue,
             data,
+            initialItemCountValue,
           ]) => {
             const sizesValue = sizes
             const { offsetTree, sizeTree } = sizesValue
-            const initialItemCountValue = u.getValue(initialItemCount)
 
             if (totalCount === 0) {
               return { ...EMPTY_LIST_STATE, totalCount }
@@ -245,15 +268,15 @@ export const listStateSystem = u.system(
               if (initialItemCountValue === 0) {
                 return { ...EMPTY_LIST_STATE, totalCount }
               }
-              return buildListStateFromItemCount(initialItemCountValue, initialTopMostItemIndex, sizes, firstItemIndex, gap, data || [])
+              return buildListStateFromItemCount(initialItemCountValue, initialTopMostItemIndex, sizes, firstItemIndex, gap, data)
             }
 
             if (empty(sizeTree)) {
-              if (initialItemCountValue > 0) {
+              if (initialItemCountValue > 0 && !u.getValue(sizesMeasured)) {
                 return null
               }
               const state = buildListState(
-                probeItemSet(getInitialTopMostItemIndexNumber(initialTopMostItemIndex, totalCount), sizesValue, data),
+                probeItemSet(getInitialTopMostItemIndexNumber(initialTopMostItemIndex, totalCount), sizesValue, data, totalCount),
                 [],
                 totalCount,
                 gap,
@@ -414,8 +437,16 @@ export const listStateSystem = u.system(
         u.filter(({ items }) => items.length > 0),
         u.withLatestFrom(totalCount, data),
         u.filter(([{ items }, totalCount]) => items[items.length - 1]!.originalIndex === totalCount - 1),
-        u.map(([, totalCount, data]) => [totalCount - 1, data] as [number, unknown[]]),
+        u.map(([{ items }, totalCount, data]) => {
+          // the internal index counts the group headers - the callback expects the last item index
+          const lastItem = items[items.length - 1]!
+          const groupCount = lastItem.type === 'group' ? lastItem.index + 1 : (lastItem.groupIndex ?? -1) + 1
+          return [totalCount - 1 - groupCount, data] as [number, unknown[]]
+        }),
         u.distinctUntilChanged(tupleComparator),
+        // when every group is empty, only headers render and there is no item index to report.
+        // Filter after the distinct check, so that the same index fires again once an item returns.
+        u.filter(([index]) => index >= 0),
         u.map(([count]) => count)
       )
     )

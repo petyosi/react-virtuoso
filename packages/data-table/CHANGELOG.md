@@ -1,5 +1,47 @@
 # @virtuoso.dev/data-table
 
+## 0.6.1
+
+### Patch Changes
+
+- Updated dependencies [[`fcb22cb`](https://github.com/petyosi/react-virtuoso/commit/fcb22cb8d07b0000c2b887e9cac9354c931c9256)]:
+  - @virtuoso.dev/reactive-engine-core@0.2.1
+  - @virtuoso.dev/reactive-engine-react@1.0.0
+
+## 0.6.0
+
+### Minor Changes
+
+- [#1513](https://github.com/petyosi/react-virtuoso/pull/1513) [`e1735dc`](https://github.com/petyosi/react-virtuoso/commit/e1735dcfe028790d58f7dc64d3ba9b88ae7e8b68) Thanks [@petyosi](https://github.com/petyosi)! - Keep the measured column header at its natural width when a consumer style stretches it with flex-grow or a percentage width. The header's measured width is the column's base width, so a stretched header used to record its grown width as the base, and grow columns never gave the extra width back when the table narrowed. Consumers can set fixed and minimum base widths on the intrinsic header surface.
+
+  Add `containerProps` to `ColumnHeader` for styles, event handlers, and accessibility attributes that must cover the full rendered column width without changing its intrinsic measurement.
+
+## 0.5.1
+
+### Patch Changes
+
+- Updated dependencies [[`22ac6c5`](https://github.com/petyosi/react-virtuoso/commit/22ac6c5e69314e4113046a7da4bcadde2a082b25)]:
+  - @virtuoso.dev/reactive-engine-core@0.2.0
+  - @virtuoso.dev/reactive-engine-react@1.0.0
+
+## 0.5.0
+
+### Minor Changes
+
+- [#1501](https://github.com/petyosi/react-virtuoso/pull/1501) [`64e187e`](https://github.com/petyosi/react-virtuoso/commit/64e187e3d65b3e8d4a3882832be41cbdd427b189) Thanks [@petyosi](https://github.com/petyosi)! - Add controlled table/card presentation with custom card content and operation headers. Cards use automatically measured uniform CSS layouts, with measurements separate from table rows. Preserve the model and its operations across switches, and support existing scrolling and loading APIs. Grouped data remains table-only.
+
+## 0.4.0
+
+### Minor Changes
+
+- [#1491](https://github.com/petyosi/react-virtuoso/pull/1491) [`bbf108f`](https://github.com/petyosi/react-virtuoso/commit/bbf108fad247b8190109492bfce5728d24ec021c) Thanks [@deshiknaves](https://github.com/deshiknaves)! - Add `model.updateData(data)` for applying a same-shape data snapshot (same length, same rows and stable row keys at the same indices) without resetting the known row-size tree, so mounted cells keep their DOM nodes and local state (focused inputs, popovers, etc.) across the update. `setData()` is unchanged and still resets the size tree.
+
+## 0.3.5
+
+### Patch Changes
+
+- [#1484](https://github.com/petyosi/react-virtuoso/pull/1484) [`7800931`](https://github.com/petyosi/react-virtuoso/commit/78009318353b4cffe314ccc785925b03853c0c5a) Thanks [@Guflly](https://github.com/Guflly)! - Keep grouped row measurements accurate after local model data updates.
+
 ## 0.3.4
 
 ### Patch Changes

@@ -97,6 +97,23 @@ export function combineLatest<O1, O2, O3, O4, O5, O6, O7, O8, O9, O10, O11, O12>
     Emitter<O12>,
   ]
 ): Emitter<[O1, O2, O3, O4, O5, O6, O7, O8, O9, O10, O11, O12]> // prettier-ignore
+export function combineLatest<O1, O2, O3, O4, O5, O6, O7, O8, O9, O10, O11, O12, O13>(
+  ...emitters: [
+    Emitter<O1>,
+    Emitter<O2>,
+    Emitter<O3>,
+    Emitter<O4>,
+    Emitter<O5>,
+    Emitter<O6>,
+    Emitter<O7>,
+    Emitter<O8>,
+    Emitter<O9>,
+    Emitter<O10>,
+    Emitter<O11>,
+    Emitter<O12>,
+    Emitter<O13>,
+  ]
+): Emitter<[O1, O2, O3, O4, O5, O6, O7, O8, O9, O10, O11, O12, O13]> // prettier-ignore
 export function combineLatest(...emitters: Emitter<any>[]): Emitter<any> {
   const innerSubject = stream<any>()
   const values = Array.from({ length: emitters.length })

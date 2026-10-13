@@ -15,11 +15,11 @@ export const initialLocation$ = Cell<RowLocation | null>(null, false)
 /**
  * @group Remote Control
  */
-export const scrollToRow$ = Stream<RowLocation>()
+export const scrollToRow$ = Stream<RowLocation>(false)
 /**
  * @group Remote Control
  */
-export const scrollIntoView$ = Stream<RowLocation>()
+export const scrollIntoView$ = Stream<RowLocation>(false)
 
 export const mobileSafariIsReadjusting$ = Cell(false)
 export const deviationDelta$ = Stream<number>()

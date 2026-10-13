@@ -80,6 +80,24 @@ This is optional. If the parent does not have a definite height, keep using a fi
 
 Column widths are owned by the table through header measurements. Put base width classes such as `w-*`, `min-w-*`, and `basis-*` on `DataTableColumnHeader`, not on `DataTableCell`. Cells render inside tracks sized from header measurements; cell width utilities can force body content outside those tracks and make columns overlap at narrow widths. Use cell `className` for typography, alignment, padding, truncation, and color. For complex cell content, put `min-w-0` on an inner wrapper instead of widening the cell.
 
+A growing header has separate measurement and presentation surfaces. The table measures the intrinsic header first, then adds spare width according to `grow`. If that same measured element stretches across the rendered column, ResizeObserver reports the grown width as the next base width and the column cannot shrink when its viewport narrows.
+
+- Use `DataTableColumnHeader.className` for the intrinsic surface: fixed or minimum base width, padding, typography, and alignment within that base width.
+- Use `DataTableColumnHeader.containerProps` for paint and interaction across the rendered column: background, hover/focus state, outline, box shadow, cursor, ARIA attributes, and event handlers.
+- Do not use width, flex, margin, padding, border, display, or `justify-*` styles in `containerProps`. The table owns the outer geometry; layout styles there can clip content and move `HeaderEnd` or `HeaderEdge` slots. Use `box-shadow` or `outline` for full-width separators.
+- Events on `containerProps` receive bubbled events from sort buttons, resize handles, reorder controls, and other nested UI. Stop propagation in the nested control or guard the container handler before running a whole-header action.
+
+```tsx
+<DataTableColumn field="name" grow={1}>
+  <DataTableColumnHeader className="min-w-72" containerProps={{ className: 'cursor-pointer hover:bg-muted/50 focus-within:outline' }}>
+    Name
+  </DataTableColumnHeader>
+  <DataTableCell>{NameCell}</DataTableCell>
+</DataTableColumn>
+```
+
+Do not use `w-full` or flex growth on `className` to paint the full rendered track. Those styles resolve inside the intrinsic measurement boundary by design; put the full-width visual on `containerProps`. Use `HeaderEnd` for a control that must align to the rendered column edge.
+
 When building a table, choose fixed vs growing columns from the data being displayed:
 
 - Keep compact columns fixed by omitting `grow`: ids, slugs, checkboxes, action menus, icon buttons, status labels, badges, versions, counts, dates, timestamps, and short enum or metadata columns.
@@ -154,6 +172,7 @@ For UI far from the table, pass `engineId="orders-table"` and use the same hooks
 ## Customization
 
 - Styling goes through `className` on the wrapper components and semantic data attributes — never use `data-testid` as a styling hook.
+- For column headers, use `className` for intrinsic sizing and content layout, and `containerProps` for paint and interaction across the rendered column. Keep layout-changing styles off `containerProps`.
 - The shadcn wrapper already renders the app-level table frame (`rounded-md border`) on `DataTable`. Do not add `rounded-md border` at each table instance; use `className` only for intentional frame overrides such as `rounded-xl`, `border-0`, `border-2`, shadows, or table variable overrides.
 - The shadcn wrapper exposes table-level CSS variables (`--data-table-bg`, `--data-table-fg`, `--data-table-border`, `--data-table-muted`, `--data-table-muted-fg`, `--data-table-row-hover`, `--data-table-sticky-hover`) and uses them for sticky headers, sticky columns, rows, and loading surfaces. When adapting to a host design system, override those variables once on `DataTable` or in the copied wrapper defaults instead of styling sticky cells individually.
 - Replace internals via the `components` prop: `Row`, `StickyColumnContainer`, `LoadingPlaceholder`, `LoadingOverlay`, `LoadingFooter` (component overrides must forward refs). Top-level: `EmptyPlaceholder`, `ScrollElement`.
@@ -186,6 +205,7 @@ Full guide: [migrating-from-table-virtuoso](references/9.guides/04.migrating-fro
 | Remote rows never appear                | Return the right fetch shape (`{ rows, totalCount }` for offset mode) and pass the `signal` through                                          |
 | Rows remount / lose state after sorting | Add `computeRowKey`                                                                                                                          |
 | Body cells overlap columns              | Move width classes from `DataTableCell` to `DataTableColumnHeader`; use `DataTableColumn grow={...}` for extra width                         |
+| Full-width header styles clip content   | Keep layout on header `className`; use `containerProps` only for paint and interaction, without padding, borders, width, flex, or alignment  |
 | Action/display column has no header     | Add an explicit visible `DataTableColumnHeader` label, e.g. `Actions`; `field`/`id` is an identity, not a UI label                           |
 | Double outer border/frame               | Remove call-site `rounded-md border`; the shadcn wrapper already owns the default table frame                                                |
 | Sticky/header colors don't match body   | Override the shadcn wrapper's `--data-table-*` variables on `DataTable` or in the copied wrapper defaults                                    |

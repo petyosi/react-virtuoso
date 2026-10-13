@@ -46,6 +46,7 @@ export type {
   ScrollerProps,
   VirtuosoDataTableProps,
   DataTableComponents,
+  CardComponentProps,
   RowComponentProps,
   StickyHeaderComponentProps,
   StickyColumnContainerComponentProps,
@@ -75,6 +76,7 @@ export { remoteModel, defaultOffsetViewportHandler, defaultAppendViewportHandler
 export type {
   DataModelHandle,
   DataModelPersistenceCapability,
+  DataOperation,
   DataResult,
   MessageEnvelope,
   ModelPersistenceState,
@@ -120,6 +122,7 @@ export {
   type ColumnHeaderRenderParams,
   type ColumnHeaderRenderFunction,
   type ColumnHeaderCustomComponent,
+  type ColumnHeaderContainerProps,
 } from './columns/ColumnHeader'
 export { HeaderStart, HeaderEnd, HeaderEdge, HeaderOverlay } from './columns/header-slots/slots'
 export type { HeaderSlotRenderParams, HeaderSlotRenderFunction, HeaderSlotCustomComponent } from './columns/header-slots/registry'

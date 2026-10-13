@@ -208,4 +208,84 @@ describe('data change sizing', () => {
       expect(positions[i]).toBe(expectedTop)
     }
   })
+
+  test('group row sizes remain accurate after collapsing and expanding grouped data', async () => {
+    const expandedData: (DataItem | GroupItem)[] = [
+      { groupName: 'Group A' },
+      { groupName: 'Team A' },
+      { id: 1, name: 'Task A', category: 'A' },
+      { groupName: 'Group B' },
+      { groupName: 'Team B' },
+      { id: 2, name: 'Task B', category: 'B' },
+    ]
+    const expandedGroups = [
+      { index: 0, level: 0 },
+      { index: 1, level: 1 },
+      { index: 3, level: 0 },
+      { index: 4, level: 1 },
+    ]
+    const collapsedData = [expandedData[0]!, expandedData[3]!, expandedData[4]!, expandedData[5]!]
+    const collapsedGroups = [
+      { index: 0, level: 0 },
+      { index: 1, level: 0 },
+      { index: 2, level: 1 },
+    ]
+
+    function TestComponent() {
+      const model = useMemo(() => localModel<DataItem, GroupItem>({ data: expandedData as DataItem[], groups: expandedGroups }), [])
+
+      return (
+        <>
+          <button data-testid="collapse" onClick={() => model.setData?.(collapsedData, collapsedGroups)}>
+            Collapse
+          </button>
+          <button data-testid="expand" onClick={() => model.setData?.(expandedData, expandedGroups)}>
+            Expand
+          </button>
+          <VirtuosoDataTable style={{ height: CONTAINER_HEIGHT, width: CONTAINER_WIDTH }} model={model}>
+            <GroupHeaderCell>{({ row }) => <div style={{ height: 36 }}>{(row.data as GroupItem).groupName}</div>}</GroupHeaderCell>
+            <Column field="name">
+              <ColumnHeader>{() => <div style={{ width: COLUMN_WIDTH, height: HEADER_HEIGHT }}>Name</div>}</ColumnHeader>
+              <Cell>{({ cellValue }) => <div style={{ height: 44 }}>{String(cellValue ?? '')}</div>}</Cell>
+            </Column>
+          </VirtuosoDataTable>
+        </>
+      )
+    }
+
+    const screen = await render(<TestComponent />)
+    await waitForReady(screen)
+
+    const collapseButton = screen.container.querySelector('[data-testid="collapse"]') as HTMLButtonElement
+    const expandButton = screen.container.querySelector('[data-testid="expand"]') as HTMLButtonElement
+
+    collapseButton.click()
+    await expect.poll(() => screen.container.querySelectorAll(rowSelector).length).toBe(collapsedData.length)
+
+    expandButton.click()
+
+    await expect
+      .poll(() => {
+        const rows = [...screen.container.querySelectorAll(rowSelector)] as HTMLElement[]
+        const tableBody = screen.container.querySelector<HTMLElement>(tableBodySelector)
+
+        return {
+          actualSizes: rows.map((row) => Math.round(row.getBoundingClientRect().height)),
+          bodyHeight: tableBody?.style.height,
+          knownSizes: rows.map((row) => Number.parseFloat(row.dataset.knownSize ?? '0')),
+        }
+      })
+      .toStrictEqual({
+        actualSizes: [36, 36, 44, 36, 36, 44],
+        bodyHeight: '232px',
+        knownSizes: [36, 36, 44, 36, 36, 44],
+      })
+
+    const rows = [...screen.container.querySelectorAll(rowSelector)] as HTMLElement[]
+    for (let index = 1; index < rows.length; index++) {
+      const previousRect = rows[index - 1]!.getBoundingClientRect()
+      const currentRect = rows[index]!.getBoundingClientRect()
+      expect(Math.round(currentRect.top - previousRect.bottom)).toBe(0)
+    }
+  })
 })

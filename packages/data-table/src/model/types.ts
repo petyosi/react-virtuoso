@@ -17,6 +17,13 @@ export interface MessageEnvelope<P = unknown> {
 }
 
 /**
+ * Distinguishes a full data reset (`'replace'`) from an in-place same-index update (`'update'`).
+ *
+ * @group Data Models
+ */
+export type DataOperation = 'replace' | 'update'
+
+/**
  * A normalized table data result returned by data models.
  *
  * @group Data Models
@@ -24,6 +31,7 @@ export interface MessageEnvelope<P = unknown> {
 export interface DataResult<T = unknown, G = never> {
   data: (T | G)[]
   groups: { index: number; level: number }[]
+  operation?: DataOperation
 }
 
 /**
@@ -60,6 +68,7 @@ export interface DataModelHandle<T = unknown> {
   persistence?: DataModelPersistenceCapability
   subscribeToActionState?(handler: (state: ModelActionState) => void): () => void
   setData?(data: T[], groups?: { index: number; level: number }[]): void
+  updateData?(data: T[]): void
 }
 
 /**

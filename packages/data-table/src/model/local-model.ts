@@ -350,13 +350,32 @@ export function localModel<T, G = never>(config: LocalModelConfig<T, G>): DataMo
     },
   }
 
-  model.setData = (data: T[], groups?: { index: number; level: number }[]) => {
+  let warnedUpdateDataWithPipeline = false
+
+  function replaceSourceData(data: T[], groups?: { index: number; level: number }[]) {
     sourceData = data
     if (groups !== undefined) {
       currentGroups = groups
     }
     invalidateAllViewStages()
+  }
+
+  model.setData = (data: T[], groups?: { index: number; level: number }[]) => {
+    replaceSourceData(data, groups)
     model.send({ action: 'refresh', viewId: 'default' })
+  }
+
+  model.updateData = (data: T[]) => {
+    if (pipeline.length > 0 && !warnedUpdateDataWithPipeline) {
+      warnedUpdateDataWithPipeline = true
+      warnModelActionInDev(
+        'updateData() was called on a model with a pipeline. A sort/filter stage can reorder rows at the same indices, ' +
+          'which would misattribute cached row heights. updateData() requires the caller to guarantee that each index ' +
+          'still holds the same logical row; use setData() otherwise.'
+      )
+    }
+    replaceSourceData(data)
+    model.send({ action: 'refresh', payload: { operation: 'update' }, viewId: 'default' })
   }
 
   return model

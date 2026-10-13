@@ -318,7 +318,12 @@ export const gridSystem = /*#__PURE__*/ u.system(
     const endReached = u.streamFromEmitter(
       u.pipe(
         u.combineLatest(gridState, totalCount),
-        u.filter(([{ items }]) => items.length > 0),
+        // A data publish rebuilds gridState before it updates totalCount. Skipping that intermediate step
+        // avoids reporting the previous end index against the new data.
+        u.filter(([{ items }, totalCount]) => {
+          const currentData = u.getValue(data)
+          return items.length > 0 && (currentData === null || currentData.length === totalCount)
+        }),
         u.withLatestFrom(hasScrolled),
         u.filter(([[gridState, totalCount], hasScrolled]) => {
           const lastIndex = gridState.items[gridState.items.length - 1]!.index
@@ -335,10 +340,11 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
           return isFullyRendered && isLastItemRendered
         }),
-        u.map(([[, totalCount]]) => {
-          return totalCount - 1
-        }),
-        u.distinctUntilChanged()
+        // Keying on the data array lets replaced data with a previously reported length fire again, matching
+        // the list. withLatestFrom(data) subscribes after gridState and would still hold the previous array.
+        u.map(([[, totalCount]]) => [totalCount - 1, u.getValue(data)] as [number, Data]),
+        u.distinctUntilChanged(tupleComparator),
+        u.map(([count]) => count)
       )
     )
 
@@ -384,7 +390,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
             index = totalCount - 1
           }
 
-          index = max(0, index, min(totalCount - 1, index))
+          index = max(0, min(totalCount - 1, index))
 
           let top = itemTop(viewportDimensions, gap, itemDimensions, index)
 
