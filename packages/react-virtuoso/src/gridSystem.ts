@@ -318,7 +318,12 @@ export const gridSystem = /*#__PURE__*/ u.system(
     const endReached = u.streamFromEmitter(
       u.pipe(
         u.combineLatest(gridState, totalCount),
-        u.filter(([{ items }]) => items.length > 0),
+        // A data publish rebuilds gridState before it updates totalCount. Skipping that intermediate step
+        // avoids reporting the previous end index against the new data.
+        u.filter(([{ items }, totalCount]) => {
+          const currentData = u.getValue(data)
+          return items.length > 0 && (currentData === null || currentData.length === totalCount)
+        }),
         u.withLatestFrom(hasScrolled),
         u.filter(([[gridState, totalCount], hasScrolled]) => {
           const lastIndex = gridState.items[gridState.items.length - 1]!.index
@@ -335,17 +340,9 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
           return isFullyRendered && isLastItemRendered
         }),
-        // Pair the emitted count with the last rendered item's own data (read directly off the
-        // already-computed gridState, rather than a separate withLatestFrom(data) read, which can
-        // observe a stale value while gridState and totalCount are still settling against each
-        // other). Without this, replacing the data (e.g. applying a filter) that happens to bring
-        // totalCount back to a previously seen value is indistinguishable, under a plain
-        // distinctUntilChanged, from the already-reported end -- so endReached would never fire
-        // again even though there is new data to load.
-        u.map(([[gridState, totalCount]]) => {
-          const lastItemData = gridState.items[gridState.items.length - 1]!.data
-          return [totalCount - 1, lastItemData] as [number, unknown]
-        }),
+        // Keying on the data array lets replaced data with a previously reported length fire again, matching
+        // the list. withLatestFrom(data) subscribes after gridState and would still hold the previous array.
+        u.map(([[, totalCount]]) => [totalCount - 1, u.getValue(data)] as [number, Data]),
         u.distinctUntilChanged(tupleComparator),
         u.map(([count]) => count)
       )
