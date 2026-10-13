@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.18.17
+
+### Patch Changes
+
+- [#1520](https://github.com/petyosi/react-virtuoso/pull/1520) [`e519b85`](https://github.com/petyosi/react-virtuoso/commit/e519b85996200758dc92119dc818456357dfdb62) Thanks [@cpruijsen](https://github.com/cpruijsen)! - Fixed `endReached` receiving an index that includes the group headers in `GroupedVirtuoso` and `GroupedTableVirtuoso`. The callback now receives the index of the last real item - e.g. 499 instead of 522 for a list of 500 items with 23 groups. If your `endReached` handler subtracts the group count from the index as a workaround, remove that adjustment. `endReached` no longer fires when every group is empty.
+
 ## 4.18.16
 
 ### Patch Changes
