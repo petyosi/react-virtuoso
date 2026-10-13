@@ -821,6 +821,40 @@ describe('list engine', () => {
       expect(sub).toHaveBeenCalledWith(1)
     })
 
+    it('does not fire when every group is empty', () => {
+      const { endReached, groupCounts, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+
+      publish(groupCounts, [0, 0])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      const sub = vi.fn()
+      subscribe(endReached, sub)
+
+      publish(sizeRanges, [{ endIndex: 1, size: 30, startIndex: 0 }])
+
+      expect(sub).not.toHaveBeenCalled()
+    })
+
+    it('fires again when an item returns after every group was empty', () => {
+      const { endReached, groupCounts, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
+
+      publish(groupCounts, [1, 0])
+      publish(scrollTop, 0)
+      publish(viewportHeight, 200)
+      publish(propsReady, true)
+
+      const sub = vi.fn()
+      subscribe(endReached, sub)
+
+      publish(sizeRanges, [{ endIndex: 2, size: 30, startIndex: 0 }])
+      publish(groupCounts, [0, 0])
+      publish(groupCounts, [1, 0])
+
+      expect(sub.mock.calls).toEqual([[0], [0]])
+    })
+
     it('reports the last item index after the group counts change', () => {
       const { endReached, groupCounts, propsReady, scrollTop, sizeRanges, viewportHeight } = init(listSystem)
 

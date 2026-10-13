@@ -427,6 +427,9 @@ export const listStateSystem = u.system(
           return [totalCount - 1 - groupCount, data] as [number, unknown[]]
         }),
         u.distinctUntilChanged(tupleComparator),
+        // when every group is empty, only headers render and there is no item index to report.
+        // Filter after the distinct check, so that the same index fires again once an item returns.
+        u.filter(([index]) => index >= 0),
         u.map(([count]) => count)
       )
     )
