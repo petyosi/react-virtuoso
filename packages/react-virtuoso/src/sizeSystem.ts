@@ -314,9 +314,15 @@ export const sizeSystem = u.system(
         u.merge<SizeRange[] | null>(sizeRanges, resetSizes),
         u.withLatestFrom(groupIndices, log, gap),
         u.scan((state, [ranges, ...rest]) => {
-          // a reset keeps the groups, so that the list probes a group header and an item
+          // a reset keeps the groups, so that the list probes a group header and an item.
+          // The scan state can hold outdated groups, so take the current ones.
           if (ranges === null) {
-            return { ...initialSizeState(), groupIndices: state.groupIndices, groupOffsetTree: state.groupOffsetTree }
+            const [currentGroupIndices] = rest
+            return {
+              ...initialSizeState(),
+              groupIndices: currentGroupIndices,
+              groupOffsetTree: currentGroupIndices.reduce((tree, index, idx) => insert(tree, index, idx), newTree<number>()),
+            }
           }
           return sizeStateReducer(state, [ranges, ...rest])
         }, initial),
@@ -390,22 +396,6 @@ export const sizeSystem = u.system(
         u.map((size) => size === undefined)
       ),
       true
-    )
-
-    // When all groups are empty, the size tree knows only the group header size.
-    // Reset the sizes when items arrive, so that the list measures a group header and an item again.
-    // Fixed item sizes are not measured, so they keep their sizes.
-    u.connect(
-      u.pipe(
-        totalCount,
-        u.scan(([, prev], next): [number, number] => [prev, next], [0, 0] as [number, number]),
-        u.withLatestFrom(sizes, trackItemSizes),
-        u.filter(([[prev, next], { groupIndices, sizeTree }, track]) => {
-          return track && groupIndices.length > 0 && prev === groupIndices.length && next > prev && !empty(sizeTree)
-        }),
-        u.mapTo(null)
-      ),
-      resetSizes
     )
 
     u.connect(
@@ -739,6 +729,7 @@ export const sizeSystem = u.system(
       heightEstimates,
       itemSize,
       listRefresh,
+      resetSizes,
       shiftWith,
       shiftWithOffset,
       sizeRanges,
