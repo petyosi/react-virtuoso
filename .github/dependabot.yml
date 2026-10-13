@@ -10,6 +10,14 @@ updates:
         dependency-type: 'production'
       development:
         dependency-type: 'development'
+    # Major upgrades of these break the docs site or the toolchain, so they are done by hand
+    ignore:
+      - dependency-name: 'astro'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@astrojs/*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
     open-pull-requests-limit: 10
 
   - package-ecosystem: 'github-actions'
