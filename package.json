@@ -20,7 +20,7 @@
     "changeset-add": "pnpm changeset add",
     "dev:docs": "pnpm --filter @virtuoso.dev/virtuoso.dev run dev",
     "build-virtuoso.dev": "pnpm --filter @virtuoso.dev/virtuoso.dev run build",
-    "prepare": "lefthook install",
+    "prepare": "lefthook install --force",
     "knip": "knip"
   },
   "devDependencies": {

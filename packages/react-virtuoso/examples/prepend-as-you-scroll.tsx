@@ -11,15 +11,15 @@ export function toggleBg(index: number) {
 }
 
 export function user(index = 0) {
-  const firstName = faker.name.firstName()
-  const lastName = faker.name.lastName()
+  const firstName = faker.person.firstName()
+  const lastName = faker.person.lastName()
 
   return {
     bgColor: toggleBg(index),
     description: faker.lorem.sentence(10),
     index: index + 1,
     initials: `${firstName.substring(0, 1)}${lastName.substring(0, 1)}`,
-    jobTitle: faker.name.jobTitle(),
+    jobTitle: faker.person.jobTitle(),
     longText: faker.lorem.paragraphs(1),
     name: `${firstName} ${lastName}`,
   }
