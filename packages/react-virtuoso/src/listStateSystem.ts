@@ -420,8 +420,16 @@ export const listStateSystem = u.system(
         u.filter(({ items }) => items.length > 0),
         u.withLatestFrom(totalCount, data),
         u.filter(([{ items }, totalCount]) => items[items.length - 1]!.originalIndex === totalCount - 1),
-        u.map(([, totalCount, data]) => [totalCount - 1, data] as [number, unknown[]]),
+        u.map(([{ items }, totalCount, data]) => {
+          // the internal index counts the group headers - the callback expects the last item index
+          const lastItem = items[items.length - 1]!
+          const groupCount = lastItem.type === 'group' ? lastItem.index + 1 : (lastItem.groupIndex ?? -1) + 1
+          return [totalCount - 1 - groupCount, data] as [number, unknown[]]
+        }),
         u.distinctUntilChanged(tupleComparator),
+        // when every group is empty, only headers render and there is no item index to report.
+        // Filter after the distinct check, so that the same index fires again once an item returns.
+        u.filter(([index]) => index >= 0),
         u.map(([count]) => count)
       )
     )
