@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { gridSystem, itemsPerRow } from '../src/gridSystem'
 import { getValue, init, publish, subscribe } from '../src/urx'
@@ -281,6 +281,57 @@ describe('grid system', () => {
       publish(stateRestoreInProgress, false)
       expect(sub).toHaveBeenCalledTimes(1)
       expect(sub).toHaveBeenLastCalledWith(expect.objectContaining({ scrollTop: 2000 }))
+    })
+
+    describe('from restoreStateFrom', () => {
+      const snapshot = {
+        gap: { column: 0, row: 0 },
+        item: { height: 80, width: 300 },
+        scrollTop: 2000,
+        viewport: { height: 300, width: 1200 },
+      }
+
+      beforeEach(() => {
+        vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+          callback(0)
+          return 0
+        })
+      })
+
+      afterEach(() => {
+        vi.unstubAllGlobals()
+      })
+
+      it('scrolls to the restored position', () => {
+        const { propsReady, restoreStateFrom, scrollTo, stateRestoreInProgress, totalCount } = init(gridSystem)
+        const sub = vi.fn()
+        subscribe(scrollTo, sub)
+
+        publish(totalCount, 1000)
+        publish(restoreStateFrom, snapshot)
+        publish(propsReady, true)
+
+        expect(sub).toHaveBeenCalledWith({ top: 2000 })
+        expect(getValue(stateRestoreInProgress)).toBe(true)
+      })
+
+      it('waits for items before scrolling to the restored position', () => {
+        const { propsReady, restoreStateFrom, scrollTop, scrollTo, stateRestoreInProgress, totalCount } = init(gridSystem)
+        const sub = vi.fn()
+        subscribe(scrollTo, sub)
+
+        publish(restoreStateFrom, snapshot)
+        publish(propsReady, true)
+        // a scroll position reported before the data arrives does not end the restore
+        publish(scrollTop, 0)
+        expect(sub).not.toHaveBeenCalled()
+        expect(getValue(stateRestoreInProgress)).toBe(true)
+
+        publish(totalCount, 1000)
+        expect(sub).toHaveBeenCalledWith({ top: 2000 })
+        publish(scrollTop, 2000)
+        expect(getValue(stateRestoreInProgress)).toBe(false)
+      })
     })
   })
 })
