@@ -86,3 +86,12 @@ export default function App() {
   )
 }
 ```
+
+
+## Resizing While Scrolled
+
+When a responsive grid is scrolled down, changing its width can briefly display items with padding from the previous layout. The grid measures its viewport, items, and gaps together to keep its calculations consistent.
+
+For updates before the browser paints the resized layout, set `skipAnimationFrameInResizeObserver` to `true`. This works with the grid's own scroller, `useWindowScroll`, and `customScrollParent`.
+
+By default, the grid schedules observer measurements in the next animation frame. Direct measurement can reduce resize flicker, but rendering during observer delivery can report `ResizeObserver loop completed with undelivered notifications` errors. These errors may appear in error trackers. Leave the prop unset or set it to `false` to retain the default scheduling; use the direct mode when smoother resizing is worth that trade-off for your application.

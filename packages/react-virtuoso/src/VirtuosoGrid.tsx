@@ -1,11 +1,9 @@
 import React from 'react'
 
 import { gridSystem } from './gridSystem'
-import { createSizeObserverGroup } from './hooks/sizeObserverGroup'
+import useGridMeasurement from './hooks/useGridMeasurement'
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect'
 import useSize from './hooks/useSize'
-import useWindowViewportRectRef from './hooks/useWindowViewportRect'
-import { LogLevel } from './loggerSystem'
 import { systemToComponent } from './react-urx'
 import * as u from './urx'
 import { VirtuosoGridMockContext } from './utils/context'
@@ -14,7 +12,6 @@ import { buildScroller, buildWindowScroller, contextPropIfNotDomElement, identit
 
 import type { VirtuosoGridHandle, VirtuosoGridProps } from './component-interfaces/VirtuosoGrid'
 import type { GridComponents, GridComputeItemKey, GridItemContent, GridRootProps } from './interfaces'
-import type { Log } from './loggerSystem'
 
 const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
   const itemContent = u.statefulStream<GridItemContent<any, any>>((index) => `Item ${index}`)
@@ -37,8 +34,6 @@ const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
     )
   }
 
-  const sizeObserverGroup = u.statefulStream(createSizeObserverGroup())
-
   const readyStateChanged = u.statefulStream(false)
 
   const reportReadyState = u.statefulStream(false)
@@ -46,7 +41,6 @@ const gridComponentPropsSystem = /*#__PURE__*/ u.system(() => {
 
   return {
     components,
-    sizeObserverGroup,
     computeItemKey,
     context,
     FooterComponent: distinctProp('Footer'),
@@ -72,6 +66,11 @@ const combinedSystem = /*#__PURE__*/ u.system(
   u.tup(gridSystem, gridComponentPropsSystem)
 )
 
+const GridListRefContext = React.createContext<{ listRef: React.RefCallback<HTMLElement>; observeItem: () => void }>({
+  listRef: u.noop,
+  observeItem: u.noop,
+})
+
 const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
   const gridState = useEmitterValue('gridState')
   const listClassName = useEmitterValue('listClassName')
@@ -79,38 +78,14 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
   const itemContent = useEmitterValue('itemContent')
   const computeItemKey = useEmitterValue('computeItemKey')
   const isSeeking = useEmitterValue('isSeeking')
-  const scrollHeightCallback = usePublisher('scrollHeight')
   const ItemComponent = useEmitterValue('ItemComponent')!
   const ListComponent = useEmitterValue('ListComponent')!
   const ScrollSeekPlaceholder = useEmitterValue('ScrollSeekPlaceholder')!
   const context = useEmitterValue('context')
-  const itemDimensions = usePublisher('itemDimensions')
-  const gridGap = usePublisher('gap')
-  const log = useEmitterValue('log')
   const stateRestoreInProgress = useEmitterValue('stateRestoreInProgress')
   const reportReadyState = usePublisher('reportReadyState')
-
-  const listRef = useSize(
-    React.useMemo(
-      () => (el) => {
-        const scrollHeight = el.parentElement!.parentElement!.scrollHeight
-        scrollHeightCallback(scrollHeight)
-        const firstItem = el.firstChild as HTMLElement | null
-        if (firstItem !== null) {
-          const { height, width } = firstItem.getBoundingClientRect()
-          itemDimensions({ height, width })
-        }
-        gridGap({
-          column: resolveGapValue('column-gap', getComputedStyle(el).columnGap, log),
-          row: resolveGapValue('row-gap', getComputedStyle(el).rowGap, log),
-        })
-      },
-      [scrollHeightCallback, itemDimensions, gridGap, log]
-    ),
-    true,
-    false,
-    useEmitterValue('sizeObserverGroup')
-  )
+  const { listRef, observeItem } = React.useContext(GridListRefContext)
+  useIsomorphicLayoutEffect(observeItem)
 
   useIsomorphicLayoutEffect(() => {
     if (gridState.itemHeight > 0 && gridState.itemWidth > 0) {
@@ -199,55 +174,45 @@ const Footer: React.FC = React.memo(function VirtuosoGridFooter() {
   ) : null
 })
 
-const Viewport: React.FC<React.PropsWithChildren> = ({ children }) => {
+const GridViewport: React.FC<React.PropsWithChildren> = ({ children }) => {
   const ctx = React.useContext(VirtuosoGridMockContext)
-  const itemDimensions = usePublisher('itemDimensions')
-  const viewportDimensions = usePublisher('viewportDimensions')
-
-  const viewportRef = useSize(
-    React.useMemo(
-      () => (el: HTMLElement) => {
-        viewportDimensions(el.getBoundingClientRect())
-      },
-      [viewportDimensions]
-    ),
-    true,
-    false,
-    useEmitterValue('sizeObserverGroup')
-  )
-
-  React.useEffect(() => {
-    if (ctx) {
-      viewportDimensions({ height: ctx.viewportHeight, width: ctx.viewportWidth })
-      itemDimensions({ height: ctx.itemHeight, width: ctx.itemWidth })
-    }
-  }, [ctx, viewportDimensions, itemDimensions])
-
-  return (
-    <div ref={viewportRef} style={viewportStyle(false)}>
-      {children}
-    </div>
-  )
-}
-
-const WindowViewport: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const ctx = React.useContext(VirtuosoGridMockContext)
+  const gridMeasurement = usePublisher('gridMeasurement')
   const windowViewportRect = usePublisher('windowViewportRect')
-  const itemDimensions = usePublisher('itemDimensions')
   const customScrollParent = useEmitterValue('customScrollParent')
   const useWindowScroll = useEmitterValue('useWindowScroll')
-  const viewportRef = useWindowViewportRectRef(windowViewportRect, customScrollParent, false, useEmitterValue('sizeObserverGroup'))
+  const stateRestoreInProgress = useEmitterValue('stateRestoreInProgress')
+  const { listRef, viewportRef, observeItem } = useGridMeasurement({
+    customScrollParent,
+    enabled: !ctx && !stateRestoreInProgress,
+    log: useEmitterValue('log'),
+    onMeasurement: gridMeasurement,
+    onScrollHeight: usePublisher('scrollHeight'),
+    onWindowViewport: windowViewportRect,
+    skipAnimationFrame: useEmitterValue('skipAnimationFrameInResizeObserver'),
+    useWindowScroll,
+  })
+
+  const listContext = React.useMemo(() => ({ listRef, observeItem }), [listRef, observeItem])
 
   React.useEffect(() => {
     if (ctx) {
-      itemDimensions({ height: ctx.itemHeight, width: ctx.itemWidth })
-      windowViewportRect({ listHeight: 0, offsetTop: 0, visibleHeight: ctx.viewportHeight, visibleWidth: ctx.viewportWidth })
+      gridMeasurement({
+        viewport: { height: ctx.viewportHeight, width: ctx.viewportWidth },
+        item: { height: ctx.itemHeight, width: ctx.itemWidth },
+        gap: { column: 0, row: 0 },
+      })
+      if (useWindowScroll || customScrollParent) {
+        windowViewportRect({ listHeight: 0, offsetTop: 0, visibleHeight: ctx.viewportHeight, visibleWidth: ctx.viewportWidth })
+      }
     }
-  }, [ctx, windowViewportRect, itemDimensions])
+  }, [ctx, gridMeasurement, windowViewportRect, useWindowScroll, customScrollParent])
 
   return (
-    <div ref={viewportRef} style={windowViewportStyle(false, useWindowScroll)}>
-      {children}
+    <div
+      ref={viewportRef}
+      style={customScrollParent || useWindowScroll ? windowViewportStyle(false, useWindowScroll) : viewportStyle(false)}
+    >
+      <GridListRefContext.Provider value={listContext}>{children}</GridListRefContext.Provider>
     </div>
   )
 }
@@ -256,16 +221,15 @@ const GridRoot: React.FC<GridRootProps> = /*#__PURE__*/ React.memo(function Grid
   const useWindowScroll = useEmitterValue('useWindowScroll')
   const customScrollParent = useEmitterValue('customScrollParent')
   const TheScroller = customScrollParent || useWindowScroll ? WindowScroller : Scroller
-  const TheViewport = customScrollParent || useWindowScroll ? WindowViewport : Viewport
   const context = useEmitterValue('context')
 
   return (
     <TheScroller {...props} {...contextPropIfNotDomElement(TheScroller, context)}>
-      <TheViewport>
+      <GridViewport>
         <Header />
         <GridItems />
         <Footer />
-      </TheViewport>
+      </GridViewport>
     </TheScroller>
   )
 })
@@ -298,6 +262,7 @@ const {
       restoreStateFrom: 'restoreStateFrom',
       initialTopMostItemIndex: 'initialTopMostItemIndex',
       increaseViewportBy: 'increaseViewportBy',
+      skipAnimationFrameInResizeObserver: 'skipAnimationFrameInResizeObserver',
     },
     methods: {
       scrollTo: 'scrollTo',
@@ -320,16 +285,6 @@ const {
 
 const Scroller = /*#__PURE__*/ buildScroller({ useEmitter, useEmitterValue, usePublisher })
 const WindowScroller = /*#__PURE__*/ buildWindowScroller({ useEmitter, useEmitterValue, usePublisher })
-
-function resolveGapValue(property: string, value: string | undefined, log: Log) {
-  if (value !== 'normal' && value?.endsWith('px') !== true) {
-    log(`${property} was not resolved to pixel value correctly`, value, LogLevel.WARN)
-  }
-  if (value === 'normal') {
-    return 0
-  }
-  return parseInt(value ?? '0', 10)
-}
 
 /**
  * A virtualized grid component for efficiently rendering large datasets in a grid/masonry layout.

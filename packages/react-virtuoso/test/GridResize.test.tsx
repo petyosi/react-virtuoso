@@ -3,8 +3,7 @@ import { it, expect, vi } from 'vitest'
 
 import { VirtuosoGrid } from '../src/VirtuosoGrid'
 
-// Keep real Virtuoso measurement/range calculation. A mock context bypasses the
-// separate viewport and item ResizeObservers that caused the resize regression.
+// DOM lifecycle coverage only; real observer timing is covered in grid-resize.test.ts.
 it.each([false, true, 'before observer', 'unmount sibling'] as const)(
   'preserves cells during resize (window event: %s)',
   (windowResize) => {
@@ -73,30 +72,14 @@ it.each([false, true, 'before observer', 'unmount sibling'] as const)(
       }
       expect(limit).toBeGreaterThan(0)
     }
-    const expectAlignedPadding = () => {
-      const list = document.querySelector<HTMLElement>('[data-testid=virtuoso-item-list]')!
-      const first = Number(list.querySelector<HTMLElement>('[data-index]')!.dataset.index)
-      const columns = Math.floor((width + 15) / 275)
-      const rowHeight = (width - (columns - 1) * 15) / columns + 40 + 45
-      expect(first % columns).toBe(0)
-      expect(parseFloat(list.style.paddingTop)).toBeCloseTo((first / columns) * rowHeight)
-    }
-    const resize = (checkBeforePaint = false) => {
+    const resize = () => {
       act(() => {
-        const deliveries = Array.from(observers).flatMap(([callback, targets]) =>
-          Array.from(targets).map((target) => ({ callback, target }))
-        )
-        deliveries.sort(
-          (a, b) =>
-            Number((a.target as HTMLElement).dataset.testid === 'virtuoso-item-list') -
-            Number((b.target as HTMLElement).dataset.testid === 'virtuoso-item-list')
-        )
-        deliveries.forEach(({ callback, target }) => {
-          callback([{ target } as ResizeObserverEntry], {} as ResizeObserver)
-          // Check before act flushes pending React work: browsers can paint
-          // between this observer delivery and the next animation frame.
-          if (checkBeforePaint) {
-            expectAlignedPadding()
+        Array.from(observers).forEach(([callback, targets]) => {
+          if (targets.size > 0) {
+            callback(
+              Array.from(targets, (target) => ({ target }) as ResizeObserverEntry),
+              {} as ResizeObserver
+            )
           }
         })
       })
@@ -133,11 +116,13 @@ it.each([false, true, 'before observer', 'unmount sibling'] as const)(
         const target = Array.from(entry[1])[0]!
         rectangle.mockClear()
         act(() => entry[0]([{ target } as ResizeObserverEntry], {} as ResizeObserver))
+        flushFrames()
         expect(rectangle.mock.contexts.length).toBeGreaterThan(0)
         expect(rectangle.mock.contexts.every((element) => element instanceof Node && sibling.contains(element))).toBe(true)
         result.rerender(grid)
         rectangle.mockClear()
         fireEvent.resize(window)
+        flushFrames()
         expect(rectangle.mock.contexts.length).toBeGreaterThan(0)
         expect(rectangle.mock.contexts.every((element) => element instanceof Node && !sibling.contains(element))).toBe(true)
       }
@@ -145,7 +130,7 @@ it.each([false, true, 'before observer', 'unmount sibling'] as const)(
       resize()
       // This cell stays in the five-column range, but mixed old/new sizes
       // briefly report four columns and remove it.
-      const label = 'Cell 35'
+      const label = 'Cell 90'
       const input = screen.getByRole('textbox', {
         name: label,
       }) as HTMLInputElement
@@ -161,12 +146,6 @@ it.each([false, true, 'before observer', 'unmount sibling'] as const)(
         resize()
         expect(screen.getByRole('textbox', { name: label })).toBe(input)
         expect(input.value).toBe('unsaved draft')
-      }
-      // Cross column breakpoints while scrolled, where stale padding displaces
-      // visible cells by whole rows even if their React identity is preserved.
-      for (const nextWidth of [1356, 1100, 1096, 1400]) {
-        width = nextWidth
-        resize(true)
       }
     } finally {
       unmount?.()

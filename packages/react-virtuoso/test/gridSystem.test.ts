@@ -3,13 +3,25 @@ import { describe, expect, it, vi } from 'vitest'
 import { gridSystem, itemsPerRow } from '../src/gridSystem'
 import { getValue, init, publish, subscribe } from '../src/urx'
 
+import type { GridMeasurement } from '../src/gridSystem'
+import type { StatefulStream } from '../src/urx'
+
+function measure<K extends keyof GridMeasurement>(stream: StatefulStream<GridMeasurement>, field: K, value: GridMeasurement[K]) {
+  publish(stream, { ...getValue(stream), [field]: value })
+}
+
+function columns(stream: StatefulStream<GridMeasurement>) {
+  const { viewport, item, gap } = getValue(stream)
+  return itemsPerRow(viewport.width, item.width, gap.column)
+}
+
 describe('grid system', () => {
   it('outputs a single probe item once totalCount is set', () => {
-    const { gridState, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
+    const { gridState, scrollTop, totalCount, gridMeasurement } = init(gridSystem)
     expect(getValue(gridState).items).toHaveLength(0)
     publish(totalCount, 200)
     publish(scrollTop, 0)
-    publish(viewportDimensions, {
+    measure(gridMeasurement, 'viewport', {
       height: 200,
       width: 300,
     })
@@ -17,11 +29,11 @@ describe('grid system', () => {
   })
 
   it('outputs enough items to fill in the screen', () => {
-    const { gridState, itemDimensions, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
+    const { gridState, scrollTop, totalCount, gridMeasurement } = init(gridSystem)
 
     publish(totalCount, 2000)
 
-    publish(viewportDimensions, {
+    measure(gridMeasurement, 'viewport', {
       height: 500,
       width: 1000,
     })
@@ -30,12 +42,12 @@ describe('grid system', () => {
 
     expect(getValue(gridState).items).toHaveLength(1)
 
-    publish(viewportDimensions, {
+    measure(gridMeasurement, 'viewport', {
       height: 500,
       width: 1000,
     })
 
-    publish(itemDimensions, {
+    measure(gridMeasurement, 'item', {
       height: 200,
       width: 300,
     })
@@ -44,7 +56,7 @@ describe('grid system', () => {
 
     expect(getValue(gridState).items).toHaveLength(itemCount)
 
-    publish(viewportDimensions, {
+    measure(gridMeasurement, 'viewport', {
       height: 500,
       width: 2000,
     })
@@ -55,11 +67,11 @@ describe('grid system', () => {
   })
 
   it('reuses currently rendered items if possible', () => {
-    const { gridState, itemDimensions, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
+    const { gridState, scrollTop, totalCount, gridMeasurement } = init(gridSystem)
 
     publish(totalCount, 2000)
 
-    publish(viewportDimensions, {
+    measure(gridMeasurement, 'viewport', {
       height: 500,
       width: 1000,
     })
@@ -68,12 +80,12 @@ describe('grid system', () => {
 
     expect(getValue(gridState).items).toHaveLength(1)
 
-    publish(viewportDimensions, {
+    measure(gridMeasurement, 'viewport', {
       height: 500,
       width: 1000,
     })
 
-    publish(itemDimensions, {
+    measure(gridMeasurement, 'item', {
       height: 200,
       width: 300,
     })
@@ -86,23 +98,23 @@ describe('grid system', () => {
   })
 
   it('offsets the item list when scrolling', () => {
-    const { gridState, itemDimensions, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
+    const { gridState, scrollTop, totalCount, gridMeasurement } = init(gridSystem)
 
     publish(totalCount, 2000)
 
-    publish(viewportDimensions, {
+    measure(gridMeasurement, 'viewport', {
       height: 500,
       width: 1000,
     })
 
     publish(scrollTop, 0)
 
-    publish(viewportDimensions, {
+    measure(gridMeasurement, 'viewport', {
       height: 500,
       width: 1000,
     })
 
-    publish(itemDimensions, {
+    measure(gridMeasurement, 'item', {
       height: 200,
       width: 300,
     })
@@ -112,23 +124,23 @@ describe('grid system', () => {
   })
 
   it('calculates the offsets correctly', () => {
-    const { gridState, itemDimensions, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
+    const { gridState, scrollTop, totalCount, gridMeasurement } = init(gridSystem)
 
     publish(totalCount, 2000)
 
-    publish(viewportDimensions, {
+    measure(gridMeasurement, 'viewport', {
       height: 500,
       width: 1000,
     })
 
     publish(scrollTop, 0)
 
-    publish(viewportDimensions, {
+    measure(gridMeasurement, 'viewport', {
       height: 500,
       width: 1000,
     })
 
-    publish(itemDimensions, {
+    measure(gridMeasurement, 'item', {
       height: 200,
       width: 300,
     })
@@ -145,15 +157,15 @@ describe('grid system', () => {
   })
 
   it('does not overflow past the last item', () => {
-    const { gridState, itemDimensions, overscan, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
+    const { gridState, overscan, scrollTop, totalCount, gridMeasurement } = init(gridSystem)
     publish(overscan, 4)
     publish(totalCount, 39)
-    publish(viewportDimensions, {
+    measure(gridMeasurement, 'viewport', {
       height: 6,
       width: 9,
     })
 
-    publish(itemDimensions, {
+    measure(gridMeasurement, 'item', {
       height: 2,
       width: 3,
     })
@@ -164,15 +176,15 @@ describe('grid system', () => {
   })
 
   it('does not overflow past the first item', () => {
-    const { gridState, itemDimensions, overscan, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
+    const { gridState, overscan, scrollTop, totalCount, gridMeasurement } = init(gridSystem)
     publish(scrollTop, 0)
     publish(overscan, 2)
     publish(totalCount, 30)
-    publish(viewportDimensions, {
+    measure(gridMeasurement, 'viewport', {
       height: 5,
       width: 10,
     })
-    publish(itemDimensions, {
+    measure(gridMeasurement, 'item', {
       height: 2,
       width: 3,
     })
@@ -186,56 +198,109 @@ describe('grid system', () => {
   })
 
   it('correctly calculates items per row', () => {
-    const { gap, gridState, itemDimensions, scrollTop, totalCount, viewportDimensions } = init(gridSystem)
+    const { gridState, scrollTop, totalCount, gridMeasurement } = init(gridSystem)
 
     publish(totalCount, 2000)
 
     publish(scrollTop, 0)
 
-    publish(gap, {
+    measure(gridMeasurement, 'gap', {
       column: 5,
       row: 5,
     })
 
     // Experimentally-determined values that create a rounding error
 
-    publish(viewportDimensions, {
+    measure(gridMeasurement, 'viewport', {
       height: 335,
       width: 335,
     })
 
-    publish(itemDimensions, {
+    measure(gridMeasurement, 'item', {
       height: 80,
       width: 108.33333587646484,
     })
 
-    expect(itemsPerRow(getValue(viewportDimensions).width, getValue(itemDimensions).width, getValue(gap).column)).toBe(3)
+    expect(columns(gridMeasurement)).toBe(3)
     expect(getValue(gridState).items).toHaveLength(12)
 
-    publish(viewportDimensions, {
+    measure(gridMeasurement, 'viewport', {
       height: 505,
       width: 405,
     })
 
-    publish(itemDimensions, {
+    measure(gridMeasurement, 'item', {
       height: 80,
       width: 131.6666717529297,
     })
 
-    expect(itemsPerRow(getValue(viewportDimensions).width, getValue(itemDimensions).width, getValue(gap).column)).toBe(3)
+    expect(columns(gridMeasurement)).toBe(3)
     expect(getValue(gridState).items).toHaveLength(18)
 
-    publish(viewportDimensions, {
+    measure(gridMeasurement, 'viewport', {
       height: 770,
       width: 653,
     })
 
-    publish(itemDimensions, {
+    measure(gridMeasurement, 'item', {
       height: 150,
       width: 104.66667175292969,
     })
 
-    expect(itemsPerRow(getValue(viewportDimensions).width, getValue(itemDimensions).width, getValue(gap).column)).toBe(6)
+    expect(columns(gridMeasurement)).toBe(6)
     expect(getValue(gridState).items).toHaveLength(30)
   })
+})
+
+it('publishes coherent geometry without a transient endReached during resize', () => {
+  const { gridMeasurement, gridState, stateChanged, endReached, scrollTop, totalCount } = init(gridSystem)
+  publish(totalCount, 100)
+  publish(gridMeasurement, {
+    viewport: { height: 600, width: 800 },
+    item: { height: 260, width: 260 },
+    gap: { row: 0, column: 0 },
+  })
+  publish(scrollTop, 5200)
+  const reached = vi.fn()
+  const snapshots = vi.fn()
+  const states = vi.fn()
+  subscribe(endReached, reached)
+  subscribe(stateChanged, snapshots)
+  subscribe(gridState, states)
+  states.mockClear()
+
+  // New viewport with old items would calculate five columns and reach item
+  // 99. The complete measurement has four columns and remains away from the end.
+  const measurement = {
+    viewport: { height: 600, width: 1400 },
+    item: { height: 340, width: 340 },
+    gap: { row: 0, column: 0 },
+  }
+  publish(gridMeasurement, measurement)
+  expect(reached).not.toHaveBeenCalled()
+  expect(snapshots).toHaveBeenCalledExactlyOnceWith({ ...measurement, scrollTop: 5200 })
+  expect(states).toHaveBeenCalled()
+  for (const [state] of states.mock.calls) {
+    expect(state.itemWidth).toBe(340)
+    expect(state.itemHeight).toBe(340)
+    expect(state.items[0].index % 4).toBe(0)
+    expect(state.offsetTop).toBe((state.items[0].index / 4) * 340)
+    expect(state.items.at(-1).index).toBeLessThan(99)
+  }
+})
+
+it('does not recalculate the grid for unchanged measurements', () => {
+  const { gridMeasurement, gridState, totalCount } = init(gridSystem)
+  publish(totalCount, 100)
+  const measurement = {
+    viewport: { height: 600, width: 800 },
+    item: { height: 260, width: 260 },
+    gap: { row: 20, column: 10 },
+  }
+  publish(gridMeasurement, measurement)
+  const states = vi.fn()
+  subscribe(gridState, states)
+  states.mockClear()
+  publish(gridMeasurement, structuredClone(measurement))
+  expect(states).not.toHaveBeenCalled()
 })

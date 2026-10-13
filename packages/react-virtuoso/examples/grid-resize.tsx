@@ -4,7 +4,7 @@ import styled from '@emotion/styled'
 
 import { VirtuosoGrid } from '../src'
 
-import type { GridComponents } from '../src'
+import type { GridComponents, VirtuosoGridProps } from '../src'
 
 const List = styled.div`
   display: grid;
@@ -21,21 +21,39 @@ const Item = styled.div`
 const components = { Item, List }
 const itemContent = (index: number) => <input aria-label={`Item ${index}`} defaultValue={`Item ${index}`} />
 
+function ResizeGrid(props: VirtuosoGridProps<unknown>) {
+  const [skipAnimationFrame, setSkipAnimationFrame] = React.useState(false)
+  return (
+    <>
+      <label>
+        <input type="checkbox" checked={skipAnimationFrame} onChange={(event) => setSkipAnimationFrame(event.target.checked)} />
+        Measure before paint (may report ResizeObserver loop errors)
+      </label>
+      <VirtuosoGrid
+        {...props}
+        components={components}
+        itemContent={itemContent}
+        overscan={1600}
+        totalCount={1000}
+        skipAnimationFrameInResizeObserver={skipAnimationFrame}
+      />
+    </>
+  )
+}
+
 export function Example() {
-  return <VirtuosoGrid components={components} itemContent={itemContent} overscan={1600} totalCount={1000} useWindowScroll />
+  return <ResizeGrid useWindowScroll />
 }
 
 export function ElementScroll() {
-  return <VirtuosoGrid components={components} itemContent={itemContent} overscan={1600} style={{ height: 600 }} totalCount={1000} />
+  return <ResizeGrid style={{ height: 600 }} />
 }
 
 export function CustomScrollParent() {
   const [parent, setParent] = React.useState<HTMLDivElement | null>(null)
   return (
     <div ref={setParent} style={{ height: 600, overflow: 'auto' }}>
-      {parent && (
-        <VirtuosoGrid components={components} customScrollParent={parent} itemContent={itemContent} overscan={1600} totalCount={1000} />
-      )}
+      {parent && <ResizeGrid customScrollParent={parent} />}
     </div>
   )
 }

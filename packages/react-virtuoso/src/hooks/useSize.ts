@@ -1,32 +1,13 @@
 import React from 'react'
 
-import type { SizeObserverGroup } from './sizeObserverGroup'
-
 export type CallbackRefParam = HTMLElement | null
 
-export default function useSize(
-  callback: (e: HTMLElement) => void,
-  enabled: boolean,
-  skipAnimationFrame: boolean,
-  group?: SizeObserverGroup
-) {
-  return useSizeWithElRef(callback, enabled, skipAnimationFrame, group).callbackRef
+export default function useSize(callback: (e: HTMLElement) => void, enabled: boolean, skipAnimationFrame: boolean) {
+  return useSizeWithElRef(callback, enabled, skipAnimationFrame).callbackRef
 }
 
-export function useSizeWithElRef(
-  callback: (e: HTMLElement) => void,
-  enabled: boolean,
-  skipAnimationFrame: boolean,
-  group?: SizeObserverGroup
-) {
+export function useSizeWithElRef(callback: (e: HTMLElement) => void, enabled: boolean, skipAnimationFrame: boolean) {
   const ref = React.useRef<CallbackRefParam>(null)
-
-  const measure = React.useCallback(() => {
-    const element = ref.current
-    if (element !== null && element.offsetParent !== null) {
-      callback(element)
-    }
-  }, [callback])
 
   let callbackRef = (_el: CallbackRefParam) => {
     void 0
@@ -41,9 +22,7 @@ export function useSizeWithElRef(
             callback(element)
           }
         }
-        if (group) {
-          group.measure()
-        } else if (skipAnimationFrame) {
+        if (skipAnimationFrame) {
           code()
         } else {
           requestAnimationFrame(code)
@@ -51,19 +30,17 @@ export function useSizeWithElRef(
       })
     }
     return null
-  }, [callback, skipAnimationFrame, group])
+  }, [callback, skipAnimationFrame])
 
   callbackRef = (elRef: CallbackRefParam) => {
     if (elRef && enabled) {
       observer?.observe(elRef)
       ref.current = elRef
-      group?.callbacks.add(measure)
     } else {
       if (ref.current) {
         observer?.unobserve(ref.current)
       }
       ref.current = null
-      group?.callbacks.delete(measure)
     }
   }
 

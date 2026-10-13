@@ -14,6 +14,8 @@ import { windowScrollerSystem } from './windowScrollerSystem'
 import type { ElementDimensions, Gap, GridStateSnapshot } from './component-interfaces/VirtuosoGrid'
 import type { FlatIndexLocationWithAlign, GridIndexLocation, GridItem } from './interfaces'
 
+export type GridMeasurement = Pick<GridStateSnapshot, 'viewport' | 'item' | 'gap'>
+
 export type Data = null | unknown[]
 
 export interface GridLayout {
@@ -75,7 +77,17 @@ function gapComparator(prev: Gap | undefined, next: Gap) {
 export const gridSystem = /*#__PURE__*/ u.system(
   ([
     { increaseViewportBy, listBoundary, overscan, visibleRange },
-    { footerHeight, headerHeight, scrollBy, scrollContainerState, scrollTo, scrollTop, smoothScrollTargetReached, viewportHeight },
+    {
+      footerHeight,
+      headerHeight,
+      scrollBy,
+      scrollContainerState,
+      scrollTo,
+      scrollTop,
+      smoothScrollTargetReached,
+      viewportHeight,
+      skipAnimationFrameInResizeObserver,
+    },
     stateFlags,
     scrollSeek,
     { didMount, propsReady },
@@ -85,13 +97,26 @@ export const gridSystem = /*#__PURE__*/ u.system(
     const totalCount = u.statefulStream(0)
     const initialItemCount = u.statefulStream(0)
     const gridState = u.statefulStream(INITIAL_GRID_STATE)
-    const viewportDimensions = u.statefulStream<ElementDimensions>({ height: 0, width: 0 })
-    const itemDimensions = u.statefulStream<ElementDimensions>({ height: 0, width: 0 })
+    const gridMeasurement = u.statefulStream<GridMeasurement>({
+      viewport: { height: 0, width: 0 },
+      item: { height: 0, width: 0 },
+      gap: { column: 0, row: 0 },
+    })
+    const measurements = u.statefulStreamFromEmitter(
+      u.duc(
+        gridMeasurement,
+        (prev, next) =>
+          prev !== undefined &&
+          dimensionComparator(prev.viewport, next.viewport) &&
+          dimensionComparator(prev.item, next.item) &&
+          gapComparator(prev.gap, next.gap)
+      ),
+      u.getValue(gridMeasurement)
+    )
     const scrollToIndex = u.stream<GridIndexLocation>()
     const scrollHeight = u.stream<number>()
     const deviation = u.statefulStream(0)
     const data = u.statefulStream<Data>(null)
-    const gap = u.statefulStream<Gap>({ column: 0, row: 0 })
     const stateChanged = u.stream<GridStateSnapshot>()
     const restoreStateFrom = u.stream<GridStateSnapshot | null | undefined>()
     const stateRestoreInProgress = u.statefulStream(false)
@@ -113,12 +138,12 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
     u.subscribe(
       u.pipe(
-        u.combineLatest(didMount, scrolledToInitialItem, itemDimensions, viewportDimensions, initialTopMostItemIndex, scrollScheduled),
-        u.filter(([didMount, scrolledToInitialItem, itemDimensions, viewportDimensions, , scrollScheduled]) => {
-          return didMount && !scrolledToInitialItem && itemDimensions.height !== 0 && viewportDimensions.height !== 0 && !scrollScheduled
+        u.combineLatest(didMount, scrolledToInitialItem, measurements, initialTopMostItemIndex, scrollScheduled),
+        u.filter(([didMount, scrolledToInitialItem, { item, viewport }, , scrollScheduled]) => {
+          return didMount && !scrolledToInitialItem && item.height !== 0 && viewport.height !== 0 && !scrollScheduled
         })
       ),
-      ([, , , , initialTopMostItemIndex]) => {
+      ([, , , initialTopMostItemIndex]) => {
         if (initialTopMostItemIndex === undefined) {
           u.publish(scrolledToInitialItem, true)
           return
@@ -159,9 +184,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
         if (!snapshot) {
           return
         }
-        u.publish(viewportDimensions, snapshot.viewport)
-        u.publish(itemDimensions, snapshot.item)
-        u.publish(gap, snapshot.gap)
+        u.publish(gridMeasurement, { viewport: snapshot.viewport, item: snapshot.item, gap: snapshot.gap })
         if (snapshot.scrollTop > 0) {
           u.publish(stateRestoreInProgress, true)
           u.handleNext(u.pipe(scrollTop, u.skip(1)), (_value) => {
@@ -174,26 +197,8 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
     u.connect(
       u.pipe(
-        viewportDimensions,
-        u.map(({ height }) => height)
-      ),
-      viewportHeight
-    )
-
-    u.connect(
-      u.pipe(
-        u.combineLatest(
-          u.duc(viewportDimensions, dimensionComparator),
-          u.duc(itemDimensions, dimensionComparator),
-          u.duc(gap, (prev: Gap | undefined, next: Gap) => prev !== undefined && prev.column === next.column && prev.row === next.row),
-          u.duc(scrollTop)
-        ),
-        u.map(([viewport, item, gap, scrollTop]) => ({
-          gap,
-          item,
-          scrollTop,
-          viewport,
-        }))
+        u.combineLatest(measurements, u.duc(scrollTop)),
+        u.map(([measurement, scrollTop]) => ({ ...measurement, scrollTop }))
       ),
       stateChanged
     )
@@ -203,25 +208,21 @@ export const gridSystem = /*#__PURE__*/ u.system(
         u.combineLatest(
           u.duc(totalCount),
           visibleRange,
-          u.duc(gap, gapComparator),
-          u.duc(itemDimensions, dimensionComparator),
-          u.duc(viewportDimensions, dimensionComparator),
+          measurements,
           u.duc(data),
           u.duc(initialItemCount),
           u.duc(stateRestoreInProgress),
           u.duc(scrolledToInitialItem),
           u.duc(initialTopMostItemIndex)
         ),
-        u.filter(([, , , , , , , stateRestoreInProgress]) => {
+        u.filter(([, , , , , stateRestoreInProgress]) => {
           return !stateRestoreInProgress
         }),
         u.map(
           ([
             totalCount,
             [startOffset, endOffset],
-            gap,
-            item,
-            viewport,
+            { gap, item, viewport },
             data,
             initialItemCount,
             ,
@@ -288,18 +289,22 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
     u.connect(
       u.pipe(
-        u.combineLatest(viewportDimensions, itemDimensions, gridState, gap),
-        u.filter(([viewportDimensions, itemDimensions, { items }]) => {
-          return items.length > 0 && itemDimensions.height !== 0 && viewportDimensions.height !== 0
-        }),
-        u.map(([viewportDimensions, itemDimensions, { items }, gap]) => {
-          const { bottom, top } = gridLayout(viewportDimensions, gap, itemDimensions, items)
-
-          return [top, bottom] as [number, number]
-        }),
+        gridState,
+        u.filter(({ items, itemHeight }) => items.length > 0 && itemHeight !== 0),
+        u.map(({ top, bottom }) => [top, bottom] as [number, number]),
         u.distinctUntilChanged(tupleComparator)
       ),
       listBoundary
+    )
+
+    // Propagate viewport height after the grid has consumed the whole measurement.
+    // A height change can synchronously update visibleRange through sizeRangeSystem.
+    u.connect(
+      u.pipe(
+        measurements,
+        u.map(({ viewport }) => viewport.height)
+      ),
+      viewportHeight
     )
 
     const hasScrolled = u.statefulStream(false)
@@ -375,8 +380,8 @@ export const gridSystem = /*#__PURE__*/ u.system(
     u.connect(
       u.pipe(
         scrollToIndex,
-        u.withLatestFrom(viewportDimensions, itemDimensions, totalCount, gap),
-        u.map(([location, viewportDimensions, itemDimensions, totalCount, gap]) => {
+        u.withLatestFrom(gridMeasurement, totalCount),
+        u.map(([location, { viewport, item, gap }, totalCount]) => {
           const normalLocation = normalizeIndexLocation(location) as FlatIndexLocationWithAlign
           const { align, behavior, offset } = normalLocation
           let index = normalLocation.index
@@ -386,12 +391,12 @@ export const gridSystem = /*#__PURE__*/ u.system(
 
           index = max(0, index, min(totalCount - 1, index))
 
-          let top = itemTop(viewportDimensions, gap, itemDimensions, index)
+          let top = itemTop(viewport, gap, item, index)
 
           if (align === 'end') {
-            top = round(top - viewportDimensions.height + itemDimensions.height)
+            top = round(top - viewport.height + item.height)
           } else if (align === 'center') {
-            top = round(top - viewportDimensions.height / 2 + itemDimensions.height / 2)
+            top = round(top - viewport.height / 2 + item.height / 2)
           }
 
           if (offset !== undefined && offset !== 0) {
@@ -414,25 +419,16 @@ export const gridSystem = /*#__PURE__*/ u.system(
       0
     )
 
-    u.connect(
-      u.pipe(
-        windowViewportRect,
-        u.map((viewportInfo) => ({ height: viewportInfo.visibleHeight, width: viewportInfo.visibleWidth }))
-      ),
-      viewportDimensions
-    )
-
     return {
       customScrollParent,
       // input
       data,
       deviation,
       footerHeight,
-      gap,
+      gridMeasurement,
       headerHeight,
       increaseViewportBy,
       initialItemCount,
-      itemDimensions,
       overscan,
       restoreStateFrom,
       scrollBy,
@@ -442,9 +438,9 @@ export const gridSystem = /*#__PURE__*/ u.system(
       scrollToIndex,
       scrollTop,
       smoothScrollTargetReached,
+      skipAnimationFrameInResizeObserver,
       totalCount,
       useWindowScroll,
-      viewportDimensions,
       windowScrollContainerState,
       windowScrollTo,
       windowViewportRect,

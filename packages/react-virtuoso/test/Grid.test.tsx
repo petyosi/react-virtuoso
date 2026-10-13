@@ -6,8 +6,30 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { VirtuosoGrid } from '../src/VirtuosoGrid'
 
+import type { GridMeasurement } from '../src/gridSystem'
+
 vi.mock('../src/hooks/useSize')
 vi.mock('../src/hooks/useScrollTop')
+// These tests exercise probe/data rendering. Browser timing and real measurements
+// remain covered by GridResize.test.tsx and e2e/grid-resize.test.ts.
+vi.mock('../src/hooks/useGridMeasurement', () => ({
+  default: ({ onMeasurement }: { onMeasurement: (value: GridMeasurement) => void }) => ({
+    viewportRef: (element: HTMLElement | null) => {
+      if (element) {
+        Object.assign(element, {
+          triggerResize: ({ getBoundingClientRect }: { getBoundingClientRect: () => { height: number } }) =>
+            onMeasurement({
+              viewport: { width: 300, ...getBoundingClientRect() },
+              item: { height: 0, width: 0 },
+              gap: { row: 0, column: 0 },
+            }),
+        })
+      }
+    },
+    listRef: () => {},
+    observeItem: () => {},
+  }),
+}))
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 describe('Grid', () => {
@@ -158,5 +180,12 @@ describe('Grid', () => {
     })
 
     expect(listParent.firstElementChild.textContent).toBe('Item 1')
+  })
+
+  it('does not forward the measurement scheduling prop to the scroller', () => {
+    act(() => {
+      ReactDOM.createRoot(container).render(<VirtuosoGrid totalCount={10} skipAnimationFrameInResizeObserver />)
+    })
+    expect(container.firstElementChild?.hasAttribute('skipAnimationFrameInResizeObserver')).toBe(false)
   })
 })

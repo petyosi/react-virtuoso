@@ -189,6 +189,14 @@ export interface VirtuosoGridProps<Data, Context = unknown> extends GridRootProp
   overscan?: number | { main: number; reverse: number }
 
   /**
+   * Measure the viewport and items directly in ResizeObserver callbacks, reducing
+   * flicker when resizing a scrolled grid. Defaults to false (measure in the next
+   * animation frame). Enabling this can report "ResizeObserver loop
+   * completed with undelivered notifications" errors when rendering changes sizes.
+   */
+  skipAnimationFrameInResizeObserver?: boolean
+
+  /**
    * Called with the new set of items each time the list items are rendered due to scrolling.
    */
   rangeChanged?: (range: ListRange) => void
