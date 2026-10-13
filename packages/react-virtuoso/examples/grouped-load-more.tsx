@@ -9,10 +9,10 @@ import { GroupedVirtuoso } from '../src'
 import type { Components } from '../src'
 
 const getUser = () => {
-  const firstName = faker.name.firstName()
-  const lastName = faker.name.lastName()
+  const firstName = faker.person.firstName()
+  const lastName = faker.person.lastName()
   return {
-    avatar: faker.internet.avatar(),
+    avatar: faker.image.avatar(),
     description: faker.company.catchPhrase(),
     initials: `${firstName[0]}${lastName[0]}`,
     name: `${firstName} ${lastName}`,
