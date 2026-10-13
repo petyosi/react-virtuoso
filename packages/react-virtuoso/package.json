@@ -63,7 +63,7 @@
     "@microsoft/api-extractor": "catalog:",
     "@playwright/test": "^1.60.0",
     "@testing-library/react": "catalog:",
-    "@types/jsdom": "^21.1.1",
+    "@types/jsdom": "^30.0.0",
     "@types/lodash": "^4.14.194",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
