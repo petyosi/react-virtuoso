@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.18.19
+
+### Patch Changes
+
+- [#1462](https://github.com/petyosi/react-virtuoso/pull/1462) [`12a40e9`](https://github.com/petyosi/react-virtuoso/commit/12a40e90930b778ada05b08a63d36045fd09f508) Thanks [@Luccas-carvalho](https://github.com/Luccas-carvalho)! - Clamp out-of-range `VirtuosoGrid` `scrollToIndex` targets to the last available item.
+
 ## 4.18.18
 
 ### Patch Changes
