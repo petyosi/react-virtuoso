@@ -1,5 +1,12 @@
 # @virtuoso.dev/reactive-engine-examples
 
+## 0.0.20
+
+### Patch Changes
+
+- Updated dependencies [[`4cb81bd`](https://github.com/petyosi/react-virtuoso/commit/4cb81bd6ac5d4b5e8adc9072dcb6316429aa649a)]:
+  - @virtuoso.dev/reactive-engine-query@2.0.2
+
 ## 0.0.19
 
 ### Patch Changes
