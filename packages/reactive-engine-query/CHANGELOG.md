@@ -1,5 +1,11 @@
 # @virtuoso.dev/reactive-engine-query
 
+## 2.0.2
+
+### Patch Changes
+
+- [#1534](https://github.com/petyosi/react-virtuoso/pull/1534) [`4cb81bd`](https://github.com/petyosi/react-virtuoso/commit/4cb81bd6ac5d4b5e8adc9072dcb6316429aa649a) Thanks [@petyosi](https://github.com/petyosi)! - Stop a polling query from re-arming its `refetchInterval` after a `data$` subscriber disables it, changes its params, or starts another fetch while handling a successful result.
+
 ## 2.0.1
 
 ### Patch Changes
