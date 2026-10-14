@@ -517,6 +517,63 @@ describe('Query', () => {
     expect(queryFn.mock.calls.map(([params]) => params.id)).toEqual(['first', 'second', 'third'])
   })
 
+  it('should stay disabled when a data$ subscriber disables it on success', async () => {
+    const queryFn = vi.fn(() => Promise.resolve('done'))
+
+    const query = Query({
+      initialParams: {} as Record<string, never>,
+      queryFn,
+      refetchInterval: 20,
+    })
+
+    const engine = new Engine()
+    engine.sub(query.data$, (result, eng) => {
+      if (result.type === 'success') {
+        eng.pub(query.enabled$, false)
+      }
+    })
+
+    await vi.waitFor(() => {
+      expect(engine.getValue(query.data$).type).toBe('success')
+    })
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100)
+    })
+    expect(queryFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should poll with the new params when a data$ subscriber changes them on success', async () => {
+    // Slower than the interval, so a poll armed with the replaced params would fire first.
+    const queryFn = vi.fn(
+      ({ step }: { step: number }) =>
+        new Promise<number>((resolve) => {
+          setTimeout(() => {
+            resolve(step)
+          }, 30)
+        })
+    )
+
+    const query = Query({
+      initialParams: { step: 1 },
+      queryFn,
+      refetchInterval: 10,
+    })
+
+    const engine = new Engine()
+    engine.sub(query.data$, (result, eng) => {
+      if (result.type === 'success' && !result.isFetching && result.data === 1) {
+        eng.pub(query.params$, { step: 2 })
+      }
+    })
+
+    await vi.waitFor(() => {
+      expect(queryFn.mock.calls.length).toBeGreaterThanOrEqual(4)
+    })
+    engine.pub(query.enabled$, false)
+    // Only the first call used the replaced params; polling continues with the new ones.
+    expect(queryFn.mock.calls.slice(1).every(([params]) => params.step === 2)).toBe(true)
+  })
+
   it('should stop polling each time enabled$ turns false again', async () => {
     const queryFn = vi.fn(() => Promise.resolve('Result'))
 

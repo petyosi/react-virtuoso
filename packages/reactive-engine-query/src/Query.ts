@@ -196,7 +196,11 @@ export function Query<TParams, TData>(options: QueryOptions<TParams, TData>) {
           type: 'success',
         })
 
-        startPolling(engine, params)
+        // Subscribers run inside that publish and may disable the query, change its params, or
+        // start another fetch; polling resumes only if this fetch is still the current one.
+        if (abortControllers.get(engine) === controller && !controller.signal.aborted && engine.getValue(enabled$)) {
+          startPolling(engine, params)
+        }
         return undefined
       })
       .catch((error: unknown) => {
