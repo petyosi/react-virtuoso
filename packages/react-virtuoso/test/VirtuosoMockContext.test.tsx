@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { TableVirtuoso, Virtuoso, VirtuosoGrid, VirtuosoGridMockContext, VirtuosoMockContext } from '../src'
@@ -48,6 +48,22 @@ describe('VirtuosoMockContext', () => {
       })
 
       expect(container).toMatchSnapshot()
+    })
+
+    it('starts at the initialTopMostItemIndex', async () => {
+      const { container } = render(<Virtuoso initialTopMostItemIndex={50} itemContent={(index) => `Item ${index}`} totalCount={100} />, {
+        wrapper: ({ children }) => (
+          <VirtuosoMockContext.Provider value={{ itemHeight: 100, viewportHeight: 300 }}>{children}</VirtuosoMockContext.Provider>
+        ),
+      })
+
+      await waitFor(() => {
+        expect(Array.from(container.querySelectorAll('[data-index]')).map((el) => el.textContent)).toEqual([
+          'Item 50',
+          'Item 51',
+          'Item 52',
+        ])
+      })
     })
   })
 
