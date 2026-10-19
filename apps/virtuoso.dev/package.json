@@ -76,7 +76,7 @@
     "@virtuoso.dev/masonry": "workspace:*",
     "estree-util-visit": "^2.0.0",
     "mdast-util-mdx": "^3.0.0",
-    "prettier": "^3.9.6",
+    "prettier": "^3.9.10",
     "prettier-plugin-astro": "^0.14.1",
     "react-virtuoso": "workspace:*",
     "typescript": "catalog:",
