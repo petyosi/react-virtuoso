@@ -29,7 +29,7 @@
     "@types/node": "catalog:",
     "@typescript/native-preview": "7.0.0-dev.20260707.2",
     "knip": "catalog:",
-    "lefthook": "^2.1.10",
+    "lefthook": "^2.2.2",
     "markdownlint-cli": "^0.49.1",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
