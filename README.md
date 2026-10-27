@@ -76,6 +76,13 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for dev
 
 ## Sponsors
 
+<a href="https://getstream.io/chat/sdk/react/?utm_source=github&utm_medium=sponsor&utm_campaign=petyosi">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/sponsors/stream-logo-light-text.png">
+    <img alt="Stream" src=".github/sponsors/stream-logo-dark-text.png" width="240">
+  </picture>
+</a>
+
 If you find Virtuoso valuable for your work, please consider [sponsoring the project](https://github.com/sponsors/petyosi). Your support helps ensure continued development and maintenance.
 
 ## Author
