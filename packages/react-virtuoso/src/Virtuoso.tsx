@@ -526,6 +526,7 @@ export const {
     },
     methods: {
       scrollToIndex: 'scrollToIndex',
+      cancelScrollToIndex: 'cancelScrollToIndex',
       scrollIntoView: 'scrollIntoView',
       scrollTo: 'scrollTo',
       scrollBy: 'scrollBy',

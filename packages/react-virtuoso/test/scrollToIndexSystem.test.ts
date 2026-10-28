@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { domIOSystem } from '../src/domIOSystem'
 import { normalizeIndexLocation, scrollToIndexSystem } from '../src/scrollToIndexSystem'
 import { sizeSystem } from '../src/sizeSystem'
-import { init, publish, subscribe, system, tup } from '../src/urx'
+import { getValue, init, publish, subscribe, system, tup } from '../src/urx'
 
 describe('normalizeIndexLocation', () => {
   it('does not mutate the passed location object', () => {
@@ -79,5 +79,59 @@ describe('scrollToIndex retry window', () => {
     publish(listRefresh, true)
 
     expect(sub).toHaveBeenCalledTimes(3)
+  })
+})
+
+describe('cancelScrollToIndex', () => {
+  const testSystem = system(
+    ([scrollToIndexOutput, { listRefresh, totalCount }, { scrollingInProgress, scrollTo, viewportHeight }]) => ({
+      ...scrollToIndexOutput,
+      listRefresh,
+      scrollingInProgress,
+      scrollTo,
+      totalCount,
+      viewportHeight,
+    }),
+    tup(scrollToIndexSystem, sizeSystem, domIOSystem)
+  )
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('stops a pending scrollToIndex from retrying', () => {
+    const { cancelScrollToIndex, listRefresh, scrollingInProgress, scrollTo, scrollToIndex, totalCount, viewportHeight } = init(testSystem)
+    publish(totalCount, 100)
+    publish(viewportHeight, 200)
+    const sub = vi.fn()
+    subscribe(scrollTo, sub)
+
+    publish(scrollToIndex, 10)
+    expect(getValue(scrollingInProgress)).toBe(true)
+    publish(cancelScrollToIndex, true)
+    expect(getValue(scrollingInProgress)).toBe(false)
+    vi.advanceTimersByTime(100)
+    publish(listRefresh, true)
+
+    expect(sub).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not affect a scrollToIndex started after it', () => {
+    const { cancelScrollToIndex, listRefresh, scrollTo, scrollToIndex, totalCount, viewportHeight } = init(testSystem)
+    publish(totalCount, 100)
+    publish(viewportHeight, 200)
+    const sub = vi.fn()
+    subscribe(scrollTo, sub)
+
+    publish(cancelScrollToIndex, true)
+    publish(scrollToIndex, 10)
+    vi.advanceTimersByTime(100)
+    publish(listRefresh, true)
+
+    expect(sub).toHaveBeenCalledTimes(2)
   })
 })
