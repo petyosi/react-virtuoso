@@ -3,7 +3,7 @@ import { domIOSystem } from './domIOSystem'
 import { listStateSystem } from './listStateSystem'
 import { loggerSystem, LogLevel } from './loggerSystem'
 import { recalcSystem } from './recalcSystem'
-import { sizeSystem } from './sizeSystem'
+import { offsetOf, sizeSystem } from './sizeSystem'
 import { stateFlagsSystem, UP } from './stateFlagsSystem'
 import * as u from './urx'
 import { simpleMemoize } from './utils/simpleMemoize'
@@ -20,27 +20,49 @@ type UpwardFixState = [number, ListItem<any>[], number, number]
  */
 export const upwardScrollFixSystem = u.system(
   ([
-    { deviation, deviationCommitted, scrollBy, scrollingInProgress, scrollTop },
+    { deviation, deviationCommitted, headerHeight, scrollBy, scrollingInProgress, scrollTo, scrollTop, statefulScrollTop },
     { isAtBottom, isScrolling, lastJumpDueToItemResize, scrollDirection },
     { listState },
     { beforeUnshiftWith, gap, shiftWithOffset, sizes },
     { log },
     { recalcInProgress },
   ]) => {
+    let previousSizes = u.getValue(sizes)
+    let revealedAnchor: { originalIndex: number; scrollTop: number } | undefined
     const deviationOffset = u.streamFromEmitter(
       u.pipe(
         listState,
         u.withLatestFrom(lastJumpDueToItemResize),
         u.scan(
-          ([, prevItems, prevTotalCount, prevTotalHeight], [{ bottom, items, offsetBottom, totalCount }, lastJumpDueToItemResize]) => {
-            const totalHeight = bottom + offsetBottom
-
+          (
+            [, prevItems, prevTotalCount, prevFirstItemIndex],
+            [{ firstItemIndex, items, topListHeight, totalCount }, lastJumpDueToItemResize]
+          ) => {
             let newDev = 0
-            if (prevTotalCount === totalCount) {
-              if (prevItems.length > 0 && items.length > 0) {
-                const atStart = items[0]!.originalIndex === 0 && prevItems[0]!.originalIndex === 0
-                if (!atStart) {
-                  newDev = totalHeight - prevTotalHeight
+            const currentSizes = u.getValue(sizes)
+            const { offsetTree } = currentSizes
+            const currentScrollTop = u.getValue(statefulScrollTop)
+            if (revealedAnchor?.scrollTop !== currentScrollTop || prevTotalCount !== totalCount || prevFirstItemIndex !== firstItemIndex) {
+              revealedAnchor = undefined
+            }
+            if (prevTotalCount === totalCount && prevFirstItemIndex === firstItemIndex) {
+              if (prevItems.length > 0 && items.length > 0 && offsetTree.length > 0) {
+                // Overscanned rows are not necessarily visible. Keep the first fully visible row,
+                // rather than moving it when a measurement below it changes the total height.
+                const viewportTop =
+                  currentScrollTop + lastJumpDueToItemResize - u.getValue(headerHeight) - u.getValue(deviation) + topListHeight
+                const retainedAnchor = revealedAnchor
+                const anchor =
+                  (retainedAnchor && prevItems.find((item) => item.originalIndex === retainedAnchor.originalIndex)) ??
+                  prevItems.find((item) => item.offset >= viewportTop) ??
+                  prevItems[prevItems.length - 1]!
+                // A newly revealed row still has an estimated size. Keep the existing row
+                // until that measurement arrives, unless the user moves on first.
+                if (previousSizes === currentSizes && items[0]!.originalIndex! < prevItems[0]!.originalIndex!) {
+                  revealedAnchor = { originalIndex: anchor.originalIndex!, scrollTop: currentScrollTop }
+                }
+                if (anchor.size > 0) {
+                  newDev = offsetOf(anchor.originalIndex!, offsetTree, u.getValue(gap)) - anchor.offset
                   if (newDev !== 0) {
                     newDev += lastJumpDueToItemResize
                   }
@@ -48,7 +70,12 @@ export const upwardScrollFixSystem = u.system(
               }
             }
 
-            return [newDev, items, totalCount, totalHeight] as UpwardFixState
+            if (previousSizes !== currentSizes) {
+              revealedAnchor = undefined
+            }
+            previousSizes = currentSizes
+
+            return [newDev, items, totalCount, firstItemIndex] as UpwardFixState
           },
           [0, [], 0, 0] as UpwardFixState
         ),
@@ -63,6 +90,15 @@ export const upwardScrollFixSystem = u.system(
         })
       )
     )
+
+    u.subscribe(scrollTop, (top) => {
+      if (revealedAnchor?.scrollTop !== top) {
+        revealedAnchor = undefined
+      }
+    })
+    u.subscribe(scrollTo, () => {
+      revealedAnchor = undefined
+    })
 
     function scrollByWith(offset: number) {
       if (offset > 0) {
