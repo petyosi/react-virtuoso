@@ -327,7 +327,30 @@ export function buildScroller({ useEmitter, useEmitterValue, usePublisher }: Hoo
       horizontalDirection
     )
 
-    useEmitter('scrollTo', scrollToCallback)
+    const ctx = React.useContext(VirtuosoMockContext)
+    // a ref instead of useEmitterValue, so that the scroller does not re-render on every list height change outside of tests
+    const totalListHeightRef = React.useRef(0)
+    const setTotalListHeight = React.useCallback((value: number) => {
+      totalListHeightRef.current = value
+    }, [])
+    useEmitter('totalListHeight', setTotalListHeight)
+    // there is no layout to scroll in a mocked environment, so report the requested position as the new scroll state
+    const mockScrollToCallback = React.useCallback(
+      (location: ScrollToOptions) => {
+        if (!ctx || location.top === undefined) {
+          return
+        }
+        const scrollHeight = Math.max(totalListHeightRef.current, ctx.viewportHeight)
+        const scrollTop = Math.ceil(Math.max(Math.min(scrollHeight - ctx.viewportHeight, location.top), 0))
+        scrollContainerStateCallback({ scrollHeight, scrollTop, viewportHeight: ctx.viewportHeight })
+        if (location.behavior === 'smooth') {
+          smoothScrollTargetReached(true)
+        }
+      },
+      [ctx, scrollContainerStateCallback, smoothScrollTargetReached]
+    )
+
+    useEmitter('scrollTo', ctx ? mockScrollToCallback : scrollToCallback)
     useEmitter('scrollBy', scrollByCallback)
     const defaultStyle = horizontalDirection ? horizontalScrollerStyle : scrollerStyle
     return (
