@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.18.20
+
+### Patch Changes
+
+- [#1553](https://github.com/petyosi/react-virtuoso/pull/1553) [`cc5d11e`](https://github.com/petyosi/react-virtuoso/commit/cc5d11e14c853c28872b8fe9c6bb704d0cc2b1fa) Thanks [@petyosi](https://github.com/petyosi)! - Fixed `initialTopMostItemIndex` and `scrollToIndex` having no effect inside `VirtuosoMockContext`. The scroller now reports the requested scroll position directly, so the list renders the target items in tests instead of staying empty or starting from the first item.
+
 ## 4.18.19
 
 ### Patch Changes
