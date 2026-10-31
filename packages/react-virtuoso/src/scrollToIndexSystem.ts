@@ -48,6 +48,9 @@ export const scrollToIndexSystem = u.system(
     let unsubscribeNextListRefresh: any = null
     let cleartTimeoutRef: null | ReturnType<typeof setTimeout> = null
     let unsubscribeListRefresh: any = null
+    // Identifies the current navigation. The 150 ms watch timer in watchChangesFor keeps running after
+    // cleanup() unsubscribes it, so a superseded navigation's retry must not act on the current one.
+    let navigationId = 0
 
     function cleanup() {
       if (unsubscribeNextListRefresh !== null) {
@@ -101,7 +104,11 @@ export const scrollToIndexSystem = u.system(
               top += offset
             }
 
+            const currentNavigationId = ++navigationId
             const retry = (listChanged: boolean) => {
+              if (currentNavigationId !== navigationId) {
+                return
+              }
               cleanup()
               if (listChanged) {
                 log('retrying to scroll to', { location }, LogLevel.DEBUG)
