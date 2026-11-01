@@ -204,7 +204,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
             style={horizontalDirection ? HORIZONTAL_ITEM_STYLE : ITEM_STYLE}
           >
             {hasGroups
-              ? (itemContent as GroupItemContent<any, any>)(item.index, item.groupIndex!, item.data, context)
+              ? (itemContent as GroupItemContent<any, any>)(item.index, item.groupIndex!, item.data, context, item.indexInGroup!)
               : (itemContent as ItemContent<any, any>)(item.index, item.data, context)}
           </ItemComponent>
         )
