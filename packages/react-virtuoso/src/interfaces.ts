@@ -810,4 +810,9 @@ export interface WindowViewportInfo {
   visibleHeight: number
   /** The visible width of the window viewport in pixels */
   visibleWidth: number
+  /**
+   * The CSS zoom of the scroll container divided by the CSS zoom of the list, used to convert `offsetTop` and the scroll position
+   * into the list's pixels. `1` unless CSS `zoom` is set between the scroll container and the list.
+   */
+  zoomRatio?: number
 }

@@ -123,7 +123,8 @@ export default function useScrollTop(
       scrollTop = horizontalDirection === true ? getLogicalScrollLeft(scrollerElement, scrollerElement.scrollX) : scrollerElement.scrollY
     } else {
       scrollHeight = scrollerElement[horizontalDirection === true ? 'scrollWidth' : 'scrollHeight']
-      offsetHeight = correctItemSize(scrollerElement, horizontalDirection === true ? 'width' : 'height')
+      // the scroller's own zoom, since scrollTop and scrollHeight are in the pixels of its content
+      offsetHeight = correctItemSize(scrollerElement, horizontalDirection === true ? 'width' : 'height', scrollerElement)
       scrollTop =
         horizontalDirection === true ? getLogicalScrollLeft(scrollerElement, scrollerElement.scrollLeft) : scrollerElement.scrollTop
     }

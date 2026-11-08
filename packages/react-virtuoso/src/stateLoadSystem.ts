@@ -32,7 +32,7 @@ export const stateLoadSystem = u.system(
       ([callback, sizes, scrollTop, useWindowScroll, windowScrollContainerState, windowViewportRect, headerHeight]) => {
         const ranges = sizeTreeToRanges(sizes.sizeTree)
         if (useWindowScroll && windowScrollContainerState !== null && windowViewportRect !== null) {
-          scrollTop = windowScrollContainerState.scrollTop - windowViewportRect.offsetTop
+          scrollTop = (windowScrollContainerState.scrollTop - windowViewportRect.offsetTop) * (windowViewportRect.zoomRatio ?? 1)
         }
         scrollTop -= headerHeight
         callback({ ranges, scrollTop })

@@ -360,7 +360,8 @@ export interface VirtuosoProps<Data, Context> extends ListRootProps {
   /**
    * Allows customizing the height/width calculation of `Item` elements.
    *
-   * The default implementation reads `el.getBoundingClientRect().height` and `el.getBoundingClientRect().width`.
+   * The default implementation reads `el.getBoundingClientRect().height` and `el.getBoundingClientRect().width`,
+   * divided by the CSS `zoom` of the item's parent.
    */
   itemSize?: SizeFunction
 

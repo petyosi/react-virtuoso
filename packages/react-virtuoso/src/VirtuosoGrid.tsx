@@ -8,7 +8,7 @@ import { LogLevel } from './loggerSystem'
 import { systemToComponent } from './react-urx'
 import * as u from './urx'
 import { VirtuosoGridMockContext } from './utils/context'
-import { correctItemSize } from './utils/correctItemSize'
+import { correctItemSize, unzoomedSize } from './utils/correctItemSize'
 import { buildScroller, buildWindowScroller, contextPropIfNotDomElement, identity, viewportStyle, windowViewportStyle } from './Virtuoso'
 
 import type { VirtuosoGridHandle, VirtuosoGridProps } from './component-interfaces/VirtuosoGrid'
@@ -93,8 +93,7 @@ const GridItems: React.FC = /*#__PURE__*/ React.memo(function GridItems() {
         scrollHeightCallback(scrollHeight)
         const firstItem = el.firstChild as HTMLElement | null
         if (firstItem !== null) {
-          const { height, width } = firstItem.getBoundingClientRect()
-          itemDimensions({ height, width })
+          itemDimensions({ height: unzoomedSize(firstItem, 'height'), width: unzoomedSize(firstItem, 'width') })
         }
         gridGap({
           column: resolveGapValue('column-gap', getComputedStyle(el).columnGap, log),
@@ -202,7 +201,7 @@ const Viewport: React.FC<React.PropsWithChildren> = ({ children }) => {
   const viewportRef = useSize(
     React.useMemo(
       () => (el: HTMLElement) => {
-        viewportDimensions(el.getBoundingClientRect())
+        viewportDimensions({ height: unzoomedSize(el, 'height'), width: unzoomedSize(el, 'width') })
       },
       [viewportDimensions]
     ),
