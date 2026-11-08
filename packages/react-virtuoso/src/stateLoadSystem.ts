@@ -3,6 +3,7 @@ import { initialTopMostItemIndexSystem } from './initialTopMostItemIndexSystem'
 import { propsReadySystem } from './propsReadySystem'
 import { sizeSystem, sizeTreeToRanges } from './sizeSystem'
 import * as u from './urx'
+import { scaleForZoom } from './utils/correctItemSize'
 import { windowScrollerSystem } from './windowScrollerSystem'
 
 import type { ScrollContainerState, StateCallback, StateSnapshot, WindowViewportInfo } from './interfaces'
@@ -32,7 +33,7 @@ export const stateLoadSystem = u.system(
       ([callback, sizes, scrollTop, useWindowScroll, windowScrollContainerState, windowViewportRect, headerHeight]) => {
         const ranges = sizeTreeToRanges(sizes.sizeTree)
         if (useWindowScroll && windowScrollContainerState !== null && windowViewportRect !== null) {
-          scrollTop = (windowScrollContainerState.scrollTop - windowViewportRect.offsetTop) * (windowViewportRect.zoomRatio ?? 1)
+          scrollTop = scaleForZoom(windowScrollContainerState.scrollTop - windowViewportRect.offsetTop, windowViewportRect.zoomRatio ?? 1)
         }
         scrollTop -= headerHeight
         callback({ ranges, scrollTop })

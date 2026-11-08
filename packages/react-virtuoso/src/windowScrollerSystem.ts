@@ -1,5 +1,6 @@
 import { domIOSystem } from './domIOSystem'
 import * as u from './urx'
+import { scaleForZoom } from './utils/correctItemSize'
 
 import type { ScrollContainerState, WindowViewportInfo } from './interfaces'
 
@@ -25,8 +26,8 @@ export const windowScrollerSystem = u.system(([{ scrollBy, scrollContainerState,
       u.map(([{ scrollTop: windowScrollTop, viewportHeight }, { listHeight, offsetTop, zoomRatio = 1 }]) => {
         return {
           scrollHeight: listHeight,
-          scrollTop: Math.max(0, (windowScrollTop - offsetTop) * zoomRatio),
-          viewportHeight: viewportHeight * zoomRatio,
+          scrollTop: Math.max(0, scaleForZoom(windowScrollTop - offsetTop, zoomRatio)),
+          viewportHeight: scaleForZoom(viewportHeight, zoomRatio),
         }
       })
     ),
@@ -40,7 +41,7 @@ export const windowScrollerSystem = u.system(([{ scrollBy, scrollContainerState,
       u.map(([scrollTo, { offsetTop, zoomRatio = 1 }]) => {
         return {
           ...scrollTo,
-          top: scrollTo.top! / zoomRatio + offsetTop,
+          top: scaleForZoom(scrollTo.top!, 1 / zoomRatio) + offsetTop,
         }
       })
     ),
@@ -51,7 +52,9 @@ export const windowScrollerSystem = u.system(([{ scrollBy, scrollContainerState,
     u.pipe(
       scrollBy,
       u.withLatestFrom(latestZoomRatio),
-      u.map(([scrollBy, zoomRatio]) => (scrollBy.top === undefined ? scrollBy : { ...scrollBy, top: scrollBy.top / zoomRatio }))
+      u.map(([scrollBy, zoomRatio]) =>
+        scrollBy.top === undefined ? scrollBy : { ...scrollBy, top: scaleForZoom(scrollBy.top, 1 / zoomRatio) }
+      )
     ),
     windowScrollBy
   )

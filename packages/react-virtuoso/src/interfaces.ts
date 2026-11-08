@@ -802,13 +802,13 @@ export type TopItemListProps = Pick<React.ComponentProps<'div'>, 'children' | 's
  * @group Common
  */
 export interface WindowViewportInfo {
-  /** The rendered height of the list container element in pixels */
+  /** The rendered height of the list container element, in the list's CSS pixels */
   listHeight: number
-  /** The offset from the top of the document to the list container in pixels */
+  /** The offset from the top of the scrollable content to the list container, in the scroll container's CSS pixels */
   offsetTop: number
-  /** The visible height of the window viewport in pixels */
+  /** The visible height of the window viewport, in the list's CSS pixels */
   visibleHeight: number
-  /** The visible width of the window viewport in pixels */
+  /** The visible width of the window viewport, in the list's CSS pixels */
   visibleWidth: number
   /**
    * The CSS zoom of the scroll container divided by the CSS zoom of the list, used to convert `offsetTop` and the scroll position
