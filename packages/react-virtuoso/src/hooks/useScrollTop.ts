@@ -68,7 +68,8 @@ export default function useScrollTop(
       }
 
       if (scrollTopTarget.current !== null) {
-        if (scrollTop === scrollTopTarget.current || scrollTop <= 0 || scrollTop === scrollHeight - viewportHeight) {
+        // CSS zoom snaps scrollTop to device pixels, so it can read back a fraction away from the integer target
+        if (Math.abs(scrollTop - scrollTopTarget.current) < 1 || scrollTop <= 0 || scrollTop === scrollHeight - viewportHeight) {
           scrollTopTarget.current = null
           smoothScrollTargetReached(true)
           if (timeoutRef.current) {
@@ -123,7 +124,8 @@ export default function useScrollTop(
       scrollTop = horizontalDirection === true ? getLogicalScrollLeft(scrollerElement, scrollerElement.scrollX) : scrollerElement.scrollY
     } else {
       scrollHeight = scrollerElement[horizontalDirection === true ? 'scrollWidth' : 'scrollHeight']
-      offsetHeight = correctItemSize(scrollerElement, horizontalDirection === true ? 'width' : 'height')
+      // the scroller's own zoom, since scrollTop and scrollHeight are in the pixels of its content
+      offsetHeight = correctItemSize(scrollerElement, horizontalDirection === true ? 'width' : 'height', scrollerElement)
       scrollTop =
         horizontalDirection === true ? getLogicalScrollLeft(scrollerElement, scrollerElement.scrollLeft) : scrollerElement.scrollTop
     }

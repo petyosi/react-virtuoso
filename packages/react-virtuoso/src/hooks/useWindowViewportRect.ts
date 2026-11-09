@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { getCSSZoom, scaleForZoom } from '../utils/correctItemSize'
 import { useSizeWithElRef } from './useSize'
 
 import type { WindowViewportInfo } from '../interfaces'
@@ -16,27 +17,32 @@ export default function useWindowViewportRectRef(
       if (!element?.offsetParent) {
         return
       }
+      // Rects are scaled by CSS zoom, scroll positions are not. The sizes are reported in the list's pixels,
+      // offsetTop in the scroll container's pixels.
       const rect = element.getBoundingClientRect()
-      const visibleWidth = rect.width
-      let offsetTop: number, visibleHeight: number
+      const listZoom = getCSSZoom(element)
+      let offsetTop: number, scrollerZoom: number, visibleHeight: number
 
       if (customScrollParent) {
         const customScrollParentRect = customScrollParent.getBoundingClientRect()
         const deltaTop = rect.top - customScrollParentRect.top
+        scrollerZoom = getCSSZoom(customScrollParent)
 
-        visibleHeight = customScrollParentRect.height - Math.max(0, deltaTop)
-        offsetTop = deltaTop + customScrollParent.scrollTop
+        visibleHeight = scaleForZoom(customScrollParentRect.height - Math.max(0, deltaTop), 1 / listZoom)
+        offsetTop = scaleForZoom(deltaTop, 1 / scrollerZoom) + customScrollParent.scrollTop
       } else {
         const theElementWindow = ref.current!.ownerDocument.defaultView!
-        visibleHeight = theElementWindow.innerHeight - Math.max(0, rect.top)
+        scrollerZoom = 1
+        visibleHeight = scaleForZoom(theElementWindow.innerHeight - Math.max(0, rect.top), 1 / listZoom)
         offsetTop = rect.top + theElementWindow.scrollY
       }
 
       viewportInfo.current = {
-        listHeight: rect.height,
+        listHeight: scaleForZoom(rect.height, 1 / listZoom),
         offsetTop,
         visibleHeight,
-        visibleWidth,
+        visibleWidth: scaleForZoom(rect.width, 1 / listZoom),
+        zoomRatio: scrollerZoom / listZoom,
       }
 
       callback(viewportInfo.current)
