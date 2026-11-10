@@ -79,7 +79,15 @@ const RouterRender: React.FC<{
 }> = ({ basePath, routerEngine, useBrowserHistory: shouldUseBrowserHistory }) => {
   useBrowserHistory(routerEngine, shouldUseBrowserHistory, basePath)
   const ActiveComponent = useCellValue(routerEngine.component$)
-  return ActiveComponent && <ActiveComponent />
+  // A pending async guard suspends the active component. Without a boundary here, the nearest one
+  // above would hide the router itself, and its cleanup would dispose the router engine.
+  return (
+    ActiveComponent && (
+      <React.Suspense fallback={null}>
+        <ActiveComponent />
+      </React.Suspense>
+    )
+  )
 }
 
 /**

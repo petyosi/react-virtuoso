@@ -3,7 +3,7 @@
 import * as React from 'react'
 
 import { Cell } from '@virtuoso.dev/reactive-engine-core'
-import { EngineProvider, usePublisher } from '@virtuoso.dev/reactive-engine-react'
+import { EngineProvider, useCellValue, usePublisher } from '@virtuoso.dev/reactive-engine-react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { render } from 'vitest-browser-react'
 
@@ -710,6 +710,119 @@ describe('Guards', () => {
 
     // Should be redirected to login page after async guard completes
     await expect.element(screen.getByText('Login Page')).toBeInTheDocument()
+  })
+
+  // An async guard that waits for the person, like an unsaved-changes prompt. The app renders
+  // beside the router from the route cells, so it must stay live while the guard waits.
+  it('keeps the router working after an async guard keeps the reader on the current page', async () => {
+    const answers: ((stay: boolean) => void)[] = []
+    let guardRuns = 0
+    const settings$ = Route('/settings')
+    const home$ = Route('/')
+
+    const promptGuard = Guard('/settings', (context) => {
+      if (context.currentUrl === null) {
+        return undefined
+      }
+      guardRuns += 1
+      return new Promise<boolean>((resolve) => {
+        answers.push(resolve)
+      }).then((stay) => (stay ? context.navigate(context.currentUrl!) : undefined))
+    })
+
+    function App() {
+      const goToSettings = usePublisher(settings$)
+      const settings = useCellValue(settings$)
+      const home = useCellValue(home$)
+      const onSettings = settings !== null && home === null
+      return onSettings ? (
+        <div>Settings Page</div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            goToSettings({})
+          }}
+        >
+          Open settings
+        </button>
+      )
+    }
+
+    const screen = await render(
+      <React.StrictMode>
+        <EngineProvider>
+          <React.Suspense fallback={null}>
+            <Router guards={[promptGuard]} routes={[home$, settings$]} />
+          </React.Suspense>
+          <App />
+        </EngineProvider>
+      </React.StrictMode>
+    )
+
+    await screen.getByRole('button', { name: 'Open settings' }).click()
+    await expect.poll(() => answers.length).toBe(1)
+    answers[0]!(true)
+    await expect.poll(() => window.location.pathname).toBe('/')
+
+    // The same request again must reach the guard, and leaving must then work.
+    await screen.getByRole('button', { name: 'Open settings' }).click()
+    await expect.poll(() => answers.length).toBe(2)
+    expect(guardRuns).toBe(2)
+    answers[1]!(false)
+    await expect.element(screen.getByText('Settings Page')).toBeInTheDocument()
+    await expect.poll(() => window.location.pathname).toBe('/settings')
+  })
+
+  it('runs an async guard once on the first load', async () => {
+    let guardRuns = 0
+    const home$ = Route('/', () => <div>Home Page</div>)
+
+    const asyncGuard = Guard('/', async () => {
+      guardRuns += 1
+      await new Promise((resolve) => {
+        setTimeout(resolve, 20)
+      })
+    })
+
+    const screen = await render(
+      <EngineProvider>
+        <React.Suspense fallback={null}>
+          <Router guards={[asyncGuard]} routes={[home$]} />
+        </React.Suspense>
+      </EngineProvider>
+    )
+
+    await expect.element(screen.getByText('Home Page')).toBeInTheDocument()
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100)
+    })
+    expect(guardRuns).toBe(1)
+  })
+
+  it('keeps content outside the router rendered while a guard is pending', async () => {
+    let answer: () => void = () => {}
+    const home$ = Route('/', () => <div>Home Page</div>)
+
+    const pendingGuard = Guard(
+      '/',
+      () =>
+        new Promise<void>((resolve) => {
+          answer = resolve
+        })
+    )
+
+    const screen = await render(
+      <EngineProvider>
+        <div>Outside the router</div>
+        <Router guards={[pendingGuard]} routes={[home$]} />
+      </EngineProvider>
+    )
+
+    await expect.element(screen.getByText('Outside the router')).toBeInTheDocument()
+    answer()
+    await expect.element(screen.getByText('Home Page')).toBeInTheDocument()
+    await expect.element(screen.getByText('Outside the router')).toBeInTheDocument()
   })
 
   // Integration with routes
