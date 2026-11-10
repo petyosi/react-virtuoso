@@ -140,6 +140,13 @@ function createRouteSubscription({
     // STEP 2: Execute guards sequentially
     let targetUrl = interpolated
     const currentUrl = eng.getValue(currentRoute$)
+    const previousComponent = eng.getValue(component$)
+    // A guard that sends the reader elsewhere refuses this route: whatever the router showed while
+    // the guard waited goes back to what was there before, and the route drops the refused params,
+    // so that asking for the same route again runs its guards again.
+    const refuse = () => {
+      eng.pubIn({ [component$]: previousComponent, [route$]: null })
+    }
 
     for (const { def, parsed } of matchedGuards) {
       const context: GuardContext = {
@@ -216,11 +223,13 @@ function createRouteSubscription({
       if ('type' in awaitedResult) {
         if (awaitedResult.type === REDIRECT_RESULT) {
           // Redirect: navigate to new URL through goToUrl$
+          refuse()
           eng.pub(goToUrl$, awaitedResult.url)
           return
         }
         if (awaitedResult.type === NAVIGATE_RESULT) {
           // Navigate: change target URL and find matching route
+          refuse()
           targetUrl = awaitedResult.url
           // Find and activate the route that matches the new URL
           for (const r$ of routes) {
