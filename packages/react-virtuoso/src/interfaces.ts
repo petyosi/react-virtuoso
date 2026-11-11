@@ -373,13 +373,20 @@ export interface GroupItem<Data> extends Item<Data> {
  * Callback type for rendering item content in a GroupedVirtuoso list.
  * Similar to ItemContent but includes the group index.
  *
+ * The callback receives:
+ * - `index` - the index of the item across all groups (offset by `firstItemIndex`, if set)
+ * - `groupIndex` - the index of the group the item belongs to
+ * - `data` - the data item, if `data` is passed to the component
+ * - `context` - the value of the `context` prop
+ * - `indexInGroup` - the index of the item within its group, starting from 0
+ *
  * @typeParam Data - The type of the data item
  * @typeParam Context - The type of context passed from the component
  *
  * @example
  * ```tsx
- * const itemContent: GroupItemContent<User, AppContext> = (index, groupIndex, user, context) => (
- *   <div>{user.name} (Group {groupIndex})</div>
+ * const itemContent: GroupItemContent<User, AppContext> = (index, groupIndex, user, context, indexInGroup) => (
+ *   <div>{user.name} (Group {groupIndex}, item {indexInGroup})</div>
  * )
  * <GroupedVirtuoso itemContent={itemContent} />
  * ```
@@ -388,7 +395,13 @@ export interface GroupItem<Data> extends Item<Data> {
  * @see {@link ItemContent} for non-grouped list variant
  * @group GroupedVirtuoso
  */
-export type GroupItemContent<Data, Context> = (index: number, groupIndex: number, data: Data, context: Context) => React.ReactNode
+export type GroupItemContent<Data, Context> = (
+  index: number,
+  groupIndex: number,
+  data: Data,
+  context: Context,
+  indexInGroup: number
+) => React.ReactNode
 
 /**
  * Passed to the Components.Group custom component
@@ -524,6 +537,8 @@ export interface RecordItem<Data> extends Item<Data> {
   data?: Data
   /** The index of the group this item belongs to (if in a grouped list) */
   groupIndex?: number
+  /** The index of the item within its group, starting from 0 (if in a grouped list) */
+  indexInGroup?: number
   /** The original index before any transformations were applied */
   originalIndex?: number
   /** Undefined for regular items (used to distinguish from group items) */
