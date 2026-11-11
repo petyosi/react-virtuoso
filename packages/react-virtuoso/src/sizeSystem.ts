@@ -116,9 +116,7 @@ export function offsetOf(index: number, tree: OffsetPoint[], gap: number) {
   }
 
   const { index: startIndex, offset, size } = arrayBinarySearch.findClosestSmallerOrEqual(tree, index, indexComparator)
-  const itemCount = index - startIndex
-  const top = size * itemCount + (itemCount - 1) * gap + offset
-  return top > 0 ? top + gap : top
+  return offset + (index - startIndex) * (size + gap)
 }
 
 export function originalIndexFromItemIndex(itemIndex: number, sizes: SizeState) {
