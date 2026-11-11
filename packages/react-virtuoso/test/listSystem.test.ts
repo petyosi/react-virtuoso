@@ -867,6 +867,104 @@ describe('list engine', () => {
     })
   })
 
+  describe('scroll to index with gap', () => {
+    const SIZE = 30
+    const GAP = 10
+    const HEADER = 50
+
+    function setup(headerHeightValue: number, scrollTopValue = 0) {
+      const system = init(listSystem)
+      const { gap, headerHeight, propsReady, scrollTo, scrollTop, sizeRanges, totalCount, viewportHeight } = system
+
+      publish(scrollTop, scrollTopValue)
+      publish(viewportHeight, 200)
+      publish(totalCount, 1000)
+      publish(gap, GAP)
+      publish(headerHeight, headerHeightValue)
+      publish(sizeRanges, [{ endIndex: 0, size: SIZE, startIndex: 0 }])
+      publish(propsReady, true)
+
+      const sub = vi.fn()
+      subscribe(scrollTo, sub)
+      return { ...system, sub }
+    }
+
+    it('scrolls the first item to the top, just past the header', () => {
+      const { scrollToIndex, sub } = setup(HEADER)
+      publish(scrollToIndex, 0)
+      expect(sub).toHaveBeenCalledWith({ behavior: 'auto', top: HEADER })
+    })
+
+    it('scrolls the second item past the first item and one gap', () => {
+      const { scrollToIndex, sub } = setup(HEADER)
+      publish(scrollToIndex, 1)
+      expect(sub).toHaveBeenCalledWith({ behavior: 'auto', top: HEADER + SIZE + GAP })
+    })
+
+    it('applies the offset to the first item without a header', () => {
+      const { scrollToIndex, sub } = setup(0)
+      publish(scrollToIndex, { index: 0, offset: 20 })
+      expect(sub).toHaveBeenCalledWith({ behavior: 'auto', top: 20 })
+    })
+
+    it('keeps index-zero scrolling unchanged when the gap is zero', () => {
+      const { gap, scrollToIndex, sub } = setup(HEADER)
+      publish(gap, 0)
+      publish(scrollToIndex, 0)
+      expect(sub).toHaveBeenCalledWith({ behavior: 'auto', top: HEADER })
+    })
+
+    it('keeps the real gap after a group header for item and group locations', () => {
+      const { gap, groupCounts, headerHeight, propsReady, scrollTo, scrollToIndex, sizeRanges, viewportHeight } = init(listSystem)
+      publish(viewportHeight, 200)
+      publish(groupCounts, [10, 10])
+      publish(gap, GAP)
+      publish(headerHeight, HEADER)
+      publish(sizeRanges, [
+        { endIndex: 0, size: 20, startIndex: 0 },
+        { endIndex: 1, size: SIZE, startIndex: 1 },
+      ])
+      publish(propsReady, true)
+      const sub = vi.fn()
+      subscribe(scrollTo, sub)
+      publish(scrollToIndex, 0)
+      expect(sub).toHaveBeenLastCalledWith({ behavior: 'auto', top: HEADER + 20 + GAP })
+      publish(scrollToIndex, { groupIndex: 0 })
+      expect(sub).toHaveBeenLastCalledWith({ behavior: 'auto', top: HEADER + 20 + GAP })
+    })
+
+    it('preserves the snapshot through repeated restores without a header', async () => {
+      async function restore(savedScrollTop: number) {
+        const { didMount, gap, propsReady, restoreStateFrom, scrollTo, scrollTop, totalCount, viewportHeight } = init(listSystem)
+        publish(restoreStateFrom, { ranges: [{ endIndex: Infinity, size: SIZE, startIndex: 0 }], scrollTop: savedScrollTop })
+        publish(scrollTop, 0)
+        publish(viewportHeight, 200)
+        publish(totalCount, 1000)
+        publish(gap, GAP)
+        publish(propsReady, true)
+        const sub = vi.fn()
+        subscribe(scrollTo, sub)
+        publish(didMount, true)
+        await new Promise((resolve) => {
+          setTimeout(resolve, 100)
+        })
+        return sub.mock.calls.at(-1)![0].top as number
+      }
+      const positions = [await restore(1000)]
+      positions.push(await restore(positions.at(-1)!))
+      positions.push(await restore(positions.at(-1)!))
+      positions.push(await restore(positions.at(-1)!))
+      positions.push(await restore(positions.at(-1)!))
+      expect(positions).toEqual([1000, 1000, 1000, 1000, 1000])
+    })
+
+    it('scrollIntoView does not move a first item that is already at the top', () => {
+      const { scrollIntoView, sub } = setup(HEADER, HEADER)
+      publish(scrollIntoView, { index: 0 })
+      expect(sub).not.toHaveBeenCalled()
+    })
+  })
+
   describe('total height changed', () => {
     it('includes the header and the total list height', () => {
       const {

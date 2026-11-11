@@ -299,6 +299,35 @@ describe('size state reducer', () => {
     expect(offsetOf(10, state.offsetTree, 0)).toBe(250)
   })
 
+  it('returns 0 for the first item when a gap is set', () => {
+    let state = initialSizeState()
+
+    state = sizeStateReducer(state, [[{ endIndex: 0, size: 30, startIndex: 0 }], [], mockLogger, 10])
+
+    expect(offsetOf(0, state.offsetTree, 10)).toBe(0)
+    expect(offsetOf(1, state.offsetTree, 10)).toBe(40)
+  })
+
+  it('matches the summed item sizes and gaps for every index (complex tree with gap)', () => {
+    const gap = 7
+    let state = initialSizeState()
+
+    state = sizeStateReducer(state, [[{ endIndex: 0, size: 30, startIndex: 0 }], [], mockLogger, gap])
+    state = sizeStateReducer(state, [[{ endIndex: 4, size: 20, startIndex: 2 }], [], mockLogger, gap])
+    state = sizeStateReducer(state, [[{ endIndex: 6, size: 45, startIndex: 6 }], [], mockLogger, gap])
+
+    const sizes = [30, 30, 20, 20, 20, 30, 45, 30, 30, 30]
+    let expected = 0
+    sizes.forEach((size, index) => {
+      expect(offsetOf(index, state.offsetTree, gap)).toBe(expected)
+      expected += size + gap
+    })
+  })
+
+  it('counts the gap after a zero-size first item', () => {
+    expect(offsetOf(1, [{ index: 0, offset: 0, size: 0 }], 10)).toBe(10)
+  })
+
   it('builds correct index tree', () => {
     let state = initialSizeState()
 
