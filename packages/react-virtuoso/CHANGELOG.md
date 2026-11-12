@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.18.22
+
+### Patch Changes
+
+- [#1564](https://github.com/petyosi/react-virtuoso/pull/1564) [`0b7cd09`](https://github.com/petyosi/react-virtuoso/commit/0b7cd090fcbfd4c9a55e810831d91f54557a102e) Thanks [@KooYS](https://github.com/KooYS)! - Fix first-item offsets in lists with a gap so restoring state does not drift and index-zero scrolling respects explicit offsets and headers.
+
 ## 4.18.21
 
 ### Patch Changes
