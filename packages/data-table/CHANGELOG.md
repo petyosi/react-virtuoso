@@ -1,5 +1,11 @@
 # @virtuoso.dev/data-table
 
+## 0.6.2
+
+### Patch Changes
+
+- [#1565](https://github.com/petyosi/react-virtuoso/pull/1565) [`0a691e0`](https://github.com/petyosi/react-virtuoso/commit/0a691e02d33d000b7d43c280ce18652611d1d858) Thanks [@petyosi](https://github.com/petyosi)! - Keep the rows of a data table whose ancestor is hidden with `display: none`. The table no longer records zero sizes while hidden, so it renders its rows again when the ancestor shows, and development builds no longer throw a zero-size error.
+
 ## 0.6.1
 
 ### Patch Changes
