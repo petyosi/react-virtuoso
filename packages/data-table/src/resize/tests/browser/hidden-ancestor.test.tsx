@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { render } from 'vitest-browser-react'
 
 import { Cell, Column, ColumnHeader } from '../../..'
@@ -55,6 +55,26 @@ describe('a table under a hidden ancestor', () => {
       expect(errors).toEqual([])
     } finally {
       window.removeEventListener('error', recordError)
+    }
+  })
+
+  test('renders its rows where elements report no client rects but real sizes, as in jsdom', async () => {
+    // jsdom has no layout, so it returns no client rects for any element, while tests feed the
+    // resize observer real sizes.
+    const getClientRects = vi.spyOn(Element.prototype, 'getClientRects').mockReturnValue([] as unknown as DOMRectList)
+    try {
+      const screen = await render(
+        <VirtuosoDataTable style={{ height: 240, width: 400 }} source={rows}>
+          <Column field="name">
+            <ColumnHeader>{() => <span>Name</span>}</ColumnHeader>
+            <Cell>{({ cellValue }) => String(cellValue)}</Cell>
+          </Column>
+        </VirtuosoDataTable>
+      )
+
+      await expect.poll(() => screen.container.querySelectorAll(rowSelector).length).toBe(rows.length)
+    } finally {
+      getClientRects.mockRestore()
     }
   })
 })

@@ -42,6 +42,15 @@ function readBorderBoxBlockSize(entry: ResizeObserverEntry, element: HTMLElement
   return size?.blockSize ?? element.getBoundingClientRect().height
 }
 
+/**
+ * A hidden ancestor reports every element at zero size. Skipping those entries keeps the last real
+ * sizes, so the table renders the same rows when the ancestor shows again. An element without layout,
+ * as in jsdom, also has no client rects, so a zero size is required too.
+ */
+function isHiddenEntry(entry: ResizeObserverEntry, element: HTMLElement) {
+  return entry.contentRect.width === 0 && entry.contentRect.height === 0 && element.getClientRects().length === 0
+}
+
 e.singletonSub(dataTableStructureEntries$, (entries) => {
   const { length } = entries
 
@@ -60,9 +69,7 @@ e.singletonSub(dataTableStructureEntries$, (entries) => {
   for (let i = 0; i < length; i++) {
     const entry = entries[i]!
     const element = entry.target as HTMLDivElement
-    // A hidden ancestor reports every element at zero size. Keep the last real sizes, so the table
-    // renders the same rows when the ancestor shows again.
-    if (!element.isConnected || element.getClientRects().length === 0) {
+    if (!element.isConnected || isHiddenEntry(entry, element)) {
       continue
     }
     const elementRole = element.dataset.tableElementRole
