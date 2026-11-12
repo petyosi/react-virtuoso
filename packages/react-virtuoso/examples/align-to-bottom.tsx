@@ -30,6 +30,42 @@ export function Example() {
   )
 }
 
+function PrependList({ initialCount }: { initialCount: number }) {
+  const [data, setData] = useState(() => Array.from({ length: initialCount }, (_, index) => 1000 + index))
+  return (
+    <div>
+      <button
+        data-testid="prepend-1"
+        onClick={() => {
+          setData((current) => [current[0]! - 1, ...current])
+        }}
+      >
+        Prepend 1 item
+      </button>
+      <Virtuoso
+        alignToBottom={true}
+        data={data}
+        firstItemIndex={data[0]!}
+        initialTopMostItemIndex={initialCount - 1}
+        itemContent={(_, id) => (
+          <div data-row-id={id} style={{ height: 30 }}>
+            Item {id}
+          </div>
+        )}
+        style={{ height: 300 }}
+      />
+    </div>
+  )
+}
+
+export function Prepend() {
+  return <PrependList initialCount={3} />
+}
+
+export function PrependScrollable() {
+  return <PrependList initialCount={20} />
+}
+
 export function TableExample() {
   return (
     <TableVirtuoso
