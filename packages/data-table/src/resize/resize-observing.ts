@@ -60,7 +60,9 @@ e.singletonSub(dataTableStructureEntries$, (entries) => {
   for (let i = 0; i < length; i++) {
     const entry = entries[i]!
     const element = entry.target as HTMLDivElement
-    if (!element.isConnected) {
+    // A hidden ancestor reports every element at zero size. Keep the last real sizes, so the table
+    // renders the same rows when the ancestor shows again.
+    if (!element.isConnected || element.getClientRects().length === 0) {
       continue
     }
     const elementRole = element.dataset.tableElementRole
