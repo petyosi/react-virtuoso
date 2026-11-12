@@ -1,5 +1,11 @@
 # @virtuoso.dev/data-table
 
+## 0.6.3
+
+### Patch Changes
+
+- [#1569](https://github.com/petyosi/react-virtuoso/pull/1569) [`c057a21`](https://github.com/petyosi/react-virtuoso/commit/c057a21a326ac07c5b73056025ff7924a99e8b51) Thanks [@petyosi](https://github.com/petyosi)! - Render rows again in environments without layout, such as jsdom tests. The 0.6.2 hidden-ancestor guard skipped every resize entry when an element had no client rects, which jsdom reports for every element, so tables in jsdom tests rendered no rows. The guard now also requires the entry to report a zero size.
+
 ## 0.6.2
 
 ### Patch Changes

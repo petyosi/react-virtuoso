@@ -1,5 +1,12 @@
 # @virtuoso.dev/virtuoso.dev
 
+## 0.0.23
+
+### Patch Changes
+
+- Updated dependencies [[`c057a21`](https://github.com/petyosi/react-virtuoso/commit/c057a21a326ac07c5b73056025ff7924a99e8b51)]:
+  - @virtuoso.dev/data-table@0.6.3
+
 ## 0.0.22
 
 ### Patch Changes
