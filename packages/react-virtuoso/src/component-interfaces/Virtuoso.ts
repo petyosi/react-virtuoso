@@ -33,6 +33,12 @@ export interface GroupedVirtuosoHandle {
    */
   autoscrollToBottom(): void
   /**
+   * Cancels the retries of a pending `scrollToIndex` call, including the one `followOutput` uses. Virtuoso retries
+   * `scrollToIndex` when item sizes change shortly after it scrolls; call this when the user or your own code takes over
+   * the scroll position, so that a retry does not scroll back to the old target. It does not move the viewport.
+   */
+  cancelScrollToIndex(): void
+  /**
    * Obtains the internal size state of the component, so that it can be restored later. This does not include the data items.
    * @param stateCb - Callback that receives the state snapshot
    */
@@ -115,6 +121,12 @@ export interface VirtuosoHandle {
    * Use this with combination with follow output if you have images loading in the list. Listen to the image loading and call the method.
    */
   autoscrollToBottom(): void
+  /**
+   * Cancels the retries of a pending `scrollToIndex` call, including the one `followOutput` uses. Virtuoso retries
+   * `scrollToIndex` when item sizes change shortly after it scrolls; call this when the user or your own code takes over
+   * the scroll position, so that a retry does not scroll back to the old target. It does not move the viewport.
+   */
+  cancelScrollToIndex(): void
   /**
    * Obtains the internal size state of the component, so that it can be restored later. This does not include the data items.
    * @param stateCb - Callback that receives the state snapshot
