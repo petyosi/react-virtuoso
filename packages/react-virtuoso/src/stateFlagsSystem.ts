@@ -49,6 +49,10 @@ const INITIAL_BOTTOM_STATE = {
 
 const DEFAULT_AT_TOP_THRESHOLD = 0
 
+export interface ResizeJump {
+  jump: number
+}
+
 export const stateFlagsSystem = u.system(([{ footerHeight, headerHeight, scrollBy, scrollContainerState, scrollTop, viewportHeight }]) => {
   const isAtBottom = u.statefulStream(false)
   const isAtTop = u.statefulStream(true)
@@ -170,9 +174,9 @@ export const stateFlagsSystem = u.system(([{ footerHeight, headerHeight, scrollB
         { changed: false, jump: 0, scrollHeight: 0, scrollTop: 0 }
       ),
       u.filter((value) => value.changed),
-      u.map((value) => value.jump)
+      u.map(({ jump }): ResizeJump => ({ jump }))
     ),
-    0
+    { jump: 0 }
   )
 
   u.connect(

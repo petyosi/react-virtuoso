@@ -1,14 +1,23 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { domIOSystem } from '../src/domIOSystem'
+import { listStateSystem } from '../src/listStateSystem'
 import { recalcSystem } from '../src/recalcSystem'
 import { sizeSystem } from '../src/sizeSystem'
+import { stateFlagsSystem, UP } from '../src/stateFlagsSystem'
 import { upwardScrollFixSystem } from '../src/upwardScrollFixSystem'
 import { init, publish, subscribe, system, tup } from '../src/urx'
 
 const testSystem = system(
-  ([upward, dom, size, recalc]) => ({ ...upward, ...dom, ...size, ...recalc }),
-  tup(upwardScrollFixSystem, domIOSystem, sizeSystem, recalcSystem)
+  ([upward, dom, size, recalc, { listState }, { scrollDirection }]) => ({
+    ...upward,
+    ...dom,
+    ...size,
+    ...recalc,
+    listState,
+    scrollDirection,
+  }),
+  tup(upwardScrollFixSystem, domIOSystem, sizeSystem, recalcSystem, listStateSystem, stateFlagsSystem)
 )
 
 const ITEM_SIZE = 30
@@ -25,6 +34,47 @@ function setup() {
   subscribe(s.deviation, (v) => deviations.push(v))
   return { deviations, scrolls, system: s }
 }
+
+describe('upwardScrollFixSystem — resize compensation', () => {
+  it('consumes each browser clamp once, including equal clamps that cancel the size change', () => {
+    const { scrolls, system: s } = setup()
+    const viewportHeight = 400
+    const reportScroll = (scrollHeight: number, scrollTop = scrollHeight - viewportHeight) => {
+      publish(s.scrollContainerState, { scrollHeight, scrollTop, viewportHeight })
+    }
+    const measure = (bottom: number) => {
+      publish(s.listState, {
+        bottom,
+        firstItemIndex: 0,
+        items: [{ index: 32, offset: 960, originalIndex: 32, size: ITEM_SIZE }],
+        offsetBottom: 0,
+        offsetTop: 0,
+        top: 960,
+        topItems: [],
+        topListHeight: 0,
+        totalCount: 40,
+      })
+    }
+
+    reportScroll(2000)
+    measure(2000)
+
+    for (const height of [1700, 1401]) {
+      const countBeforeClamp = scrolls.length
+      reportScroll(height)
+      reportScroll(height)
+      publish(s.scrollDirection, UP)
+      measure(height)
+      expect(scrolls).toHaveLength(countBeforeClamp)
+
+      reportScroll(height, height - viewportHeight - 150)
+      publish(s.scrollDirection, UP)
+      measure(height + 1)
+      expect(scrolls.at(-1)).toEqual({ behavior: 'auto', top: 1 })
+      reportScroll(height + 1)
+    }
+  })
+})
 
 /** A `requestAnimationFrame` whose callbacks only run when told to. */
 function heldFrames() {
