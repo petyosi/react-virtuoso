@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.18.23
+
+### Patch Changes
+
+- [#1572](https://github.com/petyosi/react-virtuoso/pull/1572) [`8a7ff06`](https://github.com/petyosi/react-virtuoso/commit/8a7ff06e9ad5646b10c243182b06013b745edf9a) Thanks [@yuxino](https://github.com/yuxino)! - Prevent a list from jumping back to the bottom when scrolling up after an item shrinks.
+
 ## 4.18.22
 
 ### Patch Changes
