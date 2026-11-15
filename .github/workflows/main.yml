@@ -14,7 +14,7 @@ concurrency:
 jobs:
   release:
     name: Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write # Update release commits/tags and publish packages with trusted publishing.
       pull-requests: write # Create or update the Changesets release pull request.
