@@ -56,7 +56,7 @@
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",
     "vitest": "catalog:",
-    "vitest-browser-react": "^2.2.0"
+    "vitest-browser-react": "^2.3.0"
   },
   "peerDependencies": {
     "@virtuoso.dev/reactive-engine-core": ">=0.2.1",
