@@ -163,11 +163,35 @@ export const gridSystem = /*#__PURE__*/ u.system(
         u.publish(itemDimensions, snapshot.item)
         u.publish(gap, snapshot.gap)
         if (snapshot.scrollTop > 0) {
+          // While the state is restored, the grid renders no items, but keeps the full height of the list,
+          // so that the scroller can reach the restored position.
           u.publish(stateRestoreInProgress, true)
-          u.handleNext(u.pipe(scrollTop, u.skip(1)), (_value) => {
-            u.publish(stateRestoreInProgress, false)
-          })
-          u.publish(scrollTo, { top: snapshot.scrollTop })
+          // there is no scroller on the server, the client renders the same empty list first and scrolls after hydration
+          if (typeof window === 'undefined') {
+            return
+          }
+          const restoreScrollTop = () => {
+            // wait for the list height to be rendered before scrolling, otherwise the scroll position gets clamped
+            skipFrames(1, () => {
+              // the scroller reports back the position even if it does not move, so this can't hang
+              u.handleNext(scrollTop, () => {
+                u.publish(stateRestoreInProgress, false)
+              })
+              u.publish(scrollTo, { top: snapshot.scrollTop })
+            })
+          }
+          // the list has no height until there are items, so wait for data that arrives later
+          if (u.getValue(totalCount) > 0) {
+            restoreScrollTop()
+          } else {
+            u.handleNext(
+              u.pipe(
+                totalCount,
+                u.filter((count) => count > 0)
+              ),
+              restoreScrollTop
+            )
+          }
         }
       }
     )
@@ -186,8 +210,11 @@ export const gridSystem = /*#__PURE__*/ u.system(
           u.duc(viewportDimensions, dimensionComparator),
           u.duc(itemDimensions, dimensionComparator),
           u.duc(gap, (prev: Gap | undefined, next: Gap) => prev !== undefined && prev.column === next.column && prev.row === next.row),
-          u.duc(scrollTop)
+          u.duc(scrollTop),
+          u.duc(stateRestoreInProgress)
         ),
+        // the scroll position is not restored yet, reporting it would overwrite the snapshot that is being restored
+        u.filter(([, , , , stateRestoreInProgress]) => !stateRestoreInProgress),
         u.map(([viewport, item, gap, scrollTop]) => ({
           gap,
           item,
@@ -212,9 +239,6 @@ export const gridSystem = /*#__PURE__*/ u.system(
           u.duc(scrolledToInitialItem),
           u.duc(initialTopMostItemIndex)
         ),
-        u.filter(([, , , , , , , stateRestoreInProgress]) => {
-          return !stateRestoreInProgress
-        }),
         u.map(
           ([
             totalCount,
@@ -224,7 +248,7 @@ export const gridSystem = /*#__PURE__*/ u.system(
             viewport,
             data,
             initialItemCount,
-            ,
+            stateRestoreInProgress,
             scrolledToInitialItem,
             initialTopMostItemIndex,
           ]) => {
@@ -248,8 +272,8 @@ export const gridSystem = /*#__PURE__*/ u.system(
             let startIndex!: number
             let endIndex!: number
 
-            // render empty items until the scroller reaches the initial item
-            if (!scrolledToInitialItem) {
+            // render empty items until the scroller reaches the initial item or the restored scroll position
+            if (!scrolledToInitialItem || stateRestoreInProgress) {
               startIndex = 0
               endIndex = -1
             }
