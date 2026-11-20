@@ -157,7 +157,7 @@ function transposeItems(items: Item<any>[], sizes: SizeState, firstItemIndex: nu
       currentGroupIndex = sizes.groupIndices.indexOf(currentRange.start)
     }
 
-    let transposedItem: { groupIndex: number; index: number } | { index: number; type: 'group' }
+    let transposedItem: { groupIndex: number; index: number; indexInGroup: number } | { index: number; type: 'group' }
 
     if (item.index === currentRange.start) {
       transposedItem = {
@@ -168,6 +168,7 @@ function transposeItems(items: Item<any>[], sizes: SizeState, firstItemIndex: nu
       transposedItem = {
         groupIndex: currentGroupIndex,
         index: item.index - (currentGroupIndex + 1) + firstItemIndex,
+        indexInGroup: item.index - currentRange.start - 1,
       }
     }
 
