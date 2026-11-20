@@ -1,5 +1,11 @@
 # @virtuoso.dev/data-table
 
+## 0.6.4
+
+### Patch Changes
+
+- [#1580](https://github.com/petyosi/react-virtuoso/pull/1580) [`273c87a`](https://github.com/petyosi/react-virtuoso/commit/273c87af3e87a7831a09dc200c97cd2b302376b1) Thanks [@petyosi](https://github.com/petyosi)! - Render the right columns when a table with `useWindowScroll` or `customScrollParent` scrolls sideways inside its own root.
+
 ## 0.6.3
 
 ### Patch Changes
