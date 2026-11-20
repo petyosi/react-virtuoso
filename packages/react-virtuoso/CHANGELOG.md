@@ -1,5 +1,11 @@
 # react-virtuoso
 
+## 4.18.24
+
+### Patch Changes
+
+- [#1579](https://github.com/petyosi/react-virtuoso/pull/1579) [`7570571`](https://github.com/petyosi/react-virtuoso/commit/75705710bf78dd92d8f068355881c66d7a898513) Thanks [@charan-rathore](https://github.com/charan-rathore)! - Measure the current custom scroll parent in viewport updates queued before the parent changed, so an old resize cannot overwrite the current parent's offset and misalign a later scrollToIndex call.
+
 ## 4.18.23
 
 ### Patch Changes
