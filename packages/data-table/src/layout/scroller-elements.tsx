@@ -30,6 +30,15 @@ import { VirtuosoDataTableTestingContext } from '../VirtuosoDataTableTestingCont
 
 import type { ScrollerProps } from '../interfaces'
 
+/**
+ * With an outer scroller, the table root can also scroll sideways when the consumer gives it
+ * `overflow-x`. The columns follow both offsets. One sum also stops a vertical scroll of the outer
+ * scroller from resetting the root offset.
+ */
+function outerScrollerScrollLeft(outerScroller: HTMLElement, wrapper: HTMLElement) {
+  return outerScroller.scrollLeft + (wrapper.parentElement?.scrollLeft ?? 0)
+}
+
 interface ScrollableRootProps extends ScrollerProps {
   children: React.ReactNode
   tableBodyRef: React.RefObject<HTMLElement | null>
@@ -134,13 +143,14 @@ export const ScrollableElement: React.FC<ScrollableRootProps> = ({ children, tab
 export const WindowScrollElementWrapper: React.FC<ScrollableRootProps> = ({ children, tableBodyRef: listRef, ...htmlProps }) => {
   const documentElementRef = React.useRef<HTMLElement | null>(null)
   const windowScrollWrapperRef = React.useRef<HTMLElement | null>(null)
+  const tableRootRef = React.useRef<HTMLElement | null>(null)
   const observer = useCellValue(resizeObserverSingleton$)
 
   const engine = useEngine()
 
   const testingContext = React.useContext(VirtuosoDataTableTestingContext)
 
-  const windowScrollMeasurements = React.useCallback(() => {
+  const windowScrollMeasurements = React.useCallback((documentElement: HTMLElement) => {
     const wrapper = windowScrollWrapperRef.current
     const theElementWindow = wrapper?.ownerDocument.defaultView
     if (!wrapper || !theElementWindow) {
@@ -151,6 +161,7 @@ export const WindowScrollElementWrapper: React.FC<ScrollableRootProps> = ({ chil
       [externalScrollerViewportHeight$]: theElementWindow.innerHeight,
       [scrollHeight$]: rect.height,
       [offsetTopInExternalScroller$]: rect.top + theElementWindow.scrollY,
+      [scrollLeft$]: outerScrollerScrollLeft(documentElement, wrapper),
     }
   }, [])
 
@@ -176,6 +187,8 @@ export const WindowScrollElementWrapper: React.FC<ScrollableRootProps> = ({ chil
       if (el) {
         engine.pub(scrollerElement$, el)
         windowScrollWrapperRef.current = el
+        tableRootRef.current = el.parentElement
+        tableRootRef.current?.addEventListener('scroll', onScroll, { passive: true })
         const theElementWindow = el.ownerDocument.defaultView
         if (theElementWindow) {
           theElementWindow.addEventListener('scroll', onScroll)
@@ -194,6 +207,8 @@ export const WindowScrollElementWrapper: React.FC<ScrollableRootProps> = ({ chil
         }
         observer?.observe(el, { box: 'border-box' })
       } else {
+        tableRootRef.current?.removeEventListener('scroll', onScroll)
+        tableRootRef.current = null
         if (windowScrollWrapperRef.current) {
           const theElementWindow = windowScrollWrapperRef.current.ownerDocument.defaultView
           if (theElementWindow) {
@@ -226,6 +241,7 @@ export const CustomScrollParentWrapper: React.FC<ScrollableRootProps> = ({ child
   const customScrollParent = useCellValue(customScrollParent$)
   const customScrollParentRef = React.useRef<HTMLElement | null>(customScrollParent)
   const customScrollParentWrapperRef = React.useRef<HTMLElement | null>(null)
+  const tableRootRef = React.useRef<HTMLElement | null>(null)
   const observer = useCellValue(resizeObserverSingleton$)
 
   const customScrollMeasurements = React.useCallback((scrollParent: HTMLElement) => {
@@ -237,6 +253,7 @@ export const CustomScrollParentWrapper: React.FC<ScrollableRootProps> = ({ child
       [externalScrollerViewportHeight$]: scrollParent.clientHeight,
       [scrollHeight$]: wrapper.getBoundingClientRect().height,
       [offsetTopInExternalScroller$]: computeOffsetTopInScrollParent(wrapper, scrollParent),
+      [scrollLeft$]: outerScrollerScrollLeft(scrollParent, wrapper),
     }
   }, [])
 
@@ -285,19 +302,23 @@ export const CustomScrollParentWrapper: React.FC<ScrollableRootProps> = ({ child
       if (el) {
         engine.pub(customScrollParentWrapper$, el)
         customScrollParentWrapperRef.current = el
+        tableRootRef.current = el.parentElement
+        tableRootRef.current?.addEventListener('scroll', onScroll, { passive: true })
         observer?.observe(el, { box: 'border-box' })
         if (customScrollParentRef.current) {
           engine.pub(offsetTopInExternalScroller$, computeOffsetTopInScrollParent(el, customScrollParentRef.current))
         }
       } else {
         engine.pub(customScrollParentWrapper$, null)
+        tableRootRef.current?.removeEventListener('scroll', onScroll)
+        tableRootRef.current = null
         if (customScrollParentWrapperRef.current) {
           observer?.unobserve(customScrollParentWrapperRef.current)
         }
         customScrollParentWrapperRef.current = null
       }
     },
-    [observer, engine]
+    [observer, engine, onScroll]
   )
 
   usePollForHeightInMobileSafari(() => customScrollParentWrapperRef.current?.getBoundingClientRect().height)
