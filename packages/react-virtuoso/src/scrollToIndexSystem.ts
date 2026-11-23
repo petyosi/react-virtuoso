@@ -42,12 +42,16 @@ export const scrollToIndexSystem = u.system(
     { log },
   ]) => {
     const scrollToIndex = u.stream<IndexLocation>()
+    const cancelScrollToIndex = u.stream<true>()
     const scrollTargetReached = u.stream<true>()
     const topListHeight = u.statefulStream(0)
 
     let unsubscribeNextListRefresh: any = null
     let cleartTimeoutRef: null | ReturnType<typeof setTimeout> = null
     let unsubscribeListRefresh: any = null
+    // Identifies the current navigation. The 150 ms watch timer in watchChangesFor keeps running after
+    // cleanup() unsubscribes it, so a superseded or cancelled navigation's retry must not act.
+    let navigationId = 0
 
     function cleanup() {
       if (unsubscribeNextListRefresh !== null) {
@@ -66,6 +70,11 @@ export const scrollToIndexSystem = u.system(
       }
       u.publish(scrollingInProgress, false)
     }
+
+    u.subscribe(cancelScrollToIndex, () => {
+      navigationId++
+      cleanup()
+    })
 
     u.connect(
       u.pipe(
@@ -101,7 +110,11 @@ export const scrollToIndexSystem = u.system(
               top += offset
             }
 
+            const currentNavigationId = ++navigationId
             const retry = (listChanged: boolean) => {
+              if (currentNavigationId !== navigationId) {
+                return
+              }
               cleanup()
               if (listChanged) {
                 log('retrying to scroll to', { location }, LogLevel.DEBUG)
@@ -143,6 +156,7 @@ export const scrollToIndexSystem = u.system(
     )
 
     return {
+      cancelScrollToIndex,
       scrollTargetReached,
       scrollToIndex,
       topListHeight,

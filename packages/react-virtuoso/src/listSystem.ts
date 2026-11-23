@@ -87,7 +87,7 @@ export const listSystem = u.system(
     stateLoad,
     followOutput,
     listStateSystemOutput,
-    { scrollToIndex },
+    { cancelScrollToIndex, scrollToIndex },
     _,
     { topItemCount },
     { groupCounts },
@@ -106,6 +106,7 @@ export const listSystem = u.system(
     )
 
     return {
+      cancelScrollToIndex,
       data,
       defaultItemHeight: defaultItemSize,
       firstItemIndex,
