@@ -89,7 +89,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
   const listGap = usePublisher('gap')
   const horizontalDirection = useEmitterValue('horizontalDirection')
 
-  const { callbackRef } = useChangedListContentsSizes(
+  const { callbackRef, ref } = useChangedListContentsSizes(
     sizeRanges,
     itemSize,
     trackItemSizes,
@@ -101,9 +101,21 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
     useEmitterValue('skipAnimationFrameInResizeObserver')
   )
 
+  const alignToBottom = useEmitterValue('alignToBottom')
   const [deviation, setDeviation] = React.useState(0)
   useEmitter('deviation', (value) => {
     if (deviation !== value) {
+      // The margin goes on the element at once, as the table body's does. The mobile Safari path replaces it with a
+      // scroll that applies at once; through state alone, the margin can reach the DOM a task later, and a frame
+      // painted in between shows the whole list moved by it.
+      if (!showTopList && ref.current) {
+        const margin = value === 0 ? (alignToBottom ? 'auto' : '0px') : `${value}px`
+        if (horizontalDirection) {
+          ref.current.style.marginInlineStart = margin
+        } else {
+          ref.current.style.marginTop = margin
+        }
+      }
       setDeviation(value)
     }
   })
@@ -125,7 +137,6 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
   const computeItemKey = useEmitterValue('computeItemKey')
   const isSeeking = useEmitterValue('isSeeking')
   const hasGroups = useEmitterValue('groupIndices').length > 0
-  const alignToBottom = useEmitterValue('alignToBottom')
   const initialItemFinalLocationReached = useEmitterValue('initialItemFinalLocationReached')
 
   const containerStyle: React.CSSProperties = showTopList
