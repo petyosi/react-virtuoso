@@ -108,10 +108,10 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
     }
   })
 
-  // The margin below is what grows the scrollable content for a prepend, and it
-  // is applied by React. This runs once that commit is in the DOM and before
-  // paint, which is the point at which `upwardScrollFixSystem` can safely
-  // scroll to cancel it without being clamped.
+  // The margin (or, with alignToBottom, the padding) below is what grows the
+  // scrollable content for a prepend, and it is applied by React. This runs once
+  // that commit is in the DOM and before paint, which is the point at which
+  // `upwardScrollFixSystem` can safely scroll to cancel it without being clamped.
   const deviationCommitted = usePublisher('deviationCommitted')
   useIsomorphicLayoutEffect(() => {
     deviationCommitted(deviation)
@@ -127,6 +127,9 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
   const hasGroups = useEmitterValue('groupIndices').length > 0
   const alignToBottom = useEmitterValue('alignToBottom')
   const initialItemFinalLocationReached = useEmitterValue('initialItemFinalLocationReached')
+  // A pixel margin would replace the alignToBottom auto margin, so a positive deviation goes into the padding.
+  const paddingDeviation = alignToBottom && deviation > 0 ? deviation : 0
+  const marginDeviation = deviation - paddingDeviation
 
   const containerStyle: React.CSSProperties = showTopList
     ? {}
@@ -142,9 +145,9 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
               whiteSpace: 'nowrap',
             }
           : {
-              marginTop: deviation === 0 ? (alignToBottom ? 'auto' : 0) : deviation,
+              marginTop: marginDeviation === 0 ? (alignToBottom ? 'auto' : 0) : marginDeviation,
               paddingBottom: listState.offsetBottom,
-              paddingTop: listState.offsetTop,
+              paddingTop: listState.offsetTop + paddingDeviation,
             }),
         ...(initialItemFinalLocationReached ? {} : { visibility: 'hidden' }),
       }
