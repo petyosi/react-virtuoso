@@ -3,7 +3,7 @@ name: reactive-engine
 description: >-
   Manage application state with the @virtuoso.dev/reactive-engine-* package family. Use this skill when (1) defining reactive state
   with Cell, Stream, Trigger, or Resource nodes, (2) wiring React components through EngineProvider, useCellValue, useCellValues, or
-  usePublisher, (3) fetching data with Query and Mutation from reactive-engine-query, (4) routing with Route, Layout, and Guard from
+  usePublisher, (3) fetching data with Query, Mutation, and ConcurrentMutation from reactive-engine-query, (4) routing with Route, Layout, and Guard from
   reactive-engine-router, (5) persisting cells with linkCellToStorage, (6) architecting a component or library on top of the engine,
   (7) observing or troubleshooting propagation with describeNode, observeDiagnostics, useEngineDiagnostics, or
   useRemoteEngineDiagnostics, or (8) any task involving Engine, pub, sub, getValue, combine, pipe, link, changeWith, the e namespace,
@@ -18,7 +18,7 @@ A reactive state system built on a graph of typed nodes. Five packages compose:
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `@virtuoso.dev/reactive-engine-core`    | Nodes (`Cell`, `Stream`, `Trigger`, `Resource`, `DerivedCell`), `Engine`, operators, combinators, the `e` namespace |
 | `@virtuoso.dev/reactive-engine-react`   | `EngineProvider`, state hooks, local and remote diagnostic hooks                                                    |
-| `@virtuoso.dev/reactive-engine-query`   | `Query` and `Mutation` data fetching on top of nodes                                                                |
+| `@virtuoso.dev/reactive-engine-query`   | `Query`, `Mutation`, and `ConcurrentMutation` data fetching on top of nodes                                         |
 | `@virtuoso.dev/reactive-engine-router`  | `Route`, `Layout`, `Guard`, `Router` — routes are nodes                                                             |
 | `@virtuoso.dev/reactive-engine-storage` | `linkCellToStorage` (localStorage / sessionStorage / cookie)                                                        |
 
@@ -130,26 +130,24 @@ export const tasksQuery = Query<{ listId: string }, Task[]>({
 
 `Query` returns nodes: `data$` (cell with `{ type: 'pending' | 'success' | 'error', data, error, isLoading, isFetching, ... }`), `params$` (publish to refetch with new params), `refetch$`, `invalidate$` (keep showing stale data, `isFetching: true`, re-execute), `unload$` (abort and clear), `enabled$`. Queries auto-execute on activation and param changes; each execution aborts the previous via the `signal`. Options: `retry` (default 3, exponential backoff), `refetchInterval`, `initialData`, `enabled`.
 
-`Mutation({ mutationFn, concurrency?, key?, merge?, onSuccess?, onError? })` returns `mutate$`, `settled$`, `data$`, `pendingCount$`, `reset$`, `dropWaiting$`. Mutations never auto-execute — publish params to `mutate$`. `settled$` emits exactly one outcome per call — `success`, `error`, or `dropped` (never sent) — each with its `params`; wire refetches, confirmed state, and optimistic overlays to it or to the callbacks, which receive `(data | error, params, engine)`. `data$` is display state only: the latest start or result among calls made since the last `reset$`. `reset$` just returns `data$` to idle; earlier calls keep running and still report on `settled$`. `pendingCount$` counts running and waiting calls. A started call is never aborted (the `signal` passed to `mutationFn(params, signal)` aborts only on engine disposal); `dropWaiting$` drops calls that have not started. `concurrency` is `'parallel'` (default), `'serial'`, or `'coalesce'`; `key` applies `'serial'`/`'coalesce'` per record, and `merge` (coalesce only) combines waiting partial patches. Wire mutations to refetch queries in the graph, not in components:
+Writes use one of two primitives. Decide with one question: **if a second call for the same record arrives while the first is running, does it carry new information that must reach the server?** No (a duplicate: create, delete, submit, "charge card") → `Mutation`. Yes (a new value: a toggle per click, autosave) → `ConcurrentMutation` with `concurrency: 'coalesce'` (latest value wins), `'serial'` (every call, in order), or `'parallel'` (independent calls).
+
+- **`key` is required.** A key function makes one record per key and the state is `status$` (a `Map`); `key: false` makes one record and the state is `data$`. Pass the key type as the third type argument: `Mutation<Params, Data, number>`. With two type arguments, a key function fails with "No overload matches this call".
+- **`Mutation` runs one call per record and ignores a call for a busy record** (`settled$` emits `ignored`; development warns unless `onIgnored` is set). Disable the control while `status.get(key)?.isPending` (or `data$.isPending`). `onIgnored` may record or notify; never republish to `mutate$` from it.
+- **Results stay until dismissed.** `dismiss$(key)` after a successful delete, after a success message was shown, or when an off-screen record's outcome arrives (surface errors first). Never dismiss to switch records, and dismiss is not cancel: a sent request cannot be recalled; undo with a compensating write.
+- **`ConcurrentMutation` state** is `{ isPending, running, waiting, failures, lastSuccess }`. Failures stay until dismissed. `dropWaiting$` drops calls not yet sent (`dropped` on `settled$`). For an optimistic value, use the overlay recipe from the query reference (newest running/waiting params, else `lastSuccess` if at least as new as the query's `dataUpdatedAt`, else the query data); it needs full values per record and a refetch in `onSuccess`.
+- **No call that started is ever aborted**; the `signal` passed to `mutationFn(params, signal)` aborts only on engine disposal. Callbacks receive `(data | error, params, engine)`.
+- **Do reconciliation in `onSuccess`/`onError`**, not in components:
 
 ```ts
-e.link(
-  e.pipe(
-    e.merge(createTask.settled$, deleteTask.settled$),
-    e.filter((outcome) => outcome.type !== 'dropped'),
-    e.map(() => undefined, false) // distinct=false so consecutive outcomes each fire
-  ),
-  tasksQuery.refetch$
-)
-```
-
-## Routing (reactive-engine-router)
-
-```tsx
-export const user$ = Route('/users/{id:number}', UserPage) // params typed from the path
-const root = Layout('/', ({ children }) => <main>{children}</main>)
-
-<Router routes={[user$]} layouts={[root]} guards={[authGuard]} />
+export const deleteTask = Mutation<{ id: number }, void, number>({
+  mutationFn: ({ id }, signal) => api.deleteTask(id, signal),
+  key: ({ id }) => id,
+  onSuccess: (_data, { id }, engine) => {
+    engine.pub(tasksQuery.refetch$)
+    engine.pub(deleteTask.dismiss$, id)
+  },
+})
 ```
 
 Route nodes emit typed params when matched, `null` otherwise. Navigate by publishing params to the route node (`usePublisher(user$)({ id: 42 })`). Pipe route params into query params to fetch on navigation. `Guard(pattern, fn)` runs on matching navigations — its context offers `continue()`, `navigate()`, `redirect()`; async guards render the route inside `Suspense`. Layouts match by URL prefix and nest by specificity; `LayoutSlotPortal`/`LayoutSlot`/`LayoutSlotFill` let pages fill layout regions. `Router` syncs with browser history by default.
@@ -181,8 +179,10 @@ Follow the data-table architecture ([full patterns](references/core/05.building-
 - Expecting `Stream` subscriptions to fire on subscribe with a current value — streams are stateless; only `Cell` has a value.
 - Piping into a trigger through `map` without `distinct: false` — consecutive identical mapped values get filtered.
 - Triggering a `Mutation` by changing params — mutations only run when params are published to `mutate$`.
-- Using `switchMapPromise` for writes — aborting does not undo a request the server received; use `coalescePromise`/`concatMapPromise`, or a `Mutation` with `'coalesce'` or `'serial'`.
-- Reacting to mutation outcomes on `data$` — it is display state that `reset$` clears; use `settled$` or the callbacks.
+- Using `switchMapPromise` for writes — aborting does not undo a request the server received; use `coalescePromise`/`concatMapPromise`/`exhaustMapPromise`, or `Mutation`/`ConcurrentMutation`.
+- Using `Mutation` for a toggle or autosave without disabling the control — the second call is ignored; when each call carries a new value, use `ConcurrentMutation`.
+- Sharing one `key: false` `Mutation` across rows — the whole mutation is one record, so a second row's action is ignored; key it per row.
+- Using a child engine before its parent touches a query primitive — the parent gets a second instance; register shared primitives in the root engine at startup.
 - Plain `sub` in code that re-runs with React renders — subscriptions accumulate; use `singletonSub`.
 - Creating cycles in the graph — cycles hang or loop; break one direction with an action stream or `delayWithMicrotask`.
 

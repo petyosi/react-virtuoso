@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { ConcurrentMutation } from './ConcurrentMutation'
 import { Mutation } from './Mutation'
-import { deferred, flushPromises } from './test/helpers'
+import { deferred, flushPromises, neverSettle } from './test/helpers'
 
 import type * as Utils from './utils'
 
@@ -38,7 +38,16 @@ describe('errors in a drain started by a settling Promise', () => {
   it('Mutation: a throwing settled$ subscriber becomes an unhandled rejection, and onSuccess still runs', async () => {
     const request = deferred<string>()
     const onSuccess = vi.fn()
-    const mutation = Mutation<{ id: number }, string, number>({ key: ({ id }) => id, mutationFn: () => request.promise, onSuccess })
+    let calls = 0
+    const mutation = Mutation<{ id: number }, string, number>({
+      key: ({ id }) => id,
+      // Later calls never settle, so the throwing subscriber does not fire again without a handler.
+      mutationFn: () => {
+        calls += 1
+        return calls === 1 ? request.promise : new Promise<string>(neverSettle)
+      },
+      onSuccess,
+    })
     const engine = new Engine()
     const subscriberError = new Error('settled subscriber failed')
     engine.sub(mutation.settled$, () => {

@@ -33,7 +33,8 @@ export const tasksQuery = Query<{ listId: string }, Task[]>({
 ## Features
 
 - `Query` - parameterized async reads with abort signal support, retries, and typed pending/success/error results
-- `Mutation` - async writes with typed idle/pending/success/error results
+- `Mutation` - one call at a time per record, for actions where a second request would be a duplicate (create, delete, submit)
+- `ConcurrentMutation` - overlapping writes with `coalesce`, `serial`, or `parallel` scheduling, for values that change faster than they save
 - `executeWithRetry` / `defaultRetryDelay` - retry utilities used by both
 
 ## License
