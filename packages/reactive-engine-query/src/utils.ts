@@ -41,9 +41,10 @@ export async function executeWithRetry<T>(
     } catch (error) {
       lastError = error
 
-      // An aborted call stops retrying instead of sleeping and trying again.
+      // An aborted call stops retrying instead of sleeping and trying again. The attempt's own error is kept, so the
+      // caller sees why it failed.
       if (options.signal.aborted) {
-        throw abortError()
+        throw error
       }
 
       if (attempt < options.retry) {

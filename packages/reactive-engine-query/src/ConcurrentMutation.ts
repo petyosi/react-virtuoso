@@ -216,9 +216,10 @@ export function ConcurrentMutation<TParams, TData, TKey extends Key = never>(
       /** Publishes the state of the given records in one publication, or nothing if no view changed. */
       const publishStates = (keys: readonly RecordKey[], errors: DrainErrors) => {
         if (keyFn === null) {
-          const record = recordFor(SINGLE_RECORD)
-          const view = refreshView(SINGLE_RECORD, record)
-          const value = (isEmpty(record) ? emptyState : view) as ConcurrentMutationState<TParams, TData>
+          // Read without creating: a command that changed nothing must not leave an empty record behind.
+          const record = records.get(SINGLE_RECORD)
+          const view = record === undefined ? null : refreshView(SINGLE_RECORD, record)
+          const value = (record === undefined || isEmpty(record) ? emptyState : view) as ConcurrentMutationState<TParams, TData>
           if (value === single) {
             return
           }
