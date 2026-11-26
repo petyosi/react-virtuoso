@@ -194,6 +194,9 @@ catalogs:
     '@vitest/browser-playwright':
       specifier: ^4.1.5
       version: 4.1.5
+    fast-check:
+      specifier: ^4.10.3
+      version: 4.10.3
     jsdom:
       specifier: ^28.1.0
       version: 28.1.0
@@ -786,6 +789,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.1
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.3
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -847,6 +853,9 @@ importers:
       '@virtuoso.dev/reactive-engine-core':
         specifier: workspace:*
         version: link:../reactive-engine-core
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.3
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -4555,6 +4564,10 @@ packages:
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
 
+  fast-check@4.10.3:
+    resolution: {integrity: sha512-SBaU6nhh+sXxb05r2IHAKfxnR/1Pu6MqtHYaewM1BY6V5xzOxOk+4yoWO7WfeeyZG1iArFE6/DO/7iLYMUuOJg==}
+    engines: {node: '>=12.17.0'}
+
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
@@ -5874,6 +5887,9 @@ packages:
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
+
+  pure-rand@8.4.2:
+    resolution: {integrity: sha512-vvuOGgcuPJAirlHvuQw1TrOiw7ptaIXXmIbNuiNOY6lNGJJH49PQ1Kj4nd783nPdQhQdicgOjVI2yI/9BD6/Ng==}
 
   quansync@0.2.11:
     resolution: {integrity: sha512-AifT7QEbW9Nri4tAwR5M/uzpBuqfZf+zwaEM/QkzEjj7NBuFD2rBuy0K3dE+8wltbezDV7JMA0WfnCPYRSYbXA==}
@@ -10556,6 +10572,10 @@ snapshots:
 
   extend@3.0.2: {}
 
+  fast-check@4.10.3:
+    dependencies:
+      pure-rand: 8.4.2
+
   fast-deep-equal@3.1.3: {}
 
   fast-glob@3.3.3:
@@ -12353,6 +12373,8 @@ snapshots:
   punycode.js@2.3.1: {}
 
   punycode@2.3.1: {}
+
+  pure-rand@8.4.2: {}
 
   quansync@0.2.11: {}
 

@@ -55,4 +55,5 @@ catalog:
   '@microsoft/api-extractor': ^7.57.7
   jsdom: ^28.1.0
   knip: ^5.86.0
+  fast-check: ^4.10.3
   '@ladle/react': ^5.1.1

@@ -38,6 +38,7 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "@virtuoso.dev/reactive-engine-core": "workspace:*",
+    "fast-check": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",
