@@ -1,10 +1,10 @@
 import { createPromiseScheduler } from './promiseScheduler'
 
 import type { Engine } from './Engine'
-import type { PromiseWorkPolicy, PromiseWorkProject, SwitchMapPromiseResult } from './promiseScheduler'
+import type { PromiseWorkPolicy, SwitchMapPromiseResult } from './promiseScheduler'
 import type { Distinct, NodeRef, Out } from './types'
 
-export type { PromiseWorkPolicy, PromiseWorkProject, SwitchMapPromiseResult } from './promiseScheduler'
+export type { SwitchMapPromiseResult } from './promiseScheduler'
 
 /**
  * An operator that transforms a node into another node, used in the {@link Engine.pipe} method.
@@ -415,69 +415,23 @@ export function coalescePromise<TInput, TValue>(
 }
 
 /**
- * Lifecycle event emitted by {@link promiseWork}. Every event carries the number of running and waiting calls after
- * it, so a subscriber reads a count that is coherent with the event.
- * - `start`: work for `input` started.
- * - `queue`: an input is waiting, or was merged into a waiting one, without starting.
- * - `settle`: work settled with `result`.
- * - `drop`: a waiting `input` will never start. Under `coalesce` without `merge`, a newer input replaced it; or
- *   `dropWaiting$` removed it.
+ * Runs Promise work for one source value at a time and ignores values that arrive while that work runs. Ignored values
+ * never start and emit nothing. The key frees as soon as the work settles, whether it succeeds or fails, so a subscriber
+ * of the result can start new work for the same key. Use it for actions where a second request would be a duplicate,
+ * such as a submit or delete button. Work is aborted only when the engine is disposed.
  *
- * Every input ends with exactly one `settle` or `drop` event, unless the switch policy supersedes it or the engine is
- * disposed. A merged input ends with the event of the input it was merged into.
- * @hidden
+ * Unlike {@link concatMapPromise} and {@link coalescePromise}, which hold a key while result subscribers run, the key is
+ * already free inside them.
+ *
+ * @param project - Starts Promise work with the source input and an operator-owned abort signal.
+ * @param options - Pass `key` to allow one running work per key, so different keys run concurrently.
+ * @category Operators
  */
-export type PromiseWorkEvent<TInput, TValue> =
-  | { input: TInput; pendingCount: number; type: 'drop' }
-  | { input: TInput; pendingCount: number; type: 'start' }
-  | { pendingCount: number; result: SwitchMapPromiseResult<TInput, TValue>; type: 'settle' }
-  | { pendingCount: number; type: 'queue' }
-
-/**
- * Options for {@link promiseWork}.
- * @hidden
- */
-export interface PromiseWorkOptions<TInput> extends CoalescePromiseOptions<TInput> {
-  /** Every emission removes all waiting inputs and emits a `drop` event for each. Running work is not touched. */
-  dropWaiting$?: Out
-  policy: PromiseWorkPolicy
-}
-
-/**
- * Low-level scheduler behind the Promise operators, used by packages built on the engine. Emits start, queue, settle,
- * and drop events, each with the pending count.
- * @hidden
- */
-export function promiseWork<TInput, TValue>(
-  project: PromiseWorkProject<TInput, TValue>,
-  options: PromiseWorkOptions<TInput>
-): Operator<TInput, PromiseWorkEvent<TInput, TValue>> {
-  return (source, eng) => {
-    const sink = eng.streamInstance<PromiseWorkEvent<TInput, TValue>>(false)
-    const scheduler = createPromiseScheduler<TInput, TValue>(eng, options.policy, project, options, {
-      onDrop: (input, pendingCount) => {
-        eng.pub(sink, { input, pendingCount, type: 'drop' })
-      },
-      onQueue: (pendingCount) => {
-        eng.pub(sink, { pendingCount, type: 'queue' })
-      },
-      onSettle: (result, pendingCount) => {
-        eng.pub(sink, { pendingCount, result, type: 'settle' })
-      },
-      onStart: (input, pendingCount) => {
-        eng.pub(sink, { input, pendingCount, type: 'start' })
-      },
-    })
-    eng.sub(source, (input) => {
-      scheduler.push(input)
-    })
-    if (options.dropWaiting$ !== undefined) {
-      eng.sub(options.dropWaiting$, () => {
-        scheduler.dropWaiting()
-      })
-    }
-    return sink
-  }
+export function exhaustMapPromise<TInput, TValue>(
+  project: (input: TInput, signal: AbortSignal) => Promise<TValue>,
+  options: PromiseOperatorOptions<TInput> = {}
+): Operator<TInput, SwitchMapPromiseResult<TInput, TValue>> {
+  return promiseResultOperator('exhaust', project, options)
 }
 
 /**

@@ -11,9 +11,11 @@ export type SwitchMapPromiseResult<TInput, TValue> =
  * - `switch`: a new input aborts the running work and suppresses its result.
  * - `serial`: inputs run one at a time in arrival order.
  * - `coalesce`: one input runs at a time; while it runs, only the newest waiting input is kept.
+ * - `exhaust`: one input runs at a time; inputs that arrive while it runs are ignored. The key frees as soon as the work
+ *   settles, so it is already free inside subscribers of that result.
  * @hidden
  */
-export type PromiseWorkPolicy = 'coalesce' | 'parallel' | 'serial' | 'switch'
+export type PromiseWorkPolicy = 'coalesce' | 'exhaust' | 'parallel' | 'serial' | 'switch'
 
 /** @hidden */
 export type PromiseWorkProject<TInput, TValue> = (input: TInput, signal: AbortSignal, engine: Engine) => Promise<TValue>
@@ -31,6 +33,8 @@ export interface PromiseSchedulerHandlers<TInput, TValue> {
    * or one removed by `dropWaiting`.
    */
   onDrop?: (input: TInput, pendingCount: number) => void
+  /** Called for an input ignored under `exhaust` because work for its key is running. */
+  onIgnore?: (input: TInput, pendingCount: number) => void
   /** Called with the pending count when an input is queued, or merged into a waiting one, without starting work. */
   onQueue?: (pendingCount: number) => void
   /** Called with the pending count after work settles. Not called for superseded or disposed work. */
@@ -243,6 +247,17 @@ export function createPromiseScheduler<TInput, TValue>(
         run.controller.abort()
       }
       if (isClosed() || slots.get(key) !== slot || slot.generation !== owner) {
+        return
+      }
+      launch(key, slot, input)
+      return
+    }
+
+    if (policy === 'exhaust') {
+      // Only running work makes a key busy. A settled run is removed before its result is delivered, so result
+      // subscribers can start new work for the same key.
+      if (slot.active.length > 0) {
+        handlers.onIgnore?.(input, pendingCount())
         return
       }
       launch(key, slot, input)

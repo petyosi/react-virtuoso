@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { useCellValue, usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
-import { createTaskMutation, deleteTaskMutation, updateTaskMutation } from './mutations'
+import { createTaskMutation, deleteTaskMutation, overlayDone, toggleTaskMutation, updateTaskMutation } from './mutations'
 import { listsQuery, tasksQuery } from './queries'
 import { lists$ } from './routes'
 
@@ -15,8 +15,13 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
   const listsData = useCellValue(listsQuery.data$)
   const tasksData = useCellValue(tasksQuery.data$)
   const createTask = usePublisher(createTaskMutation.mutate$)
+  const creating = useCellValue(createTaskMutation.data$).isPending
   const updateTask = usePublisher(updateTaskMutation.mutate$)
+  const updates = useCellValue(updateTaskMutation.status$)
+  const toggleTask = usePublisher(toggleTaskMutation.mutate$)
+  const toggles = useCellValue(toggleTaskMutation.status$)
   const deleteTask = usePublisher(deleteTaskMutation.mutate$)
+  const deletes = useCellValue(deleteTaskMutation.status$)
   const goToLists = usePublisher(lists$)
 
   const [newTaskDescription, setNewTaskDescription] = useState('')
@@ -55,12 +60,8 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
   }
 
   const handleToggleDone = (task: Task) => {
-    updateTask({
-      id: task.id,
-      listId: task.listId,
-      description: task.description,
-      done: !task.done,
-    })
+    // Derive the next value from the overlay, so a quick double click sends on, then off.
+    toggleTask({ ...task, done: !overlayDone(toggles.get(task.id), tasksData, task) })
   }
 
   const handleDelete = (id: number) => {
@@ -101,7 +102,7 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
           placeholder="New task description"
           style={{ padding: '8px', marginRight: '10px' }}
         />
-        <button type="submit" style={{ padding: '8px 16px' }}>
+        <button type="submit" disabled={creating} style={{ padding: '8px 16px' }}>
           Add Task
         </button>
       </form>
@@ -129,7 +130,11 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
                     onChange={(e) => setEditingDescription(e.target.value)}
                     style={{ padding: '4px', flex: 1 }}
                   />
-                  <button onClick={() => handleUpdate(task)} style={{ padding: '4px 12px' }}>
+                  <button
+                    onClick={() => handleUpdate(task)}
+                    disabled={updates.get(task.id)?.isPending === true}
+                    style={{ padding: '4px 12px' }}
+                  >
                     Save
                   </button>
                   <button onClick={handleCancelEdit} style={{ padding: '4px 12px' }}>
@@ -138,7 +143,11 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
                 </>
               ) : (
                 <>
-                  <input type="checkbox" checked={task.done} onChange={() => handleToggleDone(task)} />
+                  <input
+                    type="checkbox"
+                    checked={overlayDone(toggles.get(task.id), tasksData, task)}
+                    onChange={() => handleToggleDone(task)}
+                  />
                   <span
                     style={{
                       flex: 1,
@@ -151,7 +160,11 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
                   <button onClick={() => handleEdit(task)} style={{ padding: '4px 12px' }}>
                     Edit
                   </button>
-                  <button onClick={() => handleDelete(task.id)} style={{ padding: '4px 12px' }}>
+                  <button
+                    onClick={() => handleDelete(task.id)}
+                    disabled={deletes.get(task.id)?.isPending === true}
+                    style={{ padding: '4px 12px' }}
+                  >
                     Delete
                   </button>
                 </>

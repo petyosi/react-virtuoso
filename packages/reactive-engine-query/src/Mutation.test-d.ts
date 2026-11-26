@@ -1,99 +1,137 @@
+import { Engine } from '@virtuoso.dev/reactive-engine-core'
 import { expectTypeOf, test } from 'vitest'
 
+import { ConcurrentMutation } from './ConcurrentMutation'
 import { Mutation } from './Mutation'
 
-import type { MutationConcurrency, MutationResult, MutationSettled } from './index'
-import type { Engine, NodeRef, StateRef } from '@virtuoso.dev/reactive-engine-core'
+import type { KeyedMutation, UnkeyedMutation } from './Mutation'
+import type { MutationActiveResult, MutationResult, MutationSettled, UnkeyedMutationOptions } from './types'
+import type { NodeRef, StateRef } from '@virtuoso.dev/reactive-engine-core'
 
-test('accepts a mutationFn without a signal parameter', () => {
-  const mutation = Mutation({
-    mutationFn: (params: { id: string }) => Promise.resolve(params.id.length),
-  })
+interface Task {
+  id: number
+  title: string
+}
 
-  expectTypeOf(mutation.data$).toEqualTypeOf<StateRef<MutationResult<number, { id: string }>>>()
-  expectTypeOf(mutation.pendingCount$).toEqualTypeOf<StateRef<number>>()
-  expectTypeOf(mutation.settled$).toEqualTypeOf<NodeRef<MutationSettled<number, { id: string }>>>()
-  expectTypeOf(mutation.reset$).toEqualTypeOf<NodeRef<void>>()
-  expectTypeOf(mutation.dropWaiting$).toEqualTypeOf<NodeRef<void>>()
+const save = (task: Task) => Promise.resolve(task.title)
+
+test('key: false returns data$ and dismiss$: Stream<void>, and no status$', () => {
+  const mutation = Mutation<Task, string>({ key: false, mutationFn: save })
+
+  expectTypeOf(mutation.data$).toEqualTypeOf<StateRef<MutationResult<string, Task>>>()
+  expectTypeOf(mutation.dismiss$).toEqualTypeOf<NodeRef<void>>()
+  expectTypeOf(mutation.settled$).toEqualTypeOf<NodeRef<MutationSettled<string, Task>>>()
+  // @ts-expect-error A mutation with key: false has no status$.
+  expectTypeOf(mutation.status$)
 })
 
-test('passes the signal, params, and engine to the mutation callbacks', () => {
-  // Params are inferred from mutationFn; with a partially annotated mutationFn, list it before key and merge.
-  // oxlint-disable-next-line sort-keys
-  Mutation({
-    mutationFn: (params: { id: string }, signal) => {
-      expectTypeOf(signal).toEqualTypeOf<AbortSignal>()
-      return Promise.resolve(params.id)
-    },
-    concurrency: 'coalesce',
-    key: (params) => params.id,
-    merge: (waiting, next) => {
-      expectTypeOf(waiting).toEqualTypeOf<{ id: string }>()
-      return next
-    },
-    onError: (_error, params, engine) => {
-      expectTypeOf(params).toEqualTypeOf<{ id: string }>()
+test('a key function returns status$, dismiss$: Stream<TKey>, and dismissAll$', () => {
+  const mutation = Mutation<Task, string, number>({ key: (task) => task.id, mutationFn: save })
+
+  expectTypeOf(mutation.status$).toEqualTypeOf<StateRef<ReadonlyMap<number, MutationActiveResult<string, Task, number>>>>()
+  expectTypeOf(mutation.dismiss$).toEqualTypeOf<NodeRef<number>>()
+  expectTypeOf(mutation.dismissAll$).toEqualTypeOf<NodeRef<void>>()
+  expectTypeOf<MutationSettled<string, Task, number>['key']>().toEqualTypeOf<number>()
+  // @ts-expect-error A keyed mutation has no data$.
+  expectTypeOf(mutation.data$)
+
+  const engine = new Engine()
+  // @ts-expect-error The key type is number, so a string does not dismiss anything.
+  engine.pub(mutation.dismiss$, '12')
+  // @ts-expect-error The key type is number, so a string lookup is a compile error.
+  engine.getValue(mutation.status$).get('12')
+})
+
+test('explicit type arguments without the key type reject a key function', () => {
+  // @ts-expect-error TKey defaults to never: add the key type as the third type argument.
+  Mutation<Task, string>({ key: (task) => task.id, mutationFn: save })
+})
+
+test('inference: with an annotated mutationFn parameter, a number key is inferred', () => {
+  const mutation = Mutation({ key: (task) => task.id, mutationFn: (task: Task) => Promise.resolve(task.title) })
+
+  expectTypeOf(mutation).toEqualTypeOf<KeyedMutation<Task, string, number>>()
+})
+
+test('options declared separately need key: false as const', () => {
+  const options = { key: false as const, mutationFn: save }
+  expectTypeOf(Mutation(options)).toEqualTypeOf<UnkeyedMutation<Task, string>>()
+
+  const typed: UnkeyedMutationOptions<Task, string> = { key: false, mutationFn: save }
+  expectTypeOf(Mutation(typed)).toEqualTypeOf<UnkeyedMutation<Task, string>>()
+})
+
+test('union options select the union overload', () => {
+  const perRow = Math.random() > 0.5
+  const mutation = Mutation<Task, string, number>(perRow ? { key: (task) => task.id, mutationFn: save } : { key: false, mutationFn: save })
+
+  expectTypeOf(mutation).toEqualTypeOf<KeyedMutation<Task, string, number> | UnkeyedMutation<Task, string>>()
+  if ('status$' in mutation) {
+    expectTypeOf(mutation.status$).toEqualTypeOf<StateRef<ReadonlyMap<number, MutationActiveResult<string, Task, number>>>>()
+  }
+})
+
+test('invalid options are compile errors', () => {
+  // @ts-expect-error key is required.
+  Mutation<Task, string>({ mutationFn: save })
+  // @ts-expect-error key: true is not a choice.
+  Mutation<Task, string>({ key: true, mutationFn: save })
+  // @ts-expect-error A key must be a string or a number, not an object.
+  Mutation({ key: (task: Task) => ({ id: task.id }), mutationFn: save })
+  // @ts-expect-error A key must be a string or a number, not a tuple.
+  Mutation({ key: (task: Task) => [task.id, task.title], mutationFn: save })
+  // @ts-expect-error A key must not be undefined.
+  Mutation({ key: (task: Task) => (task.id > 0 ? 'x' : undefined), mutationFn: save })
+})
+
+test('callbacks receive data or error, params, and the engine', () => {
+  Mutation<Task, string, number>({
+    key: (task) => task.id,
+    mutationFn: save,
+    onError: (error, params, engine) => {
+      expectTypeOf(error).toEqualTypeOf<unknown>()
+      expectTypeOf(params).toEqualTypeOf<Task>()
       expectTypeOf(engine).toEqualTypeOf<Engine>()
     },
-    onSuccess: (data, params, engine) => {
+    onIgnored: (params) => {
+      expectTypeOf(params).toEqualTypeOf<Task>()
+    },
+    onSuccess: (data, params) => {
       expectTypeOf(data).toEqualTypeOf<string>()
-      expectTypeOf(params).toEqualTypeOf<{ id: string }>()
-      expectTypeOf(engine).toEqualTypeOf<Engine>()
+      expectTypeOf(params).toEqualTypeOf<Task>()
     },
   })
 })
 
-test('infers params from explicit generics regardless of option order', () => {
-  Mutation<{ id: string }, string>({
+test('ConcurrentMutation: shapes by key, and options a policy would ignore are errors', () => {
+  const keyed = ConcurrentMutation<Task, string, number>({ concurrency: 'coalesce', key: (task) => task.id, mutationFn: save })
+  expectTypeOf(keyed.dropWaiting$).toEqualTypeOf<NodeRef<number>>()
+  expectTypeOf(keyed.dropWaitingAll$).toEqualTypeOf<NodeRef<void>>()
+  expectTypeOf(keyed.dismissAll$).toEqualTypeOf<NodeRef<void>>()
+
+  const single = ConcurrentMutation<Task, string>({ concurrency: 'serial', key: false, mutationFn: save })
+  expectTypeOf(single.dropWaiting$).toEqualTypeOf<NodeRef<void>>()
+  expectTypeOf(single.data$.valType)
+
+  const merged = ConcurrentMutation<Task, string, number>({
+    concurrency: 'coalesce',
+    key: (task) => task.id,
+    merge: (waiting, next) => ({ ...waiting, ...next }),
+    mutationFn: save,
+  })
+  expectTypeOf(merged.mutate$).toEqualTypeOf<NodeRef<Task>>()
+
+  // @ts-expect-error merge is only allowed with coalesce.
+  ConcurrentMutation<Task, string, number>({
     concurrency: 'serial',
-    key: (params) => {
-      expectTypeOf(params).toEqualTypeOf<{ id: string }>()
-      return params.id
-    },
-    mutationFn: (params, signal) => {
-      expectTypeOf(signal).toEqualTypeOf<AbortSignal>()
-      return Promise.resolve(params.id)
-    },
+    key: (task) => task.id,
+    merge: (_w: Task, n: Task) => n,
+    mutationFn: save,
   })
-})
-
-test('rejects options that the chosen policy would ignore', () => {
-  const mutationFn = (params: { id: string }) => Promise.resolve(params.id)
-
-  // @ts-expect-error Parallel calls never wait, so a key has no effect.
-  Mutation({ key: (params: { id: string }) => params.id, mutationFn })
-  // @ts-expect-error Only coalesce merges waiting params.
-  Mutation({ concurrency: 'serial', merge: (_waiting: { id: string }, next: { id: string }) => next, mutationFn })
-  // @ts-expect-error A started call is never aborted, so there is no switch policy.
-  Mutation({ concurrency: 'switch', mutationFn })
-
-  expectTypeOf<MutationConcurrency>().toEqualTypeOf<'coalesce' | 'parallel' | 'serial'>()
-})
-
-test('includes params on pending, success, and error results only', () => {
-  const inspect = (result: MutationResult<number, { id: string }>) => {
-    if (result.type === 'idle') {
-      // @ts-expect-error Idle results have no params.
-      expectTypeOf(result.params)
-    } else {
-      expectTypeOf(result.params).toEqualTypeOf<{ id: string }>()
-    }
-  }
-
-  expectTypeOf(inspect).toBeFunction()
-})
-
-test('narrows settled outcomes by type', () => {
-  const inspect = (outcome: MutationSettled<number, { id: string }>) => {
-    expectTypeOf(outcome.params).toEqualTypeOf<{ id: string }>()
-    if (outcome.type === 'success') {
-      expectTypeOf(outcome.data).toEqualTypeOf<number>()
-    } else if (outcome.type === 'error') {
-      expectTypeOf(outcome.error).toEqualTypeOf<unknown>()
-    } else {
-      expectTypeOf(outcome.type).toEqualTypeOf<'dropped'>()
-    }
-  }
-
-  expectTypeOf(inspect).toBeFunction()
+  // @ts-expect-error concurrency is required.
+  ConcurrentMutation<Task, string>({ key: false, mutationFn: save })
+  // @ts-expect-error unknown concurrency.
+  ConcurrentMutation<Task, string>({ concurrency: 'switch', key: false, mutationFn: save })
+  // @ts-expect-error TKey defaults to never: add the key type.
+  ConcurrentMutation<Task, string>({ concurrency: 'parallel', key: (task) => task.id, mutationFn: save })
 })

@@ -1,11 +1,12 @@
 import * as fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 
-import { e, Engine, Stream } from '../index'
+import { Engine } from './Engine'
+import { createPromiseScheduler } from './promiseScheduler'
 
-import type { PromiseWorkEvent, PromiseWorkPolicy } from '../index'
+import type { PromiseWorkPolicy, SwitchMapPromiseResult } from './promiseScheduler'
 
-// Model-based test: fast-check generates command sequences, runs them against promiseWork and against a small
+// Model-based test: fast-check generates command sequences, runs them against the Promise scheduler and a small
 // reference model of the scheduler, and shrinks any failure to a minimal sequence. On failure, the error includes
 // the seed and path to replay it: `fc.assert(..., { seed, path })`.
 
@@ -31,6 +32,7 @@ class Model {
   aborted: string[] = []
   readonly config: Config
   drops: string[] = []
+  ignored: string[] = []
   nextId = 0
   pushed: string[] = []
   /** Started and not yet settled or superseded, in start order. */
@@ -59,6 +61,14 @@ class Model {
       for (const run of this.runningFor(input.key)) {
         this.aborted.push(nameOf(run))
         this.running.splice(this.running.indexOf(run), 1)
+      }
+      this.start(input)
+      return true
+    }
+    if (policy === 'exhaust') {
+      if (this.runningFor(input.key).length > 0) {
+        this.ignored.push(nameOf(input))
+        return false
       }
       this.start(input)
       return true
@@ -116,58 +126,67 @@ class Model {
   }
 }
 
-/** The system under test: promiseWork in a real engine, with Promises the commands settle. */
+type SchedulerEvent =
+  | { input: Input; pendingCount: number; type: 'drop' }
+  | { input: Input; pendingCount: number; type: 'ignore' }
+  | { input: Input; pendingCount: number; type: 'start' }
+  | { pendingCount: number; result: SwitchMapPromiseResult<Input, string>; type: 'settle' }
+  | { pendingCount: number; type: 'queue' }
+
+/** The system under test: the Promise scheduler in a real engine, with Promises the commands settle. */
 interface Real {
-  dropWaiting$: ReturnType<typeof Stream<void>>
   engine: Engine
-  log: PromiseWorkEvent<Input, string>[]
+  log: SchedulerEvent[]
   requests: Map<string, Deferred>
+  scheduler: ReturnType<typeof createPromiseScheduler<Input, string>>
   signals: Map<string, AbortSignal>
-  source$: ReturnType<typeof Stream<Input>>
-  /** When set, the next start subscriber call throws. */
+  /** When set, the next start handler call throws. */
   throwOnStart: boolean
 }
 
 function createReal(config: Config): Real {
-  const real: Real = {
-    dropWaiting$: Stream<void>(false),
-    engine: new Engine(),
-    log: [],
-    requests: new Map(),
-    signals: new Map(),
-    source$: Stream<Input>(false),
-    throwOnStart: false,
-  }
+  const engine = new Engine()
+  const log: SchedulerEvent[] = []
+  const requests = new Map<string, Deferred>()
+  const signals = new Map<string, AbortSignal>()
   const mergeInputs = (waiting: Input, next: Input): Input => ({ ids: [...waiting.ids, ...next.ids], key: next.key })
-  const events$ = e.pipe(
-    real.source$,
-    e.promiseWork<Input, string>(
+  const real: Real = {
+    engine,
+    log,
+    requests,
+    scheduler: createPromiseScheduler<Input, string>(
+      engine,
+      config.policy,
       (input, signal) =>
         new Promise<string>((resolve, reject) => {
-          real.requests.set(nameOf(input), { reject, resolve })
-          real.signals.set(nameOf(input), signal)
+          requests.set(nameOf(input), { reject, resolve })
+          signals.set(nameOf(input), signal)
         }),
+      { key: (input) => input.key, ...(config.merge ? { merge: mergeInputs } : {}) },
       {
-        dropWaiting$: real.dropWaiting$,
-        key: (input) => input.key,
-        policy: config.policy,
-        ...(config.merge ? { merge: mergeInputs } : {}),
+        onDrop: (input, pendingCount) => log.push({ input, pendingCount, type: 'drop' }),
+        onIgnore: (input, pendingCount) => log.push({ input, pendingCount, type: 'ignore' }),
+        onQueue: (pendingCount) => log.push({ pendingCount, type: 'queue' }),
+        onSettle: (result, pendingCount) => log.push({ pendingCount, result, type: 'settle' }),
+        onStart: (input, pendingCount) => {
+          log.push({ input, pendingCount, type: 'start' })
+          if (real.throwOnStart) {
+            real.throwOnStart = false
+            throw new Error('start handler failed')
+          }
+        },
       }
-    )
-  )
-  real.engine.sub(events$, (event) => {
-    real.log.push(event)
-    if (event.type === 'start' && real.throwOnStart) {
-      real.throwOnStart = false
-      throw new Error('start subscriber failed')
-    }
-  })
+    ),
+    signals,
+    throwOnStart: false,
+  }
   return real
 }
 
 const pendingCountOf = (real: Real) => real.log.at(-1)?.pendingCount ?? 0
 
-const namesOf = (real: Real, type: 'drop' | 'start') => real.log.flatMap((event) => (event.type === type ? [nameOf(event.input)] : []))
+const namesOf = (real: Real, type: 'drop' | 'ignore' | 'start') =>
+  real.log.flatMap((event) => (event.type === type ? [nameOf(event.input)] : []))
 
 const settlesOf = (real: Real) =>
   real.log.flatMap((event) =>
@@ -185,6 +204,7 @@ function expectSameState(model: Model, real: Real) {
   expect(namesOf(real, 'start')).toEqual(model.starts)
   expect(settlesOf(real)).toEqual(model.settles)
   expect(namesOf(real, 'drop').toSorted()).toEqual(model.drops.toSorted())
+  expect(namesOf(real, 'ignore')).toEqual(model.ignored)
   expect(pendingCountOf(real)).toBe(model.count)
   const aborted = [...real.signals].flatMap(([name, signal]) => (signal.aborted ? [name] : []))
   expect(aborted.toSorted()).toEqual(model.aborted.toSorted())
@@ -201,13 +221,13 @@ function pushCommand(key: string, throwOnStart: boolean): Command {
       real.throwOnStart = throwOnStart
       let threw = false
       try {
-        real.engine.pub(real.source$, input)
+        real.scheduler.push(input)
       } catch {
         threw = true
       }
       real.throwOnStart = false
       const started = model.push(input)
-      // The subscriber error reaches the publisher only if the input started, and the work still runs.
+      // The handler error reaches the caller only if the input started, and the work still runs.
       expect(threw).toBe(throwOnStart && started)
       await flushPromises()
       expectSameState(model, real)
@@ -239,7 +259,7 @@ function settleCommand(index: number, ok: boolean): Command {
 const dropWaitingCommand: Command = {
   check: () => true,
   async run(model, real) {
-    real.engine.pub(real.dropWaiting$)
+    real.scheduler.dropWaiting()
     await flushPromises()
     model.dropWaiting()
     expectSameState(model, real)
@@ -263,9 +283,10 @@ const configs: Config[] = [
   { merge: false, policy: 'coalesce' },
   { merge: true, policy: 'coalesce' },
   { merge: false, policy: 'switch' },
+  { merge: false, policy: 'exhaust' },
 ]
 
-describe('promiseWork model', () => {
+describe('Promise scheduler model', () => {
   for (const config of configs) {
     it(`matches the reference model under ${config.policy}${config.merge ? ' with merge' : ''}`, async () => {
       await fc.assert(
@@ -287,8 +308,13 @@ describe('promiseWork model', () => {
           }
           expect(model.running).toHaveLength(2)
 
-          // Every input ends exactly once: settled, dropped, or (under switch) superseded.
-          const ended = [...model.settles.map((entry) => entry.slice(entry.indexOf(':') + 1)), ...model.drops, ...model.aborted]
+          // Every input ends exactly once: settled, dropped, ignored (under exhaust), or superseded (under switch).
+          const ended = [
+            ...model.settles.map((entry) => entry.slice(entry.indexOf(':') + 1)),
+            ...model.drops,
+            ...model.aborted,
+            ...model.ignored,
+          ]
           const endedIds = ended.flatMap((name) => name.split('+'))
           const runningIds = model.running.flatMap((input) => input.ids)
           expect([...endedIds, ...runningIds].toSorted()).toEqual(model.pushed.toSorted())

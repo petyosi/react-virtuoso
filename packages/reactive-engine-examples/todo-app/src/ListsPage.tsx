@@ -11,8 +11,11 @@ import type { List } from './types'
 export function ListsPage() {
   const listsData = useCellValue(listsQuery.data$)
   const createList = usePublisher(createListMutation.mutate$)
+  const creating = useCellValue(createListMutation.data$).isPending
   const updateList = usePublisher(updateListMutation.mutate$)
+  const updates = useCellValue(updateListMutation.status$)
   const deleteList = usePublisher(deleteListMutation.mutate$)
+  const deletes = useCellValue(deleteListMutation.status$)
   const goToTasks = usePublisher(tasks$)
 
   const [newListName, setNewListName] = useState('')
@@ -77,7 +80,7 @@ export function ListsPage() {
           placeholder="New list name"
           style={{ padding: '8px', marginRight: '10px' }}
         />
-        <button type="submit" style={{ padding: '8px 16px' }}>
+        <button type="submit" disabled={creating} style={{ padding: '8px 16px' }}>
           Create List
         </button>
       </form>
@@ -105,7 +108,11 @@ export function ListsPage() {
                     onChange={(e) => setEditingName(e.target.value)}
                     style={{ padding: '4px', flex: 1 }}
                   />
-                  <button onClick={() => handleUpdate(list.id)} style={{ padding: '4px 12px' }}>
+                  <button
+                    onClick={() => handleUpdate(list.id)}
+                    disabled={updates.get(list.id)?.isPending === true}
+                    style={{ padding: '4px 12px' }}
+                  >
                     Save
                   </button>
                   <button onClick={handleCancelEdit} style={{ padding: '4px 12px' }}>
@@ -121,7 +128,11 @@ export function ListsPage() {
                   <button onClick={() => handleEdit(list)} style={{ padding: '4px 12px' }}>
                     Edit
                   </button>
-                  <button onClick={() => handleDelete(list.id)} style={{ padding: '4px 12px' }}>
+                  <button
+                    onClick={() => handleDelete(list.id)}
+                    disabled={deletes.get(list.id)?.isPending === true}
+                    style={{ padding: '4px 12px' }}
+                  >
                     Delete
                   </button>
                 </>

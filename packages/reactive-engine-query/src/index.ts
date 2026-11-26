@@ -1,24 +1,31 @@
+export { ConcurrentMutation } from './ConcurrentMutation'
+export type { KeyedConcurrentMutation, UnkeyedConcurrentMutation } from './ConcurrentMutation'
 export { Mutation } from './Mutation'
+export type { KeyedMutation, UnkeyedMutation } from './Mutation'
 export { Query } from './Query'
 export type {
-  CoalesceMutationOptions,
-  MutationConcurrency,
+  ConcurrentMutationConcurrency,
+  ConcurrentMutationOptions,
+  ConcurrentMutationSettled,
+  ConcurrentMutationState,
+  Key,
+  KeyedConcurrentMutationOptions,
+  KeyedMutationOptions,
+  KeyField,
+  MutationActiveResult,
   MutationErrorResult,
   MutationIdleResult,
   MutationOptions,
   MutationPendingResult,
   MutationResult,
   MutationSettled,
-  MutationSettledDropped,
-  MutationSettledError,
-  MutationSettledSuccess,
   MutationSuccessResult,
-  ParallelMutationOptions,
   QueryErrorResult,
   QueryOptions,
   QueryPendingResult,
   QueryResult,
   QuerySuccessResult,
-  SerialMutationOptions,
+  UnkeyedConcurrentMutationOptions,
+  UnkeyedMutationOptions,
 } from './types'
 export { defaultRetryDelay, executeWithRetry } from './utils'

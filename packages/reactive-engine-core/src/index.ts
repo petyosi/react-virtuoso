@@ -32,6 +32,7 @@ export {
   concatMapPromise,
   debounceTime,
   delayWithMicrotask,
+  exhaustMapPromise,
   filter,
   filterMap,
   handlePromise,
@@ -39,23 +40,12 @@ export {
   mapTo,
   once,
   onNext,
-  promiseWork,
   scan,
   switchMapPromise,
   throttleTime,
   withLatestFrom,
 } from './operators'
-export type {
-  CoalescePromiseOptions,
-  O,
-  Operator,
-  PromiseOperatorOptions,
-  PromiseWorkEvent,
-  PromiseWorkOptions,
-  PromiseWorkPolicy,
-  PromiseWorkProject,
-  SwitchMapPromiseResult,
-} from './operators'
+export type { CoalescePromiseOptions, O, Operator, PromiseOperatorOptions, SwitchMapPromiseResult } from './operators'
 export type {
   CellDefinition,
   Comparator,

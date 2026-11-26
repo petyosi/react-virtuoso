@@ -1,9 +1,23 @@
-import { Cell, e, Stream } from '@virtuoso.dev/reactive-engine-core'
+import { addNodeInit, Cell, Stream } from '@virtuoso.dev/reactive-engine-core'
 
+import { assertKey, CommandQueue, isDevelopment, SINGLE_RECORD, trackOwner } from './runtime'
 import { defaultRetryDelay, executeWithRetry } from './utils'
 
-import type { MutationIdleResult, MutationOptions, MutationResult, MutationSettled } from './types'
-import type { PromiseWorkEvent, PromiseWorkOptions } from '@virtuoso.dev/reactive-engine-core'
+import type { DrainErrors } from './runtime'
+import type {
+  Key,
+  KeyedMutationOptions,
+  MutationActiveResult,
+  MutationErrorResult,
+  MutationIdleResult,
+  MutationOptions,
+  MutationPendingResult,
+  MutationResult,
+  MutationSettled,
+  MutationSuccessResult,
+  UnkeyedMutationOptions,
+} from './types'
+import type { Engine, NodeRef, StateRef } from '@virtuoso.dev/reactive-engine-core'
 
 const idle: MutationIdleResult = {
   data: null,
@@ -14,239 +28,348 @@ const idle: MutationIdleResult = {
   type: 'idle',
 }
 
-/** A call made through `mutate$`, tagged with the display epoch it was made in. */
-interface Call<TParams> {
-  epoch: number
-  params: TParams
+/** The nodes of a `Mutation` created with `key: false`. */
+export interface UnkeyedMutation<TParams, TData> {
+  /** The record's state: `idle`, `pending`, `success`, or `error`. A settled result stays until dismissed. */
+  data$: StateRef<MutationResult<TData, TParams>>
+  /** Dismisses a settled result. Never touches a pending call. */
+  dismiss$: NodeRef<void>
+  /** Starts a call, unless one is in flight; then the call is ignored. */
+  mutate$: NodeRef<TParams>
+  /** One outcome per `mutate$` input: `success`, `error`, or `ignored`. */
+  settled$: NodeRef<MutationSettled<TData, TParams>>
 }
 
-/** What `data$` shows, and the epoch whose calls it may show. Every `reset$` starts a new epoch. */
-interface Display<TData, TParams> {
-  epoch: number
-  result: MutationResult<TData, TParams>
+/** The nodes of a `Mutation` with one record per key. */
+export interface KeyedMutation<TParams, TData, TKey extends Key> {
+  /** Dismisses one record's settled result. Never touches a pending call. */
+  dismiss$: NodeRef<TKey>
+  /** Dismisses every settled result. Never touches pending calls. */
+  dismissAll$: NodeRef<void>
+  /** Starts a call, unless the record has one in flight; then the call is ignored. */
+  mutate$: NodeRef<TParams>
+  /** One outcome per `mutate$` input: `success`, `error`, or `ignored`, each with `key`. */
+  settled$: NodeRef<MutationSettled<TData, TParams, TKey>>
+  /** One entry per record that is pending or has a settled result. A key with no entry is idle. */
+  status$: StateRef<ReadonlyMap<TKey, MutationActiveResult<TData, TParams, TKey>>>
 }
+
+type RecordKey = Key | typeof SINGLE_RECORD
+
+interface Call<TParams> {
+  readonly controller: AbortController
+  readonly key: RecordKey
+  readonly params: TParams
+}
+
+type Item<TParams, TData> =
+  | { call: Call<TParams>; data: TData; type: 'success' }
+  | { call: Call<TParams>; error: unknown; type: 'error' }
+  | { key: unknown; type: 'dismiss' }
+  | { params: TParams; type: 'mutate' }
+  | { type: 'dismissAll' }
 
 /**
- * Creates a reactive mutation for performing remote operations like POST, PUT, DELETE requests.
+ * Creates a mutation that runs one call at a time per record. A call for a record that has a call in flight is
+ * ignored: it is never sent, `settled$` reports it as `ignored`, and the UI is expected to disable the control while
+ * the record is pending. Use it for actions where a second request would be a duplicate: create, delete, submit,
+ * per-row actions. When every call carries a new value that must reach the server, such as a toggle that saves on each
+ * click, use {@link ConcurrentMutation}.
  *
- * A mutation separates three concerns:
- * - `settled$` reports the outcome of every call exactly once: `success`, `error`, or `dropped` (never sent). Nothing,
- *   including `reset$`, suppresses an outcome, so graph wiring can always reconcile with the server.
- * - `data$` is display state: the latest start or result among calls made since the last `reset$`.
- * - `pendingCount$` counts calls that are running or waiting to start.
+ * `key` is required. With a key function, each key is a record and the state is `status$`, a map; with `key: false`,
+ * the whole mutation is one record and the state is `data$`. Pass the key type as the third type argument, for example
+ * `Mutation<Task, Task, number>`; with `<TParams, TData>` alone, a key function is a compile error.
  *
- * No control aborts a call that already started, because aborting a request does not undo it on the server. The
- * `AbortSignal` passed to `mutationFn` is aborted only when the engine is disposed.
- *
- * Unlike Query, mutations are triggered manually by publishing to the `mutate$` stream and do not execute automatically
- * on initialization.
- *
- * @typeParam TParams - The type of parameters passed to the mutation function
- * @typeParam TData - The type of data returned by the mutation function
- *
- * @param options - Configuration options for the mutation
- * @param options.mutationFn - The async function that performs the mutation. Receives params and an AbortSignal
- * @param options.concurrency - How overlapping calls are scheduled: `'parallel'` (default), `'serial'`, or `'coalesce'`
- * @param options.key - With `'serial'` or `'coalesce'`, groups calls, for example by record ID, so the policy applies per key
- * @param options.merge - With `'coalesce'`, combines waiting params with newer params for the same key (default: replace them)
- * @param options.retry - Number of retry attempts on failure, or false to disable (default: 0)
- * @param options.retryDelay - Function that returns delay in ms for each retry attempt (default: exponential backoff)
- * @param options.onSuccess - Called with the data, the params, and the engine for every call that succeeds
- * @param options.onError - Called with the error, the params, and the engine for every call that fails
- *
- * @returns An object containing reactive nodes for managing the mutation:
- * - `data$` - Cell holding what to display: the latest MutationResult among calls made since the last `reset$`
- * - `dropWaiting$` - Stream that drops every call waiting to start; each ends as `dropped` on `settled$`
- * - `mutate$` - Stream to trigger the mutation with provided params
- * - `pendingCount$` - Cell counting calls that are running or waiting to start
- * - `reset$` - Stream that returns `data$` to idle; calls made before it keep running and still report on `settled$`
- * - `settled$` - Stream with one outcome per call: `success`, `error`, or `dropped`
+ * A call that started is never aborted, because aborting a request does not undo it on the server. Its signal aborts
+ * only when the engine is disposed.
  *
  * @example
  * ```typescript
- * const updateUser = Mutation({
- *   mutationFn: async ({ userId, name }, signal) => {
- *     const res = await fetch(`/api/users/${userId}`, {
- *       method: 'PUT',
- *       body: JSON.stringify({ name }),
- *       signal,
- *     })
- *     return res.json()
- *   },
- *   onSuccess: (data) => console.log('User updated:', data),
- *   onError: (error) => console.error('Update failed:', error),
- * })
- *
- * const engine = new Engine()
- * engine.sub(updateUser.data$, (state) => {
- *   if (state.isPending) {
- *     console.log('Updating...')
- *   } else if (state.isSuccess) {
- *     console.log('Updated:', state.data)
- *   }
- * })
- *
- * // Trigger mutation
- * engine.pub(updateUser.mutate$, { userId: 1, name: 'John' })
- *
- * // Dismiss the displayed result; running calls still report on settled$
- * engine.pub(updateUser.reset$)
- * ```
- *
- * @example
- * Save a setting per record, sending at most one request per record at a time:
- * ```typescript
- * const saveSetting = Mutation<{ id: string; patch: Patch }, Saved>({
- *   mutationFn: ({ id, patch }, signal) => api.patch(id, patch, { signal }),
- *   concurrency: 'coalesce',
+ * const deleteTask = Mutation<{ id: number }, void, number>({
+ *   mutationFn: ({ id }, signal) => api.deleteTask(id, signal),
  *   key: ({ id }) => id,
- *   merge: (waiting, next) => ({ id: next.id, patch: { ...waiting.patch, ...next.patch } }),
- *   onSuccess: (saved, { id }, engine) => engine.pub(savedById$, { id, saved }),
+ *   onSuccess: (_data, { id }, engine) => {
+ *     engine.pub(tasksQuery.refetch$)
+ *     engine.pub(deleteTask.dismiss$, id)
+ *   },
  * })
  * ```
  *
  * @category Query
  */
-export function Mutation<TParams, TData>(options: MutationOptions<TParams, TData>) {
-  // Commands are events: publishing the same params, a second reset, or a second drop must act again.
+export function Mutation<TParams, TData, TKey extends Key = never>(
+  options: KeyedMutationOptions<TParams, TData, TKey>
+): KeyedMutation<TParams, TData, TKey>
+export function Mutation<TParams, TData>(options: UnkeyedMutationOptions<TParams, TData>): UnkeyedMutation<TParams, TData>
+export function Mutation<TParams, TData, TKey extends Key = never>(
+  options: MutationOptions<TParams, TData, TKey>
+): KeyedMutation<TParams, TData, TKey> | UnkeyedMutation<TParams, TData>
+export function Mutation<TParams, TData, TKey extends Key = never>(
+  options: MutationOptions<TParams, TData, TKey>
+): KeyedMutation<TParams, TData, TKey> | UnkeyedMutation<TParams, TData> {
+  const keyFn = options.key === false ? null : options.key
+  // Commands are events: equal params published twice make two calls.
   const mutate$ = Stream<TParams>(false)
-  const reset$ = Stream<void>(false)
-  const dropWaiting$ = Stream<void>(false)
-  const settled$ = Stream<MutationSettled<TData, TParams>>(false)
-  const pendingCount$ = Cell(0)
+  const settled$ = Stream<unknown>(false)
+  const dismiss$ = Stream<unknown>(false)
+  const dismissAll$ = Stream<void>(false)
   const data$ = Cell<MutationResult<TData, TParams>>(idle)
-  // Per-engine display state lives in the graph, because Mutation nodes are shared across engines.
-  const display$ = Cell<Display<TData, TParams>>({ epoch: 0, result: idle })
+  const status$ = Cell<ReadonlyMap<Key, MutationActiveResult<TData, TParams, Key>>>(new Map())
+  const nodes: NodeRef[] = keyFn === null ? [mutate$, settled$, dismiss$, data$] : [mutate$, settled$, dismiss$, dismissAll$, status$]
+  const owners = new Set<Engine>()
+  const retry = options.retry === false ? 0 : (options.retry ?? 0)
+  const retryDelay = options.retryDelay ?? defaultRetryDelay
 
-  const retryCount = options.retry === false ? 0 : (options.retry ?? 0)
-  const retryDelayFn = options.retryDelay ?? defaultRetryDelay
-  const concurrency = options.concurrency ?? 'parallel'
-
-  const workOptions: PromiseWorkOptions<Call<TParams>> = { dropWaiting$, policy: concurrency }
-  const { key, merge } = options
-  if (key !== undefined && concurrency !== 'parallel') {
-    workOptions.key = (call) => key(call.params)
-  }
-  if (merge !== undefined && concurrency === 'coalesce') {
-    // A merged call belongs to the epoch of its newest params.
-    workOptions.merge = (waiting, next) => ({ epoch: next.epoch, params: merge(waiting.params, next.params) })
-  }
-
-  const calls$ = e.pipe(
-    mutate$,
-    e.withLatestFrom(display$),
-    e.map(([params, display]): Call<TParams> => ({ epoch: display.epoch, params }), false)
-  )
-
-  const events$ = e.pipe(
-    calls$,
-    e.promiseWork<Call<TParams>, TData>(
-      (call, signal) =>
-        executeWithRetry(() => options.mutationFn(call.params, signal), {
-          retry: retryCount,
-          retryDelay: retryDelayFn,
-          signal,
-        }),
-      workOptions
-    )
-  )
-
-  e.changeWith(display$, reset$, (display) => ({ epoch: display.epoch + 1, result: idle }))
-  e.changeWith(display$, events$, (display, event) => showEvent(display, event))
-  e.link(
-    e.pipe(
-      display$,
-      e.map((display) => display.result)
-    ),
-    data$
-  )
-  e.changeWith(pendingCount$, events$, (_count, event) => event.pendingCount)
-  e.link(e.pipe(events$, e.filterMap(toSettled<TParams, TData>, false)), settled$)
-
-  // Callbacks run after the cycle settles, so data$ and settled$ subscribers see every result before a callback can
-  // start or reset another mutation.
-  e.sub(e.pipe(settled$, e.afterSettle()), (outcome, engine) => {
-    if (outcome.type === 'dropped') {
-      return
-    }
-    try {
-      if (outcome.type === 'success') {
-        options.onSuccess?.(outcome.data, outcome.params, engine)
-      } else {
-        options.onError?.(outcome.error, outcome.params, engine)
+  addNodeInit(
+    (engine) => {
+      trackOwner(owners, engine, 'Mutation')
+      // The whole primitive lives in one engine, so its state and its queue cannot be split across engines.
+      for (const node of nodes) {
+        engine.register(node)
       }
-    } catch (error) {
-      console.error(`Mutation ${outcome.type === 'success' ? 'onSuccess' : 'onError'} callback error:`, error)
-    }
-  })
 
-  return { data$, dropWaiting$, mutate$, pendingCount$, reset$, settled$ }
-}
+      let closed = false
+      const isClosed = () => closed || engine.isDisposed
+      // Publishes nothing once the engine is disposed, even in the middle of an item.
+      const pub = <T>(node: NodeRef<T>, value: T) => {
+        if (!isClosed()) {
+          engine.pub(node, value)
+        }
+      }
+      const running = new Map<RecordKey, Call<TParams>>()
+      let single: MutationResult<TData, TParams> = idle
+      let keyed: ReadonlyMap<Key, MutationActiveResult<TData, TParams, Key>> = new Map()
 
-/** Shows starts and results of calls made in the current epoch. Queued and dropped calls do not change the display. */
-function showEvent<TParams, TData>(
-  display: Display<TData, TParams>,
-  event: PromiseWorkEvent<Call<TParams>, TData>
-): Display<TData, TParams> {
-  if (event.type === 'start') {
-    if (event.input.epoch !== display.epoch) {
-      return display
-    }
+      const keyFields = (key: RecordKey) => (key === SINGLE_RECORD ? {} : { key })
+
+      /** Publishes a record's new result; `null` makes the record idle. Keyed results get their `key` here. */
+      const publishState = (key: RecordKey, result: MutationActiveResult<TData, TParams> | null, errors: DrainErrors) => {
+        if (key === SINGLE_RECORD) {
+          single = result ?? idle
+          const value = single
+          errors.step(() => {
+            pub(data$, value)
+          })
+          return
+        }
+        const next = new Map(keyed)
+        if (result === null) {
+          next.delete(key)
+        } else {
+          next.set(key, { ...result, key } as MutationActiveResult<TData, TParams, Key>)
+        }
+        keyed = next
+        errors.step(() => {
+          pub(status$, next)
+        })
+      }
+
+      const settledResult = (key: RecordKey): boolean => {
+        const result = key === SINGLE_RECORD ? single : keyed.get(key)
+        return result !== undefined && (result.type === 'success' || result.type === 'error')
+      }
+
+      const start = (call: Call<TParams>) => {
+        const { signal } = call.controller
+        // oxlint-disable-next-line promise/catch-or-return, promise/prefer-catch -- settle errors surface as unhandled rejections by design
+        void executeWithRetry(() => options.mutationFn(call.params, signal), { retry, retryDelay, signal }).then(
+          (data) => {
+            queue.enqueue({ call, data, type: 'success' })
+            return undefined
+          },
+          (error: unknown) => {
+            queue.enqueue({ call, error, type: 'error' })
+            return undefined
+          }
+        )
+      }
+
+      const runCallback = (name: string, callback: () => void) => {
+        try {
+          callback()
+        } catch (error) {
+          console.error(`Mutation ${name} callback error:`, error)
+        }
+      }
+
+      const process = (item: Item<TParams, TData>, errors: DrainErrors) => {
+        switch (item.type) {
+          case 'mutate': {
+            const { params } = item
+            let key: RecordKey = SINGLE_RECORD
+            if (keyFn !== null) {
+              const computed: unknown = keyFn(params)
+              assertKey(computed, 'Mutation')
+              key = computed
+            }
+            if (running.has(key)) {
+              const outcome = { params, type: 'ignored' as const, ...keyFields(key) }
+              errors.step(() => {
+                pub(settled$, outcome)
+              })
+              if (isClosed()) {
+                return
+              }
+              if (options.onIgnored === undefined) {
+                if (isDevelopment()) {
+                  console.warn(
+                    `Mutation: a call was ignored because ${key === SINGLE_RECORD ? 'the mutation' : `record ${JSON.stringify(key)}`} ` +
+                      'has a call in flight. Disable the control while the record is pending, or use ConcurrentMutation if each call ' +
+                      'carries a new value. If ignoring is intended, for example as double-submit protection, pass onIgnored.'
+                  )
+                }
+              } else {
+                const { onIgnored } = options
+                runCallback('onIgnored', () => {
+                  onIgnored(params, engine)
+                })
+              }
+              return
+            }
+            const call: Call<TParams> = { controller: new AbortController(), key, params }
+            running.set(key, call)
+            const pending: MutationPendingResult<TParams> = {
+              data: null,
+              error: null,
+              isError: false,
+              isPending: true,
+              isSuccess: false,
+              params,
+              type: 'pending',
+            }
+            publishState(key, pending, errors)
+            if (!isClosed()) {
+              start(call)
+            }
+            return
+          }
+          case 'success':
+          case 'error': {
+            const { call } = item
+            if (running.get(call.key) !== call) {
+              return
+            }
+            running.delete(call.key)
+            const settledAt = Date.now()
+            const fields = keyFields(call.key)
+            if (item.type === 'success') {
+              const { data } = item
+              const success: MutationSuccessResult<TData, TParams> = {
+                data,
+                error: null,
+                isError: false,
+                isPending: false,
+                isSuccess: true,
+                params: call.params,
+                settledAt,
+                type: 'success',
+              }
+              publishState(call.key, success, errors)
+              errors.step(() => {
+                pub(settled$, { data, params: call.params, type: 'success', ...fields })
+              })
+              if (!isClosed() && options.onSuccess !== undefined) {
+                const { onSuccess } = options
+                runCallback('onSuccess', () => {
+                  onSuccess(data, call.params, engine)
+                })
+              }
+            } else {
+              const { error } = item
+              const failure: MutationErrorResult<TParams> = {
+                data: null,
+                error,
+                isError: true,
+                isPending: false,
+                isSuccess: false,
+                params: call.params,
+                settledAt,
+                type: 'error',
+              }
+              publishState(call.key, failure, errors)
+              errors.step(() => {
+                pub(settled$, { error, params: call.params, type: 'error', ...fields })
+              })
+              if (!isClosed() && options.onError !== undefined) {
+                const { onError } = options
+                runCallback('onError', () => {
+                  onError(error, call.params, engine)
+                })
+              }
+            }
+            return
+          }
+          case 'dismiss': {
+            let key: RecordKey = SINGLE_RECORD
+            if (keyFn !== null) {
+              assertKey(item.key, 'Mutation')
+              ;({ key } = item)
+            }
+            if (settledResult(key)) {
+              publishState(key, null, errors)
+            }
+            return
+          }
+          case 'dismissAll': {
+            const next = new Map(keyed)
+            for (const [key, result] of keyed) {
+              if (result.type !== 'pending') {
+                next.delete(key)
+              }
+            }
+            if (next.size !== keyed.size) {
+              keyed = next
+              errors.step(() => {
+                pub(status$, next)
+              })
+            }
+            return
+          }
+          default:
+            // oxlint-disable-next-line no-useless-return
+            return
+        }
+      }
+
+      const queue = new CommandQueue<Item<TParams, TData>>('Mutation', process, isClosed)
+
+      engine.onDispose(() => {
+        closed = true
+        queue.clear()
+        for (const call of running.values()) {
+          call.controller.abort()
+        }
+        running.clear()
+      })
+
+      engine.sub(mutate$, (params) => {
+        queue.enqueue({ params, type: 'mutate' })
+      })
+      engine.sub(dismiss$, (key) => {
+        queue.enqueue({ key, type: 'dismiss' })
+      })
+      if (keyFn !== null) {
+        engine.sub(dismissAll$, () => {
+          queue.enqueue({ type: 'dismissAll' })
+        })
+      }
+    },
+    ...nodes
+  )
+
+  if (keyFn === null) {
     return {
-      epoch: display.epoch,
-      result: {
-        data: null,
-        error: null,
-        isError: false,
-        isPending: true,
-        isSuccess: false,
-        params: event.input.params,
-        type: 'pending',
-      },
-    }
-  }
-  if (event.type !== 'settle' || event.result.input.epoch !== display.epoch) {
-    return display
-  }
-  const { result } = event
-  if (result.status === 'success') {
-    return {
-      epoch: display.epoch,
-      result: {
-        data: result.value,
-        error: null,
-        isError: false,
-        isPending: false,
-        isSuccess: true,
-        params: result.input.params,
-        type: 'success',
-      },
+      data$,
+      dismiss$: dismiss$ as NodeRef<void>,
+      mutate$,
+      settled$: settled$ as NodeRef<MutationSettled<TData, TParams>>,
     }
   }
   return {
-    epoch: display.epoch,
-    result: {
-      data: null,
-      error: result.error,
-      isError: true,
-      isPending: false,
-      isSuccess: false,
-      params: result.input.params,
-      type: 'error',
-    },
+    dismiss$: dismiss$ as NodeRef<TKey>,
+    dismissAll$,
+    mutate$,
+    settled$: settled$ as NodeRef<MutationSettled<TData, TParams, TKey>>,
+    status$: status$ as unknown as StateRef<ReadonlyMap<TKey, MutationActiveResult<TData, TParams, TKey>>>,
   }
-}
-
-function toSettled<TParams, TData>(event: PromiseWorkEvent<Call<TParams>, TData>): MutationSettled<TData, TParams> | null {
-  if (event.type === 'drop') {
-    return { params: event.input.params, type: 'dropped' }
-  }
-  if (event.type !== 'settle') {
-    return null
-  }
-  const { result } = event
-  if (result.status === 'success') {
-    return { data: result.value, params: result.input.params, type: 'success' }
-  }
-  return { error: result.error, params: result.input.params, type: 'error' }
 }

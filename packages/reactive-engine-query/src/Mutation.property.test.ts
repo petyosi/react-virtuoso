@@ -1,324 +1,363 @@
 import { Engine } from '@virtuoso.dev/reactive-engine-core'
 import * as fc from 'fast-check'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Mutation } from './Mutation'
+import { flushPromises } from './test/helpers'
 
-import type { MutationConcurrency, MutationOptions, MutationResult } from './types'
+import type { KeyedMutation, UnkeyedMutation } from './Mutation'
+import type { Deferred } from './test/helpers'
+import type { MutationActiveResult, MutationResult, MutationSettled } from './types'
+import type * as Utils from './utils'
 
-// Model-based test: fast-check generates sequences of mutate$, reset$, dropWaiting$, and request settlements, runs
-// them against Mutation and a reference model, and shrinks any failure to a minimal sequence. On failure, the error
-// includes the seed and path to replay it: `fc.assert(..., { seed, path })`.
-//
-// The invariants behind the design:
-// - every mutate$ input ends with exactly one outcome on settled$, whatever reset$ does;
-// - data$ shows only calls made since the last reset$;
-// - pendingCount$ counts running and waiting calls;
-// - a call that started is never aborted, and the callbacks run once per success or error.
+// Model-based test (MUT-10): fast-check generates sequences of mutate$, resolve, reject, dismiss$, dismissAll$,
+// reactions that publish from a settled$ subscriber, and subscribers that throw. Each sequence runs against Mutation
+// and a reference model; after every command the full emission log (state, settled$, callbacks, in order) and the
+// state must match. Failures shrink to a minimal sequence and report the seed and path to replay.
 
+const caught = vi.hoisted(() => [] as unknown[])
+
+vi.mock('./utils', async (importOriginal) => {
+  const { wrapExecuteWithRetry } = await import('./test/captureSettlements')
+  return wrapExecuteWithRetry(await importOriginal<typeof Utils>(), caught)
+})
+
+type RecordKey = 'a' | 'b' | 'single'
+type Reaction = 'dismiss' | 'none' | 'retry'
 interface Params {
-  ids: string[]
-  key: string
+  key: RecordKey
+  name: string
 }
-
-interface Call extends Params {
-  epoch: number
+interface Shown {
+  name: string
+  type: 'error' | 'pending' | 'success'
 }
-
-interface Config {
-  concurrency: MutationConcurrency
-  merge: boolean
-}
-
-interface Deferred {
-  reject: (error: unknown) => void
-  resolve: (value: string) => void
-}
-
-const nameOf = (params: Params) => params.ids.join('+')
-
-const describeResult = (result: MutationResult<string, Params>) =>
-  result.type === 'idle' ? 'idle' : `${result.type}:${nameOf(result.params)}`
 
 /** Reference model of Mutation's observable behavior. */
 class Model {
-  readonly config: Config
-  display = 'idle'
-  drops: string[] = []
-  epoch = 0
+  inputs = 0
+  readonly keyed: boolean
+  log: string[] = []
   nextId = 0
-  /** Success and error outcomes, in order. */
-  outcomes: string[] = []
-  pushed: string[] = []
-  running: Call[] = []
-  private readonly queues = new Map<string, Call[]>()
+  outcomes = 0
+  /** Keys with a running call, in start order, with the running params. */
+  running: Params[] = []
+  state = new Map<RecordKey, Shown>()
 
-  constructor(config: Config) {
-    this.config = config
+  constructor(keyed: boolean) {
+    this.keyed = keyed
   }
 
-  get count() {
-    let waiting = 0
-    for (const queue of this.queues.values()) {
-      waiting += queue.length
+  dismiss(key: RecordKey) {
+    const shown = this.state.get(key)
+    if (shown !== undefined && shown.type !== 'pending') {
+      this.state.delete(key)
+      this.logState()
     }
-    return this.running.length + waiting
   }
 
-  /** Returns true if the call started right away. */
-  mutate(params: Params): boolean {
-    const { concurrency, merge } = this.config
-    const call: Call = { ...params, epoch: this.epoch }
-    this.pushed.push(...params.ids)
-    const busy = concurrency !== 'parallel' && this.running.some((run) => run.key === call.key)
-    if (!busy) {
-      this.start(call)
-      return true
-    }
-    const queue = this.queueFor(call.key)
-    const waiting = queue[0]
-    if (concurrency === 'coalesce' && waiting !== undefined) {
-      if (merge) {
-        // A merged call belongs to the epoch of its newest params.
-        queue[0] = { epoch: call.epoch, ids: [...waiting.ids, ...call.ids], key: call.key }
-      } else {
-        this.drops.push(nameOf(waiting))
-        queue[0] = call
+  dismissAll() {
+    let changed = false
+    for (const [key, shown] of this.state) {
+      if (shown.type !== 'pending') {
+        this.state.delete(key)
+        changed = true
       }
-    } else {
-      queue.push(call)
     }
-    return false
-  }
-
-  settle(call: Call, ok: boolean) {
-    this.running.splice(this.running.indexOf(call), 1)
-    const outcome = `${ok ? 'success' : 'error'}:${nameOf(call)}`
-    this.outcomes.push(outcome)
-    if (call.epoch === this.epoch) {
-      this.display = outcome
-    }
-    const next = this.queueFor(call.key).shift()
-    if (next !== undefined) {
-      this.start(next)
+    if (changed) {
+      this.logState()
     }
   }
 
-  reset() {
-    this.epoch += 1
-    this.display = 'idle'
+  /** Returns true if a state emission happened. */
+  mutate(params: Params): boolean {
+    this.inputs += 1
+    if (this.running.some((running) => running.key === params.key)) {
+      this.outcomes += 1
+      this.log.push(`settled:ignored:${params.name}`, `callback:onIgnored:${params.name}`)
+      return false
+    }
+    this.running.push(params)
+    this.state.set(params.key, { name: params.name, type: 'pending' })
+    this.logState()
+    return true
   }
 
-  dropWaiting() {
-    for (const queue of this.queues.values()) {
-      this.drops.push(...queue.splice(0).map(nameOf))
+  settle(params: Params, ok: boolean, reaction: Reaction) {
+    this.running = this.running.filter((running) => running !== params)
+    const type = ok ? 'success' : 'error'
+    this.state.set(params.key, { name: params.name, type })
+    this.logState()
+    this.outcomes += 1
+    this.log.push(`settled:${type}:${params.name}`, `callback:${ok ? 'onSuccess' : 'onError'}:${params.name}`)
+    if (reaction === 'retry') {
+      this.mutate({ key: params.key, name: `${params.name}r` })
+    } else if (reaction === 'dismiss') {
+      this.dismiss(params.key)
     }
   }
 
-  private queueFor(key: string) {
-    let queue = this.queues.get(key)
-    if (queue === undefined) {
-      queue = []
-      this.queues.set(key, queue)
-    }
-    return queue
+  snapshot() {
+    return describeState(this.keyed, this.state)
   }
 
-  private start(call: Call) {
-    this.running.push(call)
-    if (call.epoch === this.epoch) {
-      this.display = `pending:${nameOf(call)}`
-    }
+  private logState() {
+    this.log.push(`state:${this.snapshot()}`)
   }
 }
 
-/** The system under test: a Mutation in a real engine, with Promises the commands settle. */
+function describeState(keyed: boolean, state: ReadonlyMap<RecordKey, Shown>) {
+  if (!keyed) {
+    const shown = state.get('single')
+    return shown === undefined ? 'idle' : `${shown.type}:${shown.name}`
+  }
+  return [...state]
+    .map(([key, shown]) => `${key}=${shown.type}:${shown.name}`)
+    .toSorted()
+    .join(',')
+}
+
 interface Real {
-  callbacks: string[]
   engine: Engine
-  mutation: ReturnType<typeof Mutation<Params, string>>
-  requests: Map<string, Deferred>
-  settled: string[]
+  identityViolations: string[]
+  log: string[]
+  mutation: KeyedMutation<Params, string, RecordKey> | UnkeyedMutation<Params, string>
+  /** Reactions armed per params name, run by a settled$ subscriber. */
+  reactions: Map<string, Reaction>
+  requests: Map<string, Deferred<string>>
   signals: AbortSignal[]
-  /** When set, the next data$ subscriber call with a pending result throws. */
-  throwOnPending: boolean
+  throwOnSettled: boolean
+  throwOnState: boolean
 }
 
-function createReal(config: Config): Real {
-  const callbacks: string[] = []
-  const requests = new Map<string, Deferred>()
+function createReal(keyed: boolean): Real {
+  const requests = new Map<string, Deferred<string>>()
   const signals: AbortSignal[] = []
-  const base = {
+  const log: string[] = []
+  const callbacks = {
     mutationFn: (params: Params, signal: AbortSignal) =>
       new Promise<string>((resolve, reject) => {
-        requests.set(nameOf(params), { reject, resolve })
+        requests.set(params.name, { promise: Promise.resolve(''), reject, resolve })
         signals.push(signal)
       }),
     onError: (_error: unknown, params: Params) => {
-      callbacks.push(`error:${nameOf(params)}`)
+      log.push(`callback:onError:${params.name}`)
+    },
+    onIgnored: (params: Params) => {
+      log.push(`callback:onIgnored:${params.name}`)
     },
     onSuccess: (_data: string, params: Params) => {
-      callbacks.push(`success:${nameOf(params)}`)
+      log.push(`callback:onSuccess:${params.name}`)
     },
   }
-  const key = (params: Params) => params.key
-  const merge = (waiting: Params, next: Params): Params => ({ ids: [...waiting.ids, ...next.ids], key: next.key })
-  let options: MutationOptions<Params, string> = base
-  if (config.concurrency === 'serial') {
-    options = { ...base, concurrency: 'serial', key }
-  } else if (config.concurrency === 'coalesce') {
-    options = config.merge ? { ...base, concurrency: 'coalesce', key, merge } : { ...base, concurrency: 'coalesce', key }
+  const mutation = keyed
+    ? Mutation<Params, string, RecordKey>({ ...callbacks, key: (params) => params.key })
+    : Mutation<Params, string>({ ...callbacks, key: false })
+  const engine = new Engine()
+  const real: Real = {
+    engine,
+    identityViolations: [],
+    log,
+    mutation,
+    reactions: new Map(),
+    requests,
+    signals,
+    throwOnSettled: false,
+    throwOnState: false,
   }
 
-  const real: Real = {
-    callbacks,
-    engine: new Engine(),
-    mutation: Mutation(options),
-    requests,
-    settled: [],
-    signals,
-    throwOnPending: false,
+  // Recorders first, so throwing subscribers registered later cannot hide an emission from them.
+  if ('status$' in mutation) {
+    let previous: ReadonlyMap<RecordKey, MutationActiveResult<string, Params, RecordKey>> = new Map()
+    engine.sub(mutation.status$, (status) => {
+      for (const [key, result] of status) {
+        const before = previous.get(key)
+        if (before !== undefined && before !== result && before.type === result.type && before.params === result.params) {
+          real.identityViolations.push(key)
+        }
+      }
+      previous = status
+      log.push(
+        `state:${describeState(true, new Map([...status].map(([key, result]) => [key, { name: result.params.name, type: result.type }])))}`
+      )
+    })
+  } else {
+    engine.sub(mutation.data$, (result: MutationResult<string, Params>) => {
+      const state = new Map<RecordKey, Shown>(result.type === 'idle' ? [] : [['single', { name: result.params.name, type: result.type }]])
+      log.push(`state:${describeState(false, state)}`)
+    })
   }
-  real.engine.sub(real.mutation.data$, (result) => {
-    if (result.type === 'pending' && real.throwOnPending) {
-      real.throwOnPending = false
-      throw new Error('data$ subscriber failed')
+  engine.sub(mutation.settled$, (outcome: MutationSettled<string, Params>) => {
+    log.push(`settled:${outcome.type}:${outcome.params.name}`)
+  })
+  engine.sub(mutation.settled$, (outcome: MutationSettled<string, Params>) => {
+    const reaction = real.reactions.get(outcome.params.name)
+    if (outcome.type === 'ignored' || reaction === undefined) {
+      return
+    }
+    real.reactions.delete(outcome.params.name)
+    if (reaction === 'retry') {
+      engine.pub(mutation.mutate$, { key: outcome.params.key, name: `${outcome.params.name}r` })
+    } else if (reaction === 'dismiss') {
+      if ('status$' in mutation) {
+        engine.pub(mutation.dismiss$, outcome.params.key)
+      } else {
+        engine.pub(mutation.dismiss$)
+      }
     }
   })
-  real.engine.sub(real.mutation.settled$, (outcome) => {
-    real.settled.push(`${outcome.type}:${nameOf(outcome.params)}`)
+  // Throwing subscribers last.
+  const throwOnState = () => {
+    if (real.throwOnState) {
+      real.throwOnState = false
+      throw new Error('state subscriber failed')
+    }
+  }
+  if ('status$' in mutation) {
+    engine.sub(mutation.status$, throwOnState)
+  } else {
+    engine.sub(mutation.data$, throwOnState)
+  }
+  engine.sub(mutation.settled$, () => {
+    if (real.throwOnSettled) {
+      real.throwOnSettled = false
+      throw new Error('settled subscriber failed')
+    }
   })
   return real
 }
 
-async function flushPromises() {
-  for (let index = 0; index < 5; index++) {
-    // oxlint-disable-next-line no-await-in-loop
-    await Promise.resolve()
-  }
-}
-
 function expectSameState(model: Model, real: Real) {
-  const outcomes = real.settled.filter((entry) => !entry.startsWith('dropped:'))
-  const drops = real.settled.filter((entry) => entry.startsWith('dropped:')).map((entry) => entry.slice('dropped:'.length))
-  expect(outcomes).toEqual(model.outcomes)
-  expect(drops.toSorted()).toEqual(model.drops.toSorted())
-  expect(real.callbacks).toEqual(model.outcomes)
-  expect(describeResult(real.engine.getValue(real.mutation.data$))).toBe(model.display)
-  expect(real.engine.getValue(real.mutation.pendingCount$)).toBe(model.count)
-  expect(real.signals.filter((signal) => signal.aborted)).toEqual([])
+  expect(real.log).toEqual(model.log)
+  expect(real.identityViolations).toEqual([])
+  expect(real.signals.filter((signal) => signal.aborted)).toHaveLength(0)
 }
 
 type Command = fc.AsyncCommand<Model, Real>
 
-function mutateCommand(key: string, throwOnPending: boolean): Command {
+function mutateCommand(key: RecordKey, throwOnState: boolean): Command {
   return {
     check: () => true,
     async run(model, real) {
       model.nextId += 1
-      const params: Params = { ids: [`${key}${model.nextId}`], key }
-      real.throwOnPending = throwOnPending
+      const params: Params = { key: model.keyed ? key : 'single', name: `${key}${model.nextId}` }
+      real.throwOnState = throwOnState
       let threw = false
       try {
         real.engine.pub(real.mutation.mutate$, params)
       } catch {
         threw = true
       }
-      real.throwOnPending = false
-      const started = model.mutate(params)
-      // A new call is always in the current epoch, so if it started, data$ showed it as pending.
-      expect(threw).toBe(throwOnPending && started)
+      real.throwOnState = false
+      const emitted = model.mutate(params)
+      // The error reaches the publisher only if a state emission happened.
+      expect(threw).toBe(throwOnState && emitted)
       await flushPromises()
       expectSameState(model, real)
     },
-    toString: () => `mutate(${key}${throwOnPending ? ', throwOnPending' : ''})`,
+    toString: () => `mutate(${key}${throwOnState ? ', throwOnState' : ''})`,
   }
 }
 
-function settleCommand(index: number, ok: boolean): Command {
+function settleCommand(index: number, ok: boolean, reaction: Reaction, throwOnSettled: boolean): Command {
   return {
     check: (model) => model.running.length > 0,
     async run(model, real) {
-      const call = model.running[index % model.running.length] as Call
-      const request = real.requests.get(nameOf(call))
-      expect(request, `request for ${nameOf(call)}`).toBeDefined()
+      const params = model.running[index % model.running.length] as Params
+      const request = real.requests.get(params.name)
+      expect(request, `request for ${params.name}`).toBeDefined()
+      if (reaction !== 'none') {
+        real.reactions.set(params.name, reaction)
+      }
+      real.throwOnSettled = throwOnSettled
+      const caughtBefore = caught.length
       if (ok) {
-        request?.resolve(`saved ${nameOf(call)}`)
+        request?.resolve(`saved ${params.name}`)
       } else {
-        request?.reject(new Error(`failed ${nameOf(call)}`))
+        request?.reject(new Error(`failed ${params.name}`))
       }
       await flushPromises()
-      model.settle(call, ok)
+      real.throwOnSettled = false
+      model.settle(params, ok, reaction)
+      // A throwing settled$ subscriber surfaces as one error from the settlement Promise.
+      expect(caught.length - caughtBefore).toBe(throwOnSettled ? 1 : 0)
       expectSameState(model, real)
     },
-    toString: () => `${ok ? 'resolve' : 'reject'}(running[${index}])`,
+    toString: () =>
+      `${ok ? 'resolve' : 'reject'}(running[${index}]${reaction === 'none' ? '' : `, then ${reaction}`}${throwOnSettled ? ', throwOnSettled' : ''})`,
   }
 }
 
-const resetCommand: Command = {
-  check: () => true,
-  async run(model, real) {
-    real.engine.pub(real.mutation.reset$)
-    await flushPromises()
-    model.reset()
-    expectSameState(model, real)
-  },
-  toString: () => 'reset',
+function dismissCommand(key: RecordKey): Command {
+  return {
+    check: () => true,
+    async run(model, real) {
+      const recordKey = model.keyed ? key : 'single'
+      if ('status$' in real.mutation) {
+        real.engine.pub(real.mutation.dismiss$, recordKey)
+      } else {
+        real.engine.pub(real.mutation.dismiss$)
+      }
+      model.dismiss(recordKey)
+      await flushPromises()
+      expectSameState(model, real)
+    },
+    toString: () => `dismiss(${key})`,
+  }
 }
 
-const dropWaitingCommand: Command = {
-  check: () => true,
+const dismissAllCommand: Command = {
+  check: (model) => model.keyed,
   async run(model, real) {
-    real.engine.pub(real.mutation.dropWaiting$)
+    if ('status$' in real.mutation) {
+      real.engine.pub(real.mutation.dismissAll$)
+    }
+    model.dismissAll()
     await flushPromises()
-    model.dropWaiting()
     expectSameState(model, real)
   },
-  toString: () => 'dropWaiting',
+  toString: () => 'dismissAll',
 }
 
 const commands = fc.commands(
   [
-    // Roughly one call in ten throws from a data$ subscriber. Shrinking moves the roll toward 0, so toward no throw.
-    fc.tuple(fc.constantFrom('a', 'b'), fc.integer({ max: 9, min: 0 })).map(([key, roll]) => mutateCommand(key, roll === 9)),
-    fc.tuple(fc.nat(), fc.boolean()).map(([index, ok]) => settleCommand(index, ok)),
-    fc.constant(resetCommand),
-    fc.constant(dropWaitingCommand),
+    // Roughly one command in ten arms a throwing subscriber. Shrinking moves the roll toward 0, so toward no throw.
+    fc.tuple(fc.constantFrom<RecordKey>('a', 'b'), fc.integer({ max: 9, min: 0 })).map(([key, roll]) => mutateCommand(key, roll === 9)),
+    fc
+      .tuple(fc.nat(), fc.boolean(), fc.constantFrom<Reaction>('none', 'none', 'retry', 'dismiss'), fc.integer({ max: 9, min: 0 }))
+      .map(([index, ok, reaction, roll]) => settleCommand(index, ok, reaction, roll === 9)),
+    fc.constantFrom<RecordKey>('a', 'b').map((key) => dismissCommand(key)),
+    fc.constant(dismissAllCommand),
   ],
   { maxCommands: 40 }
 )
 
-const configs: Config[] = [
-  { concurrency: 'parallel', merge: false },
-  { concurrency: 'serial', merge: false },
-  { concurrency: 'coalesce', merge: false },
-  { concurrency: 'coalesce', merge: true },
-]
+beforeEach(() => {
+  caught.length = 0
+  vi.spyOn(console, 'error').mockImplementation(() => undefined)
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('Mutation model', () => {
-  for (const config of configs) {
-    it(`matches the reference model under ${config.concurrency}${config.merge ? ' with merge' : ''}`, async () => {
+  for (const keyed of [true, false]) {
+    it(`matches the reference model (${keyed ? 'keyed' : 'key: false'})`, async () => {
       await fc.assert(
         fc.asyncProperty(commands, async (cmds) => {
-          const model = new Model(config)
-          const real = createReal(config)
+          caught.length = 0
+          const model = new Model(keyed)
+          const real = createReal(keyed)
           await fc.asyncModelRun(() => ({ model, real }), cmds)
 
-          // Settle everything that is left; then nothing is pending and every input ended exactly once.
+          // Settle everything that is left; afterwards every input has exactly one outcome.
           while (model.running.length > 0) {
             // oxlint-disable-next-line no-await-in-loop
-            await settleCommand(0, true).run(model, real)
+            await settleCommand(0, true, 'none', false).run(model, real)
           }
-          expect(real.engine.getValue(real.mutation.pendingCount$)).toBe(0)
-          const ended = [...model.outcomes.map((entry) => entry.slice(entry.indexOf(':') + 1)), ...model.drops]
-          expect(ended.flatMap((name) => name.split('+')).toSorted()).toEqual(model.pushed.toSorted())
-
-          // No key is stuck: a new call per key starts right away and shows as pending.
-          for (const key of ['a', 'b']) {
-            // oxlint-disable-next-line no-await-in-loop
-            await mutateCommand(key, false).run(model, real)
-            expect(real.engine.getValue(real.mutation.data$).type).toBe('pending')
-          }
+          expect(model.outcomes).toBe(model.inputs)
+          expect(real.log.filter((entry) => entry.startsWith('settled:'))).toHaveLength(model.inputs)
           real.engine.dispose()
         })
       )
