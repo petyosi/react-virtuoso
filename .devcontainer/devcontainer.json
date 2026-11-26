@@ -4,5 +4,5 @@
     "dockerfile": "Dockerfile"
   },
   "remoteUser": "node",
-  "postCreateCommand": "pnpm install --frozen-lockfile && pnpm --filter react-virtuoso exec playwright install chromium"
+  "postCreateCommand": "bash .devcontainer/post-create.sh"
 }
