@@ -58,6 +58,8 @@ export interface MutationIdleResult {
   isError: false
   isPending: false
   isSuccess: false
+  /** Calls that are running or waiting to start, including this one if it is pending. */
+  pendingCount: number
   type: 'idle'
 }
 
@@ -69,6 +71,8 @@ export interface MutationPendingResult<TParams = unknown> {
   isSuccess: false
   /** The params of the call that started. */
   params: TParams
+  /** Calls that are running or waiting to start, including this one if it is pending. */
+  pendingCount: number
   type: 'pending'
 }
 
@@ -80,6 +84,8 @@ export interface MutationSuccessResult<T, TParams = unknown> {
   isSuccess: true
   /** The params of the call that succeeded. */
   params: TParams
+  /** Calls that are running or waiting to start, including this one if it is pending. */
+  pendingCount: number
   type: 'success'
 }
 
@@ -91,12 +97,15 @@ export interface MutationErrorResult<TParams = unknown> {
   isSuccess: false
   /** The params of the call that failed. */
   params: TParams
+  /** Calls that are running or waiting to start, including this one if it is pending. */
+  pendingCount: number
   type: 'error'
 }
 
 /**
- * The latest event of a mutation. `isPending` describes that event only; when calls overlap, read `pendingCount$`
- * to know whether any call is still running or waiting.
+ * The latest event of a mutation. `isPending` describes that event only; when calls overlap, read `pendingCount` to
+ * know whether any call is still running or waiting. A call that waits without starting re-emits the latest event
+ * with an updated `pendingCount`.
  */
 export type MutationResult<T, TParams = unknown> =
   | MutationErrorResult<TParams>

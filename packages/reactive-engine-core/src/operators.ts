@@ -2,7 +2,7 @@ import { createPromiseScheduler } from './promiseScheduler'
 
 import type { Engine } from './Engine'
 import type { PromiseWorkPolicy, PromiseWorkProject, SwitchMapPromiseResult } from './promiseScheduler'
-import type { Distinct, Inp, NodeRef, Out } from './types'
+import type { Distinct, NodeRef, Out } from './types'
 
 export type { PromiseWorkPolicy, PromiseWorkProject, SwitchMapPromiseResult } from './promiseScheduler'
 
@@ -415,13 +415,19 @@ export function coalescePromise<TInput, TValue>(
 }
 
 /**
- * Lifecycle event emitted by {@link promiseWork}.
+ * Lifecycle event emitted by {@link promiseWork}. Every event carries the number of running and waiting calls after
+ * it, so a subscriber reads a count that is coherent with the event.
+ * - `start`: work for `input` started.
+ * - `queue`: an input is waiting, or was merged into or replaced a waiting one, without starting.
+ * - `settle`: work settled with `result`.
+ * - `cancel`: `cancel$` dropped all running and waiting work.
  * @hidden
  */
 export type PromiseWorkEvent<TInput, TValue> =
-  | { input: TInput; type: 'start' }
-  | { result: SwitchMapPromiseResult<TInput, TValue>; type: 'settle' }
-  | { type: 'cancel' }
+  | { input: TInput; pendingCount: number; type: 'start' }
+  | { pendingCount: number; result: SwitchMapPromiseResult<TInput, TValue>; type: 'settle' }
+  | { pendingCount: number; type: 'queue' }
+  | { pendingCount: 0; type: 'cancel' }
 
 /**
  * Options for {@link promiseWork}.
@@ -430,14 +436,12 @@ export type PromiseWorkEvent<TInput, TValue> =
 export interface PromiseWorkOptions<TInput> extends CoalescePromiseOptions<TInput> {
   /** Every emission aborts all running work, drops all waiting inputs, and emits a `cancel` event. */
   cancel$?: Out
-  /** Receives the number of running and waiting calls, in the same cycle as the matching event. */
-  pendingCount$?: Inp<number>
   policy: PromiseWorkPolicy
 }
 
 /**
- * Low-level scheduler behind the Promise operators, used by packages built on the engine. Emits start, settle, and
- * cancel events, and reports a pending count.
+ * Low-level scheduler behind the Promise operators, used by packages built on the engine. Emits start, queue, settle,
+ * and cancel events, each with the pending count.
  * @hidden
  */
 export function promiseWork<TInput, TValue>(
@@ -446,27 +450,15 @@ export function promiseWork<TInput, TValue>(
 ): Operator<TInput, PromiseWorkEvent<TInput, TValue>> {
   return (source, eng) => {
     const sink = eng.streamInstance<PromiseWorkEvent<TInput, TValue>>(false)
-    const { pendingCount$ } = options
-    const emit = (event: PromiseWorkEvent<TInput, TValue> | null, pendingCount: number) => {
-      if (pendingCount$ === undefined) {
-        if (event !== null) {
-          eng.pub(sink, event)
-        }
-      } else if (event === null) {
-        eng.pub(pendingCount$, pendingCount)
-      } else {
-        eng.pubIn({ [sink]: event, [pendingCount$]: pendingCount })
-      }
-    }
     const scheduler = createPromiseScheduler<TInput, TValue>(eng, options.policy, project, options, {
       onQueue: (pendingCount) => {
-        emit(null, pendingCount)
+        eng.pub(sink, { pendingCount, type: 'queue' })
       },
       onSettle: (result, pendingCount) => {
-        emit({ result, type: 'settle' }, pendingCount)
+        eng.pub(sink, { pendingCount, result, type: 'settle' })
       },
       onStart: (input, pendingCount) => {
-        emit({ input, type: 'start' }, pendingCount)
+        eng.pub(sink, { input, pendingCount, type: 'start' })
       },
     })
     eng.sub(source, (input) => {
@@ -475,7 +467,7 @@ export function promiseWork<TInput, TValue>(
     if (options.cancel$ !== undefined) {
       eng.sub(options.cancel$, () => {
         const controllers = scheduler.cancel()
-        emit({ type: 'cancel' }, 0)
+        eng.pub(sink, { pendingCount: 0, type: 'cancel' })
         // Abort after the cancel event, so work started by abort listeners is not reported as cancelled.
         for (const controller of controllers) {
           controller.abort()

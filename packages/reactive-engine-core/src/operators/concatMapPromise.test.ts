@@ -136,4 +136,55 @@ describe('concatMapPromise operator', () => {
     expect(started.every((s) => s.signal.aborted)).toBe(true)
     expect(history).toEqual([])
   })
+  it('drains a long queue of synchronously failing work without overflowing the stack', async () => {
+    const source$ = Stream<number>(false)
+    const first = deferred<number>()
+    const result$ = e.pipe(
+      source$,
+      e.concatMapPromise((input: number) => {
+        if (input === 0) {
+          return first.promise
+        }
+        throw new Error(`sync ${input}`)
+      })
+    )
+    const inputs: number[] = []
+    e.sub(result$, (result) => inputs.push(result.input))
+    const engine = new Engine()
+    const total = 5000
+
+    for (let i = 0; i < total; i++) {
+      engine.pub(source$, i)
+    }
+    first.resolve(0)
+    await flushPromise()
+
+    expect(inputs).toHaveLength(total)
+    expect(inputs.every((input, index) => input === index)).toBe(true)
+  })
+
+  it('keeps draining when a result subscriber throws, then rethrows the first error', () => {
+    const source$ = Stream<number>(false)
+    const result$ = e.pipe(
+      source$,
+      e.concatMapPromise<number, never>((input) => {
+        throw new Error(`sync ${input}`)
+      })
+    )
+    const inputs: number[] = []
+    const engine = new Engine()
+    engine.sub(result$, (result) => {
+      inputs.push(result.input)
+      if (result.input === 0) {
+        throw new Error('subscriber failed')
+      }
+    })
+
+    expect(() => {
+      engine.pub(source$, 0)
+    }).toThrow('subscriber failed')
+    engine.pub(source$, 1)
+
+    expect(inputs).toEqual([0, 1])
+  })
 })

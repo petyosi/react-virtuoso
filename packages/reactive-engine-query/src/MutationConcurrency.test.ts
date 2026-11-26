@@ -79,13 +79,16 @@ describe('Mutation concurrency', () => {
     await flushPromise()
 
     expect(calls).toHaveLength(3)
-    expect(results.map((r) => [r.type, r.type === 'idle' ? null : r.params])).toEqual([
-      ['pending', p('x', { v: 1 })],
-      ['pending', p('y', { v: 1 })],
-      ['success', p('x', { v: 1 })],
-      ['pending', p('x', { v: 3 })],
-      ['error', p('y', { v: 1 })],
-      ['success', p('x', { v: 3 })],
+    // Waiting calls re-emit the latest result with the new count.
+    expect(results.map((r) => [r.type, r.type === 'idle' ? null : r.params, r.pendingCount])).toEqual([
+      ['pending', p('x', { v: 1 }), 1],
+      ['pending', p('x', { v: 1 }), 2],
+      ['pending', p('x', { v: 1 }), 2],
+      ['pending', p('y', { v: 1 }), 3],
+      ['success', p('x', { v: 1 }), 2],
+      ['pending', p('x', { v: 3 }), 2],
+      ['error', p('y', { v: 1 }), 1],
+      ['success', p('x', { v: 3 }), 0],
     ])
   })
 
@@ -203,7 +206,9 @@ describe('Mutation concurrency', () => {
   it('keeps the pending count accurate under overlap (CX-11)', async () => {
     const { calls, counts, engine, mutation } = setup()
     const countAtResult: [string, number][] = []
-    engine.sub(mutation.data$, (result) => countAtResult.push([result.type, engine.getValue(mutation.pendingCount$)]))
+    engine.sub(mutation.data$, (result) => countAtResult.push([result.type, result.pendingCount]))
+    const resultAtCount: [number, string][] = []
+    engine.sub(mutation.pendingCount$, (count) => resultAtCount.push([count, engine.getValue(mutation.data$).type]))
 
     engine.pub(mutation.mutate$, p('a'))
     engine.pub(mutation.mutate$, p('b'))
@@ -224,6 +229,69 @@ describe('Mutation concurrency', () => {
       ['success', 1],
       ['success', 0],
     ])
+    // pendingCount$ derives from data$, so its subscribers read the matching result.
+    expect(resultAtCount).toEqual([
+      [1, 'pending'],
+      [2, 'pending'],
+      [1, 'success'],
+      [0, 'success'],
+    ])
+  })
+
+  it('re-emits the latest result with the new count when a call waits (CX-11)', () => {
+    const { engine, mutation, results } = setup({ concurrency: 'serial' })
+
+    engine.pub(mutation.mutate$, p('a'))
+    engine.pub(mutation.mutate$, p('b'))
+
+    expect(results.map((r) => [r.type, r.type === 'idle' ? null : r.params.id, r.pendingCount])).toEqual([
+      ['pending', 'a', 1],
+      ['pending', 'a', 2],
+    ])
+  })
+
+  it('acts on every reset and every repeated mutate, even with equal values', async () => {
+    const signals: AbortSignal[] = []
+    const mutation = Mutation<string, string>({
+      mutationFn: (_params, signal) => {
+        signals.push(signal)
+        return new Promise<string>(() => {})
+      },
+    })
+    const engine = new Engine()
+    engine.sub(mutation.data$, () => undefined)
+
+    engine.pub(mutation.mutate$, 'A')
+    engine.pub(mutation.reset$)
+    engine.pub(mutation.mutate$, 'B')
+    engine.pub(mutation.reset$)
+
+    expect(signals.map((s) => s.aborted)).toEqual([true, true])
+    expect(engine.getValue(mutation.pendingCount$)).toBe(0)
+
+    engine.pub(mutation.mutate$, 'same')
+    engine.pub(mutation.mutate$, 'same')
+    expect(signals).toHaveLength(4)
+    await flushPromise()
+  })
+
+  it('publishes a success before a callback that starts another mutation', async () => {
+    const seen: string[] = []
+    const mutation: ReturnType<typeof Mutation<string, string>> = Mutation<string, string>({
+      mutationFn: (params) => (params === 'A' ? Promise.resolve('a') : new Promise<string>(() => {})),
+      onSuccess: (_data, params, engine) => {
+        if (params === 'A') {
+          engine.pub(mutation.mutate$, 'B')
+        }
+      },
+    })
+    const engine = new Engine()
+    engine.sub(mutation.data$, (result) => seen.push(result.type === 'idle' ? 'idle' : `${result.type}:${result.params}`))
+
+    engine.pub(mutation.mutate$, 'A')
+    await flushPromise()
+
+    expect(seen).toEqual(['pending:A', 'success:A', 'pending:B'])
   })
 
   it('does not count a call that coalesces into a waiting one (CX-11)', async () => {

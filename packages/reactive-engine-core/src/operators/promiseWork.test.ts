@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { Cell, e, Engine, Stream } from '../index'
+import { e, Engine, Stream } from '../index'
 
 import type { PromiseWorkEvent, PromiseWorkPolicy } from '../index'
 
@@ -28,7 +28,6 @@ async function flushPromise() {
 function setup(policy: PromiseWorkPolicy) {
   const source$ = Stream<string>(false)
   const cancel$ = Stream<void>(false)
-  const pendingCount$ = Cell(0)
   const started: { input: string; request: Deferred<string>; signal: AbortSignal }[] = []
   const events$ = e.pipe(
     source$,
@@ -38,20 +37,18 @@ function setup(policy: PromiseWorkPolicy) {
         started.push({ input, request, signal })
         return request.promise
       },
-      { cancel$, pendingCount$, policy }
+      { cancel$, policy }
     )
   )
-  const log: { count: number; event: PromiseWorkEvent<string, string> }[] = []
-  const counts: number[] = []
+  const log: PromiseWorkEvent<string, string>[] = []
   const engine = new Engine()
-  // Reading the count inside the event subscription checks that both were published in the same cycle.
-  engine.sub(events$, (event) => log.push({ count: engine.getValue(pendingCount$), event }))
-  engine.sub(pendingCount$, (count) => counts.push(count))
+  engine.sub(events$, (event) => log.push(event))
+  const counts = () => log.map((event) => event.pendingCount)
   return { cancel$, counts, engine, log, source$, started }
 }
 
 describe('promiseWork operator', () => {
-  it('reports start and settle events with the pending count of the same cycle', async () => {
+  it('reports start, queue, and settle events, each with its pending count', async () => {
     const { counts, engine, log, source$, started } = setup('coalesce')
 
     engine.pub(source$, 'A')
@@ -63,13 +60,15 @@ describe('promiseWork operator', () => {
     await flushPromise()
 
     expect(log).toEqual([
-      { count: 1, event: { input: 'A', type: 'start' } },
-      { count: 1, event: { result: { input: 'A', status: 'success', value: 'a' }, type: 'settle' } },
-      { count: 1, event: { input: 'C', type: 'start' } },
-      { count: 0, event: { result: { input: 'C', status: 'success', value: 'c' }, type: 'settle' } },
+      { input: 'A', pendingCount: 1, type: 'start' },
+      { pendingCount: 2, type: 'queue' },
+      // C replaced the waiting B without changing the count.
+      { pendingCount: 2, type: 'queue' },
+      { pendingCount: 1, result: { input: 'A', status: 'success', value: 'a' }, type: 'settle' },
+      { input: 'C', pendingCount: 1, type: 'start' },
+      { pendingCount: 0, result: { input: 'C', status: 'success', value: 'c' }, type: 'settle' },
     ])
-    // B queued (2); C replaced B without changing the count.
-    expect(counts).toEqual([1, 2, 1, 0])
+    expect(counts()).toEqual([1, 2, 2, 1, 1, 0])
   })
 
   it('counts every waiting input under the serial policy', () => {
@@ -79,7 +78,7 @@ describe('promiseWork operator', () => {
     engine.pub(source$, 'B')
     engine.pub(source$, 'C')
 
-    expect(counts).toEqual([1, 2, 3])
+    expect(counts()).toEqual([1, 2, 3])
   })
 
   it('keeps the count unchanged when switch supersedes running work', () => {
@@ -88,13 +87,13 @@ describe('promiseWork operator', () => {
     engine.pub(source$, 'A')
     engine.pub(source$, 'B')
 
-    expect(counts).toEqual([1])
+    expect(counts()).toEqual([1, 1])
     expect(started[0]?.signal.aborted).toBe(true)
-    expect(log.map((l) => l.event.type)).toEqual(['start', 'start'])
+    expect(log.map((event) => event.type)).toEqual(['start', 'start'])
   })
 
   it('cancels running and waiting work, then aborts it', async () => {
-    const { cancel$, counts, engine, log, source$, started } = setup('serial')
+    const { cancel$, engine, log, source$, started } = setup('serial')
 
     engine.pub(source$, 'A')
     engine.pub(source$, 'B')
@@ -104,8 +103,11 @@ describe('promiseWork operator', () => {
 
     expect(started).toHaveLength(1)
     expect(started[0]?.signal.aborted).toBe(true)
-    expect(log.map((l) => l.event)).toEqual([{ input: 'A', type: 'start' }, { type: 'cancel' }])
-    expect(counts).toEqual([1, 2, 0])
+    expect(log).toEqual([
+      { input: 'A', pendingCount: 1, type: 'start' },
+      { pendingCount: 2, type: 'queue' },
+      { pendingCount: 0, type: 'cancel' },
+    ])
 
     engine.pub(source$, 'C')
     expect(started.map((s) => s.input)).toEqual(['A', 'C'])
@@ -121,7 +123,7 @@ describe('promiseWork operator', () => {
     started[0]?.request.resolve('a')
     await flushPromise()
 
-    expect(log.map((l) => [l.event.type, l.count])).toEqual([
+    expect(log.map((event) => [event.type, event.pendingCount])).toEqual([
       ['start', 1],
       ['start', 2],
       ['settle', 1],

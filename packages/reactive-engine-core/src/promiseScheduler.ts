@@ -106,16 +106,36 @@ export function createPromiseScheduler<TInput, TValue>(
     }
   }
 
-  const startNext = (key: unknown, slot: Slot<TInput>) => {
-    if (isClosed() || slots.get(key) !== slot || slot.active.length > 0 || slot.queue.length === 0) {
-      releaseSlot(key, slot)
-      return
+  const canStartNext = (key: unknown, slot: Slot<TInput>) =>
+    !isClosed() && slots.get(key) === slot && slot.active.length === 0 && !slot.draining && slot.queue.length > 0
+
+  // Starts waiting inputs until one is left running. A loop rather than recursion, so a long queue of synchronously
+  // failing work cannot overflow the stack. A subscriber error does not stall the queue; the first one is rethrown
+  // after draining.
+  const drainSlot = (key: unknown, slot: Slot<TInput>) => {
+    let failed = false
+    let failure: unknown
+    while (canStartNext(key, slot)) {
+      try {
+        // The queue holds at most the next input for coalesce, and every waiting input for serial.
+        if (!start(key, slot, slot.queue.shift() as TInput)) {
+          break
+        }
+      } catch (error) {
+        if (!failed) {
+          failed = true
+          failure = error
+        }
+      }
     }
-    // The queue holds at most the next input for coalesce, and every waiting input for serial.
-    start(key, slot, slot.queue.shift() as TInput)
+    releaseSlot(key, slot)
+    if (failed) {
+      // oxlint-disable-next-line no-throw-literal -- rethrowing the original subscriber error
+      throw failure
+    }
   }
 
-  const settle = (key: unknown, slot: Slot<TInput>, run: Run, result: SwitchMapPromiseResult<TInput, TValue>) => {
+  const settle = (key: unknown, slot: Slot<TInput>, run: Run, result: SwitchMapPromiseResult<TInput, TValue>, drain: boolean) => {
     if (!run.live || isClosed()) {
       return
     }
@@ -126,38 +146,56 @@ export function createPromiseScheduler<TInput, TValue>(
       handlers.onSettle(result, pendingCount())
     } finally {
       slot.draining = false
-      startNext(key, slot)
+      if (drain) {
+        drainSlot(key, slot)
+      }
     }
   }
 
-  function start(key: unknown, slot: Slot<TInput>, input: TInput) {
+  /** Starts work for an input. Returns true when the work settled synchronously, so the caller drains the queue. */
+  function start(key: unknown, slot: Slot<TInput>, input: TInput): boolean {
     const run: Run = { controller: new AbortController(), live: true }
     slot.active.push(run)
     handlers.onStart?.(input, pendingCount())
     if (!run.live || isClosed()) {
-      return
+      return false
     }
 
     let promise: Promise<TValue>
     try {
       promise = project(input, run.controller.signal, eng)
     } catch (error) {
-      settle(key, slot, run, { error, input, status: 'error' })
-      return
+      settle(key, slot, run, { error, input, status: 'error' }, false)
+      return true
     }
 
     // The rejection handler must not catch errors thrown by success-result subscribers.
     // oxlint-disable-next-line promise/prefer-catch
     Promise.resolve(promise).then(
       (value) => {
-        settle(key, slot, run, { input, status: 'success', value })
+        settle(key, slot, run, { input, status: 'success', value }, true)
         return undefined
       },
       (error: unknown) => {
-        settle(key, slot, run, { error, input, status: 'error' })
+        settle(key, slot, run, { error, input, status: 'error' }, true)
         return undefined
       }
     )
+    return false
+  }
+
+  /** Starts an input now and drains the queue if it settled synchronously. */
+  const launch = (key: unknown, slot: Slot<TInput>, input: TInput) => {
+    let settledSynchronously: boolean
+    try {
+      settledSynchronously = start(key, slot, input)
+    } catch (error) {
+      drainSlot(key, slot)
+      throw error
+    }
+    if (settledSynchronously) {
+      drainSlot(key, slot)
+    }
   }
 
   const push = (input: TInput) => {
@@ -181,18 +219,18 @@ export function createPromiseScheduler<TInput, TValue>(
       if (isClosed() || slots.get(key) !== slot || slot.generation !== owner) {
         return
       }
-      start(key, slot, input)
+      launch(key, slot, input)
       return
     }
 
     if (policy === 'parallel') {
-      start(key, slot, input)
+      launch(key, slot, input)
       return
     }
 
     const busy = slot.active.length > 0 || slot.draining
     if (!busy) {
-      start(key, slot, input)
+      launch(key, slot, input)
       return
     }
 
