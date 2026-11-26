@@ -1,3 +1,6 @@
+// oxlint-disable-next-line import/no-nodejs-modules -- reads the docs to keep the tested recipe identical
+import { readFileSync } from 'node:fs'
+
 import { Engine } from '@virtuoso.dev/reactive-engine-core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -17,10 +20,11 @@ interface Edit {
 
 const edit = (id: number, value: string): Edit => ({ id, value })
 
+let warn: MockInstance<typeof console.warn>
 let error: MockInstance<typeof console.error>
 
 beforeEach(() => {
-  vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+  warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
   error = vi.spyOn(console, 'error').mockImplementation(() => undefined)
 })
 
@@ -28,6 +32,31 @@ afterEach(() => {
   vi.restoreAllMocks()
   vi.useRealTimers()
 })
+
+interface Task {
+  done: boolean
+  id: number
+}
+
+// The overlay recipe from the docs, character for character. CMUT-7 checks that the two stay identical.
+export function overlayDone(
+  state: ConcurrentMutationState<Task, Task, number> | undefined,
+  query: QueryResult<Task[]>,
+  task: Task
+): boolean {
+  // 1. A call is running or waiting: show the newest params.
+  const newest = state?.waiting.at(-1) ?? state?.running.at(-1)
+  if (newest !== undefined) {
+    return newest.done
+  }
+  // 2. The last success is at least as new as the query data (both use Date.now(), so ties count).
+  const last = state?.lastSuccess
+  if (last !== undefined && last !== null && (query.dataUpdatedAt === null || last.settledAt >= query.dataUpdatedAt)) {
+    return last.params.done
+  }
+  // 3. Otherwise, the query data.
+  return task.done
+}
 
 function keyed(concurrency: ConcurrentMutationConcurrency, merge?: (waiting: Edit, next: Edit) => Edit) {
   const { calls, fn } = controlledFn<Edit, string>()
@@ -447,64 +476,224 @@ describe('ConcurrentMutation', () => {
         engine.pub(mutation.mutate$, edit(1, 'a'))
       }).toThrow('more than 10000')
     })
+
+    it('"retry once" from settled$ under coalesce replaces the waiting call, which is dropped', async () => {
+      const { calls, engine, mutation, settled } = keyed('coalesce')
+      let retried = false
+      engine.sub(mutation.settled$, (outcome) => {
+        if (outcome.type === 'error' && !retried) {
+          retried = true
+          engine.pub(mutation.mutate$, outcome.params)
+        }
+      })
+
+      engine.pub(mutation.mutate$, edit(1, 'a'))
+      engine.pub(mutation.mutate$, edit(1, 'b'))
+      calls[0]?.request.reject(new Error('a failed'))
+      await flushPromises()
+
+      // The retry arrived while b was waiting, so it replaced b, and the retried a started next.
+      expect(settled.map((outcome) => `${outcome.type}:${outcome.params.value}`)).toEqual(['error:a', 'dropped:b'])
+      expect(calls.map((call) => call.params.value)).toEqual(['a', 'a'])
+      calls[1]?.request.resolve('a')
+      await flushPromises()
+      expect(settled.map((outcome) => `${outcome.type}:${outcome.params.value}`)).toEqual(['error:a', 'dropped:b', 'success:a'])
+    })
+
+    it('shows a call right after publishing, except inside the steps that published it', async () => {
+      const { calls, engine, mutation } = keyed('serial')
+      const seen: (number | undefined)[] = []
+      engine.sub(mutation.settled$, (outcome) => {
+        if (outcome.type === 'success' && outcome.key === 1) {
+          engine.pub(mutation.mutate$, edit(6, 'f'))
+          seen.push(engine.getValue(mutation.status$).get(6)?.running.length)
+        }
+      })
+
+      engine.pub(mutation.mutate$, edit(1, 'a'))
+      seen.push(engine.getValue(mutation.status$).get(1)?.running.length)
+      calls[0]?.request.resolve('a')
+      await flushPromises()
+
+      // Inside settled$, the call for record 6 is queued behind the current item, so it is not visible yet.
+      expect(seen).toEqual([1, undefined])
+      expect(engine.getValue(mutation.status$).get(6)?.running).toEqual([edit(6, 'f')])
+    })
+  })
+
+  describe('CMUT-5: errors', () => {
+    it('rethrows a state subscriber error from pub, after the call started', () => {
+      const { calls, engine, entry, mutation } = keyed('serial')
+      engine.sub(mutation.status$, (status) => {
+        if (status.get(1)?.isPending === true) {
+          throw new Error('subscriber failed')
+        }
+      })
+
+      expect(() => {
+        engine.pub(mutation.mutate$, edit(1, 'a'))
+      }).toThrow('subscriber failed')
+      expect(entry(1)?.running).toEqual([edit(1, 'a')])
+      expect(calls).toHaveLength(1)
+    })
+
+    it('rethrows the first of two errors in one drain and logs the second', () => {
+      const { engine, entry, mutation } = keyed('serial')
+      engine.sub(mutation.status$, (status) => {
+        if (status.has(1) && !status.has(2)) {
+          // Queued behind the current item, so it runs in the same drain.
+          engine.pub(mutation.mutate$, edit(2, 'b'))
+          throw new Error('first')
+        }
+        if (status.has(2)) {
+          throw new Error('second')
+        }
+      })
+
+      expect(() => {
+        engine.pub(mutation.mutate$, edit(1, 'a'))
+      }).toThrow('first')
+      expect(entry(2)?.running).toEqual([edit(2, 'b')])
+      expect(error).toHaveBeenCalledWith(expect.stringContaining('an additional error'), expect.objectContaining({ message: 'second' }))
+    })
+
+    it('rethrows an invalid key from mutate$, dismiss$, and dropWaiting$, with no outcome, no call, and no state change', async () => {
+      const { calls, engine, mutation, onError, settled } = keyed('serial')
+      engine.pub(mutation.mutate$, edit(1, 'a'))
+      engine.pub(mutation.mutate$, edit(1, 'b'))
+      const before = engine.getValue(mutation.status$)
+
+      expect(() => {
+        engine.pub(mutation.mutate$, edit(Number.NaN, 'c'))
+      }).toThrow('finite number')
+      expect(() => {
+        engine.pub(mutation.dismiss$, Number.POSITIVE_INFINITY)
+      }).toThrow('finite number')
+      expect(() => {
+        engine.pub(mutation.dropWaiting$, Number.NaN)
+      }).toThrow('finite number')
+
+      expect(engine.getValue(mutation.status$)).toBe(before)
+      expect(calls).toHaveLength(1)
+      expect(settled).toEqual([])
+      await flushPromises()
+      expect(onError).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('CMUT-5: disposal and engines', () => {
+    it('stops everything, including the waiting call and queued commands, when a subscriber disposes the engine', async () => {
+      const { calls, engine, mutation, onSuccess, settled } = keyed('serial')
+      engine.sub(mutation.status$, (status) => {
+        if (status.get(1)?.lastSuccess !== null && status.get(1)?.lastSuccess !== undefined) {
+          engine.pub(mutation.mutate$, edit(2, 'c'))
+          engine.dispose()
+        }
+      })
+      engine.pub(mutation.mutate$, edit(1, 'a'))
+      engine.pub(mutation.mutate$, edit(1, 'b'))
+      calls[0]?.request.resolve('a')
+      await flushPromises()
+
+      expect(settled).toEqual([])
+      expect(onSuccess).not.toHaveBeenCalled()
+      expect(calls.map((call) => call.params.value)).toEqual(['a'])
+    })
+
+    it('shares one queue with child engines when the parent owns the mutation', async () => {
+      const { calls, fn } = controlledFn<Edit, string>()
+      const engines: Engine[] = []
+      const mutation = ConcurrentMutation<Edit, string, number>({
+        concurrency: 'serial',
+        key: (params) => params.id,
+        mutationFn: fn,
+        onSuccess: (_data, _params, engine) => engines.push(engine),
+      })
+      const parent = new Engine()
+      parent.register(mutation.mutate$)
+      const childOne = new Engine({}, 'one', parent)
+      const childTwo = new Engine({}, 'two', parent)
+
+      childOne.pub(mutation.mutate$, edit(1, 'a'))
+      childTwo.pub(mutation.mutate$, edit(1, 'b'))
+      expect(calls).toHaveLength(1)
+      expect(childTwo.getValue(mutation.status$).get(1)?.waiting).toEqual([edit(1, 'b')])
+
+      childOne.dispose()
+      expect(calls[0]?.signal.aborted).toBe(false)
+      calls[0]?.request.resolve('a')
+      await flushPromises()
+      expect(calls).toHaveLength(2)
+      expect(engines).toEqual([parent])
+      expect(warn).not.toHaveBeenCalled()
+    })
+
+    it('warns when a parent uses a mutation that a child engine touched first', () => {
+      const mutation = ConcurrentMutation<Edit, string, number>({
+        concurrency: 'parallel',
+        key: (params) => params.id,
+        mutationFn: () => Promise.resolve('ok'),
+      })
+      const parent = new Engine()
+      const child = new Engine({}, 'child', parent)
+
+      child.getValue(mutation.status$)
+      parent.getValue(mutation.status$)
+
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(String(warn.mock.calls[0]?.[0])).toContain('root.register(mutation.mutate$)')
+    })
   })
 
   describe('CMUT-7: optimistic overlay (issue #1586)', () => {
-    interface Todo {
-      done: boolean
-      id: number
-    }
-
-    // The overlay recipe from the docs, verbatim.
-    function overlayDone(
-      state: ConcurrentMutationState<Todo, Todo, number> | undefined,
-      query: QueryResult<Todo[]>,
-      id: number
-    ): boolean | undefined {
-      const newest = state?.waiting.at(-1) ?? state?.running.at(-1)
-      if (newest !== undefined) {
-        return newest.done
+    it('tests the recipe exactly as the docs show it', () => {
+      const extract = (source: string, start: string) => {
+        const from = source.indexOf(start)
+        return source.slice(from, source.indexOf('\n}\n', from) + 2)
       }
-      const last = state?.lastSuccess
-      if (last !== undefined && last !== null && (query.dataUpdatedAt === null || last.settledAt >= query.dataUpdatedAt)) {
-        return last.params.done
-      }
-      return query.data?.find((todo) => todo.id === id)?.done
-    }
+      const docs = readFileSync(new URL('../docs/01.queries-and-mutations.md', import.meta.url), 'utf8')
+      const here = readFileSync(new URL(import.meta.url), 'utf8')
+      expect(extract(here, 'export function overlayDone(')).toBe(extract(docs, 'export function overlayDone('))
+    })
 
     function setup() {
       vi.useFakeTimers({ now: 1000, toFake: ['Date'] })
-      const server: Todo[] = [{ done: false, id: 1 }]
-      const fetches: Deferred<Todo[]>[] = []
-      const saves: { params: Todo; request: Deferred<Todo> }[] = []
-      const todosQuery = Query<null, Todo[]>({
+      const server: Task[] = [{ done: false, id: 1 }]
+      const fetches: Deferred<Task[]>[] = []
+      const saves: { params: Task; request: Deferred<Task> }[] = []
+      const tasksQuery = Query<null, Task[]>({
         initialParams: null,
         queryFn: () => {
-          const request = deferred<Todo[]>()
+          const request = deferred<Task[]>()
           fetches.push(request)
           return request.promise
         },
         retry: false,
       })
-      const saveDone = ConcurrentMutation<Todo, Todo, number>({
+      const saveDone = ConcurrentMutation<Task, Task, number>({
         concurrency: 'coalesce',
-        key: (todo) => todo.id,
-        mutationFn: (todo) => {
-          const request = deferred<Todo>()
-          saves.push({ params: todo, request })
+        key: (task) => task.id,
+        mutationFn: (task) => {
+          const request = deferred<Task>()
+          saves.push({ params: task, request })
           return request.promise
         },
-        onSuccess: (_todo, _params, engine) => {
-          engine.pub(todosQuery.refetch$)
+        onSuccess: (_task, _params, engine) => {
+          engine.pub(tasksQuery.refetch$)
         },
       })
       const engine = new Engine()
-      const shown: (boolean | undefined)[] = []
-      const read = () => overlayDone(engine.getValue(saveDone.status$).get(1), engine.getValue(todosQuery.data$), 1)
+      const shown: boolean[] = []
+      // The row a component renders. Before the first load, a placeholder row stands in.
+      const read = () => {
+        const query = engine.getValue(tasksQuery.data$)
+        const task = query.data?.find((row) => row.id === 1) ?? { done: false, id: 1 }
+        return overlayDone(engine.getValue(saveDone.status$).get(1), query, task)
+      }
       engine.sub(saveDone.status$, () => shown.push(read()))
-      engine.sub(todosQuery.data$, () => shown.push(read()))
+      engine.sub(tasksQuery.data$, () => shown.push(read()))
       const toggle = () => {
-        engine.pub(saveDone.mutate$, { done: read() !== true, id: 1 })
+        engine.pub(saveDone.mutate$, { done: !read(), id: 1 })
       }
       const settleSave = async (index: number, ok = true) => {
         const save = saves[index]
@@ -517,10 +706,10 @@ describe('ConcurrentMutation', () => {
         await flushPromises()
       }
       const landFetch = async (index: number) => {
-        fetches[index]?.resolve(server.map((todo) => ({ ...todo })))
+        fetches[index]?.resolve(server.map((task) => ({ ...task })))
         await flushPromises()
       }
-      return { engine, fetches, landFetch, read, saveDone, saves, server, settleSave, shown, todosQuery, toggle }
+      return { engine, fetches, landFetch, read, saveDone, saves, server, settleSave, shown, tasksQuery, toggle }
     }
 
     it('never flickers back, including the same-millisecond tie, and a double click sends off then on', async () => {
@@ -533,10 +722,11 @@ describe('ConcurrentMutation', () => {
       shown.length = 0
       await settleSave(0)
       // Settled in the same millisecond as the initial load: lastSuccess still wins.
-      expect(shown.every((value) => value === true)).toBe(true)
+      expect(shown.length).toBeGreaterThan(0)
+      expect(shown).not.toContain(false)
       vi.setSystemTime(1005)
       await landFetch(1)
-      expect(shown.every((value) => value === true)).toBe(true)
+      expect(shown).not.toContain(false)
 
       toggle()
       toggle()

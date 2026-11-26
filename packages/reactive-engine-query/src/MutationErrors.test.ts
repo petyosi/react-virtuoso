@@ -93,4 +93,45 @@ describe('errors in a drain started by a settling Promise', () => {
     expect(onSuccess).toHaveBeenCalledTimes(1)
     expect(engine.getValue(mutation.status$).get(1)).toMatchObject({ isPending: false, lastSuccess: { data: 'ok' } })
   })
+
+  it('ConcurrentMutation: a drain stopped at the cap still starts the waiting call', async () => {
+    const first = deferred<string>()
+    const second = deferred<string>()
+    const requests = [first, second]
+    const started: string[] = []
+    const mutation = ConcurrentMutation<{ id: number; value: string }, string, number>({
+      concurrency: 'serial',
+      key: ({ id }) => id,
+      mutationFn: ({ value }) => {
+        started.push(value)
+        return (requests.shift() ?? deferred<string>()).promise
+      },
+    })
+    const engine = new Engine()
+    // A settled$ subscriber floods the queue with more no-op commands than one drain processes. The item that starts
+    // the waiting call is queued behind them, so the cap discards it.
+    engine.sub(mutation.settled$, (outcome) => {
+      if (outcome.type === 'success' && outcome.params.value === 'a') {
+        for (let index = 0; index <= 10_000; index += 1) {
+          engine.pub(mutation.dropWaiting$, 2)
+        }
+      }
+    })
+
+    engine.pub(mutation.mutate$, { id: 1, value: 'a' })
+    engine.pub(mutation.mutate$, { id: 1, value: 'b' })
+    expect(engine.getValue(mutation.status$).get(1)?.waiting).toHaveLength(1)
+
+    const surfaced = expect(settlements[0]).rejects.toThrow('more than 10000')
+    first.resolve('a')
+    await surfaced
+    await flushPromises()
+
+    // The discarded start is re-issued, so the record does not wait forever.
+    expect(started).toEqual(['a', 'b'])
+    expect(engine.getValue(mutation.status$).get(1)).toMatchObject({ running: [{ value: 'b' }], waiting: [] })
+    second.resolve('b')
+    await flushPromises()
+    expect(engine.getValue(mutation.status$).get(1)).toMatchObject({ isPending: false, lastSuccess: { data: 'b' } })
+  })
 })

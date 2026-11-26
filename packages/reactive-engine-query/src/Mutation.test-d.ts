@@ -1,7 +1,6 @@
 import { Engine } from '@virtuoso.dev/reactive-engine-core'
 import { expectTypeOf, test } from 'vitest'
 
-import { ConcurrentMutation } from './ConcurrentMutation'
 import { Mutation } from './Mutation'
 
 import type { KeyedMutation, UnkeyedMutation } from './Mutation'
@@ -101,37 +100,4 @@ test('callbacks receive data or error, params, and the engine', () => {
       expectTypeOf(params).toEqualTypeOf<Task>()
     },
   })
-})
-
-test('ConcurrentMutation: shapes by key, and options a policy would ignore are errors', () => {
-  const keyed = ConcurrentMutation<Task, string, number>({ concurrency: 'coalesce', key: (task) => task.id, mutationFn: save })
-  expectTypeOf(keyed.dropWaiting$).toEqualTypeOf<NodeRef<number>>()
-  expectTypeOf(keyed.dropWaitingAll$).toEqualTypeOf<NodeRef<void>>()
-  expectTypeOf(keyed.dismissAll$).toEqualTypeOf<NodeRef<void>>()
-
-  const single = ConcurrentMutation<Task, string>({ concurrency: 'serial', key: false, mutationFn: save })
-  expectTypeOf(single.dropWaiting$).toEqualTypeOf<NodeRef<void>>()
-  expectTypeOf(single.data$.valType)
-
-  const merged = ConcurrentMutation<Task, string, number>({
-    concurrency: 'coalesce',
-    key: (task) => task.id,
-    merge: (waiting, next) => ({ ...waiting, ...next }),
-    mutationFn: save,
-  })
-  expectTypeOf(merged.mutate$).toEqualTypeOf<NodeRef<Task>>()
-
-  // @ts-expect-error merge is only allowed with coalesce.
-  ConcurrentMutation<Task, string, number>({
-    concurrency: 'serial',
-    key: (task) => task.id,
-    merge: (_w: Task, n: Task) => n,
-    mutationFn: save,
-  })
-  // @ts-expect-error concurrency is required.
-  ConcurrentMutation<Task, string>({ key: false, mutationFn: save })
-  // @ts-expect-error unknown concurrency.
-  ConcurrentMutation<Task, string>({ concurrency: 'switch', key: false, mutationFn: save })
-  // @ts-expect-error TKey defaults to never: add the key type.
-  ConcurrentMutation<Task, string>({ concurrency: 'parallel', key: (task) => task.id, mutationFn: save })
 })

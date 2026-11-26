@@ -457,7 +457,23 @@ export function ConcurrentMutation<TParams, TData, TKey extends Key = never>(
         }
       }
 
-      const queue = new CommandQueue<Item<TParams, TData>>('ConcurrentMutation', process, isClosed)
+      // Commands discarded by the drain cap are lost, but a discarded start-next item is re-issued in a fresh drain, so
+      // the record's waiting calls still start.
+      const queue: CommandQueue<Item<TParams, TData>> = new CommandQueue<Item<TParams, TData>>(
+        'ConcurrentMutation',
+        process,
+        isClosed,
+        (items) => {
+          const starts = items.filter((item) => item.type === 'startNext')
+          if (starts.length > 0) {
+            queueMicrotask(() => {
+              for (const item of starts) {
+                queue.enqueue(item)
+              }
+            })
+          }
+        }
+      )
 
       engine.onDispose(() => {
         closed = true

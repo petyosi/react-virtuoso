@@ -93,10 +93,22 @@ export class CommandQueue<TItem> {
   private readonly process: (item: TItem, errors: DrainErrors) => void
   private processing = false
 
-  constructor(primitive: string, process: (item: TItem, errors: DrainErrors) => void, isClosed: () => boolean) {
+  private readonly onDiscard: (items: readonly TItem[]) => void
+
+  /**
+   * @param onDiscard - Receives the items discarded by the drain cap, so internal scheduling items can be re-issued
+   *   instead of leaving a record waiting forever.
+   */
+  constructor(
+    primitive: string,
+    process: (item: TItem, errors: DrainErrors) => void,
+    isClosed: () => boolean,
+    onDiscard: (items: readonly TItem[]) => void = () => undefined
+  ) {
     this.primitive = primitive
     this.process = process
     this.isClosed = isClosed
+    this.onDiscard = onDiscard
   }
 
   clear() {
@@ -118,7 +130,10 @@ export class CommandQueue<TItem> {
       while (this.items.length > 0 && !this.isClosed()) {
         processed += 1
         if (processed > DRAIN_CAP) {
-          this.items.length = 0
+          const discarded = this.items.splice(0)
+          errors.step(() => {
+            this.onDiscard(discarded)
+          })
           errors.add(
             new Error(
               `${this.primitive}: processed more than ${DRAIN_CAP} updates in one drain, so the remaining ones were discarded. ` +
@@ -144,20 +159,22 @@ export class CommandQueue<TItem> {
 
 /**
  * Tracks the engines that own a primitive. Registering a primitive in an engine that is an ancestor of an existing
- * owner creates a second instance, which duplicates calls. That setup is unsupported; this warns about it in
- * development.
+ * owner creates more than one instance, which can run a call more than once. That setup is unsupported; this warns
+ * about it in development. Production tracks nothing, so it keeps no references to engines.
  */
 export function trackOwner(owners: Set<Engine>, engine: Engine, primitive: string) {
-  if (isDevelopment()) {
-    for (const owner of owners) {
-      if (engine.isAncestorOf(owner)) {
-        console.warn(
-          `${primitive}: this primitive was first used in a child engine, and is now used in one of its ancestors. ` +
-            'That creates two instances, which can run calls twice, and is unsupported. Register shared primitives in the ' +
-            'root engine at startup, for example root.register(mutation.mutate$).'
-        )
-        break
-      }
+  // Only development warns, so production keeps no references to engines.
+  if (!isDevelopment()) {
+    return
+  }
+  for (const owner of owners) {
+    if (engine.isAncestorOf(owner)) {
+      console.warn(
+        `${primitive}: this primitive was first used in a child engine, and is now used in one of its ancestors. ` +
+          'That creates more than one instance, which can run a call more than once, and is unsupported. Register shared ' +
+          'primitives in the root engine at startup, for example root.register(mutation.mutate$).'
+      )
+      break
     }
   }
   owners.add(engine)

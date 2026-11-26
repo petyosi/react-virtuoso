@@ -2,7 +2,7 @@ import { Cell, Engine } from '@virtuoso.dev/reactive-engine-core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Mutation } from './Mutation'
-import { controlledFn, deferred, flushPromises, neverSettle } from './test/helpers'
+import { controlledFn, deferred, flushPromises } from './test/helpers'
 
 import type { KeyedMutation } from './Mutation'
 import type { MutationSettled } from './types'
@@ -279,6 +279,10 @@ describe('Mutation', () => {
           engine.pub(mutation.mutate$, outcome.params)
         }
       })
+      const describeStatus = (status: ReadonlyMap<number, { key: number; type: string }>) =>
+        [...status.values()].map((result) => `${result.key}:${result.type}`).join(',')
+      const seenFirst: string[] = []
+      engine.sub(mutation.status$, (status) => seenFirst.push(describeStatus(status)))
       engine.sub(mutation.status$, (status) => {
         if (status.get(3)?.type === 'success') {
           engine.pub(mutation.dismiss$, 3)
@@ -290,7 +294,7 @@ describe('Mutation', () => {
         }
       })
       const seen: string[] = []
-      engine.sub(mutation.status$, (status) => seen.push([...status.values()].map((result) => `${result.key}:${result.type}`).join(',')))
+      engine.sub(mutation.status$, (status) => seen.push(describeStatus(status)))
 
       engine.pub(mutation.mutate$, task(1))
       first.calls[0]?.request.reject(new Error('fail'))
@@ -309,8 +313,20 @@ describe('Mutation', () => {
       // The nested mutation ran synchronously inside the callback; its subscriber error was logged as a callback error.
       expect(second.calls).toHaveLength(1)
       expect(error).toHaveBeenCalledWith('Mutation onSuccess callback error:', expect.any(Error))
-      // Every subscriber saw the same sequence, ending without the dismissed record.
-      expect(seen.at(-1)).toBe('1:pending,2:success')
+      // Every subscriber saw the same sequence. Record 3 appeared as pending, then success, and the dismiss that a
+      // subscriber published on success ran after that publication finished.
+      expect(seen).toEqual(seenFirst)
+      expect(seen).toEqual([
+        '1:pending',
+        // The failed call is visible before the retry published from settled$ starts.
+        '1:error',
+        '1:pending',
+        '1:pending,3:pending',
+        '1:pending,3:success',
+        '1:pending',
+        '1:pending,2:pending',
+        '1:pending,2:success',
+      ])
     })
   })
 
@@ -449,11 +465,14 @@ describe('Mutation', () => {
       expect(settled).toEqual(['error'])
     })
 
-    it('stops a synchronous feedback loop at the drain cap', () => {
+    it('stops a synchronous feedback loop at the drain cap and keeps the running call', async () => {
+      const { calls, fn } = controlledFn<Task, string>()
+      const ignored = vi.fn()
       const mutation: KeyedMutation<Task, string, number> = Mutation<Task, string, number>({
         key: (params) => params.id,
-        mutationFn: () => new Promise<string>(neverSettle),
+        mutationFn: fn,
         onIgnored: (params, engine) => {
+          ignored()
           engine.pub(mutation.mutate$, params)
         },
       })
@@ -463,6 +482,16 @@ describe('Mutation', () => {
       expect(() => {
         engine.pub(mutation.mutate$, task(1))
       }).toThrow('more than 10000')
+      // The loop stopped at the cap: every processed call was ignored, and the rest were discarded.
+      expect(ignored.mock.calls.length).toBeLessThanOrEqual(10_000)
+      expect(calls).toHaveLength(1)
+      expect(engine.getValue(mutation.status$).get(1)?.type).toBe('pending')
+
+      calls[0]?.request.resolve('ok')
+      await flushPromises()
+      expect(engine.getValue(mutation.status$).get(1)?.type).toBe('success')
+      engine.pub(mutation.mutate$, task(1, 'later'))
+      expect(calls).toHaveLength(2)
     })
   })
 
@@ -503,10 +532,13 @@ describe('Mutation', () => {
       expect(calls).toHaveLength(2)
     })
 
-    it('stops everything when a subscriber disposes the engine inside a step', async () => {
+    it('stops everything, including queued commands, when a subscriber disposes the engine inside a step', async () => {
       const { calls, engine, mutation, onSuccess, settled } = keyed()
       engine.sub(mutation.status$, (status) => {
         if (status.get(1)?.type === 'success') {
+          // Queued behind the current item, then dropped by the disposal.
+          engine.pub(mutation.mutate$, task(2))
+          engine.pub(mutation.dismiss$, 1)
           engine.dispose()
         }
       })
@@ -516,6 +548,7 @@ describe('Mutation', () => {
 
       expect(settled).toEqual([])
       expect(onSuccess).not.toHaveBeenCalled()
+      expect(calls.map((call) => call.params.id)).toEqual([1])
     })
 
     it('does not start a call when the engine is disposed during the pending step', () => {

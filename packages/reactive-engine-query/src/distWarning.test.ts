@@ -50,8 +50,11 @@ function runWithoutProcess(code: string) {
   return warnings
 }
 
+// These tests need a build. Locally they skip without one; in CI, which builds first, a missing build fails them.
+const skipWithoutDist = !existsSync(`${packageRoot}/dist/index.js`) && process.env.CI === undefined
+
 describe('the development warning in bundled code', () => {
-  it.skipIf(!existsSync(`${packageRoot}/dist/index.js`))(
+  it.skipIf(skipWithoutDist)(
     'warns in a development bundle, not in a production bundle, and loads without process',
     async () => {
       const development = await bundle('development')

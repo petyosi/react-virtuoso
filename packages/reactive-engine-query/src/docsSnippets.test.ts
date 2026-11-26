@@ -9,6 +9,8 @@ import { describe, expect, it } from 'vitest'
 // page are joined in order, after a prelude that declares what they assume, and checked as one file.
 
 const packageRoot = fileURLToPath(new URL('..', import.meta.url))
+// These tests need a build. Locally they skip without one; in CI, which builds first, a missing build fails them.
+const skipWithoutDist = !existsSync(`${packageRoot}/dist/index.d.ts`) && process.env.CI === undefined
 const docs = ['docs/01.queries-and-mutations.md']
 
 function extractSnippets(markdown: string) {
@@ -17,7 +19,7 @@ function extractSnippets(markdown: string) {
 
 describe('docs snippets', () => {
   for (const doc of docs) {
-    it.skipIf(!existsSync(`${packageRoot}/dist/index.d.ts`))(
+    it.skipIf(skipWithoutDist)(
       `type-check in ${doc}`,
       () => {
         const snippets = extractSnippets(readFileSync(`${packageRoot}/${doc}`, 'utf8'))
