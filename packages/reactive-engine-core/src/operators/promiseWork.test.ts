@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { e, Engine, Stream } from '../index'
 
@@ -25,9 +25,9 @@ async function flushPromise() {
   await Promise.resolve()
 }
 
-function setup(policy: PromiseWorkPolicy) {
+function setup(policy: PromiseWorkPolicy, merge?: (waiting: string, next: string) => string) {
   const source$ = Stream<string>(false)
-  const cancel$ = Stream<void>(false)
+  const dropWaiting$ = Stream<void>(false)
   const started: { input: string; request: Deferred<string>; signal: AbortSignal }[] = []
   const events$ = e.pipe(
     source$,
@@ -37,14 +37,14 @@ function setup(policy: PromiseWorkPolicy) {
         started.push({ input, request, signal })
         return request.promise
       },
-      { cancel$, policy }
+      merge === undefined ? { dropWaiting$, policy } : { dropWaiting$, merge, policy }
     )
   )
   const log: PromiseWorkEvent<string, string>[] = []
   const engine = new Engine()
   engine.sub(events$, (event) => log.push(event))
   const counts = () => log.map((event) => event.pendingCount)
-  return { cancel$, counts, engine, log, source$, started }
+  return { counts, dropWaiting$, engine, events$, log, source$, started }
 }
 
 describe('promiseWork operator', () => {
@@ -62,13 +62,23 @@ describe('promiseWork operator', () => {
     expect(log).toEqual([
       { input: 'A', pendingCount: 1, type: 'start' },
       { pendingCount: 2, type: 'queue' },
-      // C replaced the waiting B without changing the count.
-      { pendingCount: 2, type: 'queue' },
+      // C replaced the waiting B, which will never start. The count does not change.
+      { input: 'B', pendingCount: 2, type: 'drop' },
       { pendingCount: 1, result: { input: 'A', status: 'success', value: 'a' }, type: 'settle' },
       { input: 'C', pendingCount: 1, type: 'start' },
       { pendingCount: 0, result: { input: 'C', status: 'success', value: 'c' }, type: 'settle' },
     ])
     expect(counts()).toEqual([1, 2, 2, 1, 1, 0])
+  })
+
+  it('reports a merge as a queue event, not a drop', () => {
+    const { engine, log, source$ } = setup('coalesce', (waiting, next) => waiting + next)
+
+    engine.pub(source$, 'A')
+    engine.pub(source$, 'B')
+    engine.pub(source$, 'C')
+
+    expect(log.map((event) => event.type)).toEqual(['start', 'queue', 'queue'])
   })
 
   it('counts every waiting input under the serial policy', () => {
@@ -92,25 +102,104 @@ describe('promiseWork operator', () => {
     expect(log.map((event) => event.type)).toEqual(['start', 'start'])
   })
 
-  it('cancels running and waiting work, then aborts it', async () => {
-    const { cancel$, engine, log, source$, started } = setup('serial')
+  it('drops waiting work without touching running work', async () => {
+    const { dropWaiting$, engine, log, source$, started } = setup('serial')
 
     engine.pub(source$, 'A')
     engine.pub(source$, 'B')
-    engine.pub(cancel$)
-    started[0]?.request.resolve('late')
+    engine.pub(source$, 'C')
+    engine.pub(dropWaiting$)
+    expect(started[0]?.signal.aborted).toBe(false)
+
+    started[0]?.request.resolve('a')
     await flushPromise()
 
-    expect(started).toHaveLength(1)
-    expect(started[0]?.signal.aborted).toBe(true)
+    expect(started.map((s) => s.input)).toEqual(['A'])
     expect(log).toEqual([
       { input: 'A', pendingCount: 1, type: 'start' },
       { pendingCount: 2, type: 'queue' },
-      { pendingCount: 0, type: 'cancel' },
+      { pendingCount: 3, type: 'queue' },
+      { input: 'B', pendingCount: 1, type: 'drop' },
+      { input: 'C', pendingCount: 1, type: 'drop' },
+      { pendingCount: 0, result: { input: 'A', status: 'success', value: 'a' }, type: 'settle' },
     ])
 
+    engine.pub(source$, 'D')
+    expect(started.map((s) => s.input)).toEqual(['A', 'D'])
+  })
+
+  it('still runs the work, and frees the key, when a start subscriber throws', async () => {
+    for (const policy of ['serial', 'coalesce', 'switch', 'parallel'] as const) {
+      const { engine, events$, log, source$, started } = setup(policy)
+      let throwOnce = true
+      engine.sub(events$, (event) => {
+        if (event.type === 'start' && throwOnce) {
+          throwOnce = false
+          throw new Error('subscriber failed')
+        }
+      })
+
+      expect(() => {
+        engine.pub(source$, 'A')
+      }, policy).toThrow('subscriber failed')
+      expect(
+        started.map((s) => s.input),
+        policy
+      ).toEqual(['A'])
+
+      started[0]?.request.resolve('a')
+      // oxlint-disable-next-line no-await-in-loop
+      await flushPromise()
+      engine.pub(source$, 'B')
+      started[1]?.request.resolve('b')
+      // oxlint-disable-next-line no-await-in-loop
+      await flushPromise()
+
+      expect(
+        started.map((s) => s.input),
+        policy
+      ).toEqual(['A', 'B'])
+      expect(log.at(-1), policy).toEqual({ pendingCount: 0, result: { input: 'B', status: 'success', value: 'b' }, type: 'settle' })
+    }
+  })
+
+  it('keeps draining the queue when a start subscriber throws', async () => {
+    const source$ = Stream<'A' | 'B' | 'C'>(false)
+    const requests = { A: deferred<string>(), B: deferred<string>(), C: deferred<string>() }
+    const started: string[] = []
+    const events$ = e.pipe(
+      source$,
+      e.promiseWork<'A' | 'B' | 'C', string>(
+        (input) => {
+          started.push(input)
+          return requests[input].promise
+        },
+        { policy: 'serial' }
+      )
+    )
+    const subscriberError = new Error('subscriber failed')
+    const engine = new Engine()
+    engine.sub(events$, (event) => {
+      if (event.type === 'start' && event.input === 'B') {
+        throw subscriberError
+      }
+    })
+    const thenSpy = vi.spyOn(requests.A.promise, 'then')
+
+    engine.pub(source$, 'A')
+    engine.pub(source$, 'B')
     engine.pub(source$, 'C')
-    expect(started.map((s) => s.input)).toEqual(['A', 'C'])
+    // B starts while A settles, so its subscriber error surfaces from A's settlement.
+    const settlement = thenSpy.mock.results[0]?.value as Promise<unknown> | undefined
+    thenSpy.mockRestore()
+    const surfacedError = expect(settlement).rejects.toBe(subscriberError)
+    requests.A.resolve('a')
+    await surfacedError
+    expect(started).toEqual(['A', 'B'])
+
+    requests.B.resolve('b')
+    await flushPromise()
+    expect(started).toEqual(['A', 'B', 'C'])
   })
 
   it('runs parallel work concurrently and settles in completion order', async () => {

@@ -26,11 +26,19 @@ export interface PromiseSchedulerOptions<TInput> {
 
 /** @hidden */
 export interface PromiseSchedulerHandlers<TInput, TValue> {
-  /** Called with the pending count when an input is queued or merged without starting work. */
+  /**
+   * Called for a waiting input that will never start: one replaced by a newer input under `coalesce` without `merge`,
+   * or one removed by `dropWaiting`.
+   */
+  onDrop?: (input: TInput, pendingCount: number) => void
+  /** Called with the pending count when an input is queued, or merged into a waiting one, without starting work. */
   onQueue?: (pendingCount: number) => void
-  /** Called with the pending count after work settles. Not called for superseded or cancelled work. */
+  /** Called with the pending count after work settles. Not called for superseded or disposed work. */
   onSettle: (result: SwitchMapPromiseResult<TInput, TValue>, pendingCount: number) => void
-  /** Called with the pending count right before the project starts. */
+  /**
+   * Called with the pending count right before the project starts. If it throws, the work still starts and the error
+   * is rethrown afterwards, so a failing subscriber cannot leave a key busy forever.
+   */
   onStart?: (input: TInput, pendingCount: number) => void
 }
 
@@ -48,8 +56,8 @@ interface Slot<TInput> {
 
 /** @hidden */
 export interface PromiseScheduler<TInput> {
-  /** Drops every running and waiting call. Returns the controllers of the dropped calls so the caller can abort them. */
-  cancel: () => AbortController[]
+  /** Removes every waiting input across all keys and reports each one through `onDrop`. Running work is not touched. */
+  dropWaiting: () => void
   /** Counts running and waiting work across all keys. */
   pendingCount: () => number
   push: (input: TInput) => void
@@ -70,7 +78,7 @@ export function createPromiseScheduler<TInput, TValue>(
 ): PromiseScheduler<TInput> {
   const slots = new Map<unknown, Slot<TInput>>()
   const keyOf = options.key ?? (() => noKey)
-  const merge = options.merge ?? ((_waiting: TInput, next: TInput) => next)
+  const { merge } = options
   let disposed = false
 
   const isClosed = () => disposed || eng.isDisposed
@@ -156,8 +164,24 @@ export function createPromiseScheduler<TInput, TValue>(
   function start(key: unknown, slot: Slot<TInput>, input: TInput): boolean {
     const run: Run = { controller: new AbortController(), live: true }
     slot.active.push(run)
-    handlers.onStart?.(input, pendingCount())
+    // A throwing start subscriber must not strand the run in slot.active with no work behind it, which would keep the
+    // key busy forever. The work starts anyway, and the error is rethrown once the run is tracked or settled.
+    let startFailed = false
+    let startError: unknown
+    try {
+      handlers.onStart?.(input, pendingCount())
+    } catch (error) {
+      startFailed = true
+      startError = error
+    }
+    const rethrowStartError = () => {
+      if (startFailed) {
+        // oxlint-disable-next-line no-throw-literal -- rethrowing the original subscriber error
+        throw startError
+      }
+    }
     if (!run.live || isClosed()) {
+      rethrowStartError()
       return false
     }
 
@@ -166,6 +190,7 @@ export function createPromiseScheduler<TInput, TValue>(
       promise = project(input, run.controller.signal, eng)
     } catch (error) {
       settle(key, slot, run, { error, input, status: 'error' }, false)
+      rethrowStartError()
       return true
     }
 
@@ -181,6 +206,7 @@ export function createPromiseScheduler<TInput, TValue>(
         return undefined
       }
     )
+    rethrowStartError()
     return false
   }
 
@@ -235,14 +261,48 @@ export function createPromiseScheduler<TInput, TValue>(
     }
 
     if (policy === 'coalesce' && slot.queue.length > 0) {
-      slot.queue[0] = merge(slot.queue[0] as TInput, input)
+      const waiting = slot.queue[0] as TInput
+      if (merge === undefined) {
+        // The newer input replaces the waiting one, which will never start. The count does not change.
+        slot.queue[0] = input
+        handlers.onDrop?.(waiting, pendingCount())
+        return
+      }
+      slot.queue[0] = merge(waiting, input)
     } else {
       slot.queue.push(input)
     }
     handlers.onQueue?.(pendingCount())
   }
 
-  const cancel = () => {
+  const dropWaiting = () => {
+    // Remove every waiting input before reporting any, so subscribers see the final count, and inputs they publish
+    // while handling a drop are not dropped as well.
+    const dropped: TInput[] = []
+    for (const [key, slot] of slots) {
+      dropped.push(...slot.queue.splice(0))
+      releaseSlot(key, slot)
+    }
+    let failed = false
+    let failure: unknown
+    for (const input of dropped) {
+      try {
+        handlers.onDrop?.(input, pendingCount())
+      } catch (error) {
+        if (!failed) {
+          failed = true
+          failure = error
+        }
+      }
+    }
+    if (failed) {
+      // oxlint-disable-next-line no-throw-literal -- rethrowing the original subscriber error
+      throw failure
+    }
+  }
+
+  eng.onDispose(() => {
+    disposed = true
     const controllers: AbortController[] = []
     for (const slot of slots.values()) {
       slot.generation += 1
@@ -253,15 +313,10 @@ export function createPromiseScheduler<TInput, TValue>(
       }
     }
     slots.clear()
-    return controllers
-  }
-
-  eng.onDispose(() => {
-    disposed = true
-    for (const controller of cancel()) {
+    for (const controller of controllers) {
       controller.abort()
     }
   })
 
-  return { cancel, pendingCount, push }
+  return { dropWaiting, pendingCount, push }
 }

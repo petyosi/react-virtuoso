@@ -1,10 +1,10 @@
-import { Cell, Engine } from '@virtuoso.dev/reactive-engine-core'
+import { Cell, ComputedCell, e, Engine } from '@virtuoso.dev/reactive-engine-core'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { Mutation } from './Mutation'
 import { executeWithRetry } from './utils'
 
-import type { MutationResult } from './types'
+import type { MutationOptions, MutationResult, MutationSettled } from './types'
 
 interface Deferred<T> {
   promise: Promise<T>
@@ -34,7 +34,10 @@ interface Params {
   patch: Record<string, number>
 }
 
-function setup(options: Omit<Parameters<typeof Mutation<Params, string>>[0], 'mutationFn'> = {}) {
+type SetupOptions =
+  MutationOptions<Params, string> extends infer TOptions ? (TOptions extends unknown ? Omit<TOptions, 'mutationFn'> : never) : never
+
+function setup(options: SetupOptions = {}) {
   const calls: { params: Params; request: Deferred<string>; signal: AbortSignal }[] = []
   const mutation = Mutation<Params, string>({
     ...options,
@@ -43,24 +46,29 @@ function setup(options: Omit<Parameters<typeof Mutation<Params, string>>[0], 'mu
       calls.push({ params, request, signal })
       return request.promise
     },
-  })
+  } as MutationOptions<Params, string>)
   const engine = new Engine()
   const results: MutationResult<string, Params>[] = []
+  const settled: MutationSettled<string, Params>[] = []
   const counts: number[] = []
   engine.sub(mutation.data$, (result) => results.push(result))
+  engine.sub(mutation.settled$, (outcome) => settled.push(outcome))
   engine.sub(mutation.pendingCount$, (count) => counts.push(count))
-  return { calls, counts, engine, mutation, results }
+  return { calls, counts, engine, mutation, results, settled }
 }
 
 const p = (id: string, patch: Record<string, number> = {}): Params => ({ id, patch })
+
+const describeResult = (r: MutationResult<string, Params>) => (r.type === 'idle' ? ['idle'] : [r.type, r.params])
+const describeOutcome = (o: MutationSettled<string, Params>) => [o.type, o.params]
 
 describe('Mutation concurrency', () => {
   afterEach(() => {
     vi.useRealTimers()
   })
 
-  it('coalesces per record, passes a signal, and includes params in every result (CX-6)', async () => {
-    const { calls, engine, mutation, results } = setup({ concurrency: 'coalesce', key: ({ id }) => id })
+  it('coalesces per record, passes a signal, and reports every call exactly once', async () => {
+    const { calls, counts, engine, mutation, results, settled } = setup({ concurrency: 'coalesce', key: ({ id }) => id })
 
     engine.pub(mutation.mutate$, p('x', { v: 1 }))
     engine.pub(mutation.mutate$, p('x', { v: 2 }))
@@ -79,21 +87,27 @@ describe('Mutation concurrency', () => {
     await flushPromise()
 
     expect(calls).toHaveLength(3)
-    // Waiting calls re-emit the latest result with the new count.
-    expect(results.map((r) => [r.type, r.type === 'idle' ? null : r.params, r.pendingCount])).toEqual([
-      ['pending', p('x', { v: 1 }), 1],
-      ['pending', p('x', { v: 1 }), 2],
-      ['pending', p('x', { v: 1 }), 2],
-      ['pending', p('y', { v: 1 }), 3],
-      ['success', p('x', { v: 1 }), 2],
-      ['pending', p('x', { v: 3 }), 2],
-      ['error', p('y', { v: 1 }), 1],
-      ['success', p('x', { v: 3 }), 0],
+    // Waiting and replaced calls do not change what data$ shows.
+    expect(results.map(describeResult)).toEqual([
+      ['pending', p('x', { v: 1 })],
+      ['pending', p('y', { v: 1 })],
+      ['success', p('x', { v: 1 })],
+      ['pending', p('x', { v: 3 })],
+      ['error', p('y', { v: 1 })],
+      ['success', p('x', { v: 3 })],
     ])
+    // The replaced call is reported as dropped, so nothing is left waiting for an outcome.
+    expect(settled.map(describeOutcome)).toEqual([
+      ['dropped', p('x', { v: 2 })],
+      ['success', p('x', { v: 1 })],
+      ['error', p('y', { v: 1 })],
+      ['success', p('x', { v: 3 })],
+    ])
+    expect(counts).toEqual([1, 2, 3, 2, 1, 0])
   })
 
   it('runs serial calls one at a time in order', async () => {
-    const { calls, engine, mutation, results } = setup({ concurrency: 'serial' })
+    const { calls, engine, mutation, settled } = setup({ concurrency: 'serial' })
 
     engine.pub(mutation.mutate$, p('a'))
     engine.pub(mutation.mutate$, p('b'))
@@ -103,83 +117,168 @@ describe('Mutation concurrency', () => {
     calls[1]?.request.resolve('b')
     await flushPromise()
 
-    expect(results.filter((r) => r.type === 'success').map((r) => r.data)).toEqual(['a', 'b'])
+    expect(settled.map((o) => (o.type === 'success' ? o.data : o.type))).toEqual(['a', 'b'])
   })
 
-  it('aborts a superseded call under switch and never reports it (CX-7)', async () => {
-    const onSuccess = vi.fn()
-    const { calls, engine, mutation, results } = setup({ concurrency: 'switch', onSuccess })
-
-    engine.pub(mutation.mutate$, p('a'))
-    engine.pub(mutation.mutate$, p('b'))
-
-    expect(calls[0]?.signal.aborted).toBe(true)
-    calls[0]?.request.resolve('stale')
-    calls[1]?.request.resolve('current')
-    await flushPromise()
-
-    expect(results.filter((r) => r.type === 'success').map((r) => r.data)).toEqual(['current'])
-    expect(onSuccess).toHaveBeenCalledTimes(1)
-    expect(onSuccess).toHaveBeenCalledWith('current', p('b'), engine)
-  })
-
-  it('stops retrying a call superseded during its retry delay (CX-7)', async () => {
-    vi.useFakeTimers()
-    const attempts: string[] = []
-    const onError = vi.fn()
-    const mutation = Mutation<Params, string>({
-      concurrency: 'switch',
-      mutationFn: (params) => {
-        attempts.push(params.id)
-        return params.id === 'a' ? Promise.reject(new Error('a failed')) : Promise.resolve('b')
-      },
-      onError,
-      retry: 3,
-      retryDelay: () => 1000,
-    })
-    const engine = new Engine()
-    engine.sub(mutation.data$, () => undefined)
-
-    engine.pub(mutation.mutate$, p('a'))
-    await vi.advanceTimersByTimeAsync(0)
-    expect(attempts).toEqual(['a'])
-
-    engine.pub(mutation.mutate$, p('b'))
-    await vi.advanceTimersByTimeAsync(5000)
-
-    expect(attempts).toEqual(['a', 'b'])
-    expect(onError).not.toHaveBeenCalled()
-    expect(engine.getValue(mutation.data$)).toMatchObject({ data: 'b', type: 'success' })
-  })
-
-  it('reset aborts running calls, drops waiting ones, and stays idle (CX-8)', async () => {
-    for (const concurrency of ['parallel', 'serial', 'coalesce', 'switch'] as const) {
-      const onSuccess = vi.fn()
-      const { calls, counts, engine, mutation } = setup({ concurrency, onSuccess })
+  it('never aborts a call that started, under any policy', async () => {
+    for (const concurrency of ['parallel', 'serial', 'coalesce'] as const) {
+      const { calls, engine, mutation } = setup({ concurrency })
 
       engine.pub(mutation.mutate$, p('a'))
       engine.pub(mutation.mutate$, p('b'))
-      const startedBeforeReset = calls.length
       engine.pub(mutation.reset$)
+      engine.pub(mutation.dropWaiting$)
+
+      expect(
+        calls.every((c) => !c.signal.aborted),
+        concurrency
+      ).toBe(true)
       for (const call of calls) {
-        call.request.resolve('late')
+        call.request.resolve('done')
       }
       // oxlint-disable-next-line no-await-in-loop
       await flushPromise()
-
-      expect(calls).toHaveLength(startedBeforeReset)
-      expect(
-        calls.every((c) => c.signal.aborted),
-        concurrency
-      ).toBe(true)
-      expect(engine.getValue(mutation.data$).type, concurrency).toBe('idle')
-      expect(engine.getValue(mutation.pendingCount$), concurrency).toBe(0)
-      expect(counts.at(-1), concurrency).toBe(0)
-      expect(onSuccess, concurrency).not.toHaveBeenCalled()
     }
   })
 
-  it('lets callbacks publish back into the engine with matching params (CX-9)', async () => {
+  it('reset only clears the display; earlier calls keep running and report their outcome', async () => {
+    for (const concurrency of ['parallel', 'serial', 'coalesce'] as const) {
+      const onSuccess = vi.fn()
+      const { calls, counts, engine, mutation, settled } = setup({ concurrency, onSuccess })
+
+      engine.pub(mutation.mutate$, p('a'))
+      engine.pub(mutation.mutate$, p('b'))
+      engine.pub(mutation.reset$)
+      expect(engine.getValue(mutation.data$).type, concurrency).toBe('idle')
+      expect(engine.getValue(mutation.pendingCount$), concurrency).toBe(2)
+
+      // Serial and coalesce start b only after a settles; it was made before the reset, so it stays hidden.
+      calls[0]?.request.resolve('a')
+      // oxlint-disable-next-line no-await-in-loop
+      await flushPromise()
+      calls[1]?.request.resolve('b')
+      // oxlint-disable-next-line no-await-in-loop
+      await flushPromise()
+
+      expect(engine.getValue(mutation.data$).type, concurrency).toBe('idle')
+      expect(settled.map(describeOutcome), concurrency).toEqual([
+        ['success', p('a')],
+        ['success', p('b')],
+      ])
+      expect(onSuccess, concurrency).toHaveBeenCalledTimes(2)
+      expect(counts.at(-1), concurrency).toBe(0)
+    }
+  })
+
+  it('shows calls made after a reset', async () => {
+    const { calls, engine, mutation, results } = setup()
+
+    engine.pub(mutation.mutate$, p('a'))
+    engine.pub(mutation.reset$)
+    engine.pub(mutation.mutate$, p('b'))
+    calls[0]?.request.resolve('a')
+    await flushPromise()
+    expect(engine.getValue(mutation.data$)).toMatchObject({ params: p('b'), type: 'pending' })
+
+    calls[1]?.request.resolve('b')
+    await flushPromise()
+
+    expect(results.map(describeResult)).toEqual([['pending', p('a')], ['idle'], ['pending', p('b')], ['success', p('b')]])
+  })
+
+  it('does not re-emit data$ on reset when it is already idle', () => {
+    const { engine, mutation, results } = setup()
+
+    engine.pub(mutation.reset$)
+    engine.pub(mutation.reset$)
+
+    expect(results).toEqual([])
+  })
+
+  it('drops waiting calls, reports each one, and leaves running calls alone', async () => {
+    const { calls, counts, engine, mutation, settled } = setup({ concurrency: 'serial', key: ({ id }) => id })
+
+    engine.pub(mutation.mutate$, p('x', { v: 1 }))
+    engine.pub(mutation.mutate$, p('x', { v: 2 }))
+    engine.pub(mutation.mutate$, p('y', { v: 1 }))
+    engine.pub(mutation.mutate$, p('y', { v: 2 }))
+    engine.pub(mutation.dropWaiting$)
+
+    expect(settled.map(describeOutcome)).toEqual([
+      ['dropped', p('x', { v: 2 })],
+      ['dropped', p('y', { v: 2 })],
+    ])
+    expect(engine.getValue(mutation.pendingCount$)).toBe(2)
+
+    calls[0]?.request.resolve('x1')
+    calls[1]?.request.resolve('y1')
+    await flushPromise()
+
+    expect(calls.map((c) => c.params)).toEqual([p('x', { v: 1 }), p('y', { v: 1 })])
+    expect(settled.map((o) => o.type)).toEqual(['dropped', 'dropped', 'success', 'success'])
+    expect(counts).toEqual([1, 2, 3, 4, 2, 1, 0])
+  })
+
+  it('reports the merged params of a dropped coalesced call', () => {
+    const { engine, mutation, settled } = setup({
+      concurrency: 'coalesce',
+      merge: (waiting, next) => ({ id: next.id, patch: { ...waiting.patch, ...next.patch } }),
+    })
+
+    engine.pub(mutation.mutate$, p('x', { a: 1 }))
+    engine.pub(mutation.mutate$, p('x', { b: 2 }))
+    engine.pub(mutation.mutate$, p('x', { c: 3 }))
+    engine.pub(mutation.dropWaiting$)
+
+    expect(settled.map(describeOutcome)).toEqual([['dropped', p('x', { b: 2, c: 3 })]])
+  })
+
+  it('does not re-emit an earlier result when a call waits', async () => {
+    const { calls, engine, mutation, results } = setup({ concurrency: 'serial', key: ({ id }) => id })
+
+    engine.pub(mutation.mutate$, p('x'))
+    engine.pub(mutation.mutate$, p('y'))
+    calls[1]?.request.resolve('y')
+    await flushPromise()
+    const emitted = results.length
+
+    // x is still running, so this call waits. data$ keeps showing y's success without emitting it again.
+    engine.pub(mutation.mutate$, p('x', { v: 2 }))
+
+    expect(results).toHaveLength(emitted)
+    expect(engine.getValue(mutation.data$)).toMatchObject({ params: p('y'), type: 'success' })
+    expect(engine.getValue(mutation.pendingCount$)).toBe(2)
+  })
+
+  it('keeps a key usable when a data$ subscriber throws on a pending result', async () => {
+    const { calls, engine, mutation, settled } = setup({ concurrency: 'serial' })
+    let throwOnce = true
+    engine.sub(mutation.data$, (result) => {
+      if (result.type === 'pending' && throwOnce) {
+        throwOnce = false
+        throw new Error('subscriber failed')
+      }
+    })
+
+    expect(() => {
+      engine.pub(mutation.mutate$, p('a'))
+    }).toThrow('subscriber failed')
+    expect(calls).toHaveLength(1)
+    calls[0]?.request.resolve('a')
+    await flushPromise()
+
+    engine.pub(mutation.mutate$, p('b'))
+    calls[1]?.request.resolve('b')
+    await flushPromise()
+
+    expect(settled.map(describeOutcome)).toEqual([
+      ['success', p('a')],
+      ['success', p('b')],
+    ])
+    expect(engine.getValue(mutation.pendingCount$)).toBe(0)
+  })
+
+  it('lets callbacks publish back into the engine with matching params', async () => {
     const confirmed$ = Cell<Record<string, string>>({})
     const failed$ = Cell<string[]>([])
     const mutation = Mutation<Params, string>({
@@ -203,12 +302,66 @@ describe('Mutation concurrency', () => {
     expect(engine.getValue(failed$)).toEqual(['bad'])
   })
 
-  it('keeps the pending count accurate under overlap (CX-11)', async () => {
+  it('keeps an optimistic overlay in sync with the server across a reset', async () => {
+    // The pattern from the docs: each edit has a revision, a call carries the revisions it covers, and every outcome
+    // removes exactly those revisions.
+    interface Edit {
+      id: string
+      rev: number
+      value: string
+    }
+    interface Save {
+      id: string
+      revs: number[]
+      value: string
+    }
+    const requests: Deferred<string>[] = []
+    const confirmed$ = Cell<Record<string, string>>({ x: 'old' })
+    const edits$ = Cell<Edit[]>([])
+    const visible$ = ComputedCell([confirmed$, edits$], ([confirmed, edits]) => {
+      const view = { ...confirmed }
+      for (const edit of edits) {
+        view[edit.id] = edit.value
+      }
+      return view
+    })
+    const save = Mutation<Save, string>({
+      mutationFn: () => {
+        const request = deferred<string>()
+        requests.push(request)
+        return request.promise
+      },
+      concurrency: 'coalesce',
+      key: ({ id }) => id,
+      merge: (waiting, next) => ({ id: next.id, revs: [...waiting.revs, ...next.revs], value: next.value }),
+      onSuccess: (value, { id }, engine) => {
+        engine.pub(confirmed$, { ...engine.getValue(confirmed$), [id]: value })
+      },
+    })
+    e.changeWith(edits$, save.settled$, (edits, outcome) => edits.filter((edit) => !outcome.params.revs.includes(edit.rev)))
+    const engine = new Engine()
+    let rev = 0
+    const edit = (value: string) => {
+      rev += 1
+      engine.pub(edits$, [...engine.getValue(edits$), { id: 'x', rev, value }])
+      engine.pub(save.mutate$, { id: 'x', revs: [rev], value })
+    }
+
+    edit('new')
+    expect(engine.getValue(visible$)).toEqual({ x: 'new' })
+
+    // Dismissing the mutation state while the write is in flight must not lose the write.
+    engine.pub(save.reset$)
+    requests[0]?.resolve('new')
+    await flushPromise()
+
+    expect(engine.getValue(visible$)).toEqual({ x: 'new' })
+    expect(engine.getValue(confirmed$)).toEqual({ x: 'new' })
+    expect(engine.getValue(edits$)).toEqual([])
+  })
+
+  it('keeps the pending count accurate under overlap', async () => {
     const { calls, counts, engine, mutation } = setup()
-    const countAtResult: [string, number][] = []
-    engine.sub(mutation.data$, (result) => countAtResult.push([result.type, result.pendingCount]))
-    const resultAtCount: [number, string][] = []
-    engine.sub(mutation.pendingCount$, (count) => resultAtCount.push([count, engine.getValue(mutation.data$).type]))
 
     engine.pub(mutation.mutate$, p('a'))
     engine.pub(mutation.mutate$, p('b'))
@@ -223,55 +376,19 @@ describe('Mutation concurrency', () => {
     await flushPromise()
 
     expect(counts).toEqual([1, 2, 1, 0])
-    expect(countAtResult).toEqual([
-      ['pending', 1],
-      ['pending', 2],
-      ['success', 1],
-      ['success', 0],
-    ])
-    // pendingCount$ derives from data$, so its subscribers read the matching result.
-    expect(resultAtCount).toEqual([
-      [1, 'pending'],
-      [2, 'pending'],
-      [1, 'success'],
-      [0, 'success'],
-    ])
   })
 
-  it('re-emits the latest result with the new count when a call waits (CX-11)', () => {
-    const { engine, mutation, results } = setup({ concurrency: 'serial' })
+  it('acts on every repeated mutate, even with equal values', async () => {
+    const { calls, engine, mutation } = setup()
 
-    engine.pub(mutation.mutate$, p('a'))
-    engine.pub(mutation.mutate$, p('b'))
+    const same = p('same')
+    engine.pub(mutation.mutate$, same)
+    engine.pub(mutation.mutate$, same)
 
-    expect(results.map((r) => [r.type, r.type === 'idle' ? null : r.params.id, r.pendingCount])).toEqual([
-      ['pending', 'a', 1],
-      ['pending', 'a', 2],
-    ])
-  })
-
-  it('acts on every reset and every repeated mutate, even with equal values', async () => {
-    const signals: AbortSignal[] = []
-    const mutation = Mutation<string, string>({
-      mutationFn: (_params, signal) => {
-        signals.push(signal)
-        return new Promise<string>(() => {})
-      },
-    })
-    const engine = new Engine()
-    engine.sub(mutation.data$, () => undefined)
-
-    engine.pub(mutation.mutate$, 'A')
-    engine.pub(mutation.reset$)
-    engine.pub(mutation.mutate$, 'B')
-    engine.pub(mutation.reset$)
-
-    expect(signals.map((s) => s.aborted)).toEqual([true, true])
-    expect(engine.getValue(mutation.pendingCount$)).toBe(0)
-
-    engine.pub(mutation.mutate$, 'same')
-    engine.pub(mutation.mutate$, 'same')
-    expect(signals).toHaveLength(4)
+    expect(calls).toHaveLength(2)
+    for (const call of calls) {
+      call.request.resolve('done')
+    }
     await flushPromise()
   })
 
@@ -294,7 +411,7 @@ describe('Mutation concurrency', () => {
     expect(seen).toEqual(['pending:A', 'success:A', 'pending:B'])
   })
 
-  it('does not count a call that coalesces into a waiting one (CX-11)', async () => {
+  it('does not count a call that coalesces into a waiting one', async () => {
     const { calls, counts, engine, mutation } = setup({ concurrency: 'coalesce' })
 
     engine.pub(mutation.mutate$, p('a'))
@@ -308,21 +425,18 @@ describe('Mutation concurrency', () => {
     expect(counts).toEqual([1, 2, 1, 0])
   })
 
-  it('counts every waiting call under serial and switch supersession (CX-11)', () => {
-    const serial = setup({ concurrency: 'serial' })
-    serial.engine.pub(serial.mutation.mutate$, p('a'))
-    serial.engine.pub(serial.mutation.mutate$, p('b'))
-    serial.engine.pub(serial.mutation.mutate$, p('c'))
-    expect(serial.counts).toEqual([1, 2, 3])
+  it('counts every waiting call under serial', () => {
+    const { counts, engine, mutation } = setup({ concurrency: 'serial' })
 
-    const switching = setup({ concurrency: 'switch' })
-    switching.engine.pub(switching.mutation.mutate$, p('a'))
-    switching.engine.pub(switching.mutation.mutate$, p('b'))
-    expect(switching.counts).toEqual([1])
+    engine.pub(mutation.mutate$, p('a'))
+    engine.pub(mutation.mutate$, p('b'))
+    engine.pub(mutation.mutate$, p('c'))
+
+    expect(counts).toEqual([1, 2, 3])
   })
 
-  it('merges waiting partial patches under coalesce (CX-12)', async () => {
-    const { calls, engine, mutation, results } = setup({
+  it('merges waiting partial patches under coalesce', async () => {
+    const { calls, engine, mutation, settled } = setup({
       concurrency: 'coalesce',
       key: ({ id }) => id,
       merge: (waiting, next) => ({ id: next.id, patch: { ...waiting.patch, ...next.patch } }),
@@ -337,11 +451,13 @@ describe('Mutation concurrency', () => {
     await flushPromise()
 
     expect(calls.map((c) => c.params)).toEqual([p('x', { a: 1 }), p('x', { b: 2, c: 3 })])
-    expect(results.at(-1)).toMatchObject({ params: p('x', { b: 2, c: 3 }), type: 'success' })
+    expect(engine.getValue(mutation.data$)).toMatchObject({ params: p('x', { b: 2, c: 3 }), type: 'success' })
+    // Merged params share one outcome; nothing is dropped.
+    expect(settled.map((o) => o.type)).toEqual(['success', 'success'])
   })
 
   it('keeps parallel as the default, with results in completion order', async () => {
-    const { calls, engine, mutation, results } = setup()
+    const { calls, engine, mutation, settled } = setup()
 
     engine.pub(mutation.mutate$, p('a'))
     engine.pub(mutation.mutate$, p('b'))
@@ -351,7 +467,7 @@ describe('Mutation concurrency', () => {
     calls[0]?.request.resolve('a')
     await flushPromise()
 
-    expect(results.filter((r) => r.type === 'success').map((r) => (r.type === 'success' ? r.params.id : null))).toEqual(['b', 'a'])
+    expect(settled.map((o) => o.params.id)).toEqual(['b', 'a'])
   })
 
   it('aborts running calls when the engine is disposed', () => {
@@ -380,6 +496,26 @@ describe('executeWithRetry', () => {
     )
 
     await expect(run).rejects.toThrow('Aborted')
+    expect(attempts).toBe(1)
+  })
+
+  it('stops a retry delay when the signal aborts', async () => {
+    vi.useFakeTimers()
+    const controller = new AbortController()
+    let attempts = 0
+    const run = executeWithRetry(
+      () => {
+        attempts += 1
+        return Promise.reject(new Error('failed'))
+      },
+      { retry: 3, retryDelay: () => 1000, signal: controller.signal }
+    )
+    const outcome = expect(run).rejects.toThrow('Aborted')
+    await vi.advanceTimersByTimeAsync(0)
+    controller.abort()
+    await vi.advanceTimersByTimeAsync(5000)
+
+    await outcome
     expect(attempts).toBe(1)
   })
 })

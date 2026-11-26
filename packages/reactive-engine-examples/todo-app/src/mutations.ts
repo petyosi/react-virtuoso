@@ -87,8 +87,8 @@ export const deleteTaskMutation = Mutation<{ id: number }, void>({
 
 export const editingId$ = Cell<string | null>(null)
 
-e.sub(createListMutation.data$, (data, engine) => {
-  if (data.type === 'success') {
+e.sub(createListMutation.settled$, (outcome, engine) => {
+  if (outcome.type === 'success') {
     engine.pubIn({
       [editingId$]: null,
     })
@@ -97,8 +97,8 @@ e.sub(createListMutation.data$, (data, engine) => {
 
 e.link(
   e.pipe(
-    e.merge(createListMutation.data$, updateListMutation.data$, deleteListMutation.data$),
-    e.filter((data) => data.type === 'success'),
+    e.merge(createListMutation.settled$, updateListMutation.settled$, deleteListMutation.settled$),
+    e.filter((outcome) => outcome.type === 'success'),
     e.map(() => undefined, false)
   ),
   listsQuery.refetch$
@@ -106,8 +106,8 @@ e.link(
 
 e.link(
   e.pipe(
-    e.merge(createTaskMutation.data$, updateTaskMutation.data$, deleteTaskMutation.data$),
-    e.filter((data) => data.type === 'success'),
+    e.merge(createTaskMutation.settled$, updateTaskMutation.settled$, deleteTaskMutation.settled$),
+    e.filter((outcome) => outcome.type === 'success'),
     e.map(() => undefined, false)
   ),
   tasksQuery.refetch$

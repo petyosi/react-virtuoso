@@ -418,30 +418,34 @@ export function coalescePromise<TInput, TValue>(
  * Lifecycle event emitted by {@link promiseWork}. Every event carries the number of running and waiting calls after
  * it, so a subscriber reads a count that is coherent with the event.
  * - `start`: work for `input` started.
- * - `queue`: an input is waiting, or was merged into or replaced a waiting one, without starting.
+ * - `queue`: an input is waiting, or was merged into a waiting one, without starting.
  * - `settle`: work settled with `result`.
- * - `cancel`: `cancel$` dropped all running and waiting work.
+ * - `drop`: a waiting `input` will never start. Under `coalesce` without `merge`, a newer input replaced it; or
+ *   `dropWaiting$` removed it.
+ *
+ * Every input ends with exactly one `settle` or `drop` event, unless the switch policy supersedes it or the engine is
+ * disposed. A merged input ends with the event of the input it was merged into.
  * @hidden
  */
 export type PromiseWorkEvent<TInput, TValue> =
+  | { input: TInput; pendingCount: number; type: 'drop' }
   | { input: TInput; pendingCount: number; type: 'start' }
   | { pendingCount: number; result: SwitchMapPromiseResult<TInput, TValue>; type: 'settle' }
   | { pendingCount: number; type: 'queue' }
-  | { pendingCount: 0; type: 'cancel' }
 
 /**
  * Options for {@link promiseWork}.
  * @hidden
  */
 export interface PromiseWorkOptions<TInput> extends CoalescePromiseOptions<TInput> {
-  /** Every emission aborts all running work, drops all waiting inputs, and emits a `cancel` event. */
-  cancel$?: Out
+  /** Every emission removes all waiting inputs and emits a `drop` event for each. Running work is not touched. */
+  dropWaiting$?: Out
   policy: PromiseWorkPolicy
 }
 
 /**
  * Low-level scheduler behind the Promise operators, used by packages built on the engine. Emits start, queue, settle,
- * and cancel events, each with the pending count.
+ * and drop events, each with the pending count.
  * @hidden
  */
 export function promiseWork<TInput, TValue>(
@@ -451,6 +455,9 @@ export function promiseWork<TInput, TValue>(
   return (source, eng) => {
     const sink = eng.streamInstance<PromiseWorkEvent<TInput, TValue>>(false)
     const scheduler = createPromiseScheduler<TInput, TValue>(eng, options.policy, project, options, {
+      onDrop: (input, pendingCount) => {
+        eng.pub(sink, { input, pendingCount, type: 'drop' })
+      },
       onQueue: (pendingCount) => {
         eng.pub(sink, { pendingCount, type: 'queue' })
       },
@@ -464,14 +471,9 @@ export function promiseWork<TInput, TValue>(
     eng.sub(source, (input) => {
       scheduler.push(input)
     })
-    if (options.cancel$ !== undefined) {
-      eng.sub(options.cancel$, () => {
-        const controllers = scheduler.cancel()
-        eng.pub(sink, { pendingCount: 0, type: 'cancel' })
-        // Abort after the cancel event, so work started by abort listeners is not reported as cancelled.
-        for (const controller of controllers) {
-          controller.abort()
-        }
+    if (options.dropWaiting$ !== undefined) {
+      eng.sub(options.dropWaiting$, () => {
+        scheduler.dropWaiting()
       })
     }
     return sink

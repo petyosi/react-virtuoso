@@ -2,16 +2,19 @@ import { expectTypeOf, test } from 'vitest'
 
 import { Mutation } from './Mutation'
 
-import type { MutationResult } from './types'
-import type { Engine, StateRef } from '@virtuoso.dev/reactive-engine-core'
+import type { MutationConcurrency, MutationResult, MutationSettled } from './index'
+import type { Engine, NodeRef, StateRef } from '@virtuoso.dev/reactive-engine-core'
 
-test('accepts a mutationFn without a signal parameter (CX-10)', () => {
+test('accepts a mutationFn without a signal parameter', () => {
   const mutation = Mutation({
     mutationFn: (params: { id: string }) => Promise.resolve(params.id.length),
   })
 
   expectTypeOf(mutation.data$).toEqualTypeOf<StateRef<MutationResult<number, { id: string }>>>()
   expectTypeOf(mutation.pendingCount$).toEqualTypeOf<StateRef<number>>()
+  expectTypeOf(mutation.settled$).toEqualTypeOf<NodeRef<MutationSettled<number, { id: string }>>>()
+  expectTypeOf(mutation.reset$).toEqualTypeOf<NodeRef<void>>()
+  expectTypeOf(mutation.dropWaiting$).toEqualTypeOf<NodeRef<void>>()
 })
 
 test('passes the signal, params, and engine to the mutation callbacks', () => {
@@ -42,7 +45,7 @@ test('passes the signal, params, and engine to the mutation callbacks', () => {
 
 test('infers params from explicit generics regardless of option order', () => {
   Mutation<{ id: string }, string>({
-    concurrency: 'switch',
+    concurrency: 'serial',
     key: (params) => {
       expectTypeOf(params).toEqualTypeOf<{ id: string }>()
       return params.id
@@ -54,6 +57,19 @@ test('infers params from explicit generics regardless of option order', () => {
   })
 })
 
+test('rejects options that the chosen policy would ignore', () => {
+  const mutationFn = (params: { id: string }) => Promise.resolve(params.id)
+
+  // @ts-expect-error Parallel calls never wait, so a key has no effect.
+  Mutation({ key: (params: { id: string }) => params.id, mutationFn })
+  // @ts-expect-error Only coalesce merges waiting params.
+  Mutation({ concurrency: 'serial', merge: (_waiting: { id: string }, next: { id: string }) => next, mutationFn })
+  // @ts-expect-error A started call is never aborted, so there is no switch policy.
+  Mutation({ concurrency: 'switch', mutationFn })
+
+  expectTypeOf<MutationConcurrency>().toEqualTypeOf<'coalesce' | 'parallel' | 'serial'>()
+})
+
 test('includes params on pending, success, and error results only', () => {
   const inspect = (result: MutationResult<number, { id: string }>) => {
     if (result.type === 'idle') {
@@ -61,6 +77,21 @@ test('includes params on pending, success, and error results only', () => {
       expectTypeOf(result.params)
     } else {
       expectTypeOf(result.params).toEqualTypeOf<{ id: string }>()
+    }
+  }
+
+  expectTypeOf(inspect).toBeFunction()
+})
+
+test('narrows settled outcomes by type', () => {
+  const inspect = (outcome: MutationSettled<number, { id: string }>) => {
+    expectTypeOf(outcome.params).toEqualTypeOf<{ id: string }>()
+    if (outcome.type === 'success') {
+      expectTypeOf(outcome.data).toEqualTypeOf<number>()
+    } else if (outcome.type === 'error') {
+      expectTypeOf(outcome.error).toEqualTypeOf<unknown>()
+    } else {
+      expectTypeOf(outcome.type).toEqualTypeOf<'dropped'>()
     }
   }
 

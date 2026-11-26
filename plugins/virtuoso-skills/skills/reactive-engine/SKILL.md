@@ -130,14 +130,14 @@ export const tasksQuery = Query<{ listId: string }, Task[]>({
 
 `Query` returns nodes: `data$` (cell with `{ type: 'pending' | 'success' | 'error', data, error, isLoading, isFetching, ... }`), `params$` (publish to refetch with new params), `refetch$`, `invalidate$` (keep showing stale data, `isFetching: true`, re-execute), `unload$` (abort and clear), `enabled$`. Queries auto-execute on activation and param changes; each execution aborts the previous via the `signal`. Options: `retry` (default 3, exponential backoff), `refetchInterval`, `initialData`, `enabled`.
 
-`Mutation({ mutationFn, concurrency?, key?, merge?, onSuccess?, onError? })` returns `data$`, `mutate$`, `pendingCount$`, `reset$`. Mutations never auto-execute — publish params to `mutate$`. `mutationFn(params, signal)` gets an `AbortSignal`; pending/success/error results carry `params`; callbacks receive `(data | error, params, engine)`. `concurrency` is `'parallel'` (default), `'serial'`, `'coalesce'`, or `'switch'`, applied per `key`; use `'coalesce'` with a key for save-on-every-interaction controls, plus `merge` when params are partial patches. `data$` is the latest event; every result carries `pendingCount` for overlapping calls (read it from the result in `data$` subscribers; `pendingCount$` is derived from `data$`). `reset$` aborts running calls. Wire mutations to refetch queries in the graph, not in components:
+`Mutation({ mutationFn, concurrency?, key?, merge?, onSuccess?, onError? })` returns `mutate$`, `settled$`, `data$`, `pendingCount$`, `reset$`, `dropWaiting$`. Mutations never auto-execute — publish params to `mutate$`. `settled$` emits exactly one outcome per call — `success`, `error`, or `dropped` (never sent) — each with its `params`; wire refetches, confirmed state, and optimistic overlays to it or to the callbacks, which receive `(data | error, params, engine)`. `data$` is display state only: the latest start or result among calls made since the last `reset$`. `reset$` just returns `data$` to idle; earlier calls keep running and still report on `settled$`. `pendingCount$` counts running and waiting calls. A started call is never aborted (the `signal` passed to `mutationFn(params, signal)` aborts only on engine disposal); `dropWaiting$` drops calls that have not started. `concurrency` is `'parallel'` (default), `'serial'`, or `'coalesce'`; `key` applies `'serial'`/`'coalesce'` per record, and `merge` (coalesce only) combines waiting partial patches. Wire mutations to refetch queries in the graph, not in components:
 
 ```ts
 e.link(
   e.pipe(
-    e.merge(createTask.data$, deleteTask.data$),
-    e.filter((r) => r.type === 'success'),
-    e.map(() => undefined, false) // distinct=false so consecutive successes each fire
+    e.merge(createTask.settled$, deleteTask.settled$),
+    e.filter((outcome) => outcome.type !== 'dropped'),
+    e.map(() => undefined, false) // distinct=false so consecutive outcomes each fire
   ),
   tasksQuery.refetch$
 )
@@ -181,7 +181,8 @@ Follow the data-table architecture ([full patterns](references/core/05.building-
 - Expecting `Stream` subscriptions to fire on subscribe with a current value — streams are stateless; only `Cell` has a value.
 - Piping into a trigger through `map` without `distinct: false` — consecutive identical mapped values get filtered.
 - Triggering a `Mutation` by changing params — mutations only run when params are published to `mutate$`.
-- Using `switchMapPromise` or `concurrency: 'switch'` for writes — aborting does not undo a request the server received; use `coalescePromise`/`'coalesce'` or `'serial'`.
+- Using `switchMapPromise` for writes — aborting does not undo a request the server received; use `coalescePromise`/`concatMapPromise`, or a `Mutation` with `'coalesce'` or `'serial'`.
+- Reacting to mutation outcomes on `data$` — it is display state that `reset$` clears; use `settled$` or the callbacks.
 - Plain `sub` in code that re-runs with React renders — subscriptions accumulate; use `singletonSub`.
 - Creating cycles in the graph — cycles hang or loop; break one direction with an action stream or `delayWithMicrotask`.
 

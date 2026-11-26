@@ -58,8 +58,6 @@ export interface MutationIdleResult {
   isError: false
   isPending: false
   isSuccess: false
-  /** Calls that are running or waiting to start, including this one if it is pending. */
-  pendingCount: number
   type: 'idle'
 }
 
@@ -71,8 +69,6 @@ export interface MutationPendingResult<TParams = unknown> {
   isSuccess: false
   /** The params of the call that started. */
   params: TParams
-  /** Calls that are running or waiting to start, including this one if it is pending. */
-  pendingCount: number
   type: 'pending'
 }
 
@@ -84,8 +80,6 @@ export interface MutationSuccessResult<T, TParams = unknown> {
   isSuccess: true
   /** The params of the call that succeeded. */
   params: TParams
-  /** Calls that are running or waiting to start, including this one if it is pending. */
-  pendingCount: number
   type: 'success'
 }
 
@@ -97,15 +91,13 @@ export interface MutationErrorResult<TParams = unknown> {
   isSuccess: false
   /** The params of the call that failed. */
   params: TParams
-  /** Calls that are running or waiting to start, including this one if it is pending. */
-  pendingCount: number
   type: 'error'
 }
 
 /**
- * The latest event of a mutation. `isPending` describes that event only; when calls overlap, read `pendingCount` to
- * know whether any call is still running or waiting. A call that waits without starting re-emits the latest event
- * with an updated `pendingCount`.
+ * What a mutation displays: the latest start or result among the calls made since the last `reset$`. When calls
+ * overlap, `isPending` describes the latest event only; read `pendingCount$` to know whether any call is still running
+ * or waiting. To react to every outcome, subscribe to `settled$` instead.
  */
 export type MutationResult<T, TParams = unknown> =
   | MutationErrorResult<TParams>
@@ -113,29 +105,93 @@ export type MutationResult<T, TParams = unknown> =
   | MutationPendingResult<TParams>
   | MutationSuccessResult<T, TParams>
 
+// Mutation outcomes, one per call
+
+/** The call ran and succeeded. */
+export interface MutationSettledSuccess<T, TParams = unknown> {
+  data: T
+  params: TParams
+  type: 'success'
+}
+
+/**
+ * The call ran and failed, including when it was aborted by engine disposal. The server may or may not have applied
+ * it, so reconcile, for example by refetching.
+ */
+export interface MutationSettledError<TParams = unknown> {
+  error: unknown
+  params: TParams
+  type: 'error'
+}
+
+/**
+ * The call never started, so the server never received it: a newer call replaced it while it waited under
+ * `concurrency: 'coalesce'` without `merge`, or `dropWaiting$` removed it.
+ */
+export interface MutationSettledDropped<TParams = unknown> {
+  params: TParams
+  type: 'dropped'
+}
+
+/**
+ * The outcome of one call, emitted on `settled$`. Every call ends with exactly one outcome, including calls made before
+ * a `reset$`. Params merged into a waiting call under `'coalesce'` share that call's outcome.
+ */
+export type MutationSettled<T, TParams = unknown> =
+  | MutationSettledDropped<TParams>
+  | MutationSettledError<TParams>
+  | MutationSettledSuccess<T, TParams>
+
 /**
  * How overlapping `mutate$` calls with the same key are scheduled.
  * - `parallel` (default): every call starts immediately; results arrive in completion order.
  * - `serial`: calls run one at a time in arrival order.
  * - `coalesce`: one call runs at a time; while it runs, only the newest waiting params are kept (see `merge`).
- * - `switch`: a new call aborts the running one and suppresses its result.
+ *
+ * No policy aborts a call that already started: aborting a request does not undo it on the server.
  */
-export type MutationConcurrency = 'coalesce' | 'parallel' | 'serial' | 'switch'
+export type MutationConcurrency = 'coalesce' | 'parallel' | 'serial'
 
-export interface MutationOptions<TParams, TData> {
-  /** Scheduling policy for overlapping calls. Defaults to `'parallel'`. */
-  concurrency?: MutationConcurrency
-  /** Groups calls, for example by record ID, so `serial`, `coalesce`, and `switch` apply per key. Ignored by `parallel`. */
-  key?: (params: NoInfer<TParams>) => unknown
-  /**
-   * With `concurrency: 'coalesce'`, combines waiting params with newer params for the same key. Defaults to keeping the
-   * newest. Provide it when params are partial updates, or earlier updates are never sent.
-   */
-  merge?: (waiting: NoInfer<TParams>, next: NoInfer<TParams>) => NoInfer<TParams>
-  /** Performs the mutation. The signal is aborted by `reset$`, by a newer call under `'switch'`, and on engine disposal. */
+interface MutationBaseOptions<TParams, TData> {
+  /** Performs the mutation. The signal is aborted only when the engine is disposed. */
   mutationFn: (params: TParams, signal: AbortSignal) => Promise<TData> | TData
+  /** Called for every call that fails, including calls made before a `reset$`. */
   onError?: (error: unknown, params: NoInfer<TParams>, engine: Engine) => void
+  /** Called for every call that succeeds, including calls made before a `reset$`. */
   onSuccess?: (data: NoInfer<TData>, params: NoInfer<TParams>, engine: Engine) => void
   retry?: false | number
   retryDelay?: (attemptIndex: number) => number
 }
+
+/** Every call starts immediately. `key` and `merge` do not apply. */
+export interface ParallelMutationOptions<TParams, TData> extends MutationBaseOptions<TParams, TData> {
+  /** Scheduling policy for overlapping calls. Defaults to `'parallel'`. */
+  concurrency?: 'parallel'
+  key?: never
+  merge?: never
+}
+
+/** Calls run one at a time, in arrival order, per key. */
+export interface SerialMutationOptions<TParams, TData> extends MutationBaseOptions<TParams, TData> {
+  concurrency: 'serial'
+  /** Groups calls, for example by record ID, so ordering applies per key and different keys run concurrently. */
+  key?: (params: NoInfer<TParams>) => unknown
+  merge?: never
+}
+
+/** One call runs at a time per key; while it runs, only the newest waiting params are kept. */
+export interface CoalesceMutationOptions<TParams, TData> extends MutationBaseOptions<TParams, TData> {
+  concurrency: 'coalesce'
+  /** Groups calls, for example by record ID, so coalescing applies per key and different keys run concurrently. */
+  key?: (params: NoInfer<TParams>) => unknown
+  /**
+   * Combines waiting params with newer params for the same key. Without it, the newer params replace the waiting ones,
+   * whose call ends as `dropped`. Provide it when params are partial updates, or earlier updates are never sent.
+   */
+  merge?: (waiting: NoInfer<TParams>, next: NoInfer<TParams>) => NoInfer<TParams>
+}
+
+export type MutationOptions<TParams, TData> =
+  | CoalesceMutationOptions<TParams, TData>
+  | ParallelMutationOptions<TParams, TData>
+  | SerialMutationOptions<TParams, TData>
