@@ -8,7 +8,9 @@ import type { ConcurrentMutationState, QueryResult } from '@virtuoso.dev/reactiv
 
 const API_BASE = 'http://localhost:3001'
 
+// The row being edited. A save closes its editor only once it succeeds, so a failed save keeps the text for a retry.
 export const editingId$ = Cell<string | null>(null)
+export const editingTaskId$ = Cell<number | null>(null)
 // The create forms keep their text until the server accepts it, so a failed create does not lose what was typed.
 export const newListName$ = Cell('')
 export const newTaskDescription$ = Cell('')
@@ -49,7 +51,11 @@ export const updateListMutation = Mutation<{ id: string; name: string }, List, s
     return res.json()
   },
   key: ({ id }) => id,
-  onSuccess: (_list, _params, engine) => {
+  onSuccess: (_list, { id }, engine) => {
+    if (engine.getValue(editingId$) === id) {
+      engine.pub(editingId$, null)
+    }
+    // The row shows the saved name until the refetch lands; the result is dismissed then, below.
     engine.pub(listsQuery.refetch$)
   },
 })
@@ -68,6 +74,8 @@ export const deleteListMutation = Mutation<{ id: string }, void, string>({
   },
 })
 
+// When fresh list data arrives, forget results it has caught up with: deletes whose rows are gone, and renames the
+// data is newer than. Failures stay until the user dismisses them.
 e.sub(listsQuery.data$, (result, engine) => {
   if (result.type !== 'success') {
     return
@@ -76,6 +84,11 @@ e.sub(listsQuery.data$, (result, engine) => {
   for (const [id, state] of engine.getValue(deleteListMutation.status$)) {
     if (state.isSuccess && !present.has(id)) {
       engine.pub(deleteListMutation.dismiss$, id)
+    }
+  }
+  for (const [id, state] of engine.getValue(updateListMutation.status$)) {
+    if (state.isSuccess && result.dataUpdatedAt > state.settledAt) {
+      engine.pub(updateListMutation.dismiss$, id)
     }
   }
 })
@@ -119,7 +132,11 @@ const patchTask = async (id: number, fields: Partial<Omit<Task, 'id'>>, signal: 
 export const updateTaskMutation = Mutation<{ id: number; description: string }, Task, number>({
   mutationFn: ({ id, description }, signal) => patchTask(id, { description }, signal),
   key: ({ id }) => id,
-  onSuccess: (_task, _params, engine) => {
+  onSuccess: (_task, { id }, engine) => {
+    if (engine.getValue(editingTaskId$) === id) {
+      engine.pub(editingTaskId$, null)
+    }
+    // The row shows the saved description until the refetch lands; the result is dismissed then, below.
     engine.pub(tasksQuery.refetch$)
   },
 })
@@ -176,6 +193,8 @@ export const deleteTaskMutation = Mutation<{ id: number }, void, number>({
   },
 })
 
+// When fresh task data arrives, forget results it has caught up with. Data strictly newer than a result reflects it:
+// the refetch started in onSuccess. Failures stay until the user dismisses them.
 e.sub(tasksQuery.data$, (result, engine) => {
   if (result.type !== 'success') {
     return
@@ -184,6 +203,22 @@ e.sub(tasksQuery.data$, (result, engine) => {
   for (const [id, state] of engine.getValue(deleteTaskMutation.status$)) {
     if (state.isSuccess && !present.has(id)) {
       engine.pub(deleteTaskMutation.dismiss$, id)
+    }
+  }
+  for (const [id, state] of engine.getValue(updateTaskMutation.status$)) {
+    if (state.isSuccess && result.dataUpdatedAt > state.settledAt) {
+      engine.pub(updateTaskMutation.dismiss$, id)
+    }
+  }
+  // A toggle record is needed only while it runs, has a failure to show, or is newer than the data (the overlay).
+  for (const [id, state] of engine.getValue(toggleTaskMutation.status$)) {
+    if (
+      !state.isPending &&
+      state.failures.length === 0 &&
+      state.lastSuccess !== null &&
+      result.dataUpdatedAt > state.lastSuccess.settledAt
+    ) {
+      engine.pub(toggleTaskMutation.dismiss$, id)
     }
   }
 })

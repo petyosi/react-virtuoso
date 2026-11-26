@@ -5,6 +5,7 @@ import { useCell, useCellValue, usePublisher } from '@virtuoso.dev/reactive-engi
 import {
   createTaskMutation,
   deleteTaskMutation,
+  editingTaskId$,
   newTaskDescription$,
   overlayDone,
   toggleFailed,
@@ -23,18 +24,20 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
   const listsData = useCellValue(listsQuery.data$)
   const tasksData = useCellValue(tasksQuery.data$)
   const createTask = usePublisher(createTaskMutation.mutate$)
-  const creating = useCellValue(createTaskMutation.data$).isPending
+  const createResult = useCellValue(createTaskMutation.data$)
   const updateTask = usePublisher(updateTaskMutation.mutate$)
   const updates = useCellValue(updateTaskMutation.status$)
+  const dismissUpdate = usePublisher(updateTaskMutation.dismiss$)
   const toggleTask = usePublisher(toggleTaskMutation.mutate$)
   const toggles = useCellValue(toggleTaskMutation.status$)
   const dismissToggle = usePublisher(toggleTaskMutation.dismiss$)
   const deleteTask = usePublisher(deleteTaskMutation.mutate$)
   const deletes = useCellValue(deleteTaskMutation.status$)
+  const dismissDelete = usePublisher(deleteTaskMutation.dismiss$)
   const goToLists = usePublisher(lists$)
 
   const [newTaskDescription, setNewTaskDescription] = useCell(newTaskDescription$)
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useCell(editingTaskId$)
   const [editingDescription, setEditingDescription] = useState('')
 
   const handleCreate = (e: React.FormEvent) => {
@@ -47,20 +50,21 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
 
   const handleEdit = (task: Task) => {
     setEditingId(task.id)
-    setEditingDescription(task.description)
+    const update = updates.get(task.id)
+    setEditingDescription(update?.isSuccess === true ? update.params.description : task.description)
   }
 
   const handleUpdate = (task: Task) => {
     if (editingDescription.trim()) {
+      // The editor closes when the save succeeds, in updateTaskMutation's onSuccess.
       updateTask({ id: task.id, description: editingDescription })
-      setEditingId(null)
-      setEditingDescription('')
     }
   }
 
-  const handleCancelEdit = () => {
+  const handleCancelEdit = (task: Task) => {
     setEditingId(null)
-    setEditingDescription('')
+    // Clears a failed save. A save that is still running continues; cancel does not recall it.
+    dismissUpdate(task.id)
   }
 
   const handleToggleDone = (task: Task) => {
@@ -107,9 +111,14 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
           placeholder="New task description"
           style={{ padding: '8px', marginRight: '10px' }}
         />
-        <button type="submit" disabled={creating} style={{ padding: '8px 16px' }}>
+        <button type="submit" disabled={createResult.isPending} style={{ padding: '8px 16px' }}>
           Add Task
         </button>
+        {createResult.isError && (
+          <span role="alert" style={{ color: 'red', marginLeft: '10px' }}>
+            Couldn't add the task
+          </span>
+        )}
       </form>
 
       {tasks.length === 0 ? (
@@ -118,6 +127,10 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {tasks.map((task) => {
             const done = overlayDone(toggles.get(task.id), tasksData, task)
+            const update = updates.get(task.id)
+            const deletion = deletes.get(task.id)
+            // A saved description shows until the refetched data has it.
+            const description = update?.isSuccess === true ? update.params.description : task.description
             return (
               <div
                 key={task.id}
@@ -137,16 +150,17 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
                       onChange={(e) => setEditingDescription(e.target.value)}
                       style={{ padding: '4px', flex: 1 }}
                     />
-                    <button
-                      onClick={() => handleUpdate(task)}
-                      disabled={updates.get(task.id)?.isPending === true}
-                      style={{ padding: '4px 12px' }}
-                    >
-                      Save
+                    <button onClick={() => handleUpdate(task)} disabled={update?.isPending === true} style={{ padding: '4px 12px' }}>
+                      {update?.isPending === true ? 'Saving…' : 'Save'}
                     </button>
-                    <button onClick={handleCancelEdit} style={{ padding: '4px 12px' }}>
+                    <button onClick={() => handleCancelEdit(task)} style={{ padding: '4px 12px' }}>
                       Cancel
                     </button>
+                    {update?.isError === true && (
+                      <span role="alert" style={{ color: 'red' }}>
+                        Couldn't save
+                      </span>
+                    )}
                   </>
                 ) : (
                   <>
@@ -158,7 +172,7 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
                         opacity: done ? 0.6 : 1,
                       }}
                     >
-                      {task.description}
+                      {description}
                     </span>
                     {toggleFailed(toggles.get(task.id)) && (
                       <span role="alert" style={{ color: 'red' }}>
@@ -171,13 +185,17 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
                     <button onClick={() => handleEdit(task)} style={{ padding: '4px 12px' }}>
                       Edit
                     </button>
-                    <button
-                      onClick={() => handleDelete(task.id)}
-                      disabled={deletes.get(task.id)?.isPending === true}
-                      style={{ padding: '4px 12px' }}
-                    >
+                    <button onClick={() => handleDelete(task.id)} disabled={deletion?.isPending === true} style={{ padding: '4px 12px' }}>
                       Delete
                     </button>
+                    {deletion?.isError === true && (
+                      <span role="alert" style={{ color: 'red' }}>
+                        Couldn't delete{' '}
+                        <button aria-label="Dismiss" onClick={() => dismissDelete(task.id)}>
+                          ✕
+                        </button>
+                      </span>
+                    )}
                   </>
                 )}
               </div>
