@@ -81,6 +81,7 @@ e.link(
 - `changeWith(cell$, source$, (cell, value) => next)` — reducer-style cell update from a stream (return a new reference)
 - `sub`, `subMultiple`, `singletonSub` (replaces the previous singleton subscription — use for callbacks driven by React renders)
 - Operators: `map(fn, distinct?)`, `filter` (supports type guards), `mapTo`, `scan`, `once`, `throttleTime`, `debounceTime`, `delayWithMicrotask`, `onNext`, `handlePromise`
+- Async operators, all emitting `{ status, input, value | error }` and accepting `{ key }` for per-record scheduling: `switchMapPromise` (latest-only, for reads), `concatMapPromise` (one at a time, in order), `coalescePromise` (one at a time, newest waiting input only, optional `merge`; for writes)
 
 Publishing is transactional: `engine.pubIn({ [a$]: 1, [b$]: 2 })` batches into one cycle; the graph executes in topological order, so diamond dependencies emit downstream exactly once with consistent inputs. Emissions are synchronous; there are no error/completion channels (exceptions abort the cycle — handle errors at the edges). Subscribing never replays a current value; read cells with `getValue` when needed. See [transactions](references/core/03.transactions.md).
 
@@ -129,7 +130,7 @@ export const tasksQuery = Query<{ listId: string }, Task[]>({
 
 `Query` returns nodes: `data$` (cell with `{ type: 'pending' | 'success' | 'error', data, error, isLoading, isFetching, ... }`), `params$` (publish to refetch with new params), `refetch$`, `invalidate$` (keep showing stale data, `isFetching: true`, re-execute), `unload$` (abort and clear), `enabled$`. Queries auto-execute on activation and param changes; each execution aborts the previous via the `signal`. Options: `retry` (default 3, exponential backoff), `refetchInterval`, `initialData`, `enabled`.
 
-`Mutation({ mutationFn, onSuccess?, onError? })` returns `data$`, `mutate$`, `reset$`. Mutations never auto-execute — publish params to `mutate$`. Wire mutations to refetch queries in the graph, not in components:
+`Mutation({ mutationFn, concurrency?, key?, merge?, onSuccess?, onError? })` returns `data$`, `mutate$`, `pendingCount$`, `reset$`. Mutations never auto-execute — publish params to `mutate$`. `mutationFn(params, signal)` gets an `AbortSignal`; pending/success/error results carry `params`; callbacks receive `(data | error, params, engine)`. `concurrency` is `'parallel'` (default), `'serial'`, `'coalesce'`, or `'switch'`, applied per `key`; use `'coalesce'` with a key for save-on-every-interaction controls, plus `merge` when params are partial patches. `data$` is the latest event; read `pendingCount$` for overlapping calls. `reset$` aborts running calls. Wire mutations to refetch queries in the graph, not in components:
 
 ```ts
 e.link(
@@ -180,6 +181,7 @@ Follow the data-table architecture ([full patterns](references/core/05.building-
 - Expecting `Stream` subscriptions to fire on subscribe with a current value — streams are stateless; only `Cell` has a value.
 - Piping into a trigger through `map` without `distinct: false` — consecutive identical mapped values get filtered.
 - Triggering a `Mutation` by changing params — mutations only run when params are published to `mutate$`.
+- Using `switchMapPromise` or `concurrency: 'switch'` for writes — aborting does not undo a request the server received; use `coalescePromise`/`'coalesce'` or `'serial'`.
 - Plain `sub` in code that re-runs with React renders — subscriptions accumulate; use `singletonSub`.
 - Creating cycles in the graph — cycles hang or loop; break one direction with an action stream or `delayWithMicrotask`.
 

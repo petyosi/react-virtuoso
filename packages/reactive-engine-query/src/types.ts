@@ -1,3 +1,5 @@
+import type { Engine } from '@virtuoso.dev/reactive-engine-core'
+
 // Query state discriminated union
 
 export interface QueryPendingResult {
@@ -59,39 +61,72 @@ export interface MutationIdleResult {
   type: 'idle'
 }
 
-export interface MutationPendingResult {
+export interface MutationPendingResult<TParams = unknown> {
   data: null
   error: null
   isError: false
   isPending: true
   isSuccess: false
+  /** The params of the call that started. */
+  params: TParams
   type: 'pending'
 }
 
-export interface MutationSuccessResult<T> {
+export interface MutationSuccessResult<T, TParams = unknown> {
   data: T
   error: null
   isError: false
   isPending: false
   isSuccess: true
+  /** The params of the call that succeeded. */
+  params: TParams
   type: 'success'
 }
 
-export interface MutationErrorResult {
+export interface MutationErrorResult<TParams = unknown> {
   data: null
   error: unknown
   isError: true
   isPending: false
   isSuccess: false
+  /** The params of the call that failed. */
+  params: TParams
   type: 'error'
 }
 
-export type MutationResult<T> = MutationErrorResult | MutationIdleResult | MutationPendingResult | MutationSuccessResult<T>
+/**
+ * The latest event of a mutation. `isPending` describes that event only; when calls overlap, read `pendingCount$`
+ * to know whether any call is still running or waiting.
+ */
+export type MutationResult<T, TParams = unknown> =
+  | MutationErrorResult<TParams>
+  | MutationIdleResult
+  | MutationPendingResult<TParams>
+  | MutationSuccessResult<T, TParams>
+
+/**
+ * How overlapping `mutate$` calls with the same key are scheduled.
+ * - `parallel` (default): every call starts immediately; results arrive in completion order.
+ * - `serial`: calls run one at a time in arrival order.
+ * - `coalesce`: one call runs at a time; while it runs, only the newest waiting params are kept (see `merge`).
+ * - `switch`: a new call aborts the running one and suppresses its result.
+ */
+export type MutationConcurrency = 'coalesce' | 'parallel' | 'serial' | 'switch'
 
 export interface MutationOptions<TParams, TData> {
-  mutationFn: (params: TParams) => Promise<TData> | TData
-  onError?: (error: unknown) => void
-  onSuccess?: (data: TData) => void
+  /** Scheduling policy for overlapping calls. Defaults to `'parallel'`. */
+  concurrency?: MutationConcurrency
+  /** Groups calls, for example by record ID, so `serial`, `coalesce`, and `switch` apply per key. Ignored by `parallel`. */
+  key?: (params: NoInfer<TParams>) => unknown
+  /**
+   * With `concurrency: 'coalesce'`, combines waiting params with newer params for the same key. Defaults to keeping the
+   * newest. Provide it when params are partial updates, or earlier updates are never sent.
+   */
+  merge?: (waiting: NoInfer<TParams>, next: NoInfer<TParams>) => NoInfer<TParams>
+  /** Performs the mutation. The signal is aborted by `reset$`, by a newer call under `'switch'`, and on engine disposal. */
+  mutationFn: (params: TParams, signal: AbortSignal) => Promise<TData> | TData
+  onError?: (error: unknown, params: NoInfer<TParams>, engine: Engine) => void
+  onSuccess?: (data: NoInfer<TData>, params: NoInfer<TParams>, engine: Engine) => void
   retry?: false | number
   retryDelay?: (attemptIndex: number) => number
 }

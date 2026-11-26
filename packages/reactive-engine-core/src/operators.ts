@@ -1,5 +1,10 @@
+import { createPromiseScheduler } from './promiseScheduler'
+
 import type { Engine } from './Engine'
-import type { Distinct, NodeRef, Out } from './types'
+import type { PromiseWorkPolicy, PromiseWorkProject, SwitchMapPromiseResult } from './promiseScheduler'
+import type { Distinct, Inp, NodeRef, Out } from './types'
+
+export type { PromiseWorkPolicy, PromiseWorkProject, SwitchMapPromiseResult } from './promiseScheduler'
 
 /**
  * An operator that transforms a node into another node, used in the {@link Engine.pipe} method.
@@ -19,11 +24,6 @@ export interface OperatorContext {
  * @category Misc
  */
 export type O<In, TOut> = Operator<In, TOut>
-
-/** Result emitted by {@link switchMapPromise}. */
-export type SwitchMapPromiseResult<TInput, TValue> =
-  | { input: TInput; status: 'success'; value: TValue }
-  | { error: unknown; input: TInput; status: 'error' }
 
 /**
  * Maps a the passed value with a projection function.
@@ -328,73 +328,160 @@ export function delayWithMicrotask<I>(): Operator<I, I> {
   }
 }
 
+/** Options shared by {@link switchMapPromise}, {@link concatMapPromise}, and {@link coalescePromise}. */
+export interface PromiseOperatorOptions<TInput> {
+  /**
+   * Groups inputs by the returned value. Ordering, switching, and coalescing apply per key, and different keys run
+   * independently. Keys are compared with `Map` semantics (`SameValueZero`). Without a key, all inputs share one group.
+   */
+  key?: (input: TInput) => unknown
+}
+
+/** Options for {@link coalescePromise}. */
+export interface CoalescePromiseOptions<TInput> extends PromiseOperatorOptions<TInput> {
+  /**
+   * Combines the waiting input with a newer one for the same key. Defaults to keeping only `next`. Provide it when
+   * inputs are partial updates, such as patches, so earlier changes are not dropped.
+   */
+  merge?: (waiting: TInput, next: TInput) => TInput
+}
+
+function promiseResultOperator<TInput, TValue>(
+  policy: PromiseWorkPolicy,
+  project: (input: TInput, signal: AbortSignal) => Promise<TValue>,
+  options: CoalescePromiseOptions<TInput>
+): Operator<TInput, SwitchMapPromiseResult<TInput, TValue>> {
+  return (source, eng) => {
+    const sink = eng.streamInstance<SwitchMapPromiseResult<TInput, TValue>>(false)
+    const scheduler = createPromiseScheduler<TInput, TValue>(eng, policy, (input, signal) => project(input, signal), options, {
+      onSettle: (result) => {
+        eng.pub(sink, result)
+      },
+    })
+    eng.sub(source, (input) => {
+      scheduler.push(input)
+    })
+    return sink
+  }
+}
+
 /**
  * Projects each source value to abortable Promise work and emits only the latest live result.
  * Results retain the input that created them and repeated equal results remain observable.
  *
+ * Aborting the signal cancels client-side work only. A request that the server already received may still be applied,
+ * so prefer {@link coalescePromise} or {@link concatMapPromise} for writes.
+ *
  * @param project - Starts Promise work with the source input and an operator-owned abort signal.
+ * @param options - Pass `key` to switch per key, so a new input aborts only the previous work with the same key.
  * @category Operators
  */
 export function switchMapPromise<TInput, TValue>(
-  project: (input: TInput, signal: AbortSignal) => Promise<TValue>
+  project: (input: TInput, signal: AbortSignal) => Promise<TValue>,
+  options: PromiseOperatorOptions<TInput> = {}
 ): Operator<TInput, SwitchMapPromiseResult<TInput, TValue>> {
+  return promiseResultOperator('switch', project, options)
+}
+
+/**
+ * Runs Promise work for each source value one at a time, in arrival order, and emits every result in that order.
+ * Work is aborted only when the engine is disposed.
+ *
+ * @param project - Starts Promise work with the source input and an operator-owned abort signal.
+ * @param options - Pass `key` to keep a separate queue per key, so different keys run concurrently.
+ * @category Operators
+ */
+export function concatMapPromise<TInput, TValue>(
+  project: (input: TInput, signal: AbortSignal) => Promise<TValue>,
+  options: PromiseOperatorOptions<TInput> = {}
+): Operator<TInput, SwitchMapPromiseResult<TInput, TValue>> {
+  return promiseResultOperator('serial', project, options)
+}
+
+/**
+ * Keeps at most one Promise work in flight and holds only the newest waiting input, which starts when the current work
+ * settles, whether it succeeds or fails. Inputs replaced while waiting never start and emit nothing. Use it for writes
+ * where the server must end on the newest value. Work is aborted only when the engine is disposed.
+ *
+ * @param project - Starts Promise work with the source input and an operator-owned abort signal.
+ * @param options - Pass `key` to coalesce per key, and `merge` to combine waiting partial updates.
+ * @category Operators
+ */
+export function coalescePromise<TInput, TValue>(
+  project: (input: TInput, signal: AbortSignal) => Promise<TValue>,
+  options: CoalescePromiseOptions<TInput> = {}
+): Operator<TInput, SwitchMapPromiseResult<TInput, TValue>> {
+  return promiseResultOperator('coalesce', project, options)
+}
+
+/**
+ * Lifecycle event emitted by {@link promiseWork}.
+ * @hidden
+ */
+export type PromiseWorkEvent<TInput, TValue> =
+  | { input: TInput; type: 'start' }
+  | { result: SwitchMapPromiseResult<TInput, TValue>; type: 'settle' }
+  | { type: 'cancel' }
+
+/**
+ * Options for {@link promiseWork}.
+ * @hidden
+ */
+export interface PromiseWorkOptions<TInput> extends CoalescePromiseOptions<TInput> {
+  /** Every emission aborts all running work, drops all waiting inputs, and emits a `cancel` event. */
+  cancel$?: Out
+  /** Receives the number of running and waiting calls, in the same cycle as the matching event. */
+  pendingCount$?: Inp<number>
+  policy: PromiseWorkPolicy
+}
+
+/**
+ * Low-level scheduler behind the Promise operators, used by packages built on the engine. Emits start, settle, and
+ * cancel events, and reports a pending count.
+ * @hidden
+ */
+export function promiseWork<TInput, TValue>(
+  project: PromiseWorkProject<TInput, TValue>,
+  options: PromiseWorkOptions<TInput>
+): Operator<TInput, PromiseWorkEvent<TInput, TValue>> {
   return (source, eng) => {
-    const sink = eng.streamInstance<SwitchMapPromiseResult<TInput, TValue>>(false)
-    let activeController: AbortController | undefined
-    let disposed = false
-    let generation = 0
-
+    const sink = eng.streamInstance<PromiseWorkEvent<TInput, TValue>>(false)
+    const { pendingCount$ } = options
+    const emit = (event: PromiseWorkEvent<TInput, TValue> | null, pendingCount: number) => {
+      if (pendingCount$ === undefined) {
+        if (event !== null) {
+          eng.pub(sink, event)
+        }
+      } else if (event === null) {
+        eng.pub(pendingCount$, pendingCount)
+      } else {
+        eng.pubIn({ [sink]: event, [pendingCount$]: pendingCount })
+      }
+    }
+    const scheduler = createPromiseScheduler<TInput, TValue>(eng, options.policy, project, options, {
+      onQueue: (pendingCount) => {
+        emit(null, pendingCount)
+      },
+      onSettle: (result, pendingCount) => {
+        emit({ result, type: 'settle' }, pendingCount)
+      },
+      onStart: (input, pendingCount) => {
+        emit({ input, type: 'start' }, pendingCount)
+      },
+    })
     eng.sub(source, (input) => {
-      generation += 1
-      const owner = generation
-      const previousController = activeController
-      activeController = undefined
-      previousController?.abort()
-
-      if (disposed || eng.isDisposed || generation !== owner) {
-        return
-      }
-
-      const controller = new AbortController()
-      activeController = controller
-
-      const publish = (result: SwitchMapPromiseResult<TInput, TValue>) => {
-        if (!disposed && !eng.isDisposed && generation === owner && activeController === controller) {
-          activeController = undefined
-          eng.pub(sink, result)
-        }
-      }
-
-      let promise: Promise<TValue>
-      try {
-        promise = project(input, controller.signal)
-      } catch (error) {
-        publish({ error, input, status: 'error' })
-        return
-      }
-
-      // The rejection handler must not catch errors thrown by success-result subscribers.
-      // oxlint-disable-next-line promise/prefer-catch
-      Promise.resolve(promise).then(
-        (value) => {
-          publish({ input, status: 'success', value })
-          return undefined
-        },
-        (error: unknown) => {
-          publish({ error, input, status: 'error' })
-          return undefined
-        }
-      )
+      scheduler.push(input)
     })
-
-    eng.onDispose(() => {
-      disposed = true
-      generation += 1
-      const controller = activeController
-      activeController = undefined
-      controller?.abort()
-    })
-
+    if (options.cancel$ !== undefined) {
+      eng.sub(options.cancel$, () => {
+        const controllers = scheduler.cancel()
+        emit({ type: 'cancel' }, 0)
+        // Abort after the cancel event, so work started by abort listeners is not reported as cancelled.
+        for (const controller of controllers) {
+          controller.abort()
+        }
+      })
+    }
     return sink
   }
 }

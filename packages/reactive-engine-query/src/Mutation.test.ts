@@ -70,7 +70,7 @@ describe('Mutation', () => {
     )
 
     expect(mutationFn).toHaveBeenCalledTimes(1)
-    expect(mutationFn).toHaveBeenCalledWith({ name: 'World' })
+    expect(mutationFn).toHaveBeenCalledWith({ name: 'World' }, expect.any(AbortSignal))
   })
 
   it('should handle mutation errors', async () => {
@@ -191,7 +191,7 @@ describe('Mutation', () => {
     })
 
     expect(onSuccess).toHaveBeenCalledTimes(1)
-    expect(onSuccess).toHaveBeenCalledWith(10)
+    expect(onSuccess).toHaveBeenCalledWith(10, { value: 5 }, engine)
   })
 
   it('should call onError callback', async () => {
@@ -217,7 +217,7 @@ describe('Mutation', () => {
     })
 
     expect(onError).toHaveBeenCalledTimes(1)
-    expect(onError).toHaveBeenCalledWith(expect.any(Error))
+    expect(onError).toHaveBeenCalledWith(expect.any(Error), {}, engine)
   })
 
   it('should handle retry: false option', async () => {

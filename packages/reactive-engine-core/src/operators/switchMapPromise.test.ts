@@ -431,4 +431,57 @@ describe('switchMapPromise operator', () => {
     await flushPromise()
     expect(signal?.aborted).toBe(false)
   })
+  it('switches per key when a key selector is provided (CX-4)', async () => {
+    const source$ = Stream<{ id: string; v: number }>(false)
+    const started: { input: { id: string; v: number }; request: Deferred<string>; signal: AbortSignal }[] = []
+    const result$ = e.pipe(
+      source$,
+      e.switchMapPromise(
+        (input, signal) => {
+          const request = deferred<string>()
+          started.push({ input, request, signal })
+          return request.promise
+        },
+        { key: (input) => input.id }
+      )
+    )
+    const history: SwitchMapPromiseResult<{ id: string; v: number }, string>[] = []
+    e.sub(result$, (result) => history.push(result))
+    const engine = new Engine()
+
+    engine.pub(source$, { id: 'a', v: 1 })
+    engine.pub(source$, { id: 'b', v: 1 })
+    engine.pub(source$, { id: 'a', v: 2 })
+
+    expect(started.map((s) => s.signal.aborted)).toEqual([true, false, false])
+    for (const s of started) {
+      s.request.resolve(`${s.input.id}${s.input.v}`)
+    }
+    await flushPromise()
+
+    expect(history.map((r) => (r.status === 'success' ? r.value : null))).toEqual(['b1', 'a2'])
+  })
+
+  it('aborts running work for every key on disposal (CX-5)', () => {
+    const source$ = Stream<string>(false)
+    const signals: AbortSignal[] = []
+    const result$ = e.pipe(
+      source$,
+      e.switchMapPromise(
+        (_input, signal) => {
+          signals.push(signal)
+          return new Promise<string>(() => {})
+        },
+        { key: (input) => input }
+      )
+    )
+    e.sub(result$, () => undefined)
+    const engine = new Engine()
+
+    engine.pub(source$, 'a')
+    engine.pub(source$, 'b')
+    engine.dispose()
+
+    expect(signals.map((s) => s.aborted)).toEqual([true, true])
+  })
 })
