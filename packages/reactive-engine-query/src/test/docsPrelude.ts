@@ -23,6 +23,7 @@ declare const userQuery: { data$: StateRef<QueryResult<{ id: string }>> }
 declare const ordersQuery: { enabled$: NodeRef<boolean> }
 declare function useCellValue<T>(node: StateRef<T>): T
 declare function usePublisher<T>(node: NodeRef<T>): (value: T) => void
+declare const React: { memo: <P>(component: (props: P) => unknown) => (props: P) => unknown }
 declare function Spinner(): unknown
 declare function ErrorView(props: { error: unknown }): unknown
 declare function TaskList(props: { refreshing: boolean; tasks: Task[] }): unknown
@@ -30,6 +31,9 @@ declare global {
   // oxlint-disable-next-line typescript/no-namespace -- minimal JSX typing for the docs snippets
   namespace JSX {
     type Element = unknown
+    interface IntrinsicAttributes {
+      key?: number | string
+    }
     interface IntrinsicElements {
       // oxlint-disable-next-line typescript/consistent-indexed-object-style -- JSX.IntrinsicElements must be an interface
       [name: string]: Record<string, unknown>
@@ -47,6 +51,7 @@ export {
   Mutation,
   ordersQuery,
   Query,
+  React,
   Spinner,
   TaskList,
   tasks$,

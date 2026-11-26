@@ -1,8 +1,16 @@
 import { useState } from 'react'
 
-import { useCellValue, usePublisher } from '@virtuoso.dev/reactive-engine-react'
+import { useCell, useCellValue, usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
-import { createTaskMutation, deleteTaskMutation, overlayDone, toggleTaskMutation, updateTaskMutation } from './mutations'
+import {
+  createTaskMutation,
+  deleteTaskMutation,
+  newTaskDescription$,
+  overlayDone,
+  toggleFailed,
+  toggleTaskMutation,
+  updateTaskMutation,
+} from './mutations'
 import { listsQuery, tasksQuery } from './queries'
 import { lists$ } from './routes'
 
@@ -20,19 +28,20 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
   const updates = useCellValue(updateTaskMutation.status$)
   const toggleTask = usePublisher(toggleTaskMutation.mutate$)
   const toggles = useCellValue(toggleTaskMutation.status$)
+  const dismissToggle = usePublisher(toggleTaskMutation.dismiss$)
   const deleteTask = usePublisher(deleteTaskMutation.mutate$)
   const deletes = useCellValue(deleteTaskMutation.status$)
   const goToLists = usePublisher(lists$)
 
-  const [newTaskDescription, setNewTaskDescription] = useState('')
+  const [newTaskDescription, setNewTaskDescription] = useCell(newTaskDescription$)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editingDescription, setEditingDescription] = useState('')
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault()
     if (newTaskDescription.trim()) {
+      // The input clears when the task is created, in createTaskMutation's onSuccess.
       createTask({ listId, description: newTaskDescription, done: false })
-      setNewTaskDescription('')
     }
   }
 
@@ -43,12 +52,7 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
 
   const handleUpdate = (task: Task) => {
     if (editingDescription.trim()) {
-      updateTask({
-        id: task.id,
-        listId: task.listId,
-        description: editingDescription,
-        done: task.done,
-      })
+      updateTask({ id: task.id, description: editingDescription })
       setEditingId(null)
       setEditingDescription('')
     }
@@ -61,7 +65,7 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
 
   const handleToggleDone = (task: Task) => {
     // Derive the next value from the overlay, so a quick double click sends on, then off.
-    toggleTask({ ...task, done: !overlayDone(toggles.get(task.id), tasksData, task) })
+    toggleTask({ id: task.id, done: !overlayDone(toggles.get(task.id), tasksData, task) })
   }
 
   const handleDelete = (id: number) => {
@@ -71,7 +75,8 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
   }
 
   const list = listsData.data?.find((l) => l.id === listId)
-  const tasks = tasksData.data || []
+  // A task whose delete succeeded hides until the refetched data drops it.
+  const tasks = (tasksData.data || []).filter((task) => deletes.get(task.id)?.isSuccess !== true)
 
   if (listsData.isLoading || tasksData.isLoading) {
     return <div style={{ padding: '20px' }}>Loading...</div>
@@ -111,66 +116,73 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
         <p>No tasks yet. Add one above!</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {tasks.map((task) => (
-            <div
-              key={task.id}
-              style={{
-                display: 'flex',
-                gap: '10px',
-                alignItems: 'center',
-                padding: '10px',
-                border: '1px solid #ccc',
-              }}
-            >
-              {editingId === task.id ? (
-                <>
-                  <input
-                    type="text"
-                    value={editingDescription}
-                    onChange={(e) => setEditingDescription(e.target.value)}
-                    style={{ padding: '4px', flex: 1 }}
-                  />
-                  <button
-                    onClick={() => handleUpdate(task)}
-                    disabled={updates.get(task.id)?.isPending === true}
-                    style={{ padding: '4px 12px' }}
-                  >
-                    Save
-                  </button>
-                  <button onClick={handleCancelEdit} style={{ padding: '4px 12px' }}>
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <>
-                  <input
-                    type="checkbox"
-                    checked={overlayDone(toggles.get(task.id), tasksData, task)}
-                    onChange={() => handleToggleDone(task)}
-                  />
-                  <span
-                    style={{
-                      flex: 1,
-                      textDecoration: task.done ? 'line-through' : 'none',
-                      opacity: task.done ? 0.6 : 1,
-                    }}
-                  >
-                    {task.description}
-                  </span>
-                  <button onClick={() => handleEdit(task)} style={{ padding: '4px 12px' }}>
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(task.id)}
-                    disabled={deletes.get(task.id)?.isPending === true}
-                    style={{ padding: '4px 12px' }}
-                  >
-                    Delete
-                  </button>
-                </>
-              )}
-            </div>
-          ))}
+          {tasks.map((task) => {
+            const done = overlayDone(toggles.get(task.id), tasksData, task)
+            return (
+              <div
+                key={task.id}
+                style={{
+                  display: 'flex',
+                  gap: '10px',
+                  alignItems: 'center',
+                  padding: '10px',
+                  border: '1px solid #ccc',
+                }}
+              >
+                {editingId === task.id ? (
+                  <>
+                    <input
+                      type="text"
+                      value={editingDescription}
+                      onChange={(e) => setEditingDescription(e.target.value)}
+                      style={{ padding: '4px', flex: 1 }}
+                    />
+                    <button
+                      onClick={() => handleUpdate(task)}
+                      disabled={updates.get(task.id)?.isPending === true}
+                      style={{ padding: '4px 12px' }}
+                    >
+                      Save
+                    </button>
+                    <button onClick={handleCancelEdit} style={{ padding: '4px 12px' }}>
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <input type="checkbox" checked={done} onChange={() => handleToggleDone(task)} />
+                    <span
+                      style={{
+                        flex: 1,
+                        textDecoration: done ? 'line-through' : 'none',
+                        opacity: done ? 0.6 : 1,
+                      }}
+                    >
+                      {task.description}
+                    </span>
+                    {toggleFailed(toggles.get(task.id)) && (
+                      <span role="alert" style={{ color: 'red' }}>
+                        Couldn't save{' '}
+                        <button aria-label="Dismiss" onClick={() => dismissToggle(task.id)}>
+                          ✕
+                        </button>
+                      </span>
+                    )}
+                    <button onClick={() => handleEdit(task)} style={{ padding: '4px 12px' }}>
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(task.id)}
+                      disabled={deletes.get(task.id)?.isPending === true}
+                      style={{ padding: '4px 12px' }}
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

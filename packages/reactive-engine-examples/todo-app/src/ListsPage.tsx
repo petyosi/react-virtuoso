@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { useCell, useCellValue, usePublisher } from '@virtuoso.dev/reactive-engine-react'
 
-import { createListMutation, deleteListMutation, editingId$, updateListMutation } from './mutations'
+import { createListMutation, deleteListMutation, editingId$, newListName$, updateListMutation } from './mutations'
 import { listsQuery } from './queries'
 import { tasks$ } from './routes'
 
@@ -18,15 +18,15 @@ export function ListsPage() {
   const deletes = useCellValue(deleteListMutation.status$)
   const goToTasks = usePublisher(tasks$)
 
-  const [newListName, setNewListName] = useState('')
+  const [newListName, setNewListName] = useCell(newListName$)
   const [editingId, setEditingId] = useCell(editingId$)
   const [editingName, setEditingName] = useState('')
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault()
     if (newListName.trim()) {
+      // The input clears when the list is created, in createListMutation's onSuccess.
       createList({ name: newListName })
-      setNewListName('')
     }
   }
 
@@ -66,7 +66,8 @@ export function ListsPage() {
     return <div style={{ padding: '20px', color: 'red' }}>Error: {String(listsData.error)}</div>
   }
 
-  const lists = listsData.data || []
+  // A list whose delete succeeded hides until the refetched data drops it.
+  const lists = (listsData.data || []).filter((list) => deletes.get(list.id)?.isSuccess !== true)
 
   return (
     <div style={{ padding: '20px' }}>

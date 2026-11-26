@@ -81,7 +81,7 @@ e.link(
 - `changeWith(cell$, source$, (cell, value) => next)` — reducer-style cell update from a stream (return a new reference)
 - `sub`, `subMultiple`, `singletonSub` (replaces the previous singleton subscription — use for callbacks driven by React renders)
 - Operators: `map(fn, distinct?)`, `filter` (supports type guards), `mapTo`, `scan`, `once`, `throttleTime`, `debounceTime`, `delayWithMicrotask`, `onNext`, `handlePromise`
-- Async operators, all emitting `{ status, input, value | error }` and accepting `{ key }` for per-record scheduling: `switchMapPromise` (latest-only, for reads), `concatMapPromise` (one at a time, in order), `coalescePromise` (one at a time, newest waiting input only, optional `merge`; for writes)
+- Async operators, all emitting `{ status, input, value | error }` and accepting `{ key }` for per-record scheduling: `switchMapPromise` (latest-only, for reads), `concatMapPromise` (one at a time, in order), `coalescePromise` (one at a time, newest waiting input only, optional `merge`; for writes), `exhaustMapPromise` (one at a time, inputs that arrive while busy are ignored; for duplicate-prone writes)
 
 Publishing is transactional: `engine.pubIn({ [a$]: 1, [b$]: 2 })` batches into one cycle; the graph executes in topological order, so diamond dependencies emit downstream exactly once with consistent inputs. Emissions are synchronous; there are no error/completion channels (exceptions abort the cycle — handle errors at the edges). Subscribing never replays a current value; read cells with `getValue` when needed. See [transactions](references/core/03.transactions.md).
 
@@ -132,10 +132,10 @@ export const tasksQuery = Query<{ listId: string }, Task[]>({
 
 Writes use one of two primitives. Decide with one question: **if a second call for the same record arrives while the first is running, does it carry new information that must reach the server?** No (a duplicate: create, delete, submit, "charge card") → `Mutation`. Yes (a new value: a toggle per click, autosave) → `ConcurrentMutation` with `concurrency: 'coalesce'` (latest value wins), `'serial'` (every call, in order), or `'parallel'` (independent calls).
 
-- **`key` is required.** A key function makes one record per key and the state is `status$` (a `Map`); `key: false` makes one record and the state is `data$`. Pass the key type as the third type argument: `Mutation<Params, Data, number>`. With two type arguments, a key function fails with "No overload matches this call".
+- **`key` is required.** A key function makes one record per key and the state is `status$` (a `Map`); `key: false` makes one record and the state is `data$`. Pass the key type as the third type argument: `Mutation<Params, Data, number>`. With two type arguments, a key function fails with "No overload matches this call". An options object declared separately needs `key: false as const`.
 - **`Mutation` runs one call per record and ignores a call for a busy record** (`settled$` emits `ignored`; development warns unless `onIgnored` is set). Disable the control while `status.get(key)?.isPending` (or `data$.isPending`). `onIgnored` may record or notify; never republish to `mutate$` from it.
-- **Results stay until dismissed.** `dismiss$(key)` after a successful delete, after a success message was shown, or when an off-screen record's outcome arrives (surface errors first). Never dismiss to switch records, and dismiss is not cancel: a sent request cannot be recalled; undo with a compensating write.
-- **`ConcurrentMutation` state** is `{ isPending, running, waiting, failures, lastSuccess }`. Failures stay until dismissed. `dropWaiting$` drops calls not yet sent (`dropped` on `settled$`). For an optimistic value, use the overlay recipe from the query reference (newest running/waiting params, else `lastSuccess` if at least as new as the query's `dataUpdatedAt`, else the query data); it needs full values per record and a refetch in `onSuccess`.
+- **Results stay until dismissed.** After a successful delete, hide the row while its result is `success` and `dismiss$(key)` once refetched data no longer has it (dismissing in `onSuccess` brings the row back until the refetch lands); dismiss after a success message was shown, or when an off-screen record's outcome arrives (surface errors first). Never dismiss to switch records, and dismiss is not cancel: a sent request cannot be recalled; undo with a compensating write.
+- **`ConcurrentMutation` state** is `{ isPending, running, waiting, failures, lastSuccess }`. Failures stay until dismissed; `dismiss$` clears failures and `lastSuccess` together, so dismiss only after surfacing failures and once the query data is at least as new as `lastSuccess`. `dropWaiting$` drops calls not yet sent (`dropped` on `settled$`). For an optimistic value, use the overlay recipe from the query reference (newest running/waiting params, else `lastSuccess` if at least as new as the query's `dataUpdatedAt`, else the query data); it needs full values per record and a refetch in `onSuccess`.
 - **No call that started is ever aborted**; the `signal` passed to `mutationFn(params, signal)` aborts only on engine disposal. Callbacks receive `(data | error, params, engine)`.
 - **Do reconciliation in `onSuccess`/`onError`**, not in components:
 
@@ -143,11 +143,19 @@ Writes use one of two primitives. Decide with one question: **if a second call f
 export const deleteTask = Mutation<{ id: number }, void, number>({
   mutationFn: ({ id }, signal) => api.deleteTask(id, signal),
   key: ({ id }) => id,
-  onSuccess: (_data, { id }, engine) => {
+  onSuccess: (_data, _params, engine) => {
     engine.pub(tasksQuery.refetch$)
-    engine.pub(deleteTask.dismiss$, id)
   },
 })
+```
+
+## Routing (reactive-engine-router)
+
+```tsx
+export const user$ = Route('/users/{id:number}', UserPage) // params typed from the path
+const root = Layout('/', ({ children }) => <main>{children}</main>)
+
+<Router routes={[user$]} layouts={[root]} guards={[authGuard]} />
 ```
 
 Route nodes emit typed params when matched, `null` otherwise. Navigate by publishing params to the route node (`usePublisher(user$)({ id: 42 })`). Pipe route params into query params to fetch on navigation. `Guard(pattern, fn)` runs on matching navigations — its context offers `continue()`, `navigate()`, `redirect()`; async guards render the route inside `Suspense`. Layouts match by URL prefix and nest by specificity; `LayoutSlotPortal`/`LayoutSlot`/`LayoutSlotFill` let pages fill layout regions. `Router` syncs with browser history by default.

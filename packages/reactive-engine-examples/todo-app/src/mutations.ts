@@ -1,4 +1,4 @@
-import { Cell } from '@virtuoso.dev/reactive-engine-core'
+import { Cell, e } from '@virtuoso.dev/reactive-engine-core'
 import { ConcurrentMutation, Mutation } from '@virtuoso.dev/reactive-engine-query'
 
 import { listsQuery, tasksQuery } from './queries'
@@ -9,6 +9,9 @@ import type { ConcurrentMutationState, QueryResult } from '@virtuoso.dev/reactiv
 const API_BASE = 'http://localhost:3001'
 
 export const editingId$ = Cell<string | null>(null)
+// The create forms keep their text until the server accepts it, so a failed create does not lose what was typed.
+export const newListName$ = Cell('')
+export const newTaskDescription$ = Cell('')
 
 // One form: one record, so a second submit while the first is saving is a duplicate and is ignored.
 export const createListMutation = Mutation<{ name: string }, List>({
@@ -26,7 +29,7 @@ export const createListMutation = Mutation<{ name: string }, List>({
   },
   key: false,
   onSuccess: (_list, _params, engine) => {
-    engine.pubIn({ [editingId$]: null })
+    engine.pubIn({ [editingId$]: null, [newListName$]: '' })
     engine.pub(listsQuery.refetch$)
   },
 })
@@ -59,11 +62,22 @@ export const deleteListMutation = Mutation<{ id: string }, void, string>({
     }
   },
   key: ({ id }) => id,
-  onSuccess: (_data, { id }, engine) => {
+  onSuccess: (_data, _params, engine) => {
+    // The row hides while its result is success; the result is dismissed once the refetched data no longer has it.
     engine.pub(listsQuery.refetch$)
-    // The row is gone, so its result is no longer shown anywhere.
-    engine.pub(deleteListMutation.dismiss$, id)
   },
+})
+
+e.sub(listsQuery.data$, (result, engine) => {
+  if (result.type !== 'success') {
+    return
+  }
+  const present = new Set(result.data.map((list) => list.id))
+  for (const [id, state] of engine.getValue(deleteListMutation.status$)) {
+    if (state.isSuccess && !present.has(id)) {
+      engine.pub(deleteListMutation.dismiss$, id)
+    }
+  }
 })
 
 export const createTaskMutation = Mutation<{ listId: string; description: string; done: boolean }, Task>({
@@ -81,16 +95,18 @@ export const createTaskMutation = Mutation<{ listId: string; description: string
   },
   key: false,
   onSuccess: (_task, _params, engine) => {
+    engine.pub(newTaskDescription$, '')
     engine.pub(tasksQuery.refetch$)
   },
 })
 
-const putTask = async (task: Task, signal: AbortSignal): Promise<Task> => {
-  const { id, listId, description, done } = task
+// Each write sends only the field it changes, so saving a description cannot revert a toggle that is still in flight,
+// and a toggle cannot revert a description.
+const patchTask = async (id: number, fields: Partial<Omit<Task, 'id'>>, signal: AbortSignal): Promise<Task> => {
   const res = await fetch(`${API_BASE}/tasks/${id}`, {
-    method: 'PUT',
+    method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ listId, description, done }),
+    body: JSON.stringify(fields),
     signal,
   })
   if (!res.ok) {
@@ -100,17 +116,23 @@ const putTask = async (task: Task, signal: AbortSignal): Promise<Task> => {
 }
 
 // Editing a description is a one-shot action per task: Save is disabled while the task saves.
-export const updateTaskMutation = Mutation<Task, Task, number>({
-  mutationFn: putTask,
+export const updateTaskMutation = Mutation<{ id: number; description: string }, Task, number>({
+  mutationFn: ({ id, description }, signal) => patchTask(id, { description }, signal),
   key: ({ id }) => id,
   onSuccess: (_task, _params, engine) => {
     engine.pub(tasksQuery.refetch$)
   },
 })
 
+/** A toggle carries the whole value of the one field it writes, which the overlay recipe needs. */
+export interface TaskDone {
+  done: boolean
+  id: number
+}
+
 // Every click on the checkbox carries the new state, so clicks can overlap: the latest value wins.
-export const toggleTaskMutation = ConcurrentMutation<Task, Task, number>({
-  mutationFn: putTask,
+export const toggleTaskMutation = ConcurrentMutation<TaskDone, Task, number>({
+  mutationFn: ({ id, done }, signal) => patchTask(id, { done }, signal),
   concurrency: 'coalesce',
   key: ({ id }) => id,
   onSuccess: (_task, _params, engine) => {
@@ -120,7 +142,7 @@ export const toggleTaskMutation = ConcurrentMutation<Task, Task, number>({
 
 /** The optimistic `done` value of a task: the overlay recipe from the query docs. */
 export function overlayDone(
-  state: ConcurrentMutationState<Task, Task, number> | undefined,
+  state: ConcurrentMutationState<TaskDone, Task, number> | undefined,
   query: QueryResult<Task[]>,
   task: Task
 ): boolean {
@@ -135,6 +157,12 @@ export function overlayDone(
   return task.done
 }
 
+/** True when the newest toggle outcome for a task is a failure. A tie counts as a failure. */
+export function toggleFailed(state: ConcurrentMutationState<TaskDone, Task, number> | undefined): boolean {
+  const failure = state?.failures.at(-1)
+  return failure !== undefined && (state?.lastSuccess == null || failure.settledAt >= state.lastSuccess.settledAt)
+}
+
 export const deleteTaskMutation = Mutation<{ id: number }, void, number>({
   mutationFn: async ({ id }, signal) => {
     const res = await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE', signal })
@@ -143,8 +171,19 @@ export const deleteTaskMutation = Mutation<{ id: number }, void, number>({
     }
   },
   key: ({ id }) => id,
-  onSuccess: (_data, { id }, engine) => {
+  onSuccess: (_data, _params, engine) => {
     engine.pub(tasksQuery.refetch$)
-    engine.pub(deleteTaskMutation.dismiss$, id)
   },
+})
+
+e.sub(tasksQuery.data$, (result, engine) => {
+  if (result.type !== 'success') {
+    return
+  }
+  const present = new Set(result.data.map((task) => task.id))
+  for (const [id, state] of engine.getValue(deleteTaskMutation.status$)) {
+    if (state.isSuccess && !present.has(id)) {
+      engine.pub(deleteTaskMutation.dismiss$, id)
+    }
+  }
 })
