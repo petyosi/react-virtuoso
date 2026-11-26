@@ -461,20 +461,30 @@ describe('ConcurrentMutation', () => {
       expect(two.getValue(mutation.status$).get(1)?.lastSuccess?.data).toBe('c')
     })
 
-    it('stops a synchronous feedback loop at the drain cap', () => {
+    it('stops a synchronous feedback loop at the drain cap, and keeps the running call', () => {
+      const started: string[] = []
+      // coalesce keeps the loop cheap: each new call replaces the one waiting call instead of growing the state.
       const mutation: KeyedConcurrentMutation<Edit, string, number> = ConcurrentMutation<Edit, string, number>({
-        concurrency: 'parallel',
+        concurrency: 'coalesce',
         key: (params) => params.id,
-        mutationFn: () => new Promise<string>(neverSettle),
+        mutationFn: (params) => {
+          started.push(params.value)
+          return new Promise<string>(neverSettle)
+        },
       })
       const engine = new Engine()
+      let round = 0
       engine.sub(mutation.status$, () => {
-        engine.pub(mutation.mutate$, edit(1, 'again'))
+        round += 1
+        engine.pub(mutation.mutate$, edit(1, `again ${round}`))
       })
 
       expect(() => {
         engine.pub(mutation.mutate$, edit(1, 'a'))
       }).toThrow('more than 10000')
+      expect(started).toEqual(['a'])
+      expect(engine.getValue(mutation.status$).get(1)?.running).toEqual([edit(1, 'a')])
+      expect(engine.getValue(mutation.status$).get(1)?.waiting).toHaveLength(1)
     })
 
     it('"retry once" from settled$ under coalesce replaces the waiting call, which is dropped', async () => {
