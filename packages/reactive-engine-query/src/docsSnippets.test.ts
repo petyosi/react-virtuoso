@@ -26,7 +26,9 @@ describe('docs snippets', () => {
         expect(snippets.length).toBeGreaterThan(0)
         const prelude = readFileSync(`${packageRoot}/src/test/docsPrelude.ts`, 'utf8')
           .replace(/^export (?:type )?\{[^}]*\}.*$/gm, '')
-          .replace(/^\/\/ Declarations.*$/m, '')
+          .replace(/^\/\/ Declarations.*\n\/\/ with.*$/m, '')
+          // The prelude imports the sources, so the build type-checks it; the snippets use the package name.
+          .replaceAll("from '../index'", "from '@virtuoso.dev/reactive-engine-query'")
         const dir = `${packageRoot}/node_modules/.cache/docs-snippets`
         mkdirSync(dir, { recursive: true })
         const file = `${dir}/${doc.replaceAll('/', '_')}.tsx`

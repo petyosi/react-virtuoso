@@ -1,9 +1,11 @@
-// Declarations the docs snippets assume. docsSnippets.test.ts prepends this to the snippets before type-checking them.
+// Declarations the docs snippets assume. docsSnippets.test.ts prepends this to the snippets before type-checking them,
+// with '../index' rewritten to the package name so the snippets check against the built declarations.
 import { e, Engine } from '@virtuoso.dev/reactive-engine-core'
-import { ConcurrentMutation, Mutation, Query } from '@virtuoso.dev/reactive-engine-query'
 
+import { ConcurrentMutation, Mutation, Query } from '../index'
+
+import type { ConcurrentMutationState, MutationResult, QueryResult } from '../index'
 import type { NodeRef, StateRef } from '@virtuoso.dev/reactive-engine-core'
-import type { ConcurrentMutationState, MutationResult, QueryResult } from '@virtuoso.dev/reactive-engine-query'
 
 interface Task {
   done: boolean
