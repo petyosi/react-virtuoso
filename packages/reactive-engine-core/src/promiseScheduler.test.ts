@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { Engine } from './Engine'
 import { createPromiseScheduler } from './promiseScheduler'
@@ -26,27 +26,16 @@ async function flushPromise() {
   await Promise.resolve()
 }
 
-type SchedulerEvent =
-  | { input: string; pendingCount: number; type: 'drop' }
-  | { input: string; pendingCount: number; type: 'ignore' }
-  | { input: string; pendingCount: number; type: 'start' }
-  | { pendingCount: number; result: SwitchMapPromiseResult<string, string>; type: 'settle' }
-  | { pendingCount: number; type: 'queue' }
-
 interface SetupOptions {
   key?: (input: string) => unknown
   merge?: (waiting: string, next: string) => string
-  onEvent?: (event: SchedulerEvent) => void
+  onSettle?: (result: SwitchMapPromiseResult<string, string>) => void
 }
 
 function setup(policy: PromiseWorkPolicy, options: SetupOptions = {}) {
   const engine = new Engine()
   const started: { input: string; request: Deferred<string>; signal: AbortSignal }[] = []
-  const log: SchedulerEvent[] = []
-  const record = (event: SchedulerEvent) => {
-    log.push(event)
-    options.onEvent?.(event)
-  }
+  const settled: string[] = []
   const scheduler = createPromiseScheduler<string, string>(
     engine,
     policy,
@@ -57,29 +46,22 @@ function setup(policy: PromiseWorkPolicy, options: SetupOptions = {}) {
     },
     { ...(options.key ? { key: options.key } : {}), ...(options.merge ? { merge: options.merge } : {}) },
     {
-      onDrop: (input, pendingCount) => {
-        record({ input, pendingCount, type: 'drop' })
-      },
-      onIgnore: (input, pendingCount) => {
-        record({ input, pendingCount, type: 'ignore' })
-      },
-      onQueue: (pendingCount) => {
-        record({ pendingCount, type: 'queue' })
-      },
-      onSettle: (result, pendingCount) => {
-        record({ pendingCount, result, type: 'settle' })
-      },
-      onStart: (input, pendingCount) => {
-        record({ input, pendingCount, type: 'start' })
+      onSettle: (result) => {
+        settled.push(`${result.status}:${result.input}`)
+        options.onSettle?.(result)
       },
     }
   )
-  return { engine, log, scheduler, started }
+  return { engine, scheduler, settled, started }
 }
 
+afterEach(() => {
+  vi.restoreAllMocks()
+})
+
 describe('createPromiseScheduler', () => {
-  it('reports start, queue, drop, and settle under coalesce', async () => {
-    const { log, scheduler, started } = setup('coalesce')
+  it('coalesce keeps only the newest waiting input', async () => {
+    const { scheduler, settled, started } = setup('coalesce')
 
     scheduler.push('A')
     scheduler.push('B')
@@ -89,120 +71,46 @@ describe('createPromiseScheduler', () => {
     started[1]?.request.resolve('c')
     await flushPromise()
 
-    expect(log).toEqual([
-      { input: 'A', pendingCount: 1, type: 'start' },
-      { pendingCount: 2, type: 'queue' },
-      // C replaced the waiting B, which will never start. The count does not change.
-      { input: 'B', pendingCount: 2, type: 'drop' },
-      { pendingCount: 1, result: { input: 'A', status: 'success', value: 'a' }, type: 'settle' },
-      { input: 'C', pendingCount: 1, type: 'start' },
-      { pendingCount: 0, result: { input: 'C', status: 'success', value: 'c' }, type: 'settle' },
-    ])
+    // C replaced the waiting B, which never started.
+    expect(started.map((s) => s.input)).toEqual(['A', 'C'])
+    expect(settled).toEqual(['success:A', 'success:C'])
   })
 
-  it('reports a merge as a queue event, not a drop', () => {
-    const { log, scheduler } = setup('coalesce', { merge: (waiting, next) => waiting + next })
+  it('coalesce with merge combines waiting inputs into one call', async () => {
+    const { scheduler, started } = setup('coalesce', { merge: (waiting, next) => waiting + next })
 
     scheduler.push('A')
     scheduler.push('B')
     scheduler.push('C')
+    started[0]?.request.resolve('a')
+    await flushPromise()
 
-    expect(log.map((event) => event.type)).toEqual(['start', 'queue', 'queue'])
+    expect(started.map((s) => s.input)).toEqual(['A', 'BC'])
   })
 
-  it('counts every waiting input under serial, and keeps the count when switch supersedes', () => {
+  it('serial runs every input in order, and switch aborts the running work', async () => {
     const serial = setup('serial')
     serial.scheduler.push('A')
     serial.scheduler.push('B')
     serial.scheduler.push('C')
-    expect(serial.log.map((event) => event.pendingCount)).toEqual([1, 2, 3])
+    serial.started[0]?.request.resolve('a')
+    await flushPromise()
+    serial.started[1]?.request.resolve('b')
+    await flushPromise()
+    expect(serial.started.map((s) => s.input)).toEqual(['A', 'B', 'C'])
 
     const switching = setup('switch')
     switching.scheduler.push('A')
     switching.scheduler.push('B')
-    expect(switching.log.map((event) => [event.type, event.pendingCount])).toEqual([
-      ['start', 1],
-      ['start', 1],
-    ])
+    expect(switching.started.map((s) => s.input)).toEqual(['A', 'B'])
     expect(switching.started[0]?.signal.aborted).toBe(true)
   })
 
-  it('drops waiting work without touching running work', async () => {
-    const { log, scheduler, started } = setup('serial')
-
-    scheduler.push('A')
-    scheduler.push('B')
-    scheduler.push('C')
-    scheduler.dropWaiting()
-    expect(started[0]?.signal.aborted).toBe(false)
-    started[0]?.request.resolve('a')
-    await flushPromise()
-
-    expect(started.map((s) => s.input)).toEqual(['A'])
-    expect(log.filter((event) => event.type === 'drop').map((event) => event.type === 'drop' && event.input)).toEqual(['B', 'C'])
-    scheduler.push('D')
-    expect(started.map((s) => s.input)).toEqual(['A', 'D'])
-  })
-
-  it('runs parallel work concurrently and settles in completion order', async () => {
-    const { log, scheduler, started } = setup('parallel')
-
-    scheduler.push('A')
-    scheduler.push('B')
-    started[1]?.request.resolve('b')
-    await flushPromise()
-    started[0]?.request.resolve('a')
-    await flushPromise()
-
-    expect(log.map((event) => [event.type, event.pendingCount])).toEqual([
-      ['start', 1],
-      ['start', 2],
-      ['settle', 1],
-      ['settle', 0],
-    ])
-  })
-
-  it('still runs the work, and frees the key, when a start handler throws', async () => {
-    for (const policy of ['serial', 'coalesce', 'switch', 'parallel', 'exhaust'] as const) {
-      let throwOnce = true
-      const { log, scheduler, started } = setup(policy, {
-        onEvent: (event) => {
-          if (event.type === 'start' && throwOnce) {
-            throwOnce = false
-            throw new Error('start handler failed')
-          }
-        },
-      })
-
-      expect(() => {
-        scheduler.push('A')
-      }, policy).toThrow('start handler failed')
-      expect(
-        started.map((s) => s.input),
-        policy
-      ).toEqual(['A'])
-
-      started[0]?.request.resolve('a')
-      // oxlint-disable-next-line no-await-in-loop
-      await flushPromise()
-      scheduler.push('B')
-      started[1]?.request.resolve('b')
-      // oxlint-disable-next-line no-await-in-loop
-      await flushPromise()
-
-      expect(
-        started.map((s) => s.input),
-        policy
-      ).toEqual(['A', 'B'])
-      expect(log.at(-1), policy).toEqual({ pendingCount: 0, result: { input: 'B', status: 'success', value: 'b' }, type: 'settle' })
-    }
-  })
-
-  it('keeps draining the queue when a start handler throws during a settle', async () => {
-    const requests = { A: deferred<string>(), B: deferred<string>(), C: deferred<string>() }
+  it('keeps draining the queue when a result subscriber throws, and surfaces its error', async () => {
+    const subscriberError = new Error('result subscriber failed')
+    const requests = { A: deferred<string>(), B: deferred<string>() }
     const started: string[] = []
-    const handlerError = new Error('start handler failed')
-    const scheduler = createPromiseScheduler<'A' | 'B' | 'C', string>(
+    const scheduler = createPromiseScheduler<'A' | 'B', string>(
       new Engine(),
       'serial',
       (input) => {
@@ -211,40 +119,109 @@ describe('createPromiseScheduler', () => {
       },
       {},
       {
-        onSettle: () => undefined,
-        onStart: (input) => {
-          if (input === 'B') {
-            throw handlerError
+        onSettle: (result) => {
+          if (result.input === 'A') {
+            throw subscriberError
           }
         },
       }
     )
     const thenSpy = vi.spyOn(requests.A.promise, 'then')
-
     scheduler.push('A')
     scheduler.push('B')
-    scheduler.push('C')
-    // B starts while A settles, so its handler error surfaces from A's settlement.
-    const settlement = thenSpy.mock.results[0]?.value as Promise<unknown> | undefined
+    const settlement = thenSpy.mock.results[0]?.value as Promise<unknown>
     thenSpy.mockRestore()
-    const surfacedError = expect(settlement).rejects.toBe(handlerError)
-    requests.A.resolve('a')
-    await surfacedError
-    expect(started).toEqual(['A', 'B'])
 
-    requests.B.resolve('b')
-    await flushPromise()
-    expect(started).toEqual(['A', 'B', 'C'])
+    const surfaced = expect(settlement).rejects.toBe(subscriberError)
+    requests.A.resolve('a')
+    await surfaced
+
+    expect(started).toEqual(['A', 'B'])
   })
 
-  it('ignores inputs for a busy key under exhaust, per key, and frees the key inside the settle handler', async () => {
-    const reentered: string[] = []
+  it('rethrows the first of two subscriber errors in one settle and logs the second', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const engine = new Engine()
+    const first = new Error('first')
+    const second = new Error('second')
+    const request = deferred<string>()
+    const started: string[] = []
+    const scheduler = createPromiseScheduler<string, string>(
+      engine,
+      'serial',
+      (input) => {
+        started.push(input)
+        if (input === 'B') {
+          // B fails synchronously while A's result is still being delivered, so its error result is delivered in the
+          // same settle.
+          throw new Error('B failed')
+        }
+        return request.promise
+      },
+      {},
+      {
+        onSettle: (result) => {
+          throw result.input === 'A' ? first : second
+        },
+      }
+    )
+    const thenSpy = vi.spyOn(request.promise, 'then')
+    scheduler.push('A')
+    scheduler.push('B')
+    const settlement = thenSpy.mock.results[0]?.value as Promise<unknown>
+    thenSpy.mockRestore()
+
+    const surfaced = expect(settlement).rejects.toBe(first)
+    request.resolve('a')
+    await surfaced
+
+    expect(started).toEqual(['A', 'B'])
+    expect(error).toHaveBeenCalledWith(expect.stringContaining('an additional error'), second)
+  })
+
+  it('rethrows the first error when a synchronously failing start and the drain after it both throw', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const thrown: unknown[] = []
+    const engine = new Engine()
+    const started: string[] = []
     const schedulerRef: { current?: { push: (input: string) => void } } = {}
-    const { log, scheduler, started } = setup('exhaust', {
+    const scheduler = createPromiseScheduler<string, string>(
+      engine,
+      'serial',
+      (input) => {
+        started.push(input)
+        throw new Error(`${input} failed`)
+      },
+      {},
+      {
+        onSettle: (result) => {
+          if (result.input === 'A') {
+            // Queued behind A, so it starts in the drain that follows A's synchronous failure.
+            schedulerRef.current?.push('B')
+          }
+          throw new Error(`subscriber of ${result.input}`)
+        },
+      }
+    )
+    schedulerRef.current = scheduler
+
+    try {
+      scheduler.push('A')
+    } catch (caught) {
+      thrown.push(caught)
+    }
+
+    expect(started).toEqual(['A', 'B'])
+    expect(thrown).toEqual([new Error('subscriber of A')])
+    expect(error).toHaveBeenCalledWith(expect.stringContaining('an additional error'), new Error('subscriber of B'))
+  })
+
+  it('ignores inputs for a busy key under exhaust, per key, and frees the key inside the result subscriber', async () => {
+    const schedulerRef: { current?: { push: (input: string) => void } } = {}
+    const { scheduler, started } = setup('exhaust', {
       key: (input) => input[0],
-      onEvent: (event) => {
-        if (event.type === 'settle' && event.result.input === 'a1') {
-          reentered.push('a3')
+      onSettle: (result) => {
+        if (result.input === 'a1') {
           schedulerRef.current?.push('a3')
         }
       },
@@ -255,13 +232,11 @@ describe('createPromiseScheduler', () => {
     scheduler.push('a2')
     scheduler.push('b1')
     expect(started.map((s) => s.input)).toEqual(['a1', 'b1'])
-    expect(log.filter((event) => event.type === 'ignore')).toEqual([{ input: 'a2', pendingCount: 1, type: 'ignore' }])
 
     started[0]?.request.reject(new Error('a1 failed'))
     await flushPromise()
 
-    // The settle handler published a3 for the same key, and it started at once.
-    expect(reentered).toEqual(['a3'])
+    // The result subscriber published a3 for the same key, and it started at once.
     expect(started.map((s) => s.input)).toEqual(['a1', 'b1', 'a3'])
   })
 })

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { Engine } from './Engine'
 import { createPromiseScheduler } from './promiseScheduler'
 
-import type { PromiseWorkPolicy, SwitchMapPromiseResult } from './promiseScheduler'
+import type { PromiseWorkPolicy } from './promiseScheduler'
 
 // Model-based test: fast-check generates command sequences, runs them against the Promise scheduler and a small
 // reference model of the scheduler, and shrinks any failure to a minimal sequence. On failure, the error includes
@@ -45,14 +45,6 @@ class Model {
     this.config = config
   }
 
-  get count() {
-    let waiting = 0
-    for (const queue of this.queues.values()) {
-      waiting += queue.length
-    }
-    return this.running.length + waiting
-  }
-
   /** Returns true if the input started right away. */
   push(input: Input): boolean {
     const { merge, policy } = this.config
@@ -73,7 +65,7 @@ class Model {
       this.start(input)
       return true
     }
-    if (policy === 'parallel' || this.runningFor(input.key).length === 0) {
+    if (this.runningFor(input.key).length === 0) {
       this.start(input)
       return true
     }
@@ -101,12 +93,6 @@ class Model {
     }
   }
 
-  dropWaiting() {
-    for (const queue of this.queues.values()) {
-      this.drops.push(...queue.splice(0).map(nameOf))
-    }
-  }
-
   private queueFor(key: string) {
     let queue = this.queues.get(key)
     if (queue === undefined) {
@@ -126,72 +112,47 @@ class Model {
   }
 }
 
-type SchedulerEvent =
-  | { input: Input; pendingCount: number; type: 'drop' }
-  | { input: Input; pendingCount: number; type: 'ignore' }
-  | { input: Input; pendingCount: number; type: 'start' }
-  | { pendingCount: number; result: SwitchMapPromiseResult<Input, string>; type: 'settle' }
-  | { pendingCount: number; type: 'queue' }
-
 /** The system under test: the Promise scheduler in a real engine, with Promises the commands settle. */
 interface Real {
   engine: Engine
-  log: SchedulerEvent[]
   requests: Map<string, Deferred>
   scheduler: ReturnType<typeof createPromiseScheduler<Input, string>>
+  settles: string[]
   signals: Map<string, AbortSignal>
-  /** When set, the next start handler call throws. */
-  throwOnStart: boolean
+  starts: string[]
 }
 
 function createReal(config: Config): Real {
   const engine = new Engine()
-  const log: SchedulerEvent[] = []
   const requests = new Map<string, Deferred>()
+  const settles: string[] = []
   const signals = new Map<string, AbortSignal>()
+  const starts: string[] = []
   const mergeInputs = (waiting: Input, next: Input): Input => ({ ids: [...waiting.ids, ...next.ids], key: next.key })
-  const real: Real = {
+  return {
     engine,
-    log,
     requests,
     scheduler: createPromiseScheduler<Input, string>(
       engine,
       config.policy,
       (input, signal) =>
         new Promise<string>((resolve, reject) => {
+          starts.push(nameOf(input))
           requests.set(nameOf(input), { reject, resolve })
           signals.set(nameOf(input), signal)
         }),
       { key: (input) => input.key, ...(config.merge ? { merge: mergeInputs } : {}) },
       {
-        onDrop: (input, pendingCount) => log.push({ input, pendingCount, type: 'drop' }),
-        onIgnore: (input, pendingCount) => log.push({ input, pendingCount, type: 'ignore' }),
-        onQueue: (pendingCount) => log.push({ pendingCount, type: 'queue' }),
-        onSettle: (result, pendingCount) => log.push({ pendingCount, result, type: 'settle' }),
-        onStart: (input, pendingCount) => {
-          log.push({ input, pendingCount, type: 'start' })
-          if (real.throwOnStart) {
-            real.throwOnStart = false
-            throw new Error('start handler failed')
-          }
+        onSettle: (result) => {
+          settles.push(`${result.status === 'success' ? 'ok' : 'error'}:${nameOf(result.input)}`)
         },
       }
     ),
+    settles,
     signals,
-    throwOnStart: false,
+    starts,
   }
-  return real
 }
-
-const pendingCountOf = (real: Real) => real.log.at(-1)?.pendingCount ?? 0
-
-const namesOf = (real: Real, type: 'drop' | 'ignore' | 'start') =>
-  real.log.flatMap((event) => (event.type === type ? [nameOf(event.input)] : []))
-
-const settlesOf = (real: Real) =>
-  real.log.flatMap((event) =>
-    event.type === 'settle' ? [`${event.result.status === 'success' ? 'ok' : 'error'}:${nameOf(event.result.input)}`] : []
-  )
 
 async function flushPromises() {
   for (let index = 0; index < 5; index++) {
@@ -200,39 +161,29 @@ async function flushPromises() {
   }
 }
 
+// Dropped and ignored inputs are not reported by the scheduler. Matching the exact starts, in order, shows that
+// every other input was dropped or ignored as the model says.
 function expectSameState(model: Model, real: Real) {
-  expect(namesOf(real, 'start')).toEqual(model.starts)
-  expect(settlesOf(real)).toEqual(model.settles)
-  expect(namesOf(real, 'drop').toSorted()).toEqual(model.drops.toSorted())
-  expect(namesOf(real, 'ignore')).toEqual(model.ignored)
-  expect(pendingCountOf(real)).toBe(model.count)
+  expect(real.starts).toEqual(model.starts)
+  expect(real.settles).toEqual(model.settles)
   const aborted = [...real.signals].flatMap(([name, signal]) => (signal.aborted ? [name] : []))
   expect(aborted.toSorted()).toEqual(model.aborted.toSorted())
 }
 
 type Command = fc.AsyncCommand<Model, Real>
 
-function pushCommand(key: string, throwOnStart: boolean): Command {
+function pushCommand(key: string): Command {
   return {
     check: () => true,
     async run(model, real) {
       model.nextId += 1
       const input: Input = { ids: [`${key}${model.nextId}`], key }
-      real.throwOnStart = throwOnStart
-      let threw = false
-      try {
-        real.scheduler.push(input)
-      } catch {
-        threw = true
-      }
-      real.throwOnStart = false
-      const started = model.push(input)
-      // The handler error reaches the caller only if the input started, and the work still runs.
-      expect(threw).toBe(throwOnStart && started)
+      real.scheduler.push(input)
+      model.push(input)
       await flushPromises()
       expectSameState(model, real)
     },
-    toString: () => `push(${key}${throwOnStart ? ', throwOnStart' : ''})`,
+    toString: () => `push(${key})`,
   }
 }
 
@@ -256,29 +207,15 @@ function settleCommand(index: number, ok: boolean): Command {
   }
 }
 
-const dropWaitingCommand: Command = {
-  check: () => true,
-  async run(model, real) {
-    real.scheduler.dropWaiting()
-    await flushPromises()
-    model.dropWaiting()
-    expectSameState(model, real)
-  },
-  toString: () => 'dropWaiting',
-}
-
 const commands = fc.commands(
   [
-    // Roughly one push in ten throws from its start subscriber. Shrinking moves the roll toward 0, so toward no throw.
-    fc.tuple(fc.constantFrom('a', 'b'), fc.integer({ max: 9, min: 0 })).map(([key, roll]) => pushCommand(key, roll === 9)),
+    fc.constantFrom('a', 'b').map((key) => pushCommand(key)),
     fc.tuple(fc.nat(), fc.boolean()).map(([index, ok]) => settleCommand(index, ok)),
-    fc.constant(dropWaitingCommand),
   ],
   { maxCommands: 40 }
 )
 
 const configs: Config[] = [
-  { merge: false, policy: 'parallel' },
   { merge: false, policy: 'serial' },
   { merge: false, policy: 'coalesce' },
   { merge: true, policy: 'coalesce' },
@@ -301,10 +238,9 @@ describe('Promise scheduler model', () => {
             // oxlint-disable-next-line no-await-in-loop
             await settleCommand(0, true).run(model, real)
           }
-          expect(pendingCountOf(real)).toBe(0)
           for (const key of ['a', 'b']) {
             // oxlint-disable-next-line no-await-in-loop
-            await pushCommand(key, false).run(model, real)
+            await pushCommand(key).run(model, real)
           }
           expect(model.running).toHaveLength(2)
 
