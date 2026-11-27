@@ -185,12 +185,12 @@ E2E tests in `packages/react-virtuoso/e2e/`:
 
 Node names in this repo end in `$` (`data$`, `settled$`), and docs and comments wrap them in backticks. A string replacement that contains `` `settled$` `` therefore contains `` $` ``, and `String.prototype.replace` expands it. That holds even when the search pattern is a plain string.
 
-| Sequence in the replacement | Becomes                      |
-| --------------------------- | ---------------------------- |
-| `$$`                        | `$`                          |
-| `$&`                        | the matched text             |
-| `` $` ``                    | everything before the match  |
-| `$'`                        | everything after the match   |
+| Sequence in the replacement | Becomes                     |
+| --------------------------- | --------------------------- |
+| `$$`                        | `$`                         |
+| `$&`                        | the matched text            |
+| `` $` ``                    | everything before the match |
+| `$'`                        | everything after the match  |
 
 This has corrupted files in this repo more than once, for example pasting most of a document into one markdown table row. The damage usually lands in comments and markdown, which type checks and tests do not catch.
 
