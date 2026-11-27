@@ -1,5 +1,11 @@
 # @virtuoso.dev/reactive-engine-core
 
+## 0.3.0
+
+### Minor Changes
+
+- [#1587](https://github.com/petyosi/react-virtuoso/pull/1587) [`9e0bdf8`](https://github.com/petyosi/react-virtuoso/commit/9e0bdf8efbc0b47c5842afc2feb344ddaae3160b) Thanks [@atrium-ladyx](https://github.com/apps/atrium-ladyx)! - Add Promise operators for writes: `coalescePromise` keeps one request in flight and sends only the newest waiting input, with an optional `merge` for partial updates; `concatMapPromise` runs every input in order; `exhaustMapPromise` ignores inputs while work runs, for actions where a second request would be a duplicate. All three accept a `key` so they apply per record, and `switchMapPromise` accepts `key` as well.
+
 ## 0.2.1
 
 ### Patch Changes
