@@ -47,4 +47,34 @@ describe('executeWithRetry', () => {
     await expect(executeWithRetry(fn, { retry: 0, retryDelay: () => 0, signal: controller.signal })).rejects.toThrow('Aborted')
     expect(fn).not.toHaveBeenCalled()
   })
+
+  it('stops at once when retryDelay aborts the signal, without waiting for the delay', async () => {
+    vi.useFakeTimers()
+    const controller = new AbortController()
+    let attempts = 0
+    let outcome = 'pending'
+    const run = executeWithRetry(
+      // Throws synchronously; executeWithRetry treats it as a failed attempt.
+      (): Promise<string> => {
+        attempts += 1
+        throw new Error('failed')
+      },
+      {
+        retry: 2,
+        retryDelay: () => {
+          controller.abort()
+          return 60_000
+        },
+        signal: controller.signal,
+      }
+    ).catch((error: unknown) => {
+      outcome = error instanceof Error ? error.message : 'unknown'
+    })
+
+    // No timer is advanced: the wait must not start at all.
+    await vi.advanceTimersByTimeAsync(0)
+    expect(outcome).toBe('Aborted')
+    expect(attempts).toBe(1)
+    await run
+  })
 })

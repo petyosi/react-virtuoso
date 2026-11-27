@@ -4,6 +4,11 @@ function abortError() {
 
 function sleep(ms: number, signal: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
+    // retryDelay is user code, and may abort the signal before the wait starts.
+    if (signal.aborted) {
+      reject(abortError())
+      return
+    }
     const onAbort = () => {
       clearTimeout(timeout)
       reject(abortError())

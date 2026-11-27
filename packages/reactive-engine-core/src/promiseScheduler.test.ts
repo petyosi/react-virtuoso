@@ -239,4 +239,27 @@ describe('createPromiseScheduler', () => {
     // The result subscriber published a3 for the same key, and it started at once.
     expect(started.map((s) => s.input)).toEqual(['a1', 'b1', 'a3'])
   })
+
+  it('does not start work when the key function disposes the engine', () => {
+    for (const policy of ['serial', 'coalesce', 'exhaust', 'switch'] as const) {
+      const engine = new Engine()
+      const project = vi.fn(() => Promise.resolve('value'))
+      const scheduler = createPromiseScheduler<string, string>(
+        engine,
+        policy,
+        project,
+        {
+          key: (input) => {
+            engine.dispose()
+            return input
+          },
+        },
+        { onSettle: () => undefined }
+      )
+
+      scheduler.push('A')
+
+      expect(project, policy).not.toHaveBeenCalled()
+    }
+  })
 })

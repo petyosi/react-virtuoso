@@ -218,6 +218,10 @@ export function createPromiseScheduler<TInput, TValue>(
       return
     }
     const key = keyOf(input)
+    // The key function is user code, and may dispose the engine.
+    if (isClosed()) {
+      return
+    }
     const slot = getSlot(key)
 
     if (policy === 'switch') {
