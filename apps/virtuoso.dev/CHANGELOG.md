@@ -1,5 +1,13 @@
 # @virtuoso.dev/virtuoso.dev
 
+## 0.0.25
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @virtuoso.dev/data-table@0.6.5
+  - @virtuoso.dev/reactive-engine-react@1.0.0
+
 ## 0.0.24
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @virtuoso.dev/virtuoso-skills
 
+## 0.2.2
+
+### Patch Changes
+
+- [#1587](https://github.com/petyosi/react-virtuoso/pull/1587) [`9e0bdf8`](https://github.com/petyosi/react-virtuoso/commit/9e0bdf8efbc0b47c5842afc2feb344ddaae3160b) Thanks [@atrium-ladyx](https://github.com/apps/atrium-ladyx)! - Teach the reactive-engine skill how to choose between `Mutation` and `ConcurrentMutation`, when to dismiss results, how to type keyed mutations, and the new Promise write operators.
+
 ## 0.2.1
 
 ### Patch Changes
