@@ -3,7 +3,15 @@ import React from 'react'
 import { act, render, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import { GroupedVirtuoso, TableVirtuoso, Virtuoso, VirtuosoGrid, VirtuosoGridMockContext, VirtuosoMockContext } from '../src'
+import {
+  GroupedTableVirtuoso,
+  GroupedVirtuoso,
+  TableVirtuoso,
+  Virtuoso,
+  VirtuosoGrid,
+  VirtuosoGridMockContext,
+  VirtuosoMockContext,
+} from '../src'
 
 import type { VirtuosoHandle } from '../src'
 
@@ -151,6 +159,53 @@ describe('VirtuosoMockContext', () => {
         ])
       })
     })
+
+    it('passes the index of the item within its group to itemContent', () => {
+      const { container } = render(
+        <GroupedVirtuoso
+          groupContent={(index) => `Group ${index}`}
+          groupCounts={[2, 3]}
+          itemContent={(index, groupIndex, _data, _context, indexInGroup) => `${index}:${groupIndex}:${indexInGroup}`}
+        />,
+        {
+          wrapper: ({ children }) => (
+            <VirtuosoMockContext.Provider value={{ itemHeight: 100, viewportHeight: 1000 }}>{children}</VirtuosoMockContext.Provider>
+          ),
+        }
+      )
+
+      expect(Array.from(container.querySelectorAll('[data-item-group-index]')).map((el) => el.textContent)).toEqual([
+        '0:0:0',
+        '1:0:1',
+        '2:1:0',
+        '3:1:1',
+        '4:1:2',
+      ])
+    })
+
+    it('keeps indexInGroup relative to the group when firstItemIndex is set', () => {
+      const { container } = render(
+        <GroupedVirtuoso
+          firstItemIndex={1000}
+          groupContent={(index) => `Group ${index}`}
+          groupCounts={[2, 3]}
+          itemContent={(index, groupIndex, _data, _context, indexInGroup) => `${index}:${groupIndex}:${indexInGroup}`}
+        />,
+        {
+          wrapper: ({ children }) => (
+            <VirtuosoMockContext.Provider value={{ itemHeight: 100, viewportHeight: 1000 }}>{children}</VirtuosoMockContext.Provider>
+          ),
+        }
+      )
+
+      expect(Array.from(container.querySelectorAll('[data-item-group-index]')).map((el) => el.textContent)).toEqual([
+        '1000:0:0',
+        '1001:0:1',
+        '1002:1:0',
+        '1003:1:1',
+        '1004:1:2',
+      ])
+    })
   })
 
   describe('Table', () => {
@@ -187,6 +242,29 @@ describe('VirtuosoMockContext', () => {
       await waitFor(() => {
         expect(renderedIndices(container)).toEqual(['50', '51', '52'])
       })
+    })
+
+    it('passes the index of the item within its group to the grouped table itemContent', () => {
+      const { container } = render(
+        <GroupedTableVirtuoso
+          groupContent={(index) => <td>Group {index}</td>}
+          groupCounts={[2, 3]}
+          itemContent={(index, groupIndex, _data, _context, indexInGroup) => <td>{`${index}:${groupIndex}:${indexInGroup}`}</td>}
+        />,
+        {
+          wrapper: ({ children }) => (
+            <VirtuosoMockContext.Provider value={{ itemHeight: 100, viewportHeight: 1000 }}>{children}</VirtuosoMockContext.Provider>
+          ),
+        }
+      )
+
+      expect(Array.from(container.querySelectorAll('[data-item-group-index]')).map((el) => el.textContent)).toEqual([
+        '0:0:0',
+        '1:0:1',
+        '2:1:0',
+        '3:1:1',
+        '4:1:2',
+      ])
     })
   })
 

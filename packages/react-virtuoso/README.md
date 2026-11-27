@@ -58,6 +58,8 @@ The `GroupedVirtuoso` component is similar to the "flat" `Virtuoso`, with the fo
 - In addition the `item` render prop, the Component requires an additional `group` render prop,
   which renders the **group header**. The `group` callback receives the zero-based group index as a parameter;
 - The `itemContent` render prop gets called with an additional second parameter, `groupIndex: number`.
+  The `index` parameter is the index of the item across all groups. The index of the item within its group is passed as the last parameter,
+  `itemContent(index, groupIndex, data, context, indexInGroup)`.
 
 ```tsx live
 import { GroupedVirtuoso } from 'react-virtuoso'

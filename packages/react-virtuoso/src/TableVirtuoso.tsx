@@ -175,7 +175,7 @@ const Items = /*#__PURE__*/ React.memo(function VirtuosoItems({ showTopList = fa
         style={showTopList ? { ...STICKY_ITEM_STYLE, top: fixedHeaderHeight + offsetTop! } : ITEM_STYLE}
       >
         {hasGroups
-          ? (itemContent as GroupItemContent<any, any>)(item.index, item.groupIndex!, item.data, context)
+          ? (itemContent as GroupItemContent<any, any>)(item.index, item.groupIndex!, item.data, context, item.indexInGroup!)
           : (itemContent as ItemContent<any, any>)(item.index, item.data, context)}
       </TableRowComponent>
     )
