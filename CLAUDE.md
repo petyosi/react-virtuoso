@@ -181,6 +181,28 @@ E2E tests in `packages/react-virtuoso/e2e/`:
 - Use urx system patterns for state management
 - Error handling: prefer early returns
 
+## Scripted Edits
+
+Node names in this repo end in `$` (`data$`, `settled$`), and docs and comments wrap them in backticks. A string replacement that contains `` `settled$` `` therefore contains `` $` ``, and `String.prototype.replace` expands it. That holds even when the search pattern is a plain string.
+
+| Sequence in the replacement | Becomes                     |
+| --------------------------- | --------------------------- |
+| `$$`                        | `$`                         |
+| `$&`                        | the matched text            |
+| `` $` ``                    | everything before the match |
+| `$'`                        | everything after the match  |
+
+This has corrupted files in this repo more than once, for example pasting most of a document into one markdown table row. The damage usually lands in comments and markdown, which type checks and tests do not catch.
+
+- Prefer the Edit tool for edits; it replaces text exactly.
+- In scripts that edit files, never pass a string as the replacement to `replace` or `replaceAll`. Pass a function instead, so the text is inserted literally:
+
+```js
+text.replace(oldText, () => newText)
+```
+
+- After a scripted edit, read the full `git diff` of the touched files, not only `--stat`, and run `pnpm lint:md` if markdown changed.
+
 ## Markdown Style Guide
 
 When writing or editing markdown documentation:

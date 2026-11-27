@@ -1,384 +1,620 @@
-import { Engine } from '@virtuoso.dev/reactive-engine-core'
-import { describe, expect, it, vi } from 'vitest'
+import { Cell, Engine } from '@virtuoso.dev/reactive-engine-core'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Mutation } from './Mutation'
+import { controlledFn, deferred, flushPromises } from './test/helpers'
+
+import type { KeyedMutation } from './Mutation'
+import type { MutationSettled } from './types'
+import type { MockInstance } from 'vitest'
+
+interface Task {
+  id: number
+  title: string
+}
+
+const task = (id: number, title = `task ${id}`): Task => ({ id, title })
+
+let warn: MockInstance<typeof console.warn>
+let error: MockInstance<typeof console.error>
+
+beforeEach(() => {
+  warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+  error = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.useRealTimers()
+  vi.unstubAllEnvs()
+})
+
+function keyed(options: { onIgnored?: (params: Task) => void } = {}) {
+  const { calls, fn } = controlledFn<Task, string>()
+  const onSuccess = vi.fn()
+  const onError = vi.fn()
+  const mutation = Mutation<Task, string, number>({
+    mutationFn: fn,
+    key: (params) => params.id,
+    onError,
+    onSuccess,
+    ...(options.onIgnored ? { onIgnored: options.onIgnored } : {}),
+  })
+  const engine = new Engine()
+  const settled: MutationSettled<string, Task, number>[] = []
+  engine.sub(mutation.settled$, (outcome) => settled.push(outcome))
+  return { calls, engine, mutation, onError, onSuccess, settled }
+}
 
 describe('Mutation', () => {
-  it('should start in idle state', () => {
-    const mutationFn = vi.fn((params: { name: string }) => params.name)
+  describe('MUT-1: ignored calls and the warning', () => {
+    it('ignores a call for a busy record, runs other records, and warns once per ignored call', async () => {
+      const { calls, engine, mutation, onError, onSuccess, settled } = keyed()
 
-    const mutation = Mutation({
-      mutationFn,
+      engine.pub(mutation.mutate$, task(1))
+      engine.pub(mutation.mutate$, task(1, 'again'))
+      engine.pub(mutation.mutate$, task(2))
+      engine.pub(mutation.mutate$, task(1, 'third'))
+
+      expect(calls.map((call) => call.params)).toEqual([task(1), task(2)])
+      expect(settled).toEqual([
+        { key: 1, params: task(1, 'again'), type: 'ignored' },
+        { key: 1, params: task(1, 'third'), type: 'ignored' },
+      ])
+      expect([...engine.getValue(mutation.status$).keys()]).toEqual([1, 2])
+      expect(warn).toHaveBeenCalledTimes(2)
+      expect(String(warn.mock.calls[0]?.[0])).toContain('record 1')
+      expect(String(warn.mock.calls[0]?.[0])).toContain('ConcurrentMutation')
+      expect(String(warn.mock.calls[0]?.[0])).toContain('onIgnored')
+
+      calls[0]?.request.resolve('done')
+      await flushPromises()
+      expect(onSuccess).toHaveBeenCalledTimes(1)
+      expect(onError).not.toHaveBeenCalled()
     })
 
-    const engine = new Engine()
-    engine.sub(mutation.data$, vi.fn())
+    it('does not warn in production, and onIgnored replaces the warning', () => {
+      vi.stubEnv('NODE_ENV', 'production')
+      const production = keyed()
+      production.engine.pub(production.mutation.mutate$, task(1))
+      production.engine.pub(production.mutation.mutate$, task(1))
+      expect(warn).not.toHaveBeenCalled()
+      vi.unstubAllEnvs()
 
-    const state = engine.getValue(mutation.data$)
-    expect(state).toMatchObject({
-      data: null,
-      error: null,
-      isError: false,
-      isPending: false,
-      isSuccess: false,
-      type: 'idle',
+      const onIgnored = vi.fn()
+      const handled = keyed({ onIgnored })
+      handled.engine.pub(handled.mutation.mutate$, task(1))
+      handled.engine.pub(handled.mutation.mutate$, task(1, 'again'))
+      expect(warn).not.toHaveBeenCalled()
+      expect(onIgnored).toHaveBeenCalledWith(task(1, 'again'), handled.engine)
     })
   })
 
-  it('should execute successful mutation', async () => {
-    const mutationFn = vi.fn((params: { name: string }) => {
-      return new Promise<string>((resolve) => {
-        setTimeout(() => {
-          resolve(`Hello ${params.name}`)
-        }, 50)
-      })
-    })
+  describe('MUT-2: key: false is one record', () => {
+    it('ignores a second call and moves data$ from pending to a settled result', async () => {
+      const { calls, fn } = controlledFn<{ title: string }, Task>()
+      const mutation = Mutation<{ title: string }, Task>({ key: false, mutationFn: fn, onIgnored: () => undefined })
+      const engine = new Engine()
 
-    const mutation = Mutation({
-      mutationFn,
-    })
-
-    const engine = new Engine()
-    const sub = vi.fn()
-    engine.sub(mutation.data$, sub)
-
-    // Trigger mutation
-    engine.pub(mutation.mutate$, { name: 'World' })
-
-    // Should be pending
-    expect(sub).toHaveBeenCalledWith(
-      expect.objectContaining({
+      engine.pub(mutation.mutate$, { title: 'a' })
+      engine.pub(mutation.mutate$, { title: 'b' })
+      expect(calls).toHaveLength(1)
+      expect(engine.getValue(mutation.data$)).toEqual({
+        data: null,
+        error: null,
+        isError: false,
         isPending: true,
+        isSuccess: false,
+        params: { title: 'a' },
         type: 'pending',
-      }),
-      engine
-    )
+      })
 
-    await new Promise((resolve) => {
-      setTimeout(resolve, 100)
-    })
-
-    // Should be success
-    expect(sub).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        data: 'Hello World',
+      vi.useFakeTimers({ now: 1000, toFake: ['Date'] })
+      calls[0]?.request.resolve(task(1, 'a'))
+      await flushPromises()
+      expect(engine.getValue(mutation.data$)).toEqual({
+        data: task(1, 'a'),
+        error: null,
+        isError: false,
         isPending: false,
         isSuccess: true,
+        params: { title: 'a' },
+        settledAt: 1000,
         type: 'success',
-      }),
-      engine
-    )
-
-    expect(mutationFn).toHaveBeenCalledTimes(1)
-    expect(mutationFn).toHaveBeenCalledWith({ name: 'World' })
-  })
-
-  it('should handle mutation errors', async () => {
-    const mutationFn = vi.fn(() => {
-      throw new Error('Mutation failed')
-    })
-
-    const mutation = Mutation({
-      mutationFn,
-      retry: false,
-    })
-
-    const engine = new Engine()
-    const sub = vi.fn()
-    engine.sub(mutation.data$, sub)
-
-    // Trigger mutation
-    engine.pub(mutation.mutate$, {})
-
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50)
-    })
-
-    expect(sub).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        error: expect.any(Error) as Error,
-        isError: true,
-        isPending: false,
-        type: 'error',
-      }),
-      engine
-    )
-  })
-
-  it('should reset mutation state', async () => {
-    const mutationFn = vi.fn((params: { value: number }) => params.value * 2)
-
-    const mutation = Mutation({
-      mutationFn,
-    })
-
-    const engine = new Engine()
-    engine.sub(mutation.data$, vi.fn())
-
-    // Execute mutation
-    engine.pub(mutation.mutate$, { value: 5 })
-
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50)
-    })
-
-    expect(engine.getValue(mutation.data$)).toMatchObject({
-      data: 10,
-      type: 'success',
-    })
-
-    // Reset
-    engine.pub(mutation.reset$)
-
-    expect(engine.getValue(mutation.data$)).toMatchObject({
-      data: null,
-      error: null,
-      type: 'idle',
+      })
+      expect('key' in engine.getValue(mutation.data$)).toBe(false)
     })
   })
 
-  it('should retry on failure', async () => {
-    let attemptCount = 0
+  describe('MUT-3: results stay until replaced or dismissed; identity; no-ops', () => {
+    it('dismisses exactly the requested results and keeps unchanged entries', async () => {
+      const { calls, engine, mutation } = keyed()
+      const emissions: ReadonlyMap<number, unknown>[] = []
+      engine.sub(mutation.status$, (status) => emissions.push(status))
 
-    const mutationFn = vi.fn(() => {
-      attemptCount++
-      if (attemptCount < 3) {
-        throw new Error(`Attempt ${attemptCount} failed`)
+      engine.pub(mutation.mutate$, task(1))
+      engine.pub(mutation.mutate$, task(2))
+      engine.pub(mutation.mutate$, task(4))
+      calls[0]?.request.reject(new Error('one failed'))
+      calls[1]?.request.resolve('two')
+      calls[2]?.request.resolve('four')
+      await flushPromises()
+      engine.pub(mutation.mutate$, task(3))
+
+      const before = engine.getValue(mutation.status$)
+      engine.pub(mutation.dismiss$, 2)
+      const afterTwo = engine.getValue(mutation.status$)
+      expect([...afterTwo.keys()]).toEqual([1, 4, 3])
+      expect(afterTwo.get(1)).toBe(before.get(1))
+      expect(afterTwo.get(3)).toBe(before.get(3))
+      engine.pub(mutation.dismiss$, 1)
+      expect([...engine.getValue(mutation.status$).keys()]).toEqual([4, 3])
+
+      const count = emissions.length
+      engine.pub(mutation.dismiss$, 3)
+      engine.pub(mutation.dismiss$, 9)
+      expect(emissions).toHaveLength(count)
+
+      engine.pub(mutation.dismissAll$)
+      expect([...engine.getValue(mutation.status$).keys()]).toEqual([3])
+      expect(engine.getValue(mutation.status$).get(3)?.type).toBe('pending')
+      engine.pub(mutation.dismissAll$)
+      expect(emissions).toHaveLength(count + 1)
+
+      engine.pub(mutation.mutate$, task(1))
+      expect(engine.getValue(mutation.status$).get(1)?.type).toBe('pending')
+    })
+  })
+
+  describe('MUT-4: dismiss never hides running work', () => {
+    it('keeps a pending record through dismiss and dismissAll, and shows its result later', async () => {
+      const { calls, engine, mutation, onSuccess, settled } = keyed()
+
+      engine.pub(mutation.mutate$, task(1))
+      engine.pub(mutation.dismiss$, 1)
+      engine.pub(mutation.dismissAll$)
+      expect(engine.getValue(mutation.status$).get(1)?.type).toBe('pending')
+
+      calls[0]?.request.resolve('saved')
+      await flushPromises()
+      expect(engine.getValue(mutation.status$).get(1)).toMatchObject({ data: 'saved', type: 'success' })
+      expect(settled).toHaveLength(1)
+      expect(onSuccess).toHaveBeenCalledTimes(1)
+    })
+
+    it('keeps an unkeyed pending call through dismiss', async () => {
+      const { calls, fn } = controlledFn<number, number>()
+      const mutation = Mutation<number, number>({ key: false, mutationFn: fn })
+      const engine = new Engine()
+
+      engine.pub(mutation.mutate$, 1)
+      engine.pub(mutation.dismiss$)
+      expect(engine.getValue(mutation.data$).type).toBe('pending')
+      calls[0]?.request.resolve(2)
+      await flushPromises()
+      expect(engine.getValue(mutation.data$).type).toBe('success')
+      engine.pub(mutation.dismiss$)
+      expect(engine.getValue(mutation.data$).type).toBe('idle')
+    })
+  })
+
+  describe('MUT-5: delivery order and visibility', () => {
+    it('delivers state, then settled$, then the callback; pending comes before mutationFn', async () => {
+      const order: string[] = []
+      const request = deferred<string>()
+      const status$Ref: { current?: KeyedMutation<Task, string, number> } = {}
+      const engine = new Engine()
+      const mutation = Mutation<Task, string, number>({
+        key: (params) => params.id,
+        mutationFn: () => {
+          order.push(`mutationFn sees ${engine.getValue(status$Ref.current!.status$).get(1)?.type}`)
+          return request.promise
+        },
+        onSuccess: () => order.push('onSuccess'),
+      })
+      status$Ref.current = mutation
+      engine.sub(mutation.status$, (status) => order.push(`status ${status.get(1)?.type}`))
+      engine.sub(mutation.settled$, (outcome) => {
+        order.push(`settled ${outcome.type}, state reads ${engine.getValue(mutation.status$).get(1)?.type}`)
+      })
+
+      engine.pub(mutation.mutate$, task(1))
+      request.resolve('ok')
+      await flushPromises()
+
+      expect(order).toEqual([
+        'status pending',
+        'mutationFn sees pending',
+        'status success',
+        'settled success, state reads success',
+        'onSuccess',
+      ])
+    })
+
+    it('shows pending right after publishing, except inside its own steps', async () => {
+      const { calls, engine, mutation } = keyed()
+      const trigger$ = Cell(0)
+      const seen: (string | undefined)[] = []
+      engine.sub(trigger$, () => {
+        engine.pub(mutation.mutate$, task(5))
+        seen.push(engine.getValue(mutation.status$).get(5)?.type)
+      })
+      engine.sub(mutation.settled$, (outcome) => {
+        if (outcome.type === 'success' && outcome.key === 1) {
+          engine.pub(mutation.mutate$, task(6))
+          seen.push(engine.getValue(mutation.status$).get(6)?.type)
+        }
+      })
+
+      engine.pub(mutation.mutate$, task(1))
+      seen.push(engine.getValue(mutation.status$).get(1)?.type)
+      engine.pub(trigger$, 1)
+      calls[0]?.request.resolve('one')
+      await flushPromises()
+
+      expect(seen).toEqual(['pending', 'pending', undefined])
+      expect(engine.getValue(mutation.status$).get(6)?.type).toBe('pending')
+    })
+  })
+
+  describe('MUT-6: re-entrant commands', () => {
+    it('accepts a retry from settled$, applies dismiss from a status$ subscriber, and runs nested mutations', async () => {
+      const first = controlledFn<Task, string>()
+      const second = controlledFn<number, number>()
+      const other = Mutation<number, number>({ key: false, mutationFn: second.fn })
+      const engine = new Engine()
+      let retried = false
+      const mutation = Mutation<Task, string, number>({
+        key: (params) => params.id,
+        mutationFn: first.fn,
+        onSuccess: (_data, params, owner) => {
+          if (params.id === 2) {
+            owner.pub(other.mutate$, 42)
+          }
+        },
+      })
+      engine.sub(mutation.settled$, (outcome) => {
+        if (outcome.type === 'error' && !retried) {
+          retried = true
+          engine.pub(mutation.mutate$, outcome.params)
+        }
+      })
+      const describeStatus = (status: ReadonlyMap<number, { key: number; type: string }>) =>
+        [...status.values()].map((result) => `${result.key}:${result.type}`).join(',')
+      const seenFirst: string[] = []
+      engine.sub(mutation.status$, (status) => seenFirst.push(describeStatus(status)))
+      engine.sub(mutation.status$, (status) => {
+        if (status.get(3)?.type === 'success') {
+          engine.pub(mutation.dismiss$, 3)
+        }
+      })
+      engine.sub(other.data$, (result) => {
+        if (result.type === 'pending') {
+          throw new Error('other subscriber failed')
+        }
+      })
+      const seen: string[] = []
+      engine.sub(mutation.status$, (status) => seen.push(describeStatus(status)))
+
+      engine.pub(mutation.mutate$, task(1))
+      first.calls[0]?.request.reject(new Error('fail'))
+      await flushPromises()
+      // The retry was accepted, so a second call for record 1 started.
+      expect(first.calls.map((call) => call.params.id)).toEqual([1, 1])
+
+      engine.pub(mutation.mutate$, task(3))
+      first.calls[2]?.request.resolve('three')
+      await flushPromises()
+      expect(engine.getValue(mutation.status$).has(3)).toBe(false)
+
+      engine.pub(mutation.mutate$, task(2))
+      first.calls[3]?.request.resolve('two')
+      await flushPromises()
+      // The nested mutation ran synchronously inside the callback; its subscriber error was logged as a callback error.
+      expect(second.calls).toHaveLength(1)
+      expect(error).toHaveBeenCalledWith('Mutation onSuccess callback error:', expect.any(Error))
+      // Every subscriber saw the same sequence. Record 3 appeared as pending, then success, and the dismiss that a
+      // subscriber published on success ran after that publication finished.
+      expect(seen).toEqual(seenFirst)
+      expect(seen).toEqual([
+        '1:pending',
+        // The failed call is visible before the retry published from settled$ starts.
+        '1:error',
+        '1:pending',
+        '1:pending,3:pending',
+        '1:pending,3:success',
+        '1:pending',
+        '1:pending,2:pending',
+        '1:pending,2:success',
+      ])
+    })
+  })
+
+  describe('MUT-7: callbacks write back to the graph', () => {
+    it('passes data or error, params, and the owning engine', async () => {
+      const confirmed$ = Cell<Record<number, string>>({})
+      const failed$ = Cell<number[]>([])
+      const engines: Engine[] = []
+      const mutation = Mutation<Task, string, number>({
+        key: (params) => params.id,
+        mutationFn: ({ id }) => (id === 2 ? Promise.reject(new Error('nope')) : Promise.resolve(`saved ${id}`)),
+        onError: (_error, params, engine) => {
+          engines.push(engine)
+          engine.pub(failed$, [...engine.getValue(failed$), params.id])
+        },
+        onSuccess: (data, params, engine) => {
+          engines.push(engine)
+          engine.pub(confirmed$, { ...engine.getValue(confirmed$), [params.id]: data })
+        },
+      })
+      const engine = new Engine()
+
+      engine.pub(mutation.mutate$, task(1))
+      engine.pub(mutation.mutate$, task(2))
+      await flushPromises()
+
+      expect(engine.getValue(confirmed$)).toEqual({ 1: 'saved 1' })
+      expect(engine.getValue(failed$)).toEqual([2])
+      expect(engines).toEqual([engine, engine])
+    })
+  })
+
+  describe('MUT-8: errors', () => {
+    it('rethrows a state subscriber error from pub, after the protected effects', () => {
+      const { calls, engine, mutation } = keyed()
+      engine.sub(mutation.status$, (status) => {
+        if (status.get(1)?.type === 'pending') {
+          throw new Error('subscriber failed')
+        }
+      })
+
+      expect(() => {
+        engine.pub(mutation.mutate$, task(1))
+      }).toThrow('subscriber failed')
+      expect(engine.getValue(mutation.status$).get(1)?.type).toBe('pending')
+      expect(calls).toHaveLength(1)
+    })
+
+    it('rethrows the first of two errors in one drain and logs the second', () => {
+      const { engine, mutation } = keyed()
+      engine.sub(mutation.status$, (status) => {
+        if (status.get(1)?.type === 'pending' && !status.has(2)) {
+          // Queued behind the current item, so it runs in the same drain.
+          engine.pub(mutation.mutate$, task(2))
+          throw new Error('first')
+        }
+        if (status.get(2)?.type === 'pending') {
+          throw new Error('second')
+        }
+      })
+
+      expect(() => {
+        engine.pub(mutation.mutate$, task(1))
+      }).toThrow('first')
+      expect(engine.getValue(mutation.status$).get(2)?.type).toBe('pending')
+      expect(error).toHaveBeenCalledWith(expect.stringContaining('an additional error'), expect.objectContaining({ message: 'second' }))
+    })
+
+    it('logs a throwing callback without rethrowing it', async () => {
+      const mutation = Mutation<Task, string, number>({
+        key: (params) => params.id,
+        mutationFn: () => Promise.resolve('ok'),
+        onSuccess: () => {
+          throw new Error('callback failed')
+        },
+      })
+      const engine = new Engine()
+      engine.pub(mutation.mutate$, task(1))
+      await flushPromises()
+      expect(error).toHaveBeenCalledWith('Mutation onSuccess callback error:', expect.any(Error))
+      engine.pub(mutation.mutate$, task(1))
+      expect(engine.getValue(mutation.status$).get(1)?.type).toBe('pending')
+    })
+
+    it('rethrows a throwing or invalid key, with no outcome and no call', () => {
+      for (const key of [
+        () => Number.NaN,
+        () => ({}) as unknown as number,
+        () => {
+          throw new Error('key failed')
+        },
+      ]) {
+        const { fn, calls } = controlledFn<Task, string>()
+        const onError = vi.fn()
+        const mutation = Mutation<Task, string, number>({ key, mutationFn: fn, onError })
+        const engine = new Engine()
+        const settled = vi.fn()
+        engine.sub(mutation.settled$, settled)
+
+        expect(() => {
+          engine.pub(mutation.mutate$, task(1))
+        }).toThrow()
+        expect(calls).toHaveLength(0)
+        expect(settled).not.toHaveBeenCalled()
+        expect(onError).not.toHaveBeenCalled()
       }
-      return 'Success on third attempt'
     })
 
-    const mutation = Mutation({
-      mutationFn,
-      retry: 2,
-      retryDelay: () => 10, // Short delay for testing
+    it('rethrows an invalid key published to dismiss$, without changing state', async () => {
+      const { calls, engine, mutation } = keyed()
+      engine.pub(mutation.mutate$, task(1))
+      calls[0]?.request.resolve('ok')
+      await flushPromises()
+      const before = engine.getValue(mutation.status$)
+
+      expect(() => {
+        engine.pub(mutation.dismiss$, Number.POSITIVE_INFINITY)
+      }).toThrow('finite number')
+      expect(engine.getValue(mutation.status$)).toBe(before)
     })
 
-    const engine = new Engine()
-    engine.sub(mutation.data$, vi.fn())
+    it('turns a synchronously throwing mutationFn into an asynchronous error outcome', async () => {
+      const mutation = Mutation<Task, string, number>({
+        key: (params) => params.id,
+        mutationFn: () => {
+          throw new Error('sync failure')
+        },
+      })
+      const engine = new Engine()
+      const settled: string[] = []
+      engine.sub(mutation.settled$, (outcome) => settled.push(outcome.type))
 
-    // Trigger mutation
-    engine.pub(mutation.mutate$, {})
-
-    await new Promise((resolve) => {
-      setTimeout(resolve, 100)
+      engine.pub(mutation.mutate$, task(1))
+      expect(settled).toEqual([])
+      await flushPromises()
+      expect(settled).toEqual(['error'])
     })
 
-    expect(mutationFn).toHaveBeenCalledTimes(3)
-    expect(engine.getValue(mutation.data$)).toMatchObject({
-      data: 'Success on third attempt',
-      type: 'success',
-    })
-  })
+    it('stops a synchronous feedback loop at the drain cap and keeps the running call', async () => {
+      const { calls, fn } = controlledFn<Task, string>()
+      const ignored = vi.fn()
+      const mutation: KeyedMutation<Task, string, number> = Mutation<Task, string, number>({
+        key: (params) => params.id,
+        mutationFn: fn,
+        onIgnored: (params, engine) => {
+          ignored()
+          engine.pub(mutation.mutate$, params)
+        },
+      })
+      const engine = new Engine()
+      engine.pub(mutation.mutate$, task(1))
 
-  it('should call onSuccess callback', async () => {
-    const onSuccess = vi.fn()
-    const mutationFn = vi.fn((params: { value: number }) => params.value * 2)
+      expect(() => {
+        engine.pub(mutation.mutate$, task(1))
+      }).toThrow('more than 10000')
+      // The loop stopped at the cap: every processed call was ignored, and the rest were discarded.
+      expect(ignored.mock.calls.length).toBeLessThanOrEqual(10_000)
+      expect(calls).toHaveLength(1)
+      expect(engine.getValue(mutation.status$).get(1)?.type).toBe('pending')
 
-    const mutation = Mutation({
-      mutationFn,
-      onSuccess,
-    })
-
-    const engine = new Engine()
-    engine.sub(mutation.data$, vi.fn())
-
-    // Trigger mutation
-    engine.pub(mutation.mutate$, { value: 5 })
-
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50)
-    })
-
-    expect(onSuccess).toHaveBeenCalledTimes(1)
-    expect(onSuccess).toHaveBeenCalledWith(10)
-  })
-
-  it('should call onError callback', async () => {
-    const onError = vi.fn()
-    const mutationFn = vi.fn(() => {
-      throw new Error('Mutation failed')
-    })
-
-    const mutation = Mutation({
-      mutationFn,
-      onError,
-      retry: false,
-    })
-
-    const engine = new Engine()
-    engine.sub(mutation.data$, vi.fn())
-
-    // Trigger mutation
-    engine.pub(mutation.mutate$, {})
-
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50)
-    })
-
-    expect(onError).toHaveBeenCalledTimes(1)
-    expect(onError).toHaveBeenCalledWith(expect.any(Error))
-  })
-
-  it('should handle retry: false option', async () => {
-    const mutationFn = vi.fn(() => {
-      throw new Error('Always fails')
-    })
-
-    const mutation = Mutation({
-      mutationFn,
-      retry: false,
-    })
-
-    const engine = new Engine()
-    engine.sub(mutation.data$, vi.fn())
-
-    // Trigger mutation
-    engine.pub(mutation.mutate$, {})
-
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50)
-    })
-
-    // Should only be called once (no retries)
-    expect(mutationFn).toHaveBeenCalledTimes(1)
-    expect(engine.getValue(mutation.data$)).toMatchObject({
-      type: 'error',
+      calls[0]?.request.resolve('ok')
+      await flushPromises()
+      expect(engine.getValue(mutation.status$).get(1)?.type).toBe('success')
+      engine.pub(mutation.mutate$, task(1, 'later'))
+      expect(calls).toHaveLength(2)
     })
   })
 
-  it('should handle retry: 0 option', async () => {
-    const mutationFn = vi.fn(() => {
-      throw new Error('Always fails')
+  describe('MUT-9: retries, repeats, disposal, engines', () => {
+    it('ignores a call during a retry delay, and the retried call has one outcome', async () => {
+      vi.useFakeTimers()
+      let attempts = 0
+      const mutation = Mutation<Task, string, number>({
+        key: (params) => params.id,
+        mutationFn: () => {
+          attempts += 1
+          return attempts === 1 ? Promise.reject(new Error('first attempt')) : Promise.resolve('second attempt')
+        },
+        onIgnored: () => undefined,
+        retry: 2,
+        retryDelay: () => 100,
+      })
+      const engine = new Engine()
+      const settled: string[] = []
+      engine.sub(mutation.settled$, (outcome) => settled.push(outcome.type))
+
+      engine.pub(mutation.mutate$, task(1))
+      await vi.advanceTimersByTimeAsync(10)
+      engine.pub(mutation.mutate$, task(1))
+      await vi.advanceTimersByTimeAsync(200)
+
+      expect(attempts).toBe(2)
+      expect(settled).toEqual(['ignored', 'success'])
     })
 
-    const mutation = Mutation({
-      mutationFn,
-      retry: 0,
+    it('makes a second call for repeated equal params once the first settled', async () => {
+      const { calls, engine, mutation } = keyed()
+      const same = task(1)
+      engine.pub(mutation.mutate$, same)
+      calls[0]?.request.resolve('ok')
+      await flushPromises()
+      engine.pub(mutation.mutate$, same)
+      expect(calls).toHaveLength(2)
     })
 
-    const engine = new Engine()
-    engine.sub(mutation.data$, vi.fn())
+    it('stops everything, including queued commands, when a subscriber disposes the engine inside a step', async () => {
+      const { calls, engine, mutation, onSuccess, settled } = keyed()
+      engine.sub(mutation.status$, (status) => {
+        if (status.get(1)?.type === 'success') {
+          // Queued behind the current item, then dropped by the disposal.
+          engine.pub(mutation.mutate$, task(2))
+          engine.pub(mutation.dismiss$, 1)
+          engine.dispose()
+        }
+      })
+      engine.pub(mutation.mutate$, task(1))
+      calls[0]?.request.resolve('ok')
+      await flushPromises()
 
-    // Trigger mutation
-    engine.pub(mutation.mutate$, {})
-
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50)
+      expect(settled).toEqual([])
+      expect(onSuccess).not.toHaveBeenCalled()
+      expect(calls.map((call) => call.params.id)).toEqual([1])
     })
 
-    // Should only be called once (no retries)
-    expect(mutationFn).toHaveBeenCalledTimes(1)
-  })
-
-  it('should handle multiple mutations', async () => {
-    let callCount = 0
-    const mutationFn = vi.fn((params: { value: number }) => {
-      callCount++
-      return `Call ${callCount}: ${params.value}`
+    it('does not start a call when the engine is disposed during the pending step', () => {
+      const { calls, engine, mutation } = keyed()
+      engine.sub(mutation.status$, () => {
+        engine.dispose()
+      })
+      engine.pub(mutation.mutate$, task(1))
+      expect(calls).toHaveLength(0)
     })
 
-    const mutation = Mutation({
-      mutationFn,
+    it('aborts running calls on disposal and keeps independent engines apart', async () => {
+      const { calls, fn } = controlledFn<Task, string>()
+      const mutation = Mutation<Task, string, number>({ key: (params) => params.id, mutationFn: fn, onIgnored: () => undefined })
+      const one = new Engine()
+      const two = new Engine()
+
+      one.pub(mutation.mutate$, task(1))
+      two.pub(mutation.mutate$, task(1))
+      expect(calls).toHaveLength(2)
+
+      one.dispose()
+      expect(calls[0]?.signal.aborted).toBe(true)
+      expect(calls[1]?.signal.aborted).toBe(false)
+      calls[1]?.request.resolve('two')
+      await flushPromises()
+      expect(two.getValue(mutation.status$).get(1)?.type).toBe('success')
     })
 
-    const engine = new Engine()
-    engine.sub(mutation.data$, vi.fn())
+    it('shares one queue with child engines when the parent owns the mutation', async () => {
+      const { calls, fn } = controlledFn<Task, string>()
+      const engines: Engine[] = []
+      const mutation = Mutation<Task, string, number>({
+        key: (params) => params.id,
+        mutationFn: fn,
+        onIgnored: () => undefined,
+        onSuccess: (_data, _params, engine) => engines.push(engine),
+      })
+      const parent = new Engine()
+      parent.register(mutation.mutate$)
+      const childOne = new Engine({}, 'one', parent)
+      const childTwo = new Engine({}, 'two', parent)
 
-    // First mutation
-    engine.pub(mutation.mutate$, { value: 1 })
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50)
+      childOne.pub(mutation.mutate$, task(1))
+      childTwo.pub(mutation.mutate$, task(1))
+      expect(calls).toHaveLength(1)
+
+      childOne.dispose()
+      expect(calls[0]?.signal.aborted).toBe(false)
+      calls[0]?.request.resolve('ok')
+      await flushPromises()
+      expect(engines).toEqual([parent])
+      expect(childTwo.getValue(mutation.status$).get(1)?.type).toBe('success')
+      expect(warn).not.toHaveBeenCalled()
     })
 
-    expect(engine.getValue(mutation.data$)).toMatchObject({
-      data: 'Call 1: 1',
-      type: 'success',
+    it('warns when a parent registers a mutation that a child engine touched first', () => {
+      const mutation = Mutation<Task, string, number>({ key: (params) => params.id, mutationFn: () => Promise.resolve('ok') })
+      const parent = new Engine()
+      const child = new Engine({}, 'child', parent)
+
+      child.getValue(mutation.status$)
+      parent.getValue(mutation.status$)
+
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(String(warn.mock.calls[0]?.[0])).toContain('root.register(mutation.mutate$)')
     })
-
-    // Second mutation
-    engine.pub(mutation.mutate$, { value: 2 })
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50)
-    })
-
-    expect(engine.getValue(mutation.data$)).toMatchObject({
-      data: 'Call 2: 2',
-      type: 'success',
-    })
-
-    expect(mutationFn).toHaveBeenCalledTimes(2)
-  })
-
-  it('should handle errors in onSuccess callback', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn())
-
-    const onSuccess = vi.fn(() => {
-      throw new Error('Callback error')
-    })
-
-    const mutationFn = vi.fn(() => 'Success')
-
-    const mutation = Mutation({
-      mutationFn,
-      onSuccess,
-    })
-
-    const engine = new Engine()
-    engine.sub(mutation.data$, vi.fn())
-
-    engine.pub(mutation.mutate$, {})
-
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50)
-    })
-
-    // Mutation should still succeed
-    expect(engine.getValue(mutation.data$)).toMatchObject({
-      data: 'Success',
-      type: 'success',
-    })
-
-    // Error should be logged
-    expect(consoleErrorSpy).toHaveBeenCalled()
-
-    consoleErrorSpy.mockRestore()
-  })
-
-  it('should handle errors in onError callback', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn())
-
-    const onError = vi.fn(() => {
-      throw new Error('Callback error')
-    })
-
-    const mutationFn = vi.fn(() => {
-      throw new Error('Mutation failed')
-    })
-
-    const mutation = Mutation({
-      mutationFn,
-      onError,
-      retry: false,
-    })
-
-    const engine = new Engine()
-    engine.sub(mutation.data$, vi.fn())
-
-    engine.pub(mutation.mutate$, {})
-
-    await new Promise((resolve) => {
-      setTimeout(resolve, 50)
-    })
-
-    // Mutation should still be in error state
-    expect(engine.getValue(mutation.data$)).toMatchObject({
-      type: 'error',
-    })
-
-    // Error should be logged
-    expect(consoleErrorSpy).toHaveBeenCalled()
-
-    consoleErrorSpy.mockRestore()
   })
 })

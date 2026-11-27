@@ -44,3 +44,39 @@ test('rejects a non-Promise projector', () => {
 
   expectTypeOf(invalid).toBeFunction()
 })
+
+test('keyed and coalescing operators share the switchMapPromise result type (CX-10)', () => {
+  const source$ = Stream<{ id: string; patch: { a?: number } }>()
+  const coalesced$ = e.pipe(
+    source$,
+    e.coalescePromise((input) => Promise.resolve(input.id.length), {
+      key: (input) => input.id,
+      merge: (waiting, next) => {
+        expectTypeOf(waiting).toEqualTypeOf<{ id: string; patch: { a?: number } }>()
+        return { ...next, patch: { ...waiting.patch, ...next.patch } }
+      },
+    })
+  )
+  const concatenated$ = e.pipe(
+    source$,
+    e.concatMapPromise((input) => Promise.resolve(input.id), { key: (input) => input.id })
+  )
+  const switched$ = e.pipe(
+    source$,
+    e.switchMapPromise((input) => Promise.resolve(input.id), { key: (input) => input.id })
+  )
+
+  expectTypeOf(coalesced$).toEqualTypeOf<NodeRef<SwitchMapPromiseResult<{ id: string; patch: { a?: number } }, number>>>()
+  expectTypeOf(concatenated$).toEqualTypeOf<NodeRef<SwitchMapPromiseResult<{ id: string; patch: { a?: number } }, string>>>()
+  expectTypeOf(switched$).toEqualTypeOf<NodeRef<SwitchMapPromiseResult<{ id: string; patch: { a?: number } }, string>>>()
+})
+
+test('merge is only accepted by coalescePromise', () => {
+  const invalid = () =>
+    e.concatMapPromise((input: number) => Promise.resolve(input), {
+      // @ts-expect-error concatMapPromise runs every input, so it has no merge option.
+      merge: (_waiting: number, next: number) => next,
+    })
+
+  expectTypeOf(invalid).toBeFunction()
+})

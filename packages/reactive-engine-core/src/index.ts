@@ -28,8 +28,11 @@ export { Cell, ComputedCell, DerivedCell, Pipe, Pulsar, Resource, Stream, Trigge
 export { addNodeInit, debug, getValue, pub, pubIn } from './nodeUtils'
 export {
   afterSettle,
+  coalescePromise,
+  concatMapPromise,
   debounceTime,
   delayWithMicrotask,
+  exhaustMapPromise,
   filter,
   filterMap,
   handlePromise,
@@ -42,7 +45,7 @@ export {
   throttleTime,
   withLatestFrom,
 } from './operators'
-export type { O, Operator, SwitchMapPromiseResult } from './operators'
+export type { CoalescePromiseOptions, O, Operator, PromiseOperatorOptions, SwitchMapPromiseResult } from './operators'
 export type {
   CellDefinition,
   Comparator,

@@ -38,12 +38,13 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "@virtuoso.dev/reactive-engine-core": "workspace:*",
+    "fast-check": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@virtuoso.dev/reactive-engine-core": ">=0.2.1"
+    "@virtuoso.dev/reactive-engine-core": "^0.3.0"
   }
 }

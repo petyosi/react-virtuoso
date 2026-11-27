@@ -393,6 +393,23 @@ export class Engine {
   }
 
   /**
+   * Returns true if this engine is a parent, grandparent, or further ancestor of `other`. An engine is not its own
+   * ancestor.
+   * @param other - the engine to check.
+   * @hidden
+   */
+  isAncestorOf(other: Engine): boolean {
+    let ancestor = other.parentEngine
+    while (ancestor !== undefined) {
+      if (ancestor === this) {
+        return true
+      }
+      ancestor = ancestor.parentEngine
+    }
+    return false
+  }
+
+  /**
    * Observes structured propagation records for cycles that start in this engine.
    * Observer registration and options are snapshotted when each cycle starts.
    */

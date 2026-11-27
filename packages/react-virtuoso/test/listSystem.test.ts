@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { walk } from '../src/AATree'
 import { listSystem } from '../src/listSystem'
@@ -6,7 +6,18 @@ import { getValue, init, publish, subscribe } from '../src/urx'
 
 import type { AANode } from '../src/AATree'
 
+// The initial-location and restore paths wait four animation frames (`skipFrames(4)`, about 67ms in jsdom) before
+// scrolling. With real timers, a loaded machine can stretch those frames past the test's wait, so these tests run on
+// fake timers (which also fake `requestAnimationFrame`) and advance the clock explicitly.
+function useFrameClock() {
+  vi.useFakeTimers()
+}
+
 describe('list engine', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   describe('basics', () => {
     it('returns empty rows by default', () => {
       const { listState } = init(listSystem)
@@ -171,7 +182,8 @@ describe('list engine', () => {
   })
 
   describe('initial index', () => {
-    it('starts from a specified location', () => {
+    it('starts from a specified location', async () => {
+      useFrameClock()
       const INITIAL_INDEX = 300
       const SIZE = 30
       const { initialTopMostItemIndex, listState, propsReady, scrollTo, scrollTop, sizeRanges, totalCount, viewportHeight } =
@@ -193,22 +205,19 @@ describe('list engine', () => {
 
       expect(getValue(listState).items).toHaveLength(0)
 
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          expect(sub).toHaveBeenCalledWith({
-            behavior: 'auto',
-            top: INITIAL_INDEX * SIZE,
-          })
-
-          // the UI responds by publishing back through the scrollTop stream
-          publish(scrollTop, INITIAL_INDEX * SIZE)
-          expect(getValue(listState).items).toHaveLength(7)
-          resolve(true)
-        }, 100)
+      await vi.advanceTimersByTimeAsync(100)
+      expect(sub).toHaveBeenCalledWith({
+        behavior: 'auto',
+        top: INITIAL_INDEX * SIZE,
       })
+
+      // the UI responds by publishing back through the scrollTop stream
+      publish(scrollTop, INITIAL_INDEX * SIZE)
+      expect(getValue(listState).items).toHaveLength(7)
     })
 
-    it('starts from a specified location with fixed item size', () => {
+    it('starts from a specified location with fixed item size', async () => {
+      useFrameClock()
       const INITIAL_INDEX = 300
       const SIZE = 30
       const { fixedItemHeight, initialTopMostItemIndex, listState, propsReady, scrollTo, scrollTop, totalCount, viewportHeight } =
@@ -229,22 +238,19 @@ describe('list engine', () => {
 
       expect(getValue(listState).items).toHaveLength(0)
 
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          expect(sub).toHaveBeenCalledWith({
-            behavior: 'auto',
-            top: INITIAL_INDEX * SIZE,
-          })
-
-          // the UI responds by publishing back through the scrollTop stream
-          publish(scrollTop, INITIAL_INDEX * SIZE)
-          expect(getValue(listState).items).toHaveLength(7)
-          resolve(true)
-        }, 100)
+      await vi.advanceTimersByTimeAsync(100)
+      expect(sub).toHaveBeenCalledWith({
+        behavior: 'auto',
+        top: INITIAL_INDEX * SIZE,
       })
+
+      // the UI responds by publishing back through the scrollTop stream
+      publish(scrollTop, INITIAL_INDEX * SIZE)
+      expect(getValue(listState).items).toHaveLength(7)
     })
 
-    it('applies initial location options when the initial index is zero', () => {
+    it('applies initial location options when the initial index is zero', async () => {
+      useFrameClock()
       const SIZE = 30
       const OFFSET = 40
       const { fixedItemHeight, initialTopMostItemIndex, listState, propsReady, scrollTo, scrollTop, totalCount, viewportHeight } =
@@ -263,15 +269,10 @@ describe('list engine', () => {
       const sub = vi.fn()
       subscribe(scrollTo, sub)
 
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          expect(sub).toHaveBeenCalledWith({
-            behavior: 'auto',
-            top: OFFSET,
-          })
-
-          resolve(true)
-        }, 100)
+      await vi.advanceTimersByTimeAsync(100)
+      expect(sub).toHaveBeenCalledWith({
+        behavior: 'auto',
+        top: OFFSET,
       })
     })
   })
@@ -367,7 +368,8 @@ describe('list engine', () => {
   })
 
   describe('scrolling up after a jump', () => {
-    it('readjusts measurements to avoid jump', () => {
+    it('readjusts measurements to avoid jump', async () => {
+      useFrameClock()
       const INITIAL_INDEX = 300
       const SIZE = 30
       const {
@@ -401,39 +403,34 @@ describe('list engine', () => {
 
       expect(getValue(listState).items).toHaveLength(0)
 
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          expect(sub).toHaveBeenCalledWith({
-            behavior: 'auto',
-            top: INITIAL_INDEX * SIZE,
-          })
-
-          setTimeout(() => {
-            publish(scrollContainerState, {
-              scrollHeight: 1000 * 30,
-              scrollTop: INITIAL_INDEX * SIZE,
-              viewportHeight: 200,
-            })
-
-            publish(scrollContainerState, {
-              scrollHeight: 1000 * 30,
-              scrollTop: INITIAL_INDEX * SIZE - 2,
-              viewportHeight: 200,
-            })
-
-            publish(sizeRanges, [
-              {
-                endIndex: INITIAL_INDEX - 1,
-                size: SIZE + 40,
-                startIndex: INITIAL_INDEX - 1,
-              },
-            ])
-
-            expect(scrollBySub).toHaveBeenCalledWith({ behavior: 'auto', top: 40 })
-            resolve(true)
-          }, 1000)
-        }, 100)
+      await vi.advanceTimersByTimeAsync(100)
+      expect(sub).toHaveBeenCalledWith({
+        behavior: 'auto',
+        top: INITIAL_INDEX * SIZE,
       })
+
+      await vi.advanceTimersByTimeAsync(1000)
+      publish(scrollContainerState, {
+        scrollHeight: 1000 * 30,
+        scrollTop: INITIAL_INDEX * SIZE,
+        viewportHeight: 200,
+      })
+
+      publish(scrollContainerState, {
+        scrollHeight: 1000 * 30,
+        scrollTop: INITIAL_INDEX * SIZE - 2,
+        viewportHeight: 200,
+      })
+
+      publish(sizeRanges, [
+        {
+          endIndex: INITIAL_INDEX - 1,
+          size: SIZE + 40,
+          startIndex: INITIAL_INDEX - 1,
+        },
+      ])
+
+      expect(scrollBySub).toHaveBeenCalledWith({ behavior: 'auto', top: 40 })
     })
   })
 
@@ -934,6 +931,7 @@ describe('list engine', () => {
     })
 
     it('preserves the snapshot through repeated restores without a header', async () => {
+      useFrameClock()
       async function restore(savedScrollTop: number) {
         const { didMount, gap, propsReady, restoreStateFrom, scrollTo, scrollTop, totalCount, viewportHeight } = init(listSystem)
         publish(restoreStateFrom, { ranges: [{ endIndex: Infinity, size: SIZE, startIndex: 0 }], scrollTop: savedScrollTop })
@@ -945,10 +943,9 @@ describe('list engine', () => {
         const sub = vi.fn()
         subscribe(scrollTo, sub)
         publish(didMount, true)
-        await new Promise((resolve) => {
-          setTimeout(resolve, 100)
-        })
-        return sub.mock.calls.at(-1)![0].top as number
+        await vi.advanceTimersByTimeAsync(100)
+        expect(sub).toHaveBeenCalled()
+        return (sub.mock.lastCall as [{ top: number }])[0].top
       }
       const positions = [await restore(1000)]
       positions.push(await restore(positions.at(-1)!))

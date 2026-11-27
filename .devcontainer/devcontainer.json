@@ -1,0 +1,8 @@
+{
+  "name": "react-virtuoso",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "node",
+  "postCreateCommand": "bash .devcontainer/post-create.sh"
+}

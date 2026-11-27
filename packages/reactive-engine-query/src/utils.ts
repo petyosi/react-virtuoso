@@ -1,6 +1,23 @@
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms)
+function abortError() {
+  return new Error('Aborted')
+}
+
+function sleep(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // retryDelay is user code, and may abort the signal before the wait starts.
+    if (signal.aborted) {
+      reject(abortError())
+      return
+    }
+    const onAbort = () => {
+      clearTimeout(timeout)
+      reject(abortError())
+    }
+    const timeout = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort)
+      resolve()
+    }, ms)
+    signal.addEventListener('abort', onAbort, { once: true })
   })
 }
 
@@ -20,7 +37,7 @@ export async function executeWithRetry<T>(
 
   for (let attempt = 0; attempt <= options.retry; attempt++) {
     if (options.signal.aborted) {
-      throw new Error('Aborted')
+      throw abortError()
     }
 
     try {
@@ -29,10 +46,16 @@ export async function executeWithRetry<T>(
     } catch (error) {
       lastError = error
 
+      // An aborted call stops retrying instead of sleeping and trying again. The attempt's own error is kept, so the
+      // caller sees why it failed.
+      if (options.signal.aborted) {
+        throw error
+      }
+
       if (attempt < options.retry) {
         const delay = options.retryDelay(attempt)
         // oxlint-disable-next-line no-await-in-loop
-        await sleep(delay)
+        await sleep(delay, options.signal)
       }
     }
   }
