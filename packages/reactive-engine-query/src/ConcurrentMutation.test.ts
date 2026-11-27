@@ -38,9 +38,12 @@ interface Task {
   id: number
 }
 
+// The docs name the params type SetDone: the fields a toggle sends.
+type SetDone = Task
+
 // The overlay recipe from the docs, character for character. CMUT-7 checks that the two stay identical.
 export function overlayDone(
-  state: ConcurrentMutationState<Task, Task, number> | undefined,
+  state: ConcurrentMutationState<SetDone, Task, number> | undefined,
   query: QueryResult<Task[]>,
   task: Task
 ): boolean {

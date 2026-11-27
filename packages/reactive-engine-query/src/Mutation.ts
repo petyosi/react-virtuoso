@@ -88,9 +88,10 @@ type Item<TParams, TData> =
  * const deleteTask = Mutation<{ id: number }, void, number>({
  *   mutationFn: ({ id }, signal) => api.deleteTask(id, signal),
  *   key: ({ id }) => id,
- *   onSuccess: (_data, { id }, engine) => {
+ *   onSuccess: (_data, _params, engine) => {
+ *     // Keep the success result: the row hides while it is success, and the result is dismissed once refetched
+ *     // data no longer contains the row. Dismissing here would show the row again until the refetch lands.
  *     engine.pub(tasksQuery.refetch$)
- *     engine.pub(deleteTask.dismiss$, id)
  *   },
  * })
  * ```

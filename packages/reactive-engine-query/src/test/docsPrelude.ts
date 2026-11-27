@@ -18,7 +18,7 @@ type TData = unknown
 
 declare const api: {
   createTask: (params: { listId: string; title: string }, signal: AbortSignal) => Promise<Task>
-  updateTask: (task: Task, signal: AbortSignal) => Promise<Task>
+  patchTask: (id: number, fields: Partial<Omit<Task, 'id'>>, signal: AbortSignal) => Promise<Task>
 }
 declare const tasks$: NodeRef<{ id: string } | null>
 declare const userQuery: { data$: StateRef<QueryResult<{ id: string }>> }
