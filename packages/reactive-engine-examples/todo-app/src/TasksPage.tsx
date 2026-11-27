@@ -6,6 +6,8 @@ import {
   createTaskMutation,
   deleteTaskMutation,
   editingTaskId$,
+  hiddenToggleFailures$,
+  hideToggleFailures$,
   newTaskDescription$,
   overlayDone,
   toggleFailed,
@@ -30,7 +32,8 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
   const dismissUpdate = usePublisher(updateTaskMutation.dismiss$)
   const toggleTask = usePublisher(toggleTaskMutation.mutate$)
   const toggles = useCellValue(toggleTaskMutation.status$)
-  const dismissToggle = usePublisher(toggleTaskMutation.dismiss$)
+  const hiddenToggles = useCellValue(hiddenToggleFailures$)
+  const hideToggleFailure = usePublisher(hideToggleFailures$)
   const deleteTask = usePublisher(deleteTaskMutation.mutate$)
   const deletes = useCellValue(deleteTaskMutation.status$)
   const dismissDelete = usePublisher(deleteTaskMutation.dismiss$)
@@ -108,6 +111,8 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
           type="text"
           value={newTaskDescription}
           onChange={(e) => setNewTaskDescription(e.target.value)}
+          // Locked while saving: onSuccess clears the input, which would drop text typed meanwhile.
+          disabled={createResult.isPending}
           placeholder="New task description"
           style={{ padding: '8px', marginRight: '10px' }}
         />
@@ -148,6 +153,8 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
                       type="text"
                       value={editingDescription}
                       onChange={(e) => setEditingDescription(e.target.value)}
+                      // Locked while saving: onSuccess closes the editor, which would drop text typed meanwhile.
+                      disabled={update?.isPending === true}
                       style={{ padding: '4px', flex: 1 }}
                     />
                     <button onClick={() => handleUpdate(task)} disabled={update?.isPending === true} style={{ padding: '4px 12px' }}>
@@ -174,10 +181,10 @@ export const TasksPage: React.ComponentType<RouteParams<'/lists/{id}'>> = ({ id 
                     >
                       {description}
                     </span>
-                    {toggleFailed(toggles.get(task.id)) && (
+                    {toggleFailed(toggles.get(task.id), hiddenToggles.get(task.id) ?? 0) && (
                       <span role="alert" style={{ color: 'red' }}>
                         Couldn't save{' '}
-                        <button aria-label="Dismiss" onClick={() => dismissToggle(task.id)}>
+                        <button aria-label="Dismiss" onClick={() => hideToggleFailure(task.id)}>
                           ✕
                         </button>
                       </span>

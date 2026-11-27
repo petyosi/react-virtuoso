@@ -81,6 +81,8 @@ export function ListsPage() {
           type="text"
           value={newListName}
           onChange={(e) => setNewListName(e.target.value)}
+          // Locked while saving: onSuccess clears the input, which would drop text typed meanwhile.
+          disabled={createResult.isPending}
           placeholder="New list name"
           style={{ padding: '8px', marginRight: '10px' }}
         />
@@ -120,6 +122,8 @@ export function ListsPage() {
                       type="text"
                       value={editingName}
                       onChange={(e) => setEditingName(e.target.value)}
+                      // Locked while saving: onSuccess closes the editor, which would drop text typed meanwhile.
+                      disabled={update?.isPending === true}
                       style={{ padding: '4px', flex: 1 }}
                     />
                     <button onClick={() => handleUpdate(list.id)} disabled={update?.isPending === true} style={{ padding: '4px 12px' }}>

@@ -1,9 +1,10 @@
-import { Cell, e } from '@virtuoso.dev/reactive-engine-core'
+import { Cell, e, Stream } from '@virtuoso.dev/reactive-engine-core'
 import { ConcurrentMutation, Mutation } from '@virtuoso.dev/reactive-engine-query'
 
 import { listsQuery, tasksQuery } from './queries'
 
 import type { List, Task } from './types'
+import type { Engine } from '@virtuoso.dev/reactive-engine-core'
 import type { ConcurrentMutationState, QueryResult } from '@virtuoso.dev/reactive-engine-query'
 
 const API_BASE = 'http://localhost:3001'
@@ -174,11 +175,53 @@ export function overlayDone(
   return task.done
 }
 
-/** True when the newest toggle outcome for a task is a failure. A tie counts as a failure. */
-export function toggleFailed(state: ConcurrentMutationState<TaskDone, Task, number> | undefined): boolean {
-  const failure = state?.failures.at(-1)
-  return failure !== undefined && (state?.lastSuccess == null || failure.settledAt >= state.lastSuccess.settledAt)
+// The ✕ on a toggle error hides the error; it does not dismiss the record. Dismissing would also clear lastSuccess,
+// and the checkbox would fall back to query data that may not show that success yet. The record is dismissed once the
+// query has caught up (see cleanUpToggles).
+/** Per task, how many toggle failures the user has hidden with ✕. */
+export const hiddenToggleFailures$ = Cell<ReadonlyMap<number, number>>(new Map())
+/** Hides the toggle failures a task has now. A later failure shows again. */
+export const hideToggleFailures$ = Stream<number>()
+
+/**
+ * True when the newest toggle outcome for a task is a failure the user has not hidden. A tie counts as a failure. A
+ * later success covers a failure, because each toggle sends the whole value of `done`.
+ */
+export function toggleFailed(state: ConcurrentMutationState<TaskDone, Task, number> | undefined, hidden: number): boolean {
+  if (state === undefined || state.failures.length <= hidden) {
+    return false
+  }
+  const failure = state.failures.at(-1)
+  return failure !== undefined && (state.lastSuccess === null || failure.settledAt >= state.lastSuccess.settledAt)
 }
+
+/**
+ * Dismisses toggle records that nothing needs any more: nothing runs or waits, no failure is showing, and the query
+ * data is strictly newer than the last success, so the overlay shows the same value without it.
+ */
+function cleanUpToggles(engine: Engine, dataUpdatedAt: number | null) {
+  const hidden = engine.getValue(hiddenToggleFailures$)
+  let nextHidden: Map<number, number> | null = null
+  for (const [id, state] of engine.getValue(toggleTaskMutation.status$)) {
+    const caughtUp = state.lastSuccess === null || (dataUpdatedAt !== null && dataUpdatedAt > state.lastSuccess.settledAt)
+    if (!state.isPending && caughtUp && !toggleFailed(state, hidden.get(id) ?? 0)) {
+      engine.pub(toggleTaskMutation.dismiss$, id)
+      if (hidden.has(id)) {
+        nextHidden ??= new Map(hidden)
+        nextHidden.delete(id)
+      }
+    }
+  }
+  if (nextHidden !== null) {
+    engine.pub(hiddenToggleFailures$, nextHidden)
+  }
+}
+
+e.sub(hideToggleFailures$, (id, engine) => {
+  const count = engine.getValue(toggleTaskMutation.status$).get(id)?.failures.length ?? 0
+  engine.pub(hiddenToggleFailures$, new Map(engine.getValue(hiddenToggleFailures$)).set(id, count))
+  cleanUpToggles(engine, engine.getValue(tasksQuery.data$).dataUpdatedAt)
+})
 
 export const deleteTaskMutation = Mutation<{ id: number }, void, number>({
   mutationFn: async ({ id }, signal) => {
@@ -194,7 +237,7 @@ export const deleteTaskMutation = Mutation<{ id: number }, void, number>({
 })
 
 // When fresh task data arrives, forget results it has caught up with. Data strictly newer than a result reflects it:
-// the refetch started in onSuccess. Failures stay until the user dismisses them.
+// the refetch started in onSuccess. Failures stay until the user dismisses or hides them.
 e.sub(tasksQuery.data$, (result, engine) => {
   if (result.type !== 'success') {
     return
@@ -210,15 +253,5 @@ e.sub(tasksQuery.data$, (result, engine) => {
       engine.pub(updateTaskMutation.dismiss$, id)
     }
   }
-  // A toggle record is needed only while it runs, has a failure to show, or is newer than the data (the overlay).
-  for (const [id, state] of engine.getValue(toggleTaskMutation.status$)) {
-    if (
-      !state.isPending &&
-      state.failures.length === 0 &&
-      state.lastSuccess !== null &&
-      result.dataUpdatedAt > state.lastSuccess.settledAt
-    ) {
-      engine.pub(toggleTaskMutation.dismiss$, id)
-    }
-  }
+  cleanUpToggles(engine, result.dataUpdatedAt)
 })
